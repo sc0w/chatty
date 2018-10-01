@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <object class="GtkPopoverMenu" id="chatty-blist-view-popover">
+    <child>
+      <object class="GtkBox">
+        <property name="can_focus">False</property>
+        <property name="border_width">12</property>
+        <property name="orientation">vertical</property>
+        <property name="visible">True</property>
+
+        <child>
+          <object class="GtkBox">
+            <property name="visible">True</property>
+            <property name="orientation">horizontal</property>
+            <property name="spacing">6</property>
+            <property name="homogeneous">True</property>
+            <property name="margin-bottom">6</property>
+
+            <child>
+              <object class="GtkModelButton">
+                <property name="action-name">win.find</property>
+                <property name="iconic">True</property>
+                <property name="centered">True</property>
+                <property name="icon">find</property>
+                <property name="visible">True</property>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+              </packing>
+            </child>
+
+          </object>
+        </child>
+
+        <child>
+          <object class="GtkSeparator" id="new-window-separator">
+            <property name="orientation">horizontal</property>
+            <property name="margin-top">6</property>
+            <property name="margin-bottom">6</property>
+            <property name="visible">True</property>
+          </object>
+        </child>
+
+
+        <child>
+          <object class="GtkModelButton" id="Accounts">
+            <property name="can_focus">True</property>
+            <property name="text" translatable="yes">Setup accounts</property>
+            <property name="action-name">win.encoding</property>
+            <property name="visible">True</property>
+          </object>
+        </child>
+
+        <child>
+          <object class="GtkModelButton" id="preferences">
+            <property name="can_focus">True</property>
+            <property name="text" translatable="yes">Preferences</property>
+            <property name="action-name">app.preferences</property>
+            <property name="visible">True</property>
+          </object>
+        </child>
+
+      </object>
+    </child>
+  </object>
+
+  <object class="GThemedIcon" id="find">
+    <property name="name">system-search-symbolic</property>
+  </object>
+
+</interface>

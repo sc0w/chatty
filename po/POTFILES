@@ -1,0 +1,8 @@
+data/sm.puri.Chatty.desktop.in
+data/sm.puri.Chatty.appdata.xml.in
+data/sm.puri.Chatty.gschema.xml
+src/chatty-message-view-popover.ui
+src/chatty-blist-view-popover.ui
+src/chatty-new-chat-view-popover.ui
+src/main.c
+src/purism-chatty-window.c

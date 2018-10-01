@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <object class="GtkPopoverMenu" id="chatty-avatar-select-popover">
+    <child>
+      <object class="GtkBox">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="margin_left">10</property>
+        <property name="margin_right">10</property>
+        <property name="margin_top">10</property>
+        <property name="margin_bottom">10</property>
+        <property name="orientation">vertical</property>
+        <property name="spacing">10</property>
+        <child>
+          <object class="GtkFlowBox" id="stock_thumbnail_grid">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="column_spacing">5</property>
+            <property name="row_spacing">5</property>
+            <property name="min_children_per_line">5</property>
+            <property name="max_children_per_line">8</property>
+            <property name="selection_mode">none</property>
+          </object>
+          <packing>
+            <property name="expand">True</property>
+            <property name="fill">True</property>
+            <property name="position">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkBox">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="halign">center</property>
+            <property name="spacing">10</property>
+            <child>
+              <object class="GtkModelButton">
+                <property name="action-name">cheese-clicked</property>
+                <property name="iconic">True</property>
+                <property name="centered">True</property>
+                <property name="icon">cheese</property>
+                <property name="visible">True</property>
+                <property name="no_show_all">True</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkModelButton">
+                <property name="action-name">load-clicked</property>
+                <property name="iconic">True</property>
+                <property name="centered">True</property>
+                <property name="icon">file</property>
+                <property name="visible">True</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">2</property>
+          </packing>
+        </child>
+
+      </object>
+    </child>
+  </object>
+
+  <object class="GThemedIcon" id="cheese">
+    <property name="name">folder-pictures-symbolic</property>
+  </object>
+  <object class="GThemedIcon" id="file">
+    <property name="name">document-open-symbolic</property>
+  </object>
+</interface>

@@ -1,0 +1,40 @@
+
+
+.button_left {
+
+}
+
+.button_avatar {
+  border-radius: 50%;
+  border-width: 0px;
+  padding: 0 0;
+  background: grey;
+  color: white;
+}
+
+.button_send_blue {
+  border-radius: 5px;
+  border-width: 0px;
+  background: #4a90d9;
+  color: white;
+}
+
+.button_send_green {
+  border-radius: 5px;
+  border-width: 0px;
+  background: #6cba3d;
+  color: white;
+}
+
+.buddy_list {
+  color: black;
+  background-color: white;
+}
+
+.text_view {
+  color: black;
+}
+
+.text_view_scroll {
+  border-radius: 5px;
+}

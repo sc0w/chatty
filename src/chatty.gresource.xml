@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gresources>
+  <gresource prefix="/sm/puri/chatty">
+    <file>ui/chatty-message-list.ui</file>
+    <file>ui/chatty-message-view-popover.ui</file>
+    <file>ui/chatty-blist-view-popover.ui</file>
+    <file>ui/chatty-new-chat-view-popover.ui</file>
+    <file>ui/chatty-avatar-select-popover.ui</file>
+    <file>css/style.css</file>
+  </gresource>
+</gresources>

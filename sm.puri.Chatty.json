@@ -1,0 +1,73 @@
+{
+    "app-id" : "org.gnome.Purism-Chatty",
+    "runtime" : "org.gnome.Platform",
+    "runtime-version" : "master",
+    "sdk" : "org.gnome.Sdk",
+    "command" : "purism-chatty",
+    "finish-args" : [
+        "--share=network",
+        "--share=ipc",
+        "--socket=x11",
+        "--socket=wayland",
+        "--filesystem=xdg-run/dconf",
+        "--filesystem=~/.config/dconf:ro",
+        "--talk-name=ca.desrt.dconf",
+        "--env=DCONF_USER_CONFIG_DIR=.config/dconf"
+    ],
+    "build-options" : {
+        "cflags" : "-O2 -g",
+        "cxxflags" : "-O2 -g",
+        "env" : {
+            "V" : "1"
+        }
+    },
+    "cleanup" : [
+        "/include",
+        "/lib/pkgconfig",
+        "/man",
+        "/share/doc",
+        "/share/gtk-doc",
+        "/share/man",
+        "/share/pkgconfig",
+        "*.la",
+        "*.a"
+    ],
+    "modules" : [
+    {
+        "name" : "libpurple",
+        "config-opts" : [
+            "--disable-gtkui",
+            "--disable-consoleui",
+            "--disable-vv",
+            "--disable-idn",
+            "--disable-avahi",
+            "--disable-meanwhile",
+            "--disable-tcl",
+            "--disable-nm",
+            "--disable-perl"
+        ],
+        "sources" : [
+            {
+                "type" : "archive",
+                "url" : "http://downloads.sourceforge.net/pidgin/pidgin-2.13.0.tar.bz2",
+                "sha256" : "2747150c6f711146bddd333c496870bfd55058bab22ffb7e4eb784018ec46d8f"
+            }
+        ]
+    },
+    "modules" : [
+        {
+            "name" : "purism-chatty",
+            "buildsystem" : "meson",
+            "config-opts" : [
+                "--libdir=lib"
+            ],
+            "builddir" : true,
+            "sources" : [
+                {
+                    "type" : "git",
+                    "url" : "https://source.puri.sm/Librem5/chatty.git"
+                }
+            ]
+        }
+    ]
+}

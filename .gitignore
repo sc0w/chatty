@@ -1,0 +1,6 @@
+*.o
+*.log
+*~
+build
+arm
+arm-build
