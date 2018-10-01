@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2018 Purism SPC
  *
- * SPDX-License-Identifier: LGPL-2.1+
+ * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
 
@@ -23,7 +23,6 @@ typedef struct {
 PurpleConnectionUiOps *chatty_connection_get_ui_ops (void);
 
 void *chatty_connection_get_handle (void);
-
 void chatty_connection_init (void);
 void chatty_connection_uninit (void);
 

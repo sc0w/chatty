@@ -1,8 +1,9 @@
 /*
  * Copyright (C) 2018 Purism SPC
  *
- * SPDX-License-Identifier: LGPL-2.1+
+ * SPDX-License-Identifier: GPL-3.0-or-later
  */
+
 
 #ifndef __MSG_LIST_H_INCLUDE__
 #define __MSG_LIST_H_INCLUDE__
@@ -20,7 +21,6 @@ G_DECLARE_DERIVABLE_TYPE (ChattyMsgList, chatty_msg_list, CHATTY, MSG_LIST, GtkB
 struct _ChattyMsgListClass
 {
   GtkBoxClass parent_class;
-
 };
 
 

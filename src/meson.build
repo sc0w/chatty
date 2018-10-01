@@ -7,8 +7,7 @@ chatty_sources = [
   'chatty-connection.c',
   'chatty-buddy-list.c',
   'chatty-purple-init.c',
-  'chatty-icons.c',
-  'chatty-modemmanager.c'
+  'chatty-icons.c'
 ]
 
 chatty_deps = [

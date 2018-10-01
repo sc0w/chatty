@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2018 Purism SPC
  *
- * SPDX-License-Identifier: LGPL-2.1+
+ * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
 
@@ -12,7 +12,6 @@
 #include "chatty-message-list.h"
 #include "chatty-buddy-list.h"
 #include "chatty-purple-init.h"
-#include "chatty-modemmanager.h"
 
 static chatty_data_t chatty_data;
 
