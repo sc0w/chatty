@@ -117,7 +117,8 @@ chatty_window_change_view (guint view)
   GtkImage        *image;
   gint            type;
   gchar           *stack_id;
-  gchar           *icon_left;
+  gchar           *icon_button_left;
+  gchar           *icon_button_right;
   gchar           *popover_id;
   gchar           *popover_path;
   GtkBuilder      *builder;
@@ -131,7 +132,8 @@ chatty_window_change_view (guint view)
     case CHATTY_VIEW_LOGIN:
       type = GTK_STACK_TRANSITION_TYPE_SLIDE_LEFT;
       stack_id = "view-login";
-      icon_left = "list-add-symbolic";
+      icon_button_left = "list-add-symbolic";
+      icon_button_right = "open-menu-symbolic";
       chatty_window_set_header_title (_("Login"));
       popover_id = "chatty-message-view-popover";
       chatty->view_state_next = CHATTY_VIEW_CHAT_LIST_SLIDE_RIGHT;
@@ -140,7 +142,8 @@ chatty_window_change_view (guint view)
     case CHATTY_VIEW_CHAT_LIST_SLIDE_RIGHT:
       type = GTK_STACK_TRANSITION_TYPE_SLIDE_RIGHT;
       stack_id = "view-chat-list";
-      icon_left = "list-add-symbolic";
+      icon_button_left = "list-add-symbolic";
+      icon_button_right = "open-menu-symbolic";
       popover_id = "chatty-blist-view-popover";
       chatty_window_set_header_title (_("Conversations"));
       chatty->view_state_next = CHATTY_VIEW_MESSAGE_LIST;
@@ -149,7 +152,8 @@ chatty_window_change_view (guint view)
     case CHATTY_VIEW_CHAT_LIST_SLIDE_DOWN:
       type = GTK_STACK_TRANSITION_TYPE_SLIDE_DOWN;
       stack_id = "view-chat-list";
-      icon_left = "list-add-symbolic";
+      icon_button_left = "list-add-symbolic";
+      icon_button_right = "open-menu-symbolic";
       popover_id = "chatty-blist-view-popover";
       chatty_window_set_header_title (_("Conversations"));
       chatty->view_state_next = CHATTY_VIEW_MESSAGE_LIST;
@@ -159,7 +163,8 @@ chatty_window_change_view (guint view)
     case CHATTY_VIEW_MESSAGE_LIST:
       type = GTK_STACK_TRANSITION_TYPE_SLIDE_LEFT;
       stack_id = "view-message-list";
-      icon_left = "go-previous-symbolic";
+      icon_button_left = "go-previous-symbolic";
+      icon_button_right = "view-more-symbolic";
       popover_id = "chatty-message-view-popover";
       chatty->view_state_next = CHATTY_VIEW_CHAT_LIST_SLIDE_RIGHT;
       break;
@@ -167,15 +172,19 @@ chatty_window_change_view (guint view)
     case CHATTY_VIEW_NEW_CHAT:
       type = GTK_STACK_TRANSITION_TYPE_SLIDE_UP;
       stack_id = "view-new-chat";
-      icon_left = "go-down-symbolic";
+      icon_button_left = "go-down-symbolic";
+      icon_button_right = "view-more-symbolic";
       popover_id = "chatty-new-chat-view-popover";
       chatty_window_set_header_title (_("Add new chat"));
       chatty->view_state_next = CHATTY_VIEW_CHAT_LIST_SLIDE_DOWN;
       break;
   }
 
-  image = gtk_image_new_from_icon_name (icon_left, GTK_ICON_SIZE_BUTTON);
+  image = gtk_image_new_from_icon_name (icon_button_left, GTK_ICON_SIZE_BUTTON);
   gtk_button_set_image (GTK_BUTTON (chatty->header_button_left), image);
+
+  image = gtk_image_new_from_icon_name (icon_button_right, GTK_ICON_SIZE_BUTTON);
+  gtk_button_set_image (GTK_BUTTON (chatty->header_button_right), image);
 
   popover_path = g_strjoin (NULL,
                             "/sm/puri/chatty/ui/",
@@ -226,8 +235,6 @@ chatty_window_set_header_bar ()
   gtk_style_context_add_class (sc, "button_left");
 
   chatty->header_button_right = gtk_menu_button_new ();
-  image = gtk_image_new_from_icon_name ("view-more-symbolic", GTK_ICON_SIZE_BUTTON);
-  gtk_button_set_image (GTK_BUTTON (chatty->header_button_right), image);
   gtk_widget_set_valign (chatty->header_button_right, GTK_ALIGN_CENTER);
   sc = gtk_widget_get_style_context (chatty->header_button_right);
   gtk_style_context_add_class (sc, "button_right");
