@@ -1352,14 +1352,10 @@ chatty_conv_setup_pane (ChattyConversation *chatty_conv)
   gtk_box_pack_start (hbox, button_send, FALSE, FALSE, 6);
 
   chatty_conv->msg_list = chatty_msg_list_new (MSG_TYPE_IM, TRUE);
-  // TODO set widget size dynamically when a keyboard is in play
-  gtk_widget_set_size_request (chatty_conv->msg_list,
-                               400,
-                               320);
 
   gtk_box_pack_start (GTK_CONTAINER (vbox),
                       chatty_conv->msg_list,
-                      FALSE, FALSE, 0);
+                      TRUE, TRUE, 0);
   gtk_box_pack_start (GTK_CONTAINER (vbox),
                       hbox, FALSE, FALSE, 0);
 

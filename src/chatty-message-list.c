@@ -9,8 +9,6 @@
 #include <glib/gi18n.h>
 #include <stdlib.h>
 #include <string.h>
-#include <pango/pango.h>
-#include <float.h>
 #include <math.h>
 #include <cairo.h>
 #include "chatty-message-list.h"
@@ -34,11 +32,11 @@ static GParamSpec *props[PROP_LAST_PROP];
 typedef struct
 {
   GtkBox            *disclaimer;
-  GtkButton         *button;
   GtkBox            *container;
-  GtkListBox        *list;
-  GtkListBoxRow     *indicator_row;
-  GtkScrolledWindow *scroll;
+  GtkWidget         *list;
+  GtkWidget         *scroll;
+  GtkWidget         *button;
+  GtkWidget         *indicator_row;
   GtkWidget         *typing_indicator;
   gboolean          disclaimer_enable;
   gboolean          ruler_enable;
@@ -180,7 +178,7 @@ chatty_msg_list_add_header (ChattyMsgList *self)
   ChattyMsgListPrivate *priv = chatty_msg_list_get_instance_private (self);
 
   row = gtk_list_box_row_new ();
-  
+
   g_object_set (row,
                 "selectable", FALSE,
                 "activatable", FALSE,
