@@ -9,6 +9,18 @@
 #define __ACCOUNT_H_INCLUDE__
 
 
+
+typedef struct
+{
+  GtkButton         *button_delete;
+  GtkSwitch         *switch_on_off;
+  GtkListBox        *list;
+  GtkScrolledWindow *scroll;
+} chatty_account_data_t;
+
+
+chatty_account_data_t *chatty_get_account_data(void);
+
 PurpleAccountUiOps *chatty_accounts_get_ui_ops(void);
 
 void chatty_account_init (void);

@@ -6,13 +6,23 @@
 
 
 #include <glib.h>
+#include <glib/gi18n.h>
 #include <glib-object.h>
 #include <gtk/gtk.h>
 #include <stdlib.h>
 #include <string.h>
 #include "purple.h"
 #include "chatty-window.h"
+#include "chatty-account.h"
 #include "chatty-purple-init.h"
+
+
+static chatty_purple_data_t chatty_account_data;
+
+chatty_account_data_t *chatty_get_account_data (void)
+{
+  return &chatty_account_data;
+}
 
 
 typedef struct
@@ -137,6 +147,9 @@ chatty_account_notify_added (PurpleAccount *account,
                                          buffer,
                                          NULL);
 
+  gtk_window_set_position (GTK_WINDOW(dialog),
+                           GTK_WIN_POS_CENTER_ON_PARENT);
+
   gtk_widget_show_all (GTK_WIDGET(dialog));
 
   g_free (buffer);
@@ -204,6 +217,9 @@ chatty_account_request_add (PurpleAccount *account,
                                          GTK_BUTTONS_YES_NO,
                                          NULL);
 
+  gtk_window_set_position (GTK_WINDOW(dialog),
+                           GTK_WIN_POS_CENTER_ON_PARENT);
+
   content_area = gtk_dialog_get_content_area (GTK_DIALOG (dialog));
   label = gtk_label_new (buffer);
 
@@ -234,6 +250,19 @@ chatty_account_connect (const char *account_name,
   purple_accounts_add (chatty->account);
   purple_account_set_enabled (chatty->account, UI_ID, TRUE);
 }
+
+
+struct auth_request
+{
+	PurpleAccountRequestAuthorizationCb auth_cb;
+	PurpleAccountRequestAuthorizationCb deny_cb;
+	void *data;
+	char *username;
+	char *alias;
+	PurpleAccount *account;
+	gboolean add_buddy_after_auth;
+};
+
 
 
 // TODO even though the struct is properly registered
@@ -306,4 +335,8 @@ chatty_account_uninit (void)
 {
   purple_signals_disconnect_by_handle (chatty_account_get_handle());
   purple_signals_unregister_by_instance (chatty_account_get_handle());
+
+  // TODO disconnect accountlist signals/prefs
+  //purple_signals_disconnect_by_handle(account_list);
+  //purple_prefs_disconnect_by_handle(account_list);
 }

@@ -409,15 +409,10 @@ chatty_window_activate (GtkApplication  *app,
   chatty->blist_box = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
   chatty->panes_stack = gtk_stack_new ();
 
-  vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
-
-  gtk_box_pack_start (GTK_CONTAINER (vbox),
-                      chatty->conv_notebook, FALSE, FALSE, 0);
-
   gtk_stack_add_named (chatty->panes_stack, chatty_window_login_grid (), "view-login");
   gtk_stack_add_named (chatty->panes_stack, chatty_window_buddy_grid (), "view-new-chat");
   gtk_stack_add_named (chatty->panes_stack, chatty->blist_box, "view-chat-list");
-  gtk_stack_add_named (chatty->panes_stack, vbox, "view-message-list");
+  gtk_stack_add_named (chatty->panes_stack, chatty->conv_notebook, "view-message-list");
 
   gtk_container_add (GTK_CONTAINER (window), chatty->panes_stack);
   gtk_widget_show_all (window);
