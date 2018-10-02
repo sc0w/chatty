@@ -180,6 +180,12 @@ chatty_msg_list_add_header (ChattyMsgList *self)
   ChattyMsgListPrivate *priv = chatty_msg_list_get_instance_private (self);
 
   row = gtk_list_box_row_new ();
+  
+  g_object_set (row,
+                "selectable", FALSE,
+                "activatable", FALSE,
+                NULL);
+
   gtk_widget_set_size_request (GTK_WIDGET (row),
                                1,
                                320); // TODO: set priv->height instead);
@@ -518,6 +524,7 @@ chatty_msg_list_add_message (ChattyMsgList *self,
 
   g_object_set (row,
                 "selectable", FALSE,
+                "activatable", FALSE,
                 NULL);
 
   gtk_container_add (GTK_CONTAINER (priv->list), GTK_WIDGET (row));
