@@ -8,19 +8,26 @@ XMPP and SMS messaging via libpurple and Modemmanager
 ### Install dependencies
 
 ``` bash
-sudo apt install git cmake libpurple-dev libmxml-dev libxml2-dev libsqlite3-dev libgcrypt20-dev
+sudo apt install git meson libgtk-3-dev libpurple-dev libmxml-dev libxml2-dev libsqlite3-dev libgcrypt20-dev
 ```
 
-### Build and install Lurch
+
+### Build and install the OMEMO plugin
+
+Go to the git page where you'll find all the information on how to build and use the
+[libpurple-omemo-plugin](https://github.com/manchito/libpurple-omemo-plugin)
+
+### Build and install libhandy
 
 ``` bash
-git clone https://github.com/gkdr/lurch/
-cd lurch
-git submodule update --init --recursive
-make install-home
+git clone git@source.puri.sm:Librem5/libhandy.git
+cd libhandy
+meson . build
+ninja -C build
+ninja -C build install
 ```
 
-### Build purism-chatty
+### Build Chatty
 
 ``` bash
 meson build
