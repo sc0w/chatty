@@ -128,6 +128,7 @@ init_css ()
                                              GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
 }
 
+
 static void
 cb_list_size_allocate (GtkWidget     *sender,
                        GtkAllocation *allocation,
@@ -179,7 +180,7 @@ chatty_msg_list_add_header (ChattyMsgList *self)
 
   row = gtk_list_box_row_new ();
 
-  g_object_set (row,
+  g_object_set (G_OBJECT(row),
                 "selectable", FALSE,
                 "activatable", FALSE,
                 NULL);
@@ -486,17 +487,19 @@ chatty_msg_list_hide_typing_indicator (ChattyMsgList *self)
 void
 chatty_msg_list_clear (ChattyMsgList *self)
 {
-  GList             *children;
-  GList             *iter;
+  GList *children;
+  GList *iter;
 
   ChattyMsgListPrivate *priv = chatty_msg_list_get_instance_private (self);
 
   children = gtk_container_get_children (GTK_CONTAINER(priv->list));
 
-  for (iter = children; iter != NULL; iter = g_list_next (iter))
+  for (iter = children; iter != NULL; iter = g_list_next (iter)) {
     gtk_widget_destroy (GTK_WIDGET(iter->data));
+  }
 
   g_list_free (children);
+  g_list_free (iter);
 }
 
 
@@ -520,7 +523,7 @@ chatty_msg_list_add_message (ChattyMsgList *self,
 
   row = gtk_list_box_row_new ();
 
-  g_object_set (row,
+  g_object_set (G_OBJECT(row),
                 "selectable", FALSE,
                 "activatable", FALSE,
                 NULL);

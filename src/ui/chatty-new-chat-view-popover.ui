@@ -12,7 +12,7 @@
           <object class="GtkModelButton" id="search-contacts">
             <property name="can_focus">True</property>
             <property name="text" translatable="yes">Search contacts</property>
-            <property name="action-name">app.show-in-contacts</property>
+            <property name="action-name">add_Chat.show-in-contacts</property>
             <property name="visible">True</property>
           </object>
         </child>
@@ -30,7 +30,7 @@
           <object class="GtkModelButton" id="import-vcard-button">
             <property name="can_focus">True</property>
             <property name="text" translatable="yes">Import vCard</property>
-            <property name="action-name">app.buddy-presence</property>
+            <property name="action-name">add_chat.buddy-presence</property>
             <property name="visible">True</property>
           </object>
         </child>
@@ -39,7 +39,7 @@
           <object class="GtkModelButton" id="scan-qr-button">
             <property name="can_focus">True</property>
             <property name="text" translatable="yes">Scan QR code</property>
-            <property name="action-name">app.encryption</property>
+            <property name="action-name">add_chat.encryption</property>
             <property name="visible">True</property>
           </object>
         </child>

@@ -188,7 +188,7 @@ init_libpurple (void)
   purple_plugins_add_search_path (search_path);
   g_free (search_path);
 
-  if (!purple_core_init (UI_ID)) {
+  if (!purple_core_init (CHATTY_UI)) {
     printf ("libpurple initialization failed\n");
     abort ();
   }
@@ -217,8 +217,6 @@ signed_on (PurpleConnection *gc)
   text = g_strdup_printf ("Connected: %s %s",
                           purple_account_get_username (account),
                           purple_account_get_protocol_id (account));
-
-  gtk_label_set_text (chatty->label_status, text);
 
   printf ("%s\n", text);
 

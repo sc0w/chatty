@@ -9,7 +9,6 @@
 #define __POPOVER_H_INCLUDE__
 
 
-
 void chatty_popover_actions_init (GtkWindow *window);
 
 #endif

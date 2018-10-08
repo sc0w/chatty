@@ -66,17 +66,17 @@ view_blist_cmd_preferences (GSimpleAction *action,
 
 static const GActionEntry view_blist_entries [] =
 {
-  { "find",         view_blist_cmd_find },
+  //{ "find",         view_blist_cmd_find },
   { "accounts",     view_blist_cmd_accounts },
-  { "preferences",  view_blist_cmd_preferences },
+  //{ "preferences",  view_blist_cmd_preferences },
 };
 
 
 static const GActionEntry view_msg_list_entries [] =
 {
-  { "call",             view_msg_list_cmd_call },
-  { "show-in-contacts", view_blist_cmd_show_in_contacts },
-  { "delete-chat",      view_blist_cmd_delete_conversation }
+  //{ "call",             view_msg_list_cmd_call },
+  //{ "show-in-contacts", view_blist_cmd_show_in_contacts },
+  //{ "delete-chat",      view_blist_cmd_delete_conversation }
 };
 
 
@@ -100,10 +100,10 @@ chatty_popover_actions_init (GtkWindow *window)
   simple_action_group = g_simple_action_group_new ();
   g_action_map_add_action_entries (G_ACTION_MAP (simple_action_group),
                                    view_msg_list_entries,
-                                   G_N_ELEMENTS (view_blist_entries),
+                                   G_N_ELEMENTS (view_msg_list_entries),
                                    window);
 
   gtk_widget_insert_action_group (GTK_WIDGET (window),
-                                  "msg_list",
+                                  "msg_view",
                                   G_ACTION_GROUP (simple_action_group));
 }

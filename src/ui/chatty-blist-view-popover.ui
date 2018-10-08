@@ -18,7 +18,7 @@
 
             <child>
               <object class="GtkModelButton">
-                <property name="action-name">win.find</property>
+                <property name="action-name">blist.find</property>
                 <property name="iconic">True</property>
                 <property name="centered">True</property>
                 <property name="icon">find</property>
@@ -34,7 +34,7 @@
         </child>
 
         <child>
-          <object class="GtkSeparator" id="new-window-separator">
+          <object class="GtkSeparator">
             <property name="orientation">horizontal</property>
             <property name="margin-top">6</property>
             <property name="margin-bottom">6</property>
@@ -44,10 +44,10 @@
 
 
         <child>
-          <object class="GtkModelButton" id="Accounts">
+          <object class="GtkModelButton" id="accounts">
             <property name="can_focus">True</property>
-            <property name="text" translatable="yes">Setup accounts</property>
-            <property name="action-name">win.encoding</property>
+            <property name="text" translatable="yes">Manage accounts</property>
+            <property name="action-name">blist.accounts</property>
             <property name="visible">True</property>
           </object>
         </child>
@@ -56,7 +56,7 @@
           <object class="GtkModelButton" id="preferences">
             <property name="can_focus">True</property>
             <property name="text" translatable="yes">Preferences</property>
-            <property name="action-name">app.preferences</property>
+            <property name="action-name">blist.preferences</property>
             <property name="visible">True</property>
           </object>
         </child>

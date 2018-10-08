@@ -26,5 +26,6 @@ chatty_icon_get_buddy_icon (PurpleBlistNode *node,
                             gboolean        greyed);
 
 void chatty_icon_do_alphashift (GdkPixbuf *pixbuf, int shift);
+GtkWidget *chatty_icon_get_avatar_button (int size);
 
 #endif

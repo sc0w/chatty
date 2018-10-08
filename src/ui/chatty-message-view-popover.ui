@@ -11,7 +11,7 @@
         <child>
           <object class="GtkModelButton" id="buddy-status-button">
             <property name="text" translatable="yes">Buddy is online</property>
-            <property name="action-name">app.buddy-presence</property>
+            <property name="action-name">msg_view.buddy-presence</property>
             <property name="visible">True</property>
           </object>
         </child>
@@ -19,7 +19,7 @@
         <child>
           <object class="GtkModelButton" id="encryption-status-button">
             <property name="text" translatable="yes">Encryption: OMEMO</property>
-            <property name="action-name">app.encryption</property>
+            <property name="action-name">msg_view.encryption</property>
             <property name="visible">True</property>
           </object>
         </child>
@@ -36,14 +36,14 @@
         <child>
           <object class="GtkModelButton" id="call-button">
             <property name="text" translatable="yes">Call</property>
-            <property name="action-name">app.call</property>
+            <property name="action-name">msg_view.call</property>
             <property name="visible">True</property>
           </object>
         </child>
         <child>
           <object class="GtkModelButton" id="show-in-contacts">
             <property name="text" translatable="yes">Show in contacts</property>
-            <property name="action-name">app.show-in-contacts</property>
+            <property name="action-name">msg_view.show-in-contacts</property>
             <property name="visible">True</property>
           </object>
         </child>
@@ -60,7 +60,7 @@
 
           <object class="GtkModelButton" id="delete-conversation-button">
             <property name="text" translatable="yes">Delete conversation</property>
-            <property name="action-name">delete-conntacts</property>
+            <property name="action-name">msg_view.delete-conversation</property>
             <property name="visible">True</property>
           </object>
         </child>

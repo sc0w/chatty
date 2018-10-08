@@ -39,59 +39,6 @@ chatty_icon_pixbuf_from_buddy_icon (PurpleBuddyIcon *buddy_icon)
 }
 
 
-static void
-chatty_icon_put_pixel (GdkPixbuf *pixbuf,
-                       int       x,
-                       int       y,
-                       guchar    alpha)
-{
-  int width, height, rowstride, n_channels;
-  guchar *pixels, *p;
-
-  n_channels = gdk_pixbuf_get_n_channels (pixbuf);
-
-  width = gdk_pixbuf_get_width (pixbuf);
-  height = gdk_pixbuf_get_height (pixbuf);
-
-  g_assert (x >= 0 && x < width);
-  g_assert (y >= 0 && y < height);
-
-  rowstride = gdk_pixbuf_get_rowstride (pixbuf);
-  pixels = gdk_pixbuf_get_pixels (pixbuf);
-
-  p = pixels + y * rowstride + x * n_channels;
-
-  p[3] = alpha;
-}
-
-
-void
-chatty_icon_make_round (GdkPixbuf *pixbuf)
-{
-  int x, y, xx, yy, width, height, rad;
-
-  // TODO antialiasing needed
-
-  width = gdk_pixbuf_get_width (pixbuf);
-  height = gdk_pixbuf_get_height (pixbuf);
-
-  rad = width / 2;
-
-  for(x = 0; x < width; x++) {
-    for(y = 0; y < height; y++){
-      xx = x - width / 2;
-      yy = y - height / 2;
-
-      if (((xx * xx) + (yy * yy)) < (rad * rad)) {
-        ;
-      }else{
-        chatty_icon_put_pixel (pixbuf, x, y, 0);
-      }
-    }
-  }
-}
-
-
 gboolean
 chatty_icon_pixbuf_is_opaque (GdkPixbuf *pixbuf)
 {
@@ -196,6 +143,29 @@ GdkPixbuf *
 chatty_icon_pixbuf_from_data (const guchar *buf, gsize count)
 {
   return GDK_PIXBUF (chatty_icon_pixbuf_from_data_helper (buf, count, FALSE));
+}
+
+
+GtkWidget *
+chatty_icon_get_avatar_button (int size)
+{
+  GtkImage        *image;
+  GtkWidget       *button_avatar;
+  GtkStyleContext *sc;
+
+  button_avatar = gtk_menu_button_new ();
+
+  gtk_widget_set_hexpand (button_avatar, FALSE);
+  gtk_widget_set_halign (button_avatar, GTK_ALIGN_CENTER);
+  gtk_widget_set_size_request (GTK_WIDGET(button_avatar), size, size);
+
+  image = gtk_image_new_from_icon_name ("avatar-default-symbolic", GTK_ICON_SIZE_DIALOG);
+
+  gtk_button_set_image (GTK_BUTTON (button_avatar), image);
+  sc = gtk_widget_get_style_context (button_avatar);
+  gtk_style_context_add_class (sc, "button_avatar");
+
+  return button_avatar;
 }
 
 

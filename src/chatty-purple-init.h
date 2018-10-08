@@ -10,7 +10,7 @@
 
 #include "purple.h"
 
-#define UI_ID               "CHATTY_UI"
+#define CHATTY_UI           "chatty-ui"
 #define CHATTY_PREFS_ROOT   "/chatty"
 #define PLUGIN_SAVE_PREF    "/pidgin/plugins/loaded"
 
