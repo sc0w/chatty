@@ -3,7 +3,7 @@
  *
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
- 
+
 
 #include "purple.h"
 #include "chatty-window.h"
@@ -20,13 +20,14 @@ cb_account_removed (PurpleAccount *account,
   g_hash_table_remove (auto_reconns, account);
 }
 
+
 static void
 chatty_connection_connect_progress (PurpleConnection *gc,
                                     const char       *text,
                                     size_t            step,
                                     size_t            step_count)
 {
-  // TODO initialize stuff, wait animation...
+  // TODO maybe welcome screen with animation?
 }
 
 
@@ -48,19 +49,74 @@ chatty_connection_disconnected (PurpleConnection *gc)
 }
 
 
+static gboolean
+chatty_connection_sign_on (gpointer data)
+{
+  PurpleAccount *account = data;
+  ChattyAutoRecon *info;
+  PurpleStatus *status;
+
+  g_return_val_if_fail (account != NULL, FALSE);
+  info = g_hash_table_lookup (auto_reconns, account);
+
+  if (info) {
+    info->timeout = 0;
+  }
+
+  status = purple_account_get_active_status (account);
+printf ("prä get all accounts \n");
+  if (purple_status_is_online (status))
+  {
+printf ("get all accounts \n");
+    purple_account_connect(account);
+  }
+
+  return FALSE;
+}
+
+
 static void
 chatty_connection_network_connected (void)
 {
+  GList *list, *l;
 
+  l = list = purple_accounts_get_all_active ();
+
+  while (l) {
+    PurpleAccount *account = (PurpleAccount*)l->data;
+    g_hash_table_remove (auto_reconns, account);
+
+    if (purple_account_is_disconnected (account)) {
+      chatty_connection_sign_on (account);
+    }
+
+    l = l->next;
+  }
+
+  g_list_free(list);
 }
 
 
 static void
 chatty_connection_network_disconnected (void)
 {
-  chatty_data_t *chatty = chatty_get_data();
+  GList *list, *l;
 
-  gtk_label_set_text (chatty->label_status, "Disconnected");
+  l = list = purple_accounts_get_all_active();
+  while (l) {
+    PurpleAccount *a = (PurpleAccount*)l->data;
+
+    if (!purple_account_is_disconnected (a)) {
+      char *password = g_strdup(purple_account_get_password (a));
+      purple_account_disconnect (a);
+      purple_account_set_password (a, password);
+      g_free(password);
+    }
+
+    l = l->next;
+  }
+
+  g_list_free(list);
 }
 
 
@@ -69,20 +125,13 @@ chatty_connection_report_disconnect_reason (PurpleConnection *gc,
                                             PurpleConnectionError reason,
                                             const char *text)
 {
-  gchar *label_text;
-
-  chatty_data_t *chatty = chatty_get_data();
-
   PurpleAccount *account = purple_connection_get_account (gc);
 
-  label_text = g_strdup_printf ("Disconnected: \"%s\" (%s)\n  >Error: %d\n  >Reason: %s\n",
+  printf ("Disconnected: \"%s\" (%s)\n  >Error: %d\n  >Reason: %s\n",
                                 purple_account_get_username(account),
                                 purple_account_get_protocol_id(account),
                                 reason, text);
 
-  gtk_label_set_text (chatty->label_status, label_text);
-
-  g_free (label_text);
 }
 
 
@@ -117,6 +166,7 @@ chatty_connection_get_handle (void)
   return &handle;
 }
 
+
 static void
 chatty_connection_free_auto_recon (gpointer data)
 {
@@ -143,6 +193,7 @@ chatty_connection_init (void)
                          chatty_connection_get_handle(),
                          PURPLE_CALLBACK (cb_account_removed), NULL);
 }
+
 
 void
 chatty_connection_uninit (void)

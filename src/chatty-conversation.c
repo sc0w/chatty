@@ -19,8 +19,8 @@ chatty_conv_write_conversation (PurpleConversation *conv,
                                 const char         *who,
                                 const char         *alias,
                                 const char         *message,
-                                PurpleMessageFlags flags,
-                                time_t             mtime);
+                                PurpleMessageFlags  flags,
+                                time_t              mtime);
 
 
 void chatty_conv_new (PurpleConversation *conv);
@@ -112,12 +112,12 @@ cb_update_buddy_status (PurpleBuddy  *buddy,
 
 static void
 cb_button_send_clicked (GtkButton *sender,
-                        gpointer  data)
+                        gpointer   data)
 {
   PurpleConversation  *conv;
   ChattyConversation  *chatty_conv;
   PurpleAccount       *account;
-  GtkTextIter         start, end;
+  GtkTextIter          start, end;
   gchar               *message = NULL;
 
   chatty_conv  = (ChattyConversation *)data;
@@ -157,12 +157,33 @@ cb_button_send_clicked (GtkButton *sender,
 }
 
 
+gboolean
+cb_textview_keypress (GtkWidget   *widget,
+                      GdkEventKey *pKey,
+                      gpointer     data)
+{
+#if defined (__arm__)
+
+#else
+  if (pKey->type == GDK_KEY_PRESS) {
+    switch (pKey->keyval) {
+      case GDK_KEY_Return:
+      cb_button_send_clicked (NULL, data);
+      break;
+    }
+  }
+#endif
+
+  return FALSE;
+}
+
+
 static void
 cb_received_im_msg (PurpleAccount       *account,
                     const char          *sender,
                     const char          *message,
                     PurpleConversation  *conv,
-                    PurpleMessageFlags  flags)
+                    PurpleMessageFlags   flags)
 {
   guint timer;
 
@@ -204,8 +225,8 @@ chatty_conv_get_conv_at_index (GtkNotebook *notebook,
 static void
 cb_stack_cont_before_switch_conv (GtkNotebook *notebook,
                                   GtkWidget   *page,
-                                  gint        page_num,
-                                  gpointer    user_data)
+                                  gint         page_num,
+                                  gpointer     user_data)
 {
   PurpleConversation *conv;
   ChattyConversation *chatty_conv;
@@ -227,8 +248,8 @@ cb_stack_cont_before_switch_conv (GtkNotebook *notebook,
 static void
 cb_stack_cont_switch_conv (GtkNotebook *notebook,
                            GtkWidget   *page,
-                           gint        page_num,
-                           gpointer    user_data)
+                           gint         page_num,
+                           gpointer     user_data)
 {
   PurpleConversation *conv;
   ChattyConversation *chatty_conv;
@@ -361,8 +382,8 @@ chatty_conv_check_for_command (PurpleConversation *conv)
   ChattyConversation *chatty_conv;
   gchar              *cmd;
   const gchar        *prefix;
-  gboolean           retval = FALSE;
-  GtkTextIter        start, end;
+  gboolean            retval = FALSE;
+  GtkTextIter         start, end;
 
   chatty_conv = CHATTY_CONVERSATION(conv);
 
@@ -543,9 +564,7 @@ chatty_conv_find_unseen (ChattyUnseenState  state)
 {
   GList *l;
   GList *r = NULL;
-  guint c = 0;
-
-  printf ("chatty_conv_find_unseen\n");
+  guint  c = 0;
 
   l = purple_get_ims();
 
@@ -579,8 +598,6 @@ static gboolean
 chatty_add_message_history_to_conv (gpointer data)
 {
   ChattyConversation *chatty_conv = data;
-
-  printf ("chatty_add_message_history_to_conv\n");
 
   // TODO
   // this parser for the purple log files is
@@ -787,23 +804,21 @@ chatty_conv_stack_add_conv (ChattyConversation *chatty_conv)
 
   tab_txt = purple_conversation_get_title (conv);
 
-  printf ("chatty_conv_stack_add_conv\n");
-
-  gtk_notebook_append_page (GTK_NOTEBOOK(chatty->conv_notebook),
+  gtk_notebook_append_page (GTK_NOTEBOOK(chatty->pane_view_message_list),
                             chatty_conv->tab_cont, NULL);
 
   name_split = g_strsplit (tab_txt, "@", -1);
   text = g_strdup_printf("%s %s",name_split[0], " >");
 
-  gtk_notebook_set_tab_label_text (GTK_NOTEBOOK(chatty->conv_notebook),
+  gtk_notebook_set_tab_label_text (GTK_NOTEBOOK(chatty->pane_view_message_list),
                                    chatty_conv->tab_cont, text);
 
   gtk_widget_show (chatty_conv->tab_cont);
 
   if (g_list_length(chatty_conv->convs == 1)) {
-    gtk_notebook_set_current_page (GTK_NOTEBOOK(chatty->conv_notebook), 0);
+    gtk_notebook_set_current_page (GTK_NOTEBOOK(chatty->pane_view_message_list), 0);
   } else {
-    gtk_notebook_set_show_tabs (GTK_NOTEBOOK(chatty->conv_notebook), FALSE);
+    gtk_notebook_set_show_tabs (GTK_NOTEBOOK(chatty->pane_view_message_list), FALSE);
   }
 
   g_free (text);
@@ -859,8 +874,6 @@ chatty_conv_find_conv (PurpleConversation * conv)
   PurpleBlistNode *contact_node,
                   *buddy_node;
 
-  printf ("chatty_conv_find_conv\n");
-
   buddy = purple_find_buddy (conv->account, conv->name);
 
   if (!buddy)
@@ -903,8 +916,6 @@ chatty_conv_attach_to_conversation (PurpleConversation *conv)
   GList              *list;
   GList              *convs;
   ChattyConversation *chatty_conv;
-
-  printf ("chatty_conv_attach_to_conversation\n");
 
   chatty_conv_attach (conv);
   chatty_conv = CHATTY_CONVERSATION(conv);
@@ -961,12 +972,10 @@ static void
 chatty_conv_write_im (PurpleConversation *conv,
                       const char         *who,
                       const char         *message,
-                      PurpleMessageFlags flags,
-                      time_t             mtime)
+                      PurpleMessageFlags  flags,
+                      time_t              mtime)
 {
   ChattyConversation *chatty_conv;
-
-  printf ("chatty_chatty_conv_write_im\n");
 
   chatty_conv = CHATTY_CONVERSATION (conv);
 
@@ -995,8 +1004,8 @@ static void
 chatty_conv_write_common (PurpleConversation *conv,
                           const char         *who,
                           const char         *message,
-                          PurpleMessageFlags flags,
-                          time_t             mtime)
+                          PurpleMessageFlags  flags,
+                          time_t              mtime)
 {
   ChattyConversation     *chatty_conv;
   PurpleConnection       *gc;
@@ -1004,8 +1013,6 @@ chatty_conv_write_common (PurpleConversation *conv,
   gchar                  *strip, *newline;
 
   chatty_conv = CHATTY_CONVERSATION (conv);
-
-  printf ("chatty_conv_write_common\n");
 
   if (chatty_conv->attach.timer) {
     /* We are currently in the process of filling up the buffer with the message
@@ -1079,8 +1086,8 @@ chatty_conv_write_conversation (PurpleConversation *conv,
                                 const char         *who,
                                 const char         *alias,
                                 const char         *message,
-                                PurpleMessageFlags flags,
-                                time_t             mtime)
+                                PurpleMessageFlags  flags,
+                                time_t              mtime)
 {
   gchar *name;
 
@@ -1145,8 +1152,6 @@ chatty_conv_switch_active_conversation (PurpleConversation *conv)
 
   g_return_if_fail (conv != NULL);
 
-  printf ("chatty_conv_switch_active_conversation\n");
-
   chatty_conv = CHATTY_CONVERSATION (conv);
   old_conv = chatty_conv->active_conv;
 
@@ -1184,8 +1189,8 @@ chatty_conv_switch_conv (ChattyConversation *chatty_conv)
 {
   chatty_data_t *chatty = chatty_get_data();
 
-  gtk_notebook_set_current_page (GTK_NOTEBOOK(chatty->conv_notebook),
-                                 gtk_notebook_page_num (GTK_NOTEBOOK(chatty->conv_notebook),
+  gtk_notebook_set_current_page (GTK_NOTEBOOK(chatty->pane_view_message_list),
+                                 gtk_notebook_page_num (GTK_NOTEBOOK(chatty->pane_view_message_list),
                                  chatty_conv->tab_cont));
 }
 
@@ -1203,8 +1208,6 @@ chatty_conv_present_conversation (PurpleConversation *conv)
 {
   ChattyConversation *chatty_conv;
   GdkModifierType    state;
-
-  printf ("chatty_conv_present_conversation\n");
 
   chatty_conv = CHATTY_CONVERSATION (conv);
 
@@ -1294,13 +1297,15 @@ chatty_conv_setup_pane (ChattyConversation *chatty_conv)
 
   PurpleConversation *conv = chatty_conv->active_conv;
 
-  printf ("chatty_conv_setup_pane\n");
-
   chatty_conv->msg_buffer = gtk_text_buffer_new (NULL);
   chatty_conv->msg_entry = gtk_text_view_new_with_buffer (chatty_conv->msg_buffer);
   g_object_set_data(G_OBJECT(chatty_conv->msg_buffer), "user_data", chatty_conv);
   sc = gtk_widget_get_style_context (chatty_conv->msg_entry);
   gtk_style_context_add_class (sc, "text_view");
+  g_signal_connect (G_OBJECT(chatty_conv->msg_entry),
+                    "key_press_event",
+                    G_CALLBACK(cb_textview_keypress),
+                    (gpointer) chatty_conv);
 
   gtk_text_view_set_left_margin (chatty_conv->msg_entry, 10);
   gtk_text_view_set_top_margin (chatty_conv->msg_entry, 10);
@@ -1533,13 +1538,13 @@ chatty_conv_container_init (void)
 {
   chatty_data_t *chatty = chatty_get_data();
 
-  g_signal_connect (G_OBJECT(chatty->conv_notebook), "switch_page",
+  g_signal_connect (G_OBJECT(chatty->pane_view_message_list), "switch_page",
                     G_CALLBACK(cb_stack_cont_before_switch_conv), 0);
-  g_signal_connect_after (G_OBJECT(chatty->conv_notebook), "switch_page",
+  g_signal_connect_after (G_OBJECT(chatty->pane_view_message_list), "switch_page",
                           G_CALLBACK(cb_stack_cont_switch_conv), 0);
 
 
-  gtk_notebook_set_show_tabs (GTK_NOTEBOOK(chatty->conv_notebook), FALSE);
+  gtk_notebook_set_show_tabs (GTK_NOTEBOOK(chatty->pane_view_message_list), FALSE);
 }
 
 

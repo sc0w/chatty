@@ -49,6 +49,13 @@ typedef struct _chatty_blist_node {
 } ChattyBlistNode;
 
 
+typedef struct {
+  char  *buddy_name;
+  char  *buddy_nick;
+  char  *invite_msg;
+} ChattyBlistAddBuddyData;
+
+
 enum
 {
   COLUMN_NODE,
@@ -80,6 +87,9 @@ PurpleBlistUiOps *chatty_blist_get_ui_ops (void);
 
 void chatty_blist_init (void);
 void chatty_blist_uninit (void);
-void chatty_blist_add_buddy (void);
+void chatty_blist_add_buddy (PurpleAccount *account);
+void chatty_blist_refresh (PurpleBuddyList *list, gboolean remove);
+void chatty_blist_create_add_buddy_view (PurpleAccount *account,
+                                         gboolean       invite_enabled);
 
 #endif

@@ -11,10 +11,9 @@ XMPP and SMS messaging via libpurple and Modemmanager
 sudo apt install git meson libgtk-3-dev libpurple-dev libmxml-dev libxml2-dev libsqlite3-dev libgcrypt20-dev
 ```
 
-
 ### Build and install the OMEMO plugin
 
-Go to the git page where you'll find all the information on how to build and use the
+Please go to the git page where you'll find all the information on how to build and use the
 [libpurple-omemo-plugin](https://github.com/manchito/libpurple-omemo-plugin)
 
 ### Build and install libhandy
@@ -28,7 +27,6 @@ ninja -C build install
 ```
 
 ### Build Chatty
-
 ``` bash
 meson build
 ninja -C build
