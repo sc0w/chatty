@@ -7,13 +7,15 @@ chatty_sources = [
   'chatty-connection.c',
   'chatty-buddy-list.c',
   'chatty-purple-init.c',
-  'chatty-icons.c'
+  'chatty-icons.c',
+  'chatty-popover-actions.c'
 ]
 
 chatty_deps = [
   dependency('gio-2.0', version: '>= 2.50'),
   dependency('gtk+-3.0', version: '>= 3.22'),
-  dependency('purple')
+  dependency('purple'),
+  dependency('libhandy-0.0')
 ]
 
 gnome = import('gnome')
