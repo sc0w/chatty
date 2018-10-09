@@ -1,0 +1,23 @@
+stages:
+  - build
+
+variables:
+  DEPS: build-essential libgtk-3-dev libpurple-dev libhandy-0.0-dev meson ninja-build
+
+build-debian-gcc:
+  image: debian:buster
+  tags:
+    - librem5
+  before_script:
+    - export DEBIAN_FRONTEND=noninteractive
+    - apt-get -y update
+    - apt-get -y install wget ca-certificates gnupg
+    - echo "deb http://ci.puri.sm/ scratch librem5" > /etc/apt/sources.list.d/ci.list
+    - wget -O- https://ci.puri.sm/ci-repo.key | apt-key add -
+    - apt-get -y update
+    - apt-get -y install $DEPS
+  stage: build
+  script:
+    - export LC_ALL=C.UTF-8
+    - meson . _build --werror
+    - ninja -C _build
