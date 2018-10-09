@@ -33,27 +33,27 @@
         "*.a"
     ],
     "modules" : [
-    {
-        "name" : "libpurple",
-        "config-opts" : [
-            "--disable-gtkui",
-            "--disable-consoleui",
-            "--disable-vv",
-            "--disable-idn",
-            "--disable-avahi",
-            "--disable-meanwhile",
-            "--disable-tcl",
-            "--disable-nm",
-            "--disable-perl"
-        ],
-        "sources" : [
-            {
-                "type" : "archive",
-                "url" : "http://downloads.sourceforge.net/pidgin/pidgin-2.13.0.tar.bz2",
-                "sha256" : "2747150c6f711146bddd333c496870bfd55058bab22ffb7e4eb784018ec46d8f"
-            }
-        ]
-    },
+        {
+            "name" : "libpurple",
+            "config-opts" : [
+                "--disable-gtkui",
+                "--disable-consoleui",
+                "--disable-vv",
+                "--disable-idn",
+                "--disable-avahi",
+                "--disable-meanwhile",
+                "--disable-tcl",
+                "--disable-nm",
+                "--disable-perl"
+            ],
+            "sources" : [
+                {
+                    "type" : "archive",
+                    "url" : "http://downloads.sourceforge.net/pidgin/pidgin-2.13.0.tar.bz2",
+                    "sha256" : "2747150c6f711146bddd333c496870bfd55058bab22ffb7e4eb784018ec46d8f"
+                }
+            ]
+        },
         {
             "name" : "purism-chatty",
             "buildsystem" : "meson",
