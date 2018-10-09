@@ -3,7 +3,7 @@
     "runtime" : "org.gnome.Platform",
     "runtime-version" : "master",
     "sdk" : "org.gnome.Sdk",
-    "command" : "purism-chatty",
+    "command" : "chatty",
     "finish-args" : [
         "--share=network",
         "--share=ipc",
