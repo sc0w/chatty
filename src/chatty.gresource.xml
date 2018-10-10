@@ -6,6 +6,7 @@
     <file>ui/chatty-blist-view-popover.ui</file>
     <file>ui/chatty-new-chat-view-popover.ui</file>
     <file>ui/chatty-avatar-select-popover.ui</file>
+    <file>ui/chatty-window.ui</file>
     <file>css/style.css</file>
   </gresource>
 </gresources>
