@@ -18,6 +18,7 @@
                   <object class="GtkButton" id="header_button_left">
                     <property name="can_focus">False</property>
                     <property name="receives_default">False</property>
+                    <property name="action_name">win.back</property>
                   </object>
                 </child>
                 <child>

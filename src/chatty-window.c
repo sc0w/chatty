@@ -19,6 +19,18 @@
 
 static chatty_data_t chatty_data;
 
+
+static void chatty_back_action (GSimpleAction *action,
+                                GVariant      *parameter,
+                                gpointer       user_data);
+
+
+static const GActionEntry window_action_entries [] = {
+  { "add", chatty_back_action },
+  { "back", chatty_back_action },
+};
+
+
 chatty_data_t *chatty_get_data (void)
 {
   return &chatty_data;
@@ -42,8 +54,9 @@ chatty_destroy_widget (GtkWidget *widget) {
 
 
 static void
-cb_header_bar_button_left_clicked (GtkButton *sender,
-                                   gpointer  data)
+chatty_back_action (GSimpleAction *action,
+                    GVariant      *parameter,
+                    gpointer       user_data)
 {
   guint state_last;
 
@@ -203,6 +216,7 @@ chatty_window_activate (GtkApplication  *app,
 {
   GtkBuilder         *builder;
   GtkWidget          *window;
+  GSimpleActionGroup *simple_action_group;
   GtkHeaderBar       *header_bar;
   GtkBox             *vbox;
   HdyLeaflet         *hdy_leaflet;
@@ -213,6 +227,16 @@ chatty_window_activate (GtkApplication  *app,
 
   window = GTK_WIDGET (gtk_builder_get_object (builder, "window"));
   g_object_set (window, "application", app, NULL);
+
+  simple_action_group = g_simple_action_group_new ();
+  g_action_map_add_action_entries (G_ACTION_MAP (simple_action_group),
+                                   window_action_entries,
+                                   G_N_ELEMENTS (window_action_entries),
+                                   window);
+  gtk_widget_insert_action_group (GTK_WIDGET (window),
+                                  "win",
+                                  G_ACTION_GROUP (simple_action_group));
+
   gtk_window_set_title (GTK_WINDOW (window), "Window");
 
 #if defined (__arm__)
@@ -251,10 +275,6 @@ chatty_window_activate (GtkApplication  *app,
                 NULL);
   gtk_widget_set_valign (chatty->header_button_left, GTK_ALIGN_CENTER);
   gtk_widget_set_valign (chatty->header_button_right, GTK_ALIGN_CENTER);
-
-  g_signal_connect_object (chatty->header_button_left, "clicked",
-                           G_CALLBACK(cb_header_bar_button_left_clicked),
-                           NULL, 0);
 
   gtk_widget_show_all (window);
   chatty_window_init_data ();
