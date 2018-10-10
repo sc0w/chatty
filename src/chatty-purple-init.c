@@ -47,8 +47,8 @@ purple_glib_io_destroy (gpointer data)
 
 static gboolean
 purple_glib_io_invoke (GIOChannel   *source,
-                       GIOCondition condition,
-                       gpointer     data)
+                       GIOCondition  condition,
+                       gpointer      data)
 {
   PurpleGLibIOClosure *closure = data;
   PurpleInputCondition purple_cond = 0;
@@ -77,7 +77,7 @@ glib_input_add (gint                 fd,
 
   PurpleGLibIOClosure *closure;
   GIOChannel          *channel;
-  GIOCondition        cond = 0;
+  GIOCondition         cond = 0;
 
   closure = g_new0 (PurpleGLibIOClosure, 1);
 
@@ -94,8 +94,11 @@ glib_input_add (gint                 fd,
 
   channel = g_io_channel_unix_new (fd);
 
-  closure->result = g_io_add_watch_full (channel, G_PRIORITY_DEFAULT, cond,
-                                         purple_glib_io_invoke, closure,
+  closure->result = g_io_add_watch_full (channel,
+                                         G_PRIORITY_DEFAULT,
+                                         cond,
+                                         purple_glib_io_invoke,
+                                         closure,
                                          purple_glib_io_destroy);
 
   g_io_channel_unref (channel);
@@ -142,7 +145,7 @@ chatty_quit (void)
 
 
 static void
-chatty_ui_init (void)
+chatty_purple_ui_init (void)
 {
   chatty_account_init ();
   purple_accounts_set_ui_ops (chatty_accounts_get_ui_ops ());
@@ -158,12 +161,28 @@ chatty_ui_init (void)
 }
 
 
+static void
+chatty_purple_prefs_init (void)
+{
+  purple_prefs_add_none (CHATTY_PREFS_ROOT "");
+  purple_prefs_add_none ("/plugins/chatty");
+
+  purple_prefs_add_none (CHATTY_PREFS_ROOT "/plugins");
+  purple_prefs_add_path_list (CHATTY_PREFS_ROOT "/plugins/loaded", NULL);
+
+  purple_prefs_add_none (CHATTY_PREFS_ROOT "/filelocations");
+  purple_prefs_add_path (CHATTY_PREFS_ROOT "/filelocations/last_save_folder", "");
+  purple_prefs_add_path (CHATTY_PREFS_ROOT "/filelocations/last_open_folder", "");
+  purple_prefs_add_path (CHATTY_PREFS_ROOT "/filelocations/last_icon_folder", "");
+}
+
+
 static
 PurpleCoreUiOps core_uiops =
 {
+  chatty_purple_prefs_init,
   NULL,
-  NULL,
-  chatty_ui_init,
+  chatty_purple_ui_init,
   chatty_quit,
   NULL,
   NULL,
@@ -175,7 +194,9 @@ PurpleCoreUiOps core_uiops =
 static void
 init_libpurple (void)
 {
-  gchar           *search_path;
+  gchar *search_path;
+  GList *iter;
+  GList *names = NULL;
 
   purple_debug_set_enabled (FALSE);
   purple_debug_set_verbose (FALSE);
@@ -184,7 +205,6 @@ init_libpurple (void)
   purple_eventloop_set_ui_ops (&glib_eventloops);
 
   search_path = g_build_filename (purple_user_dir (), "plugins", NULL);
-
   purple_plugins_add_search_path (search_path);
   g_free (search_path);
 
@@ -196,7 +216,36 @@ init_libpurple (void)
   purple_set_blist (purple_blist_new ());
   purple_prefs_load ();
   purple_blist_load ();
-  purple_plugins_load_saved (PLUGIN_SAVE_PREF);
+  purple_plugins_load_saved (CHATTY_PREFS_ROOT "/plugins/loaded");
+
+  purple_plugins_probe (G_MODULE_SUFFIX);
+  iter = purple_plugins_get_all ();
+
+  for (int i = 0; iter; iter = iter->next) {
+    PurplePlugin *plugin = iter->data;
+    PurplePluginInfo *info = plugin->info;
+
+    // TODO maybe we can simply load all plugins that will finally be
+    //      packed into ./purple/plugins on the Librem5 ?
+    //      Alternatively we can compile a list with plugin ids
+    //      that we have approved for chatty
+    if (g_strcmp0 (info->id, "core-mancho-omemo") == 0) {
+      if (!purple_plugin_is_loaded (plugin)) {
+        purple_plugin_load (plugin);
+        printf("Loaded plugin %s\n", info->name);
+      }
+
+      purple_plugins_save_loaded (CHATTY_PREFS_ROOT "/plugins/loaded");
+    }
+
+    // if (info && info->name) {
+    //   printf("\t%d: %s\n", i++, info->name);
+    //   names = g_list_append (names, info->id);
+    // }
+  }
+
+  g_list_free (names);
+
   purple_plugins_init ();
   purple_pounces_load ();
   purple_blist_show ();
@@ -208,7 +257,7 @@ signed_on (PurpleConnection *gc)
 {
   gchar *text;
 
-  chatty_data_t *chatty = chatty_get_data();
+  chatty_data_t *chatty = chatty_get_data ();
   chatty_purple_data_t *chatty_purple = chatty_get_purple_data();
 
   PurpleAccount *account = purple_connection_get_account (gc);
@@ -257,10 +306,6 @@ connect_to_signals (void)
 
 void
 libpurple_start (void) {
-  GList *iter;
-  GList *names = NULL;
-  int   i;
-
   signal (SIGCHLD, SIG_IGN);
 
   init_libpurple ();
@@ -269,16 +314,4 @@ libpurple_start (void) {
           purple_core_get_version ());
 
   connect_to_signals ();
-
-  iter = purple_plugins_get_all ();
-
-  for (i = 0; iter; iter = iter->next) {
-    PurplePlugin *plugin = iter->data;
-    PurplePluginInfo *info = plugin->info;
-
-    if (info && info->name) {
-      printf("\t%d: %s\n", i++, info->name);
-      names = g_list_append (names, info->id);
-    }
-  }
 }
