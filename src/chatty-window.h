@@ -21,10 +21,8 @@ typedef struct {
   GtkBin            *pane_view_select_account;
   GtkBin            *pane_view_new_conversation;
   GtkBin            *pane_view_new_account;
+  GtkHeaderBar      *header_view_message_list;
   GtkWidget         *header_icon;
-  GtkWidget         *header_title;
-  GtkWidget         *header_button_left;
-  GtkWidget         *header_button_right;
   GtkWidget         *button_add_buddy;
   GtkEntry          *entry_buddy_name;
   GtkEntry          *entry_buddy_nick;

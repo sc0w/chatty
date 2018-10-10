@@ -283,14 +283,63 @@
           <object class="GtkStack" id="header_stack">
             <property name="can_focus">False</property>
             <property name="transition_type">slide-left-right</property>
+            <property name="visible-child-name" bind-source="panes_stack" bind-property="visible-child-name" bind-flags="bidirectional|sync-create"/>
             <child>
-              <object class="GtkHeaderBar" id="header_bar">
+              <object class="GtkHeaderBar" id="header_view_buddy_list">
+                <property name="can_focus">False</property>
+                <property name="title" translatable="yes">Conversations</property>
+                <child>
+                  <object class="GtkButton">
+                    <property name="can_focus">False</property>
+                    <property name="receives_default">False</property>
+                    <property name="action_name">win.add</property>
+                    <child>
+                      <object class="GtkImage">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="icon_name">list-add-symbolic</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkMenuButton">
+                    <property name="can_focus">False</property>
+                    <property name="receives_default">False</property>
+                    <property name="popover">header_view_buddy_list_popover</property>
+                    <child>
+                      <object class="GtkImage">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="icon_name">open-menu-symbolic</property>
+                      </object>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="pack_type">end</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+              </object>
+              <packing>
+                <property name="name">view-chat-list</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkHeaderBar" id="header_view_message_list">
                 <property name="can_focus">False</property>
                 <child>
-                  <object class="GtkButton" id="header_button_left">
+                  <object class="GtkButton">
                     <property name="can_focus">False</property>
                     <property name="receives_default">False</property>
                     <property name="action_name">win.back</property>
+                    <child>
+                      <object class="GtkImage">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="icon_name">go-previous-symbolic</property>
+                      </object>
+                    </child>
                   </object>
                 </child>
                 <child>
@@ -301,17 +350,17 @@
                     <property name="position">1</property>
                   </packing>
                 </child>
-                <child type="title">
-                  <object class="GtkLabel" id="header_title">
-                    <property name="can_focus">False</property>
-                  </object>
-                </child>
                 <child>
-                  <object class="GtkMenuButton" id="header_button_right">
+                  <object class="GtkMenuButton">
                     <property name="can_focus">False</property>
                     <property name="receives_default">False</property>
+                    <property name="popover">header_view_message_list_popover</property>
                     <child>
-                      <placeholder/>
+                      <object class="GtkImage">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="icon_name">view-more-symbolic</property>
+                      </object>
                     </child>
                   </object>
                   <packing>
@@ -320,6 +369,124 @@
                   </packing>
                 </child>
               </object>
+              <packing>
+                <property name="name">view-message-list</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkHeaderBar" id="header_view_manage_account">
+                <property name="can_focus">False</property>
+                <property name="title" translatable="yes">Manage accounts</property>
+                <child>
+                  <object class="GtkButton">
+                    <property name="can_focus">False</property>
+                    <property name="receives_default">False</property>
+                    <property name="action_name">win.back</property>
+                    <child>
+                      <object class="GtkImage">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="icon_name">go-previous-symbolic</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="name">view-manage-account</property>
+                <property name="position">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkHeaderBar" id="header_view_select_account">
+                <property name="can_focus">False</property>
+                <property name="title" translatable="yes">Select account for conversation</property>
+                <child>
+                  <object class="GtkButton">
+                    <property name="can_focus">False</property>
+                    <property name="receives_default">False</property>
+                    <property name="action_name">win.back</property>
+                    <child>
+                      <object class="GtkImage">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="icon_name">go-previous-symbolic</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="name">view-select-account</property>
+                <property name="position">3</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkHeaderBar" id="header_view_new_conversation">
+                <property name="can_focus">False</property>
+                <property name="title" translatable="yes">Add new conversation</property>
+                <child>
+                  <object class="GtkButton">
+                    <property name="can_focus">False</property>
+                    <property name="receives_default">False</property>
+                    <property name="action_name">win.back</property>
+                    <child>
+                      <object class="GtkImage">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="icon_name">go-previous-symbolic</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="name">view-new-chat</property>
+                <property name="position">4</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkHeaderBar" id="header_view_new_account">
+                <property name="can_focus">False</property>
+                <property name="title" translatable="yes">New account</property>
+                <child>
+                  <object class="GtkButton">
+                    <property name="can_focus">False</property>
+                    <property name="receives_default">False</property>
+                    <property name="action_name">win.back</property>
+                    <child>
+                      <object class="GtkImage">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="icon_name">go-previous-symbolic</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkMenuButton">
+                    <property name="can_focus">False</property>
+                    <property name="receives_default">False</property>
+                    <property name="popover">header_view_new_account_popover</property>
+                    <child>
+                      <object class="GtkImage">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="icon_name">open-menu-symbolic</property>
+                      </object>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="pack_type">end</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+              </object>
+              <packing>
+                <property name="name">view-new-account</property>
+                <property name="position">5</property>
+              </packing>
             </child>
           </object>
         </child>
