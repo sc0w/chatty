@@ -1,9 +1,9 @@
 {
-    "app-id" : "org.gnome.Purism-Chatty",
+    "app-id" : "sm.puri.Chatty",
     "runtime" : "org.gnome.Platform",
     "runtime-version" : "master",
     "sdk" : "org.gnome.Sdk",
-    "command" : "purism-chatty",
+    "command" : "chatty",
     "finish-args" : [
         "--share=network",
         "--share=ipc",
@@ -33,28 +33,41 @@
         "*.a"
     ],
     "modules" : [
-    {
-        "name" : "libpurple",
-        "config-opts" : [
-            "--disable-gtkui",
-            "--disable-consoleui",
-            "--disable-vv",
-            "--disable-idn",
-            "--disable-avahi",
-            "--disable-meanwhile",
-            "--disable-tcl",
-            "--disable-nm",
-            "--disable-perl"
-        ],
-        "sources" : [
-            {
-                "type" : "archive",
-                "url" : "http://downloads.sourceforge.net/pidgin/pidgin-2.13.0.tar.bz2",
-                "sha256" : "2747150c6f711146bddd333c496870bfd55058bab22ffb7e4eb784018ec46d8f"
-            }
-        ]
-    },
-    "modules" : [
+        {
+            "name" : "libpurple",
+            "config-opts" : [
+                "--disable-gtkui",
+                "--disable-consoleui",
+                "--disable-vv",
+                "--disable-idn",
+                "--disable-avahi",
+                "--disable-meanwhile",
+                "--disable-tcl",
+                "--disable-nm",
+                "--disable-perl"
+            ],
+            "sources" : [
+                {
+                    "type" : "archive",
+                    "url" : "http://downloads.sourceforge.net/pidgin/pidgin-2.13.0.tar.bz2",
+                    "sha256" : "2747150c6f711146bddd333c496870bfd55058bab22ffb7e4eb784018ec46d8f"
+                }
+            ]
+        },
+        {
+            "name" : "libhandy",
+            "buildsystem" : "meson",
+            "builddir" : true,
+            "config-opts" : [
+                "-Dglade_catalog=false"
+            ],
+            "sources" : [
+                {
+                  "type" : "git",
+                  "url" : "https://source.puri.sm/Librem5/libhandy.git"
+                }
+            ]
+        },
         {
             "name" : "purism-chatty",
             "buildsystem" : "meson",
