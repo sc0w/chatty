@@ -578,23 +578,23 @@ chatty_add_message_history_to_conv (gpointer data)
     g_list_free (history);
 
     for (; msgs; msgs = msgs->next) {
-      ChattyLog *data = msgs->data;
+      log_data = msgs->data;
 
       if (msgs == (g_list_last (msgs))) {
-        time_stamp = data->time_stamp + 2;
+        time_stamp = log_data->time_stamp + 2;
       } else {
         time_stamp = NULL;
       }
 
-      if ((g_strcmp0 (data->name, name)) == 0) {
+      if ((g_strcmp0 (log_data->name, name)) == 0) {
         chatty_msg_list_add_message (chatty_conv->msg_list,
                                      MSG_IS_INCOMING,
-                                     data->msg,
+                                     log_data->msg,
                                      time_stamp);
       } else {
         chatty_msg_list_add_message (chatty_conv->msg_list,
                                      MSG_IS_OUTGOING,
-                                     data->msg,
+                                     log_data->msg,
                                      time_stamp);
       }
     }
