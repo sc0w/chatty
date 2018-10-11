@@ -140,7 +140,7 @@ cb_list_size_allocate (GtkWidget     *sender,
 
   ChattyMsgListPrivate *priv = chatty_msg_list_get_instance_private (self);
 
-  adj = gtk_scrolled_window_get_vadjustment (priv->scroll);
+  adj = gtk_scrolled_window_get_vadjustment (GTK_SCROLLED_WINDOW (priv->scroll));
 
   size = gtk_adjustment_get_page_size (adj);
   upper = gtk_adjustment_get_upper (adj);
@@ -159,7 +159,7 @@ cb_list_focus (GtkWidget     *sender,
 
   ChattyMsgListPrivate *priv = chatty_msg_list_get_instance_private (self);
 
-  adj = gtk_scrolled_window_get_vadjustment (priv->scroll);
+  adj = gtk_scrolled_window_get_vadjustment (GTK_SCROLLED_WINDOW (priv->scroll));
 
   size = gtk_adjustment_get_page_size (adj);
   upper = gtk_adjustment_get_upper (adj);
@@ -170,10 +170,10 @@ cb_list_focus (GtkWidget     *sender,
 static void
 chatty_msg_list_add_header (ChattyMsgList *self)
 {
-  GtkLabel        *label;
-  GtkLabel        *label_2;
-  GtkLabel        *label_3;
-  GtkListBoxRow   *row;
+  GtkWidget       *label;
+  GtkWidget       *label_2;
+  GtkWidget       *label_3;
+  GtkWidget       *row;
   GtkStyleContext *sc;
 
   ChattyMsgListPrivate *priv = chatty_msg_list_get_instance_private (self);
@@ -185,14 +185,14 @@ chatty_msg_list_add_header (ChattyMsgList *self)
                 "activatable", FALSE,
                 NULL);
 
-  gtk_widget_set_size_request (GTK_WIDGET (row),
+  gtk_widget_set_size_request (row,
                                1,
                                320); // TODO: set priv->height instead);
 
-  gtk_container_add (GTK_CONTAINER (priv->list), GTK_WIDGET (row));
+  gtk_container_add (GTK_CONTAINER (priv->list), row);
 
   if (priv->disclaimer_enable && priv->message_type < MSG_TYPE_LAST) {
-    priv->disclaimer = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
+    priv->disclaimer = GTK_BOX (gtk_box_new (GTK_ORIENTATION_VERTICAL, 0));
 
     label = gtk_label_new (_(header_strings[priv->message_type].str_0));
     sc = gtk_widget_get_style_context (GTK_WIDGET(label));
@@ -370,16 +370,16 @@ cb_indicator_refresh (gpointer self)
 void
 chatty_msg_list_show_typing_indicator (ChattyMsgList *self)
 {
-  GtkBox          *box;
-  GtkRevealer     *revealer;
+  GtkWidget   *box;
+  GtkRevealer *revealer;
 
   ChattyMsgListPrivate *priv = chatty_msg_list_get_instance_private (self);
 
   priv->animation_enable = FALSE;
 
   priv->indicator_row = gtk_list_box_row_new ();
-  gtk_list_box_row_set_activatable (priv->indicator_row, FALSE);
-  gtk_list_box_row_set_selectable (priv->indicator_row, FALSE);
+  gtk_list_box_row_set_activatable (GTK_LIST_BOX_ROW (priv->indicator_row), FALSE);
+  gtk_list_box_row_set_selectable (GTK_LIST_BOX_ROW (priv->indicator_row), FALSE);
 
   gtk_container_add (GTK_CONTAINER (priv->list),
                                     GTK_WIDGET (priv->indicator_row));
@@ -387,7 +387,7 @@ chatty_msg_list_show_typing_indicator (ChattyMsgList *self)
   box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_container_set_border_width (GTK_CONTAINER (box), 4);
 
-  revealer = gtk_revealer_new ();
+  revealer = GTK_REVEALER (gtk_revealer_new ());
   gtk_revealer_set_transition_type (revealer,
                                     GTK_REVEALER_TRANSITION_TYPE_SLIDE_UP);
   gtk_revealer_set_transition_duration (revealer, 350);
@@ -408,7 +408,7 @@ chatty_msg_list_show_typing_indicator (ChattyMsgList *self)
                     G_CALLBACK (cb_on_draw_event),
                     (gpointer) self);
 
-  gtk_box_pack_start (box, GTK_WIDGET (priv->typing_indicator),
+  gtk_box_pack_start (GTK_BOX (box), GTK_WIDGET (priv->typing_indicator),
                       FALSE, TRUE, 8);
 
   chatty_msg_list_hide_header (self);
@@ -416,7 +416,7 @@ chatty_msg_list_show_typing_indicator (ChattyMsgList *self)
   gtk_revealer_set_reveal_child (revealer, TRUE);
 
   priv->refresh_timeout_handle = g_timeout_add (300,
-                                                G_CALLBACK(cb_indicator_refresh),
+                                                (GSourceFunc)(cb_indicator_refresh),
                                                 (gpointer) self);
 }
 
@@ -476,7 +476,7 @@ chatty_msg_list_add_message (ChattyMsgList *self,
 
   ChattyMsgListPrivate *priv = chatty_msg_list_get_instance_private (self);
 
-  row = gtk_list_box_row_new ();
+  row = GTK_LIST_BOX_ROW (gtk_list_box_row_new ());
 
   g_object_set (G_OBJECT(row),
                 "selectable", FALSE,
@@ -485,19 +485,19 @@ chatty_msg_list_add_message (ChattyMsgList *self,
 
   gtk_container_add (GTK_CONTAINER (priv->list), GTK_WIDGET (row));
 
-  box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
+  box = GTK_BOX (gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0));
   gtk_container_set_border_width (GTK_CONTAINER (box), 4);
 
-  revealer = gtk_revealer_new ();
+  revealer = GTK_REVEALER (gtk_revealer_new ());
   gtk_revealer_set_transition_type (revealer, GTK_REVEALER_TRANSITION_TYPE_SLIDE_UP);
   gtk_revealer_set_transition_duration (revealer, 350);
 
   gtk_container_add (GTK_CONTAINER (revealer), GTK_WIDGET (box));
   gtk_container_add (GTK_CONTAINER (row), GTK_WIDGET (revealer));
 
-  vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
+  vbox = GTK_BOX (gtk_box_new (GTK_ORIENTATION_VERTICAL, 0));
 
-  labelMessage = gtk_label_new (message);
+  labelMessage = GTK_LABEL (gtk_label_new (message));
   gtk_label_set_line_wrap_mode (labelMessage, PANGO_WRAP_WORD);
   gtk_label_set_line_wrap (labelMessage, TRUE);
   gtk_label_set_max_width_chars (labelMessage, 22);
@@ -520,7 +520,7 @@ chatty_msg_list_add_message (ChattyMsgList *self,
   gtk_box_pack_start (vbox, GTK_WIDGET(labelMessage), FALSE, FALSE, 0);
 
   if (footer != NULL) {
-    labelTimestamp = gtk_label_new (NULL);
+    labelTimestamp = GTK_LABEL (gtk_label_new (NULL));
     str = g_strconcat ("<small>", footer, "</small>", NULL);
 
     gtk_label_set_xalign (labelTimestamp, 1);
@@ -551,7 +551,7 @@ chatty_msg_list_constructed (GObject *object)
   sc = gtk_widget_get_style_context (GTK_WIDGET(priv->list));
 
   gtk_style_context_add_class (sc, "message_list");
-  gtk_list_box_set_selection_mode (priv->list, GTK_SELECTION_NONE);
+  gtk_list_box_set_selection_mode (GTK_LIST_BOX (priv->list), GTK_SELECTION_NONE);
   g_signal_connect_object (GTK_WIDGET (priv->list),
                            "size-allocate",
                            G_CALLBACK (cb_list_size_allocate),
