@@ -214,8 +214,6 @@ cb_sign_on_off (PurpleConnection  *gc,
 {
   chatty_data_t *chatty = chatty_get_data ();
   // TODO ...
-  gtk_widget_show (chatty->header_button_left);
-  gtk_widget_show (chatty->header_button_right);
 }
 
 

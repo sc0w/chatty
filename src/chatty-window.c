@@ -19,6 +19,18 @@
 
 static chatty_data_t chatty_data;
 
+
+static void chatty_back_action (GSimpleAction *action,
+                                GVariant      *parameter,
+                                gpointer       user_data);
+
+
+static const GActionEntry window_action_entries [] = {
+  { "add", chatty_back_action },
+  { "back", chatty_back_action },
+};
+
+
 chatty_data_t *chatty_get_data (void)
 {
   return &chatty_data;
@@ -42,8 +54,9 @@ chatty_destroy_widget (GtkWidget *widget) {
 
 
 static void
-cb_header_bar_button_left_clicked (GtkButton *sender,
-                                   gpointer  data)
+chatty_back_action (GSimpleAction *action,
+                    GVariant      *parameter,
+                    gpointer       user_data)
 {
   guint state_last;
 
@@ -72,108 +85,45 @@ cb_header_bar_button_left_clicked (GtkButton *sender,
 void
 chatty_window_change_view (guint view)
 {
-  GtkImage        *image;
-  GtkBuilder      *builder;
-  GtkWidget       *menu_popover;
-  gint            type;
   gchar           *stack_id;
-  gchar           *icon_button_left;
-  gchar           *icon_button_right;
-  gchar           *popover_id;
-  gchar           *popover_path;
-  gboolean        *submenu_enabled;
 
   chatty_data_t *chatty = chatty_get_data ();
 
-  icon_button_left = "go-previous-symbolic";
-  icon_button_right = "view-more-symbolic";
-  type = GTK_STACK_TRANSITION_TYPE_SLIDE_LEFT;
-
   switch (view) {
     case CHATTY_VIEW_MANAGE_ACCOUNT_LIST:
-      if (chatty->view_state_last == CHATTY_VIEW_NEW_ACCOUNT) {
-        type = GTK_STACK_TRANSITION_TYPE_SLIDE_RIGHT;
-      }
       stack_id = "view-manage-account";
-      submenu_enabled = FALSE;
-      chatty_window_set_header_title (_("Manage accounts"));
-      popover_id = "chatty-blist-view-popover";
       chatty->view_state_next = CHATTY_VIEW_CONVERSATIONS_LIST;
       break;
 
     case CHATTY_VIEW_NEW_ACCOUNT:
       stack_id = "view-new-account";
-      icon_button_right = "open-menu-symbolic";
-      submenu_enabled = TRUE;
-      chatty_window_set_header_title (_("New account"));
-      popover_id = "chatty-new-chat-view-popover";
       chatty->view_state_next = CHATTY_VIEW_MANAGE_ACCOUNT_LIST;
       break;
 
     case CHATTY_VIEW_SELECT_ACCOUNT_LIST:
-      if (chatty->view_state_last == CHATTY_VIEW_NEW_CONVERSATION) {
-        type = GTK_STACK_TRANSITION_TYPE_SLIDE_RIGHT;
-      }
       stack_id = "view-select-account";
-      submenu_enabled = FALSE;
-      chatty_window_set_header_title (_("Select account for conversation"));
-      popover_id = "chatty-blist-view-popover";
       chatty->view_state_next = CHATTY_VIEW_CONVERSATIONS_LIST;
       break;
 
     case CHATTY_VIEW_NEW_CONVERSATION:
       stack_id = "view-new-chat";
-      popover_id = "chatty-new-chat-view-popover";
-      chatty_window_set_header_title (_("Add new conversation"));
       chatty->view_state_next = CHATTY_VIEW_SELECT_ACCOUNT_LIST;
       break;
 
     case CHATTY_VIEW_MESSAGE_LIST:
       stack_id = "view-message-list";
-      popover_id = "chatty-message-view-popover";
       chatty->view_state_next = CHATTY_VIEW_CONVERSATIONS_LIST;
       break;
 
     case CHATTY_VIEW_CONVERSATIONS_LIST:
-      type = GTK_STACK_TRANSITION_TYPE_SLIDE_RIGHT;
       stack_id = "view-chat-list";
-      icon_button_left = "list-add-symbolic";
-      icon_button_right = "open-menu-symbolic";
-      submenu_enabled = TRUE;
-      popover_id = "chatty-blist-view-popover";
-      chatty_window_set_header_title (_("Conversations"));
       chatty->view_state_next = CHATTY_VIEW_SELECT_ACCOUNT_LIST;
       break;
   }
 
   chatty->view_state_last = view;
 
-  image = gtk_image_new_from_icon_name (icon_button_left, GTK_ICON_SIZE_BUTTON);
-  gtk_button_set_image (GTK_BUTTON (chatty->header_button_left), image);
-
-  image = gtk_image_new_from_icon_name (icon_button_right, GTK_ICON_SIZE_BUTTON);
-  gtk_button_set_image (GTK_BUTTON (chatty->header_button_right), image);
-
-  popover_path = g_strjoin (NULL,
-                            "/sm/puri/chatty/ui/",
-                            popover_id,
-                            ".ui",
-                            NULL);
-
-  builder = gtk_builder_new_from_resource (popover_path);
-  menu_popover = GTK_WIDGET (gtk_builder_get_object (builder, popover_id));
-
-  gtk_menu_button_set_popover (GTK_MENU_BUTTON (chatty->header_button_right),
-                               menu_popover);
-
-  submenu_enabled ? gtk_widget_show (chatty->header_button_right) :
-                    gtk_widget_hide (chatty->header_button_right);
-
-  gtk_stack_set_transition_type (chatty->panes_stack, type);
   gtk_stack_set_visible_child_name (chatty->panes_stack, stack_id);
-
-  g_free (popover_path);
-  g_object_unref (builder);
 }
 
 
@@ -182,41 +132,7 @@ chatty_window_set_header_title (const char *title)
 {
   chatty_data_t *chatty = chatty_get_data ();
 
-  gtk_label_set_text (GTK_LABEL(chatty->header_title), _(title));
-}
-
-
-static GtkHeaderBar *
-chatty_window_set_header_bar ()
-{
-  GtkHeaderBar    *header_bar;
-  GtkImage        *image;
-
-  chatty_data_t *chatty = chatty_get_data ();
-
-  header_bar = gtk_header_bar_new ();
-  chatty->header_title = gtk_label_new ("");
-  chatty->header_icon = gtk_image_new ();
-  gtk_header_bar_set_custom_title (header_bar, chatty->header_title);
-  g_object_set (header_bar,
-                "spacing", 24,
-                NULL);
-
-  chatty->header_button_left = gtk_button_new ();
-  gtk_widget_set_valign (chatty->header_button_left, GTK_ALIGN_CENTER);
-
-  chatty->header_button_right = gtk_menu_button_new ();
-  gtk_widget_set_valign (chatty->header_button_right, GTK_ALIGN_CENTER);
-
-  gtk_header_bar_pack_start (header_bar, chatty->header_button_left);
-  gtk_header_bar_pack_start (header_bar, chatty->header_icon);
-  gtk_header_bar_pack_end (header_bar, chatty->header_button_right);
-
-  g_signal_connect_object (chatty->header_button_left, "clicked",
-                           G_CALLBACK(cb_header_bar_button_left_clicked),
-                           NULL, 0);
-
-  return header_bar;
+  gtk_header_bar_set_title (chatty->header_view_message_list, title);
 }
 
 
@@ -235,13 +151,29 @@ void
 chatty_window_activate (GtkApplication  *app,
                         gpointer        user_data)
 {
+  GtkBuilder         *builder;
   GtkWidget          *window;
+  GSimpleActionGroup *simple_action_group;
+  GtkHeaderBar       *header_bar;
   GtkBox             *vbox;
   HdyLeaflet         *hdy_leaflet;
 
   chatty_data_t *chatty = chatty_get_data ();
 
-  window = gtk_application_window_new (app);
+  builder = gtk_builder_new_from_resource ("/sm/puri/chatty/ui/chatty-window.ui");
+
+  window = GTK_WIDGET (gtk_builder_get_object (builder, "window"));
+  g_object_set (window, "application", app, NULL);
+
+  simple_action_group = g_simple_action_group_new ();
+  g_action_map_add_action_entries (G_ACTION_MAP (simple_action_group),
+                                   window_action_entries,
+                                   G_N_ELEMENTS (window_action_entries),
+                                   window);
+  gtk_widget_insert_action_group (GTK_WIDGET (window),
+                                  "win",
+                                  G_ACTION_GROUP (simple_action_group));
+
   gtk_window_set_title (GTK_WINDOW (window), "Window");
 
 #if defined (__arm__)
@@ -262,26 +194,21 @@ chatty_window_activate (GtkApplication  *app,
                                              GTK_STYLE_PROVIDER (cssProvider),
                                              GTK_STYLE_PROVIDER_PRIORITY_USER);
 
-  gtk_window_set_titlebar (GTK_WINDOW (window),
-                           chatty_window_set_header_bar ());
+  header_bar = GTK_HEADER_BAR (gtk_builder_get_object (builder, "header_bar"));
+  chatty->header_view_message_list = GTK_HEADER_BAR (gtk_builder_get_object (builder, "header_view_message_list"));
+  chatty->header_icon = GTK_IMAGE (gtk_builder_get_object (builder, "header_icon"));
+  chatty->panes_stack = GTK_STACK (gtk_builder_get_object (builder, "panes_stack"));
+  chatty->pane_view_message_list = GTK_NOTEBOOK (gtk_builder_get_object (builder, "pane_view_message_list"));
+  chatty->pane_view_manage_account = GTK_BOX (gtk_builder_get_object (builder, "pane_view_manage_account"));
+  chatty->pane_view_select_account = GTK_BOX (gtk_builder_get_object (builder, "pane_view_select_account"));
+  chatty->pane_view_new_account = GTK_BOX (gtk_builder_get_object (builder, "pane_view_new_account"));
+  chatty->pane_view_new_conversation = GTK_BOX (gtk_builder_get_object (builder, "pane_view_new_conversation"));
+  chatty->pane_view_buddy_list = GTK_BOX (gtk_builder_get_object (builder, "pane_view_buddy_list"));
 
-  chatty->panes_stack = gtk_stack_new ();
+  g_object_set (header_bar,
+                "spacing", 24,
+                NULL);
 
-  chatty->pane_view_message_list = gtk_notebook_new ();
-  chatty->pane_view_manage_account = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
-  chatty->pane_view_select_account = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
-  chatty->pane_view_new_account = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
-  chatty->pane_view_new_conversation = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
-  chatty->pane_view_buddy_list = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
-
-  gtk_stack_add_named (chatty->panes_stack, chatty->pane_view_manage_account, "view-manage-account");
-  gtk_stack_add_named (chatty->panes_stack, chatty->pane_view_select_account, "view-select-account");
-  gtk_stack_add_named (chatty->panes_stack, chatty->pane_view_new_conversation, "view-new-chat");
-  gtk_stack_add_named (chatty->panes_stack, chatty->pane_view_new_account, "view-new-account");
-  gtk_stack_add_named (chatty->panes_stack, chatty->pane_view_buddy_list, "view-chat-list");
-  gtk_stack_add_named (chatty->panes_stack, chatty->pane_view_message_list, "view-message-list");
-
-  gtk_container_add (GTK_CONTAINER (window), chatty->panes_stack);
   gtk_widget_show_all (window);
   chatty_window_init_data ();
 }
