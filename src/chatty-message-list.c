@@ -71,7 +71,7 @@ header_strings_t header_strings[3] = {
 
 
 static void
-init_css ()
+init_css (void)
 {
   GdkScreen       *screen;
   GtkCssProvider  *cssProvider;
