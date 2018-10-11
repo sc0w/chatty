@@ -196,7 +196,7 @@ cb_conversation_switched (PurpleConversation *conv)
 }
 
 
-ChattyConversation *
+static ChattyConversation *
 chatty_conv_get_conv_at_index (GtkNotebook *notebook,
                                int          index)
 {
@@ -676,7 +676,7 @@ chatty_conv_container_get_active_purple_conv (GtkNotebook *notebook)
  * conversations stack
  *
  */
-void
+static void
 chatty_conv_stack_add_conv (ChattyConversation *chatty_conv)
 {
   PurpleConversation      *conv = chatty_conv->active_conv;
@@ -1073,7 +1073,7 @@ chatty_conv_switch_active_conversation (PurpleConversation *conv)
  * Returns: return value
  *
  */
-void
+static void
 chatty_conv_switch_conv (ChattyConversation *chatty_conv)
 {
   chatty_data_t *chatty = chatty_get_data();
@@ -1092,7 +1092,7 @@ chatty_conv_switch_conv (ChattyConversation *chatty_conv)
  * presents it to the user.
  *
  */
-void
+static void
 chatty_conv_present_conversation (PurpleConversation *conv)
 {
   ChattyConversation *chatty_conv;

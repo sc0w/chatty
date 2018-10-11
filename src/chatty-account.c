@@ -172,7 +172,7 @@ cb_button_add_account_clicked (GtkButton *sender,
 }
 
 
-void
+static void
 cb_list_account_select_row_activated (GtkListBox    *box,
                                      GtkListBoxRow *row,
                                      gpointer       user_data)
@@ -282,7 +282,7 @@ chatty_account_list_separator (GtkListBoxRow *row,
 }
 
 
-void
+static void
 chatty_account_list_clear (GtkWidget *list)
 {
   GList             *children;
@@ -700,7 +700,7 @@ chatty_accounts_get_ui_ops (void)
 }
 
 
-void *
+static void *
 chatty_account_get_handle (void) {
   static int handle;
 

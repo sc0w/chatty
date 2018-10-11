@@ -148,7 +148,7 @@ cb_list_size_allocate (GtkWidget     *sender,
 }
 
 
-void
+static void
 cb_list_focus (GtkWidget     *sender,
                int           direction,
                gpointer      self)

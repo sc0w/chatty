@@ -12,7 +12,7 @@
 #include "chatty-icons.h"
 
 
-gboolean
+static gboolean
 chatty_icon_pixbuf_is_opaque (GdkPixbuf *pixbuf)
 {
   int           height, rowstride, i;
@@ -112,7 +112,7 @@ chatty_icon_pixbuf_from_data_helper (const guchar *buf,
 }
 
 
-GdkPixbuf *
+static GdkPixbuf *
 chatty_icon_pixbuf_from_data (const guchar *buf, gsize count)
 {
   return GDK_PIXBUF (chatty_icon_pixbuf_from_data_helper (buf, count, FALSE));
@@ -346,7 +346,7 @@ chatty_icon_get_buddy_icon (PurpleBlistNode *node,
 }
 
 
-GdkPixbuf *
+static GdkPixbuf *
 chatty_icon_pixbuf_new_from_file (const gchar *filename)
 {
   GdkPixbuf *pixbuf;
@@ -412,7 +412,7 @@ chatty_icon_create_prpl_icon_from_prpl (PurplePlugin         *prpl,
 }
 
 
-GdkPixbuf *
+static GdkPixbuf *
 chatty_icon_create_prpl_icon (PurpleAccount        *account,
                               ChattyPurpleIconSize size)
 {
