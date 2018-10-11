@@ -10,58 +10,12 @@
 #include "chatty-popover-actions.h"
 #include "chatty-window.h"
 
-
-static void
-view_msg_list_cmd_call (GSimpleAction *action,
-                        GVariant      *parameter,
-                        gpointer       user_data)
-{
-
-}
-
-
-static void
-view_blist_cmd_show_in_contacts (GSimpleAction *action,
-                                 GVariant      *parameter,
-                                 gpointer       user_data)
-{
-
-}
-
-
-static void
-view_blist_cmd_delete_conversation (GSimpleAction *action,
-                                    GVariant      *parameter,
-                                    gpointer       user_data)
-{
-
-}
-
-
-static void
-view_blist_cmd_find (GSimpleAction *action,
-                     GVariant      *parameter,
-                     gpointer       user_data)
-{
-
-}
-
-
 static void
 view_blist_cmd_accounts (GSimpleAction *action,
                          GVariant      *parameter,
                          gpointer       user_data)
 {
   chatty_window_change_view (CHATTY_VIEW_MANAGE_ACCOUNT_LIST);
-}
-
-
-static void
-view_blist_cmd_preferences (GSimpleAction *action,
-                            GVariant      *parameter,
-                            gpointer       user_data)
-{
-
 }
 
 
