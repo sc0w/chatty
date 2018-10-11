@@ -15,12 +15,12 @@
 typedef struct {
   GtkWindow         *main_window;
   GtkStack          *panes_stack;
-  GtkBin            *pane_view_buddy_list;
+  GtkBox            *pane_view_buddy_list;
   GtkWidget         *pane_view_message_list;
-  GtkBin            *pane_view_manage_account;
-  GtkBin            *pane_view_select_account;
-  GtkBin            *pane_view_new_conversation;
-  GtkBin            *pane_view_new_account;
+  GtkBox            *pane_view_manage_account;
+  GtkBox            *pane_view_select_account;
+  GtkBox            *pane_view_new_conversation;
+  GtkBox            *pane_view_new_account;
   GtkHeaderBar      *header_view_message_list;
   GtkWidget         *header_icon;
   GtkWidget         *button_add_buddy;

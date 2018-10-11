@@ -38,18 +38,8 @@ chatty_data_t *chatty_get_data (void)
 
 
 static void
-chatty_destroy_widget (GtkWidget *widget) {
-  GList *iter;
-  GList *children;
-
-  children = gtk_container_get_children (widget);
-
-  for (iter = children; iter != NULL; iter = g_list_next (iter)) {
-    gtk_widget_destroy (GTK_WIDGET(iter->data));
-  }
-
-  g_list_free (children);
-  g_list_free (iter);
+chatty_empty_container (GtkContainer *container) {
+  gtk_container_foreach (container, (GtkCallback)gtk_widget_destroy, NULL);
 }
 
 
@@ -71,14 +61,14 @@ chatty_back_action (GSimpleAction *action,
       chatty_blist_refresh (purple_get_blist(), FALSE);
       break;
     case CHATTY_VIEW_NEW_ACCOUNT:
-      chatty_destroy_widget (chatty->pane_view_new_account);
+      chatty_empty_container (GTK_CONTAINER(chatty->pane_view_new_account));
       break;
     case CHATTY_VIEW_NEW_CONVERSATION:
-      chatty_destroy_widget (chatty->pane_view_new_conversation);
+      chatty_empty_container (GTK_CONTAINER(chatty->pane_view_new_conversation));
       break;
   }
 
-  gtk_image_clear (chatty->header_icon);
+  gtk_image_clear (GTK_IMAGE (chatty->header_icon));
 }
 
 
@@ -149,14 +139,14 @@ chatty_window_activate (GtkApplication  *app,
                         gpointer        user_data)
 {
   GtkBuilder         *builder;
-  GtkWidget          *window;
+  GtkWindow          *window;
   GSimpleActionGroup *simple_action_group;
 
   chatty_data_t *chatty = chatty_get_data ();
 
   builder = gtk_builder_new_from_resource ("/sm/puri/chatty/ui/chatty-window.ui");
 
-  window = GTK_WIDGET (gtk_builder_get_object (builder, "window"));
+  window = GTK_WINDOW (gtk_builder_get_object (builder, "window"));
   g_object_set (window, "application", app, NULL);
 
   simple_action_group = g_simple_action_group_new ();
@@ -181,15 +171,15 @@ chatty_window_activate (GtkApplication  *app,
                                              GTK_STYLE_PROVIDER_PRIORITY_USER);
 
   chatty->header_view_message_list = GTK_HEADER_BAR (gtk_builder_get_object (builder, "header_view_message_list"));
-  chatty->header_icon = GTK_IMAGE (gtk_builder_get_object (builder, "header_icon"));
+  chatty->header_icon = GTK_WIDGET (gtk_builder_get_object (builder, "header_icon"));
   chatty->panes_stack = GTK_STACK (gtk_builder_get_object (builder, "panes_stack"));
-  chatty->pane_view_message_list = GTK_NOTEBOOK (gtk_builder_get_object (builder, "pane_view_message_list"));
+  chatty->pane_view_message_list = GTK_WIDGET (gtk_builder_get_object (builder, "pane_view_message_list"));
   chatty->pane_view_manage_account = GTK_BOX (gtk_builder_get_object (builder, "pane_view_manage_account"));
   chatty->pane_view_select_account = GTK_BOX (gtk_builder_get_object (builder, "pane_view_select_account"));
   chatty->pane_view_new_account = GTK_BOX (gtk_builder_get_object (builder, "pane_view_new_account"));
   chatty->pane_view_new_conversation = GTK_BOX (gtk_builder_get_object (builder, "pane_view_new_conversation"));
   chatty->pane_view_buddy_list = GTK_BOX (gtk_builder_get_object (builder, "pane_view_buddy_list"));
 
-  gtk_widget_show_all (window);
+  gtk_widget_show_all (GTK_WIDGET (window));
   chatty_window_init_data ();
 }
