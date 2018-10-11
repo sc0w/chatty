@@ -154,7 +154,6 @@ chatty_window_activate (GtkApplication  *app,
   GtkBuilder         *builder;
   GtkWidget          *window;
   GSimpleActionGroup *simple_action_group;
-  GtkHeaderBar       *header_bar;
   GtkBox             *vbox;
   HdyLeaflet         *hdy_leaflet;
 
@@ -186,7 +185,6 @@ chatty_window_activate (GtkApplication  *app,
                                              GTK_STYLE_PROVIDER (cssProvider),
                                              GTK_STYLE_PROVIDER_PRIORITY_USER);
 
-  header_bar = GTK_HEADER_BAR (gtk_builder_get_object (builder, "header_bar"));
   chatty->header_view_message_list = GTK_HEADER_BAR (gtk_builder_get_object (builder, "header_view_message_list"));
   chatty->header_icon = GTK_IMAGE (gtk_builder_get_object (builder, "header_icon"));
   chatty->panes_stack = GTK_STACK (gtk_builder_get_object (builder, "panes_stack"));
@@ -196,10 +194,6 @@ chatty_window_activate (GtkApplication  *app,
   chatty->pane_view_new_account = GTK_BOX (gtk_builder_get_object (builder, "pane_view_new_account"));
   chatty->pane_view_new_conversation = GTK_BOX (gtk_builder_get_object (builder, "pane_view_new_conversation"));
   chatty->pane_view_buddy_list = GTK_BOX (gtk_builder_get_object (builder, "pane_view_buddy_list"));
-
-  g_object_set (header_bar,
-                "spacing", 24,
-                NULL);
 
   gtk_widget_show_all (window);
   chatty_window_init_data ();
