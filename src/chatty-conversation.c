@@ -706,7 +706,7 @@ chatty_conv_stack_add_conv (ChattyConversation *chatty_conv)
 
   gtk_widget_show (chatty_conv->tab_cont);
 
-  if (g_list_length(chatty_conv->convs == 1)) {
+  if (g_list_length(chatty_conv->convs) == 1) {
     gtk_notebook_set_current_page (GTK_NOTEBOOK(chatty->pane_view_message_list), 0);
   } else {
     gtk_notebook_set_show_tabs (GTK_NOTEBOOK(chatty->pane_view_message_list), FALSE);
