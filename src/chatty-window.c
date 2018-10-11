@@ -88,7 +88,6 @@ chatty_window_change_view (guint view)
   GtkImage        *image;
   GtkBuilder      *builder;
   GtkWidget       *menu_popover;
-  gint            type;
   gchar           *stack_id;
   gchar           *icon_button_left;
   gchar           *icon_button_right;
@@ -100,13 +99,9 @@ chatty_window_change_view (guint view)
 
   icon_button_left = "go-previous-symbolic";
   icon_button_right = "view-more-symbolic";
-  type = GTK_STACK_TRANSITION_TYPE_SLIDE_LEFT;
 
   switch (view) {
     case CHATTY_VIEW_MANAGE_ACCOUNT_LIST:
-      if (chatty->view_state_last == CHATTY_VIEW_NEW_ACCOUNT) {
-        type = GTK_STACK_TRANSITION_TYPE_SLIDE_RIGHT;
-      }
       stack_id = "view-manage-account";
       submenu_enabled = FALSE;
       chatty_window_set_header_title (_("Manage accounts"));
@@ -124,9 +119,6 @@ chatty_window_change_view (guint view)
       break;
 
     case CHATTY_VIEW_SELECT_ACCOUNT_LIST:
-      if (chatty->view_state_last == CHATTY_VIEW_NEW_CONVERSATION) {
-        type = GTK_STACK_TRANSITION_TYPE_SLIDE_RIGHT;
-      }
       stack_id = "view-select-account";
       submenu_enabled = FALSE;
       chatty_window_set_header_title (_("Select account for conversation"));
@@ -148,7 +140,6 @@ chatty_window_change_view (guint view)
       break;
 
     case CHATTY_VIEW_CONVERSATIONS_LIST:
-      type = GTK_STACK_TRANSITION_TYPE_SLIDE_RIGHT;
       stack_id = "view-chat-list";
       icon_button_left = "list-add-symbolic";
       icon_button_right = "open-menu-symbolic";
@@ -182,7 +173,6 @@ chatty_window_change_view (guint view)
   submenu_enabled ? gtk_widget_show (chatty->header_button_right) :
                     gtk_widget_hide (chatty->header_button_right);
 
-  gtk_stack_set_transition_type (chatty->panes_stack, type);
   gtk_stack_set_visible_child_name (chatty->panes_stack, stack_id);
 
   g_free (popover_path);

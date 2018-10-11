@@ -11,6 +11,7 @@
         <child>
           <object class="GtkStack" id="header_stack">
             <property name="can_focus">False</property>
+            <property name="transition_type">slide-left-right</property>
             <child>
               <object class="GtkHeaderBar" id="header_bar">
                 <property name="can_focus">False</property>
@@ -56,6 +57,7 @@
     <child>
       <object class="GtkStack" id="panes_stack">
         <property name="can_focus">False</property>
+        <property name="transition_type">slide-left-right</property>
         <child>
           <object class="GtkBox" id="pane_view_buddy_list">
             <property name="can_focus">False</property>
