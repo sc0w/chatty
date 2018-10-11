@@ -15,6 +15,7 @@
 #include <purple.h>
 #define HANDY_USE_UNSTABLE_API
 #include <handy.h>
+#include "chatty-buddy-list.h"
 #include "chatty-icons.h"
 #include "chatty-window.h"
 #include "chatty-account.h"
