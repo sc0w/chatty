@@ -260,6 +260,7 @@ chatty_icon_get_buddy_icon (PurpleBlistNode *node,
                                    GDK_INTERP_BILINEAR);
   }
 
+  {
   cairo_format_t  format;
   cairo_surface_t *surface;
   cairo_t         *cr;
@@ -303,6 +304,7 @@ chatty_icon_get_buddy_icon (PurpleBlistNode *node,
 
   cairo_surface_destroy (surface);
   cairo_destroy (cr);
+  }
 
   g_object_unref(G_OBJECT(buf));
 
