@@ -366,7 +366,36 @@ cb_conversation_created (PurpleConversation *conv,
 }
 
 
+static void
+cb_chatty_prefs_change_update_list (const char     *name,
+                                    PurplePrefType  type,
+                                    gconstpointer   val,
+                                    gpointer        data)
+{
+  chatty_blist_refresh (purple_get_blist (), FALSE);
+}
+
+
 // *** end callbacks
+
+
+static gboolean
+chatty_blist_buddy_is_displayable (PurpleBuddy *buddy)
+{
+  struct _chatty_blist_node *chatty_node;
+
+  if(!buddy) {
+    return FALSE;
+  }
+
+  chatty_node = ((PurpleBlistNode*)buddy)->ui_data;
+
+  return (purple_account_is_connected (buddy->account) &&
+          (purple_presence_is_online (buddy->presence) ||
+           (chatty_node && chatty_node->recent_signonoff) ||
+           purple_prefs_get_bool (CHATTY_PREFS_ROOT "/blist/show_offline_buddies")));
+
+}
 
 
 /**
@@ -910,7 +939,11 @@ chatty_blist_update_buddy (PurpleBuddyList *list,
 
   buddy = (PurpleBuddy*)node;
 
-  chatty_blist_update_node (buddy, node);
+  if (chatty_blist_buddy_is_displayable (buddy)) {
+    chatty_blist_update_node (buddy, node);
+  } else {
+    chatty_blist_hide_node (list, node, TRUE);
+  }
 }
 
 
@@ -1101,6 +1134,23 @@ void chatty_blist_init (void)
   purple_prefs_add_bool (CHATTY_PREFS_ROOT "/blist/show_idle_time", TRUE);
   purple_prefs_add_bool (CHATTY_PREFS_ROOT "/blist/show_offline_buddies", TRUE);
   purple_prefs_add_bool (CHATTY_PREFS_ROOT "/blist/show_protocol_icons", FALSE);
+
+  purple_prefs_connect_callback (&handle,
+                                 CHATTY_PREFS_ROOT "/blist/show_buddy_icons",
+                                 cb_chatty_prefs_change_update_list,
+                                 NULL);
+  purple_prefs_connect_callback (&handle,
+                                 CHATTY_PREFS_ROOT "/blist/show_idle_time",
+                                 cb_chatty_prefs_change_update_list,
+                                 NULL);
+  purple_prefs_connect_callback (&handle,
+                                 CHATTY_PREFS_ROOT "/blist/show_offline_buddies",
+                                 cb_chatty_prefs_change_update_list,
+                                 NULL);
+  purple_prefs_connect_callback (&handle,
+                                 CHATTY_PREFS_ROOT "/blist/show_protocol_icons",
+                                 cb_chatty_prefs_change_update_list,
+                                 NULL);
 
   purple_signal_register (chatty_blist_handle,
                           "chatty-blist-created",
