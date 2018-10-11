@@ -157,22 +157,13 @@ cb_button_send_clicked (GtkButton *sender,
 }
 
 
-gboolean
+static gboolean
 cb_textview_keypress (GtkWidget   *widget,
                       GdkEventKey *pKey,
                       gpointer     data)
 {
-#if defined (__arm__)
-
-#else
-  if (pKey->type == GDK_KEY_PRESS) {
-    switch (pKey->keyval) {
-      case GDK_KEY_Return:
-      cb_button_send_clicked (NULL, data);
-      break;
-    }
-  }
-#endif
+  if (pKey->type == GDK_KEY_PRESS && pKey->keyval == GDK_KEY_Return)
+    cb_button_send_clicked (NULL, data);
 
   return FALSE;
 }
