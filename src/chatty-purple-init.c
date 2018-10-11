@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+#define G_LOG_DOMAIN "chatty-purple"
 
 #include "purple.h"
 #include "chatty-purple-init.h"
@@ -209,8 +210,7 @@ init_libpurple (void)
   g_free (search_path);
 
   if (!purple_core_init (CHATTY_UI)) {
-    printf ("libpurple initialization failed\n");
-    abort ();
+    g_error ("libpurple initialization failed");
   }
 
   purple_set_blist (purple_blist_new ());
@@ -232,7 +232,7 @@ init_libpurple (void)
     if (g_strcmp0 (info->id, "core-mancho-omemo") == 0) {
       if (!purple_plugin_is_loaded (plugin)) {
         purple_plugin_load (plugin);
-        printf("Loaded plugin %s\n", info->name);
+        g_debug("Loaded plugin %s", info->name);
       }
 
       purple_plugins_save_loaded (CHATTY_PREFS_ROOT "/plugins/loaded");
@@ -267,7 +267,7 @@ signed_on (PurpleConnection *gc)
                           purple_account_get_username (account),
                           purple_account_get_protocol_id (account));
 
-  printf ("%s\n", text);
+  g_debug ("%s", text);
 
   g_free (text);
 }
@@ -277,9 +277,9 @@ static int
 account_authorization_requested (PurpleAccount *account,
                                  const char    *user)
 {
-  printf ("User \"%s\" (%s) has sent a buddy request\n",
-          user,
-          purple_account_get_protocol_id (account));
+  g_debug ("User \"%s\" (%s) has sent a buddy request",
+           user,
+           purple_account_get_protocol_id (account));
 
   return 1;
 }
@@ -310,8 +310,8 @@ libpurple_start (void) {
 
   init_libpurple ();
 
-  printf ("libpurple initialized. Running version %s.\n",
-          purple_core_get_version ());
+  g_debug ("libpurple initialized. Running version %s.",
+           purple_core_get_version ());
 
   connect_to_signals ();
 }

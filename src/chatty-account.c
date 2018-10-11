@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+#define G_LOG_DOMAIN "chatty-account"
 
 #include <glib.h>
 #include <glib/gi18n.h>
@@ -600,7 +601,7 @@ chatty_account_request_authorization (PurpleAccount *account,
                                       PurpleAccountRequestAuthorizationCb deny_cb,
                                       void          *user_data)
 {
-  printf ("chatty_account_request_authorization\n");
+  g_debug ("chatty_account_request_authorization");
 
   return NULL;
 }
