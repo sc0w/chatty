@@ -159,7 +159,7 @@ static void
 cb_button_add_account_clicked (GtkButton *sender,
                                gpointer  data)
 {
-  gchar *name, *pwd;
+  const gchar *name, *pwd;
 
   chatty_account_data_t *chatty_account = chatty_get_account_data ();
 

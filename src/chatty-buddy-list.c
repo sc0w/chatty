@@ -378,7 +378,7 @@ cb_conversation_created (PurpleConversation *conv,
 void
 chatty_blist_add_buddy (PurpleAccount *account)
 {
-  gchar              *who, *whoalias, *invite;
+  const gchar        *who, *whoalias, *invite;
   PurpleBuddy        *b;
   PurpleConversation *c;
   PurpleBuddyIcon    *icon;
@@ -824,8 +824,8 @@ chatty_blist_update_node (PurpleBuddy     *buddy,
   GtkTreeIter    iter;
   GdkPixbuf     *avatar;
   GtkTreePath   *path;
-  gchar         *name = NULL;
-  gchar         *account_name;
+  const gchar   *name = NULL;
+  const gchar   *account_name;
   time_t         last_msg;
   gchar         *last_msg_str = NULL;
   PurpleAccount *account;
@@ -929,7 +929,6 @@ chatty_blist_update_node (PurpleBuddy     *buddy,
   }
 
   gtk_tree_path_free (path);
-  g_free (name);
   g_free (last_msg_str);
 }
 

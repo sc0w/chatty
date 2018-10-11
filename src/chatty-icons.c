@@ -406,7 +406,7 @@ chatty_icon_create_prpl_icon_from_prpl (PurplePlugin         *prpl,
                                         PurpleAccount        *account)
 {
   PurplePluginProtocolInfo *prpl_info;
-  gchar                     *protoname = NULL;
+  const gchar               *protoname = NULL;
   gchar                     *tmp;
   gchar                     *filename = NULL;
   GdkPixbuf                 *pixbuf;

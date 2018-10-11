@@ -626,8 +626,8 @@ chatty_add_message_history_to_conv (gpointer data)
     GList         *msgs = NULL;
     ChattyLog     *log_data = NULL;
     PurpleAccount *account;
-    gchar         *name = NULL;
-    gchar         *conv_name;
+    const gchar   *name = NULL;
+    const gchar   *conv_name;
     gchar         *read_log;
     gchar         *read_message;
     gchar         *stripped;
@@ -716,7 +716,6 @@ chatty_add_message_history_to_conv (gpointer data)
 
     g_list_foreach (msgs, (GFunc)g_free, NULL);
     g_list_free (msgs);
-    g_free (name);
 
     g_object_set_data (G_OBJECT (chatty_conv->msg_entry),
                        "attach-start-time",
@@ -796,7 +795,7 @@ void
 chatty_conv_stack_add_conv (ChattyConversation *chatty_conv)
 {
   PurpleConversation      *conv = chatty_conv->active_conv;
-  gchar                   *tab_txt;
+  const gchar             *tab_txt;
   gchar                   *text;
   gchar                   **name_split;
 
@@ -1089,7 +1088,7 @@ chatty_conv_write_conversation (PurpleConversation *conv,
                                 PurpleMessageFlags  flags,
                                 time_t              mtime)
 {
-  gchar *name;
+  const gchar *name;
 
   if (alias && *alias) {
     name = alias;
