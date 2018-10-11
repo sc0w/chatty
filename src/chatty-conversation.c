@@ -1241,7 +1241,9 @@ chatty_conv_setup_pane (ChattyConversation *chatty_conv)
   image = gtk_image_new_from_icon_name ("pan-up-symbolic",
                                         GTK_ICON_SIZE_BUTTON);
 
-  gtk_button_set_image (GTK_BUTTON (button_send), image);
+G_GNUC_BEGIN_IGNORE_DEPRECATIONS
+  gtk_button_set_image (GTK_BUTTON (button_send), GTK_WIDGET (image));
+G_GNUC_END_IGNORE_DEPRECATIONS
   gtk_widget_set_valign (button_send, GTK_ALIGN_CENTER);
 
   gtk_box_pack_start (hbox, button_send, FALSE, FALSE, 6);
