@@ -71,7 +71,7 @@ header_strings_t header_strings[3] = {
 
 
 static void
-init_css ()
+init_css (void)
 {
   GdkScreen       *screen;
   GtkCssProvider  *cssProvider;
@@ -148,7 +148,7 @@ cb_list_size_allocate (GtkWidget     *sender,
 }
 
 
-void
+static void
 cb_list_focus (GtkWidget     *sender,
                int           direction,
                gpointer      self)
@@ -295,6 +295,10 @@ chatty_msg_list_hide_header (ChattyMsgList *self)
 static void
 chatty_draw_typing_indicator (cairo_t *cr)
 {
+  double dot_pattern [3][3]= {{0.5, 0.9, 0.9},
+                              {0.7, 0.5, 0.9},
+                              {0.9, 0.7, 0.5}};
+  guint  dot_origins [3] = {15, 30, 45};
   double grey_lev,
          x, y,
          width, height,
@@ -308,12 +312,6 @@ chatty_draw_typing_indicator (cairo_t *cr)
   x = y = INDICATOR_MARGIN;
   width = INDICATOR_WIDTH - INDICATOR_MARGIN * 2;
   height = INDICATOR_HEIGHT - INDICATOR_MARGIN * 2;
-
-  guint  dot_origins [3] = {15, 30, 45};
-
-  double dot_pattern [3][3]= {{0.5, 0.9, 0.9},
-                              {0.7, 0.5, 0.9},
-                              {0.9, 0.7, 0.5}};
 
   if (i > 2)
     i = 0;
@@ -542,12 +540,11 @@ static void
 chatty_msg_list_constructed (GObject *object)
 {
   ChattyMsgList *self = CHATTY_MSG_LIST (object);
-
+  GtkStyleContext *sc;
   ChattyMsgListPrivate *priv = chatty_msg_list_get_instance_private (self);
 
   init_css();
 
-  GtkStyleContext *sc;
   sc = gtk_widget_get_style_context (GTK_WIDGET(priv->list));
 
   gtk_style_context_add_class (sc, "message_list");
