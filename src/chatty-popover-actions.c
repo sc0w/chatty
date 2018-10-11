@@ -38,8 +38,6 @@ static const GActionEntry view_msg_list_entries [] =
 void
 chatty_popover_actions_init (GtkWindow *window)
 {
-  GAction            *action;
-  GActionGroup       *action_group;
   GSimpleActionGroup *simple_action_group;
 
   simple_action_group = g_simple_action_group_new ();
