@@ -29,8 +29,6 @@ typedef struct {
   GtkEntry          *entry_invite_msg;
   gint              view_state_last;
   gint              view_state_next;
-  gint              window_size_x;
-  gint              window_size_y;
 } chatty_data_t;
 
 chatty_data_t *chatty_get_data(void);
