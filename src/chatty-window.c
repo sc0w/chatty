@@ -92,7 +92,6 @@ chatty_window_change_view (guint view)
   gchar           *icon_button_left;
   gchar           *icon_button_right;
   gchar           *popover_id;
-  gchar           *popover_path;
   gboolean        *submenu_enabled;
 
   chatty_data_t *chatty = chatty_get_data ();
@@ -105,7 +104,7 @@ chatty_window_change_view (guint view)
       stack_id = "view-manage-account";
       submenu_enabled = FALSE;
       chatty_window_set_header_title (_("Manage accounts"));
-      popover_id = "chatty-blist-view-popover";
+      popover_id = "header_view_buddy_list_popover";
       chatty->view_state_next = CHATTY_VIEW_CONVERSATIONS_LIST;
       break;
 
@@ -114,7 +113,7 @@ chatty_window_change_view (guint view)
       icon_button_right = "open-menu-symbolic";
       submenu_enabled = TRUE;
       chatty_window_set_header_title (_("New account"));
-      popover_id = "chatty-new-chat-view-popover";
+      popover_id = "header_view_new_account_popover";
       chatty->view_state_next = CHATTY_VIEW_MANAGE_ACCOUNT_LIST;
       break;
 
@@ -122,20 +121,20 @@ chatty_window_change_view (guint view)
       stack_id = "view-select-account";
       submenu_enabled = FALSE;
       chatty_window_set_header_title (_("Select account for conversation"));
-      popover_id = "chatty-blist-view-popover";
+      popover_id = "header_view_buddy_list_popover";
       chatty->view_state_next = CHATTY_VIEW_CONVERSATIONS_LIST;
       break;
 
     case CHATTY_VIEW_NEW_CONVERSATION:
       stack_id = "view-new-chat";
-      popover_id = "chatty-new-chat-view-popover";
+      popover_id = "header_view_new_account_popover";
       chatty_window_set_header_title (_("Add new conversation"));
       chatty->view_state_next = CHATTY_VIEW_SELECT_ACCOUNT_LIST;
       break;
 
     case CHATTY_VIEW_MESSAGE_LIST:
       stack_id = "view-message-list";
-      popover_id = "chatty-message-view-popover";
+      popover_id = "header_view_message_list_popover";
       chatty->view_state_next = CHATTY_VIEW_CONVERSATIONS_LIST;
       break;
 
@@ -144,7 +143,7 @@ chatty_window_change_view (guint view)
       icon_button_left = "list-add-symbolic";
       icon_button_right = "open-menu-symbolic";
       submenu_enabled = TRUE;
-      popover_id = "chatty-blist-view-popover";
+      popover_id = "header_view_buddy_list_popover";
       chatty_window_set_header_title (_("Conversations"));
       chatty->view_state_next = CHATTY_VIEW_SELECT_ACCOUNT_LIST;
       break;
@@ -158,13 +157,7 @@ chatty_window_change_view (guint view)
   image = gtk_image_new_from_icon_name (icon_button_right, GTK_ICON_SIZE_BUTTON);
   gtk_button_set_image (GTK_BUTTON (chatty->header_button_right), image);
 
-  popover_path = g_strjoin (NULL,
-                            "/sm/puri/chatty/ui/",
-                            popover_id,
-                            ".ui",
-                            NULL);
-
-  builder = gtk_builder_new_from_resource (popover_path);
+  builder = gtk_builder_new_from_resource ("/sm/puri/chatty/ui/chatty-window.ui");
   menu_popover = GTK_WIDGET (gtk_builder_get_object (builder, popover_id));
 
   gtk_menu_button_set_popover (GTK_MENU_BUTTON (chatty->header_button_right),
@@ -175,7 +168,6 @@ chatty_window_change_view (guint view)
 
   gtk_stack_set_visible_child_name (chatty->panes_stack, stack_id);
 
-  g_free (popover_path);
   g_object_unref (builder);
 }
 
