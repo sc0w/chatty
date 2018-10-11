@@ -1197,14 +1197,14 @@ chatty_conv_setup_pane (ChattyConversation *chatty_conv)
                     G_CALLBACK(cb_textview_keypress),
                     (gpointer) chatty_conv);
 
-  gtk_text_view_set_left_margin (chatty_conv->msg_entry, 10);
-  gtk_text_view_set_top_margin (chatty_conv->msg_entry, 10);
-  gtk_text_view_set_wrap_mode (chatty_conv->msg_entry, GTK_WRAP_WORD);
+  gtk_text_view_set_left_margin (GTK_TEXT_VIEW (chatty_conv->msg_entry), 10);
+  gtk_text_view_set_top_margin (GTK_TEXT_VIEW (chatty_conv->msg_entry), 10);
+  gtk_text_view_set_wrap_mode (GTK_TEXT_VIEW (chatty_conv->msg_entry), GTK_WRAP_WORD);
 
   scrolled_window = gtk_scrolled_window_new (NULL, NULL);
   sc = gtk_widget_get_style_context (scrolled_window);
   gtk_style_context_add_class (sc, "text_view_scroll");
-  gtk_scrolled_window_set_policy (scrolled_window,
+  gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrolled_window),
                                   GTK_POLICY_AUTOMATIC,
                                   GTK_POLICY_AUTOMATIC);
 
@@ -1213,7 +1213,7 @@ chatty_conv_setup_pane (ChattyConversation *chatty_conv)
 
   gtk_container_add (GTK_CONTAINER (scrolled_window), chatty_conv->msg_entry);
   gtk_container_set_border_width (GTK_CONTAINER (scrolled_window), 5);
-  gtk_box_pack_start (hbox, scrolled_window, TRUE, TRUE, 5);
+  gtk_box_pack_start (GTK_BOX (hbox), scrolled_window, TRUE, TRUE, 5);
 
   button_send = gtk_button_new ();
   gtk_widget_set_size_request (button_send, 45, 45);
@@ -1238,22 +1238,22 @@ chatty_conv_setup_pane (ChattyConversation *chatty_conv)
                     G_CALLBACK(cb_button_send_clicked),
                     (gpointer) chatty_conv);
 
-  image = gtk_image_new_from_icon_name ("pan-up-symbolic",
-                                        GTK_ICON_SIZE_BUTTON);
+  image = GTK_IMAGE (gtk_image_new_from_icon_name ("pan-up-symbolic",
+						   GTK_ICON_SIZE_BUTTON));
 
 G_GNUC_BEGIN_IGNORE_DEPRECATIONS
   gtk_button_set_image (GTK_BUTTON (button_send), GTK_WIDGET (image));
 G_GNUC_END_IGNORE_DEPRECATIONS
   gtk_widget_set_valign (button_send, GTK_ALIGN_CENTER);
 
-  gtk_box_pack_start (hbox, button_send, FALSE, FALSE, 6);
+  gtk_box_pack_start (GTK_BOX (hbox), button_send, FALSE, FALSE, 6);
 
-  chatty_conv->msg_list = chatty_msg_list_new (MSG_TYPE_IM, TRUE);
+  chatty_conv->msg_list = CHATTY_MSG_LIST (chatty_msg_list_new (MSG_TYPE_IM, TRUE));
 
-  gtk_box_pack_start (GTK_CONTAINER (vbox),
-                      chatty_conv->msg_list,
+  gtk_box_pack_start (GTK_BOX (vbox),
+                      GTK_WIDGET (chatty_conv->msg_list),
                       TRUE, TRUE, 0);
-  gtk_box_pack_start (GTK_CONTAINER (vbox),
+  gtk_box_pack_start (GTK_BOX (vbox),
                       hbox, FALSE, FALSE, 0);
 
   gtk_widget_show_all (vbox);
