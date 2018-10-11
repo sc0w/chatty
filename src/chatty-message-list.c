@@ -284,56 +284,11 @@ chatty_msg_list_get_property (GObject    *object,
 
 
 static void
-chatty_msg_list_get_preferred_width (GtkWidget *widget,
-                                     gint      *minimum_width,
-                                     gint      *natural_width)
-{
-  gint min_width, min_height,
-       nat_width, nat_height;
-
-  GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (chatty_msg_list_parent_class);
-
-  widget_class->get_preferred_width (widget, &min_width, &nat_width);
-  widget_class->get_preferred_height (widget, &min_height, &nat_height);
-
-  *minimum_width = MAX (min_width, min_height);
-  *natural_width = MAX (nat_width, nat_height);
-}
-
-
-static void
-chatty_msg_list_get_preferred_height (GtkWidget *widget,
-                                      gint      *minimum_height,
-                                      gint      *natural_height)
-{
-  gint min_width, min_height,
-       nat_width, nat_height;
-
-  GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (chatty_msg_list_parent_class);
-
-  widget_class->get_preferred_width (widget, &min_width, &nat_width);
-  widget_class->get_preferred_height (widget, &min_height, &nat_height);
-
-  *minimum_height = MAX (min_width, min_height);
-  *natural_height = MAX (nat_width, nat_height);
-}
-
-
-static void
 chatty_msg_list_hide_header (ChattyMsgList *self)
 {
   ChattyMsgListPrivate *priv = chatty_msg_list_get_instance_private (self);
 
   gtk_widget_hide (GTK_WIDGET(priv->disclaimer));
-}
-
-
-static void
-chatty_msg_list_add_ruler (ChattyMsgList *self,
-                           const gchar *text)
-{
-  // TODO Add a ruler with a timestamp of the last message if
-  // the last message has been received on the previous day
 }
 
 
@@ -582,16 +537,6 @@ chatty_msg_list_add_message (ChattyMsgList *self,
 }
 
 
-static void
-chatty_msg_list_finalize (GObject *object)
-{
-  ChattyMsgList *self = CHATTY_MSG_LIST (object);
-
-  ChattyMsgListPrivate *priv = chatty_msg_list_get_instance_private (self);
-
-  G_OBJECT_CLASS (chatty_msg_list_parent_class)->finalize (object);
-}
-
 
 static void
 chatty_msg_list_constructed (GObject *object)
@@ -619,29 +564,15 @@ chatty_msg_list_constructed (GObject *object)
 
 
 static void
-chatty_msg_list_size_allocate (GtkWidget           *widget,
-                               const GtkAllocation *allocation)
-{
-  ChattyMsgListPrivate *priv = chatty_msg_list_get_instance_private (widget);
-
-  priv->width = allocation->width;
-  priv->height = allocation->height;
-}
-
-
-static void
 chatty_msg_list_class_init (ChattyMsgListClass *klass)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
   GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
-  GtkContainerClass *container_class = GTK_CONTAINER_CLASS (klass);
 
   object_class->constructed = chatty_msg_list_constructed;
 
   object_class->set_property = chatty_msg_list_set_property;
   object_class->get_property = chatty_msg_list_get_property;
-
-  object_class->finalize = chatty_msg_list_finalize;
 
   //widget_class->size_allocate = chatty_msg_list_size_allocate;
 

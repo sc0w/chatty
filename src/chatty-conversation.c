@@ -271,106 +271,6 @@ cb_stack_cont_switch_conv (GtkNotebook *notebook,
 // *** end callbacks
 
 
-// TODO Setup an indicator for the buddy presence status
-// which could be shown by a small LED-like
-// icon in the buddy info-popover
-static const char *
-chatty_stock_id_from_status_primitive (PurpleStatusPrimitive prim)
-{
-  const char *stock = NULL;
-
-  switch (prim) {
-    case PURPLE_STATUS_UNSET:
-      break;
-    case PURPLE_STATUS_UNAVAILABLE:
-      break;
-    case PURPLE_STATUS_AWAY:
-      break;
-    case PURPLE_STATUS_EXTENDED_AWAY:
-      break;
-    case PURPLE_STATUS_INVISIBLE:
-      break;
-    case PURPLE_STATUS_OFFLINE:
-      break;
-    default:
-      break;
-  }
-  return stock;
-}
-
-
-static const char *
-chatty_conv_get_icon_stock (PurpleConversation *conv)
-{
-  PurpleAccount *account = NULL;
-  const char *stock = NULL;
-
-  g_return_val_if_fail (conv != NULL, NULL);
-
-  account = purple_conversation_get_account (conv);
-  g_return_val_if_fail (account != NULL, NULL);
-
-  if (purple_conversation_get_type (conv) == PURPLE_CONV_TYPE_IM) {
-    gchar *name = NULL;
-    PurpleBuddy *b;
-
-    name = purple_conversation_get_name(conv);
-    b = purple_find_buddy(account, name);
-
-    if (b != NULL) {
-      PurplePresence *p = purple_buddy_get_presence (b);
-      PurpleStatus *active = purple_presence_get_active_status (p);
-      PurpleStatusType *type = purple_status_get_type (active);
-      PurpleStatusPrimitive prim = purple_status_type_get_primitive (type);
-      stock = chatty_stock_id_from_status_primitive (prim);
-    } else {
-      ;
-    }
-  } else {
-    ;
-  }
-
-  return stock;
-}
-
-
-static GdkPixbuf *
-chatty_conv_get_icon (PurpleConversation *conv,
-                      GtkWidget          *parent,
-                      const char         *icon_size)
-{
-  PurpleAccount    *account = NULL;
-  gchar            *name    = NULL;
-  gchar            *stock   = NULL;
-  GdkPixbuf        *status  = NULL;
-  PurpleBlistUiOps *ops     = purple_blist_get_ui_ops();
-  GtkIconSize      size;
-
-  g_return_val_if_fail (conv != NULL, NULL);
-
-  account = purple_conversation_get_account (conv);
-  name = purple_conversation_get_name (conv);
-
-  g_return_val_if_fail (account != NULL, NULL);
-  g_return_val_if_fail (name != NULL, NULL);
-
-  if (purple_conversation_get_type (conv) == PURPLE_CONV_TYPE_IM) {
-    PurpleBuddy *b = purple_find_buddy (account, name);
-    if (b != NULL) {
-      if (ops && ops->update) {
-        ops->update(NULL, (PurpleBlistNode*)b);
-      }
-    }
-  }
-
-  stock = chatty_conv_get_icon_stock (conv);
-  size = gtk_icon_size_from_name (icon_size);
-  status = gtk_widget_render_icon (parent, stock, size, "GtkWidget");
-
-  return status;
-}
-
-
 // TODO
 // Needs to be set up for command handling in the message view
 // Mainly for testing purposes (SMS + OMEMO plugin)
@@ -493,14 +393,6 @@ chatty_conv_check_for_command (PurpleConversation *conv)
 
   g_free (cmd);
   return retval;
-}
-
-
-static void
-chatty_set_active_conv_header_content (PurpleConversation *conv)
-{
-  /* TODO set contact information like avatar, name and
-  infopanel data pointer here */
 }
 
 

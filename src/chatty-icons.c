@@ -12,33 +12,6 @@
 #include "chatty-icons.h"
 
 
-static GdkPixbuf *
-chatty_icon_pixbuf_from_buddy_icon (PurpleBuddyIcon *buddy_icon)
-{
-  GdkPixbuf         *icon;
-  const guchar      *data;
-  size_t            len;
-  GdkPixbufLoader   *loader;
-
-  data = purple_buddy_icon_get_data (buddy_icon, &len);
-
-  loader = gdk_pixbuf_loader_new ();
-  gdk_pixbuf_loader_set_size (loader, 48, 48);
-  gdk_pixbuf_loader_write (loader, data, len, NULL);
-  gdk_pixbuf_loader_close (loader, NULL);
-
-  icon = gdk_pixbuf_loader_get_pixbuf (loader);
-
-  if (icon) {
-    g_object_ref (icon);
-  }
-
-  g_object_unref (loader);
-
-  return icon;
-}
-
-
 gboolean
 chatty_icon_pixbuf_is_opaque (GdkPixbuf *pixbuf)
 {

@@ -769,47 +769,6 @@ chatty_blist_remove (PurpleBuddyList *list,
 
 
 /**
- * chatty_blist_get_buddy_idle_time:
- * @buddy: a PurpleBuddy
- *
- * Returns: a string with the idle time
- *
- */
-static gchar *
-chatty_blist_get_buddy_idle_time (PurpleBuddy *buddy)
-{
-  gchar *idle_time = NULL;
-
-  PurplePresence *presence = purple_buddy_get_presence (buddy);
-
-  if (purple_presence_is_idle (presence)) {
-    time_t idle_secs = purple_presence_get_idle_time (presence);
-
-    if (idle_secs > 0) {
-      int iday, ihrs, imin;
-      time_t t;
-
-      time(&t);
-      iday = (t - idle_secs) / (24 * 60 * 60);
-      ihrs = ((t - idle_secs) / 60 / 60) % 24;
-      imin = ((t - idle_secs) / 60) % 60;
-
-      if (iday)
-        idle_time = g_strdup_printf ("Idle %dd %dh %02dm", iday, ihrs, imin);
-      else if (ihrs)
-        idle_time = g_strdup_printf ("Idle %dh %02dm", ihrs, imin);
-      else
-        idle_time = g_strdup_printf ("Idle %dm", imin);
-
-    } else
-      idle_time = g_strdup ("Idle");
-  }
-
-  return (idle_time);
-}
-
-
-/**
  * chatty_blist_update_node:
  * @buddy: a PurpleBuddy
  * @node:  a PurpleBlistNode
