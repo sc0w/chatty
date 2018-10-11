@@ -633,8 +633,8 @@ chatty_blist_add_columns (GtkTreeView *treeview)
 }
 
 
-void *
-chatty_blist_get_handle () {
+static void *
+chatty_blist_get_handle (void) {
   static int handle;
 
   return &handle;
