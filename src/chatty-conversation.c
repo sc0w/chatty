@@ -1012,7 +1012,12 @@ chatty_get_conv_blist_node (PurpleConversation *conv)
       node = PURPLE_BLIST_NODE (purple_blist_find_chat (conv->account,
                                                         conv->name));
       break;
+    case PURPLE_CONV_TYPE_UNKNOWN:
+    case PURPLE_CONV_TYPE_MISC:
+    case PURPLE_CONV_TYPE_ANY:
     default:
+      g_warning ("Unhandled converstation type %d",
+		 purple_conversation_get_type (conv));
       break;
   }
   return node;
