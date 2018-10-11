@@ -379,6 +379,8 @@ chatty_conv_check_for_command (PurpleConversation *conv)
                                    time(NULL));
         retval = TRUE;
         break;
+      default:
+        break; /* nothing to do */
     }
   }
 
