@@ -210,8 +210,7 @@ init_libpurple (void)
   g_free (search_path);
 
   if (!purple_core_init (CHATTY_UI)) {
-    printf ("libpurple initialization failed\n");
-    abort ();
+    g_error ("libpurple initialization failed");
   }
 
   purple_set_blist (purple_blist_new ());
