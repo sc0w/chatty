@@ -209,7 +209,7 @@ cb_list_account_select_row_activated (GtkListBox    *box,
 
 
 static void
-chatty_account_create_add_account_view ()
+chatty_account_create_add_account_view (void)
 {
   GtkWidget *grid;
   GtkWidget *button_avatar;
