@@ -184,7 +184,7 @@ cb_list_account_select_row_activated (GtkListBox    *box,
   PurplePluginProtocolInfo *prpl_info = NULL;
   gboolean                  invite_enabled = TRUE;
 
-  account = g_object_get_data (row, "row-account");
+  account = g_object_get_data (G_OBJECT (row), "row-account");
 
   if (account) {
     pc = purple_account_get_connection (account);
@@ -225,19 +225,19 @@ chatty_account_create_add_account_view ()
 
   gtk_grid_attach (GTK_GRID (grid), button_avatar, 1, 1, 1, 1);
 
-  chatty_account->entry_account_name = gtk_entry_new ();
+  chatty_account->entry_account_name = GTK_ENTRY (gtk_entry_new ());
   gtk_entry_set_placeholder_text (GTK_ENTRY (chatty_account->entry_account_name), _("id@any-server"));
-  gtk_grid_attach (GTK_GRID (grid), chatty_account->entry_account_name, 1, 2, 1, 1);
+  gtk_grid_attach (GTK_GRID (grid), GTK_WIDGET (chatty_account->entry_account_name), 1, 2, 1, 1);
 
   g_signal_connect (G_OBJECT(chatty_account->entry_account_name),
                     "insert_text",
                     G_CALLBACK(cb_account_name_insert_text),
                     NULL);
 
-  chatty_account->entry_account_pwd = gtk_entry_new ();
+  chatty_account->entry_account_pwd = GTK_ENTRY (gtk_entry_new ());
   gtk_entry_set_placeholder_text (GTK_ENTRY (chatty_account->entry_account_pwd), _("Password"));
   gtk_entry_set_visibility (GTK_ENTRY (chatty_account->entry_account_pwd), 0);
-  gtk_grid_attach (GTK_GRID (grid), chatty_account->entry_account_pwd, 1, 3, 1, 1);
+  gtk_grid_attach (GTK_GRID (grid), GTK_WIDGET (chatty_account->entry_account_pwd), 1, 3, 1, 1);
 
   chatty_account->button_add_account = gtk_button_new_with_label (_("Add account"));
   gtk_widget_set_sensitive (chatty_account->button_add_account, FALSE);
@@ -247,12 +247,12 @@ chatty_account_create_add_account_view ()
                            G_CALLBACK (cb_button_add_account_clicked),
                            NULL, 0);
 
-  gtk_widget_set_halign (GTK_GRID (grid), GTK_ALIGN_CENTER);
-  gtk_widget_set_valign (GTK_GRID (grid), GTK_ALIGN_CENTER);
+  gtk_widget_set_halign (GTK_WIDGET (grid), GTK_ALIGN_CENTER);
+  gtk_widget_set_valign (GTK_WIDGET (grid), GTK_ALIGN_CENTER);
 
   gtk_widget_show_all (grid);
 
-  gtk_box_pack_start (GTK_CONTAINER(chatty->pane_view_new_account),
+  gtk_box_pack_start (GTK_BOX(chatty->pane_view_new_account),
                       grid, TRUE, TRUE, 0);
 }
 
@@ -330,16 +330,16 @@ chatty_account_add_to_accounts_list (PurpleAccount *account,
     // TODO get protocol icon
   }
 
-  hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
-  vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
-  vbox_labels = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
+  hbox = GTK_BOX (gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0));
+  vbox = GTK_BOX (gtk_box_new (GTK_ORIENTATION_VERTICAL, 0));
+  vbox_labels = GTK_BOX (gtk_box_new (GTK_ORIENTATION_VERTICAL, 0));
 
   gtk_container_set_border_width (GTK_CONTAINER (hbox), 4);
 
   label_name = gtk_label_new (NULL);
   label_protocol = gtk_label_new (NULL);
-  gtk_label_set_xalign (label_name, 0);
-  gtk_label_set_xalign (label_protocol, 0);
+  gtk_label_set_xalign (GTK_LABEL (label_name), 0);
+  gtk_label_set_xalign (GTK_LABEL (label_protocol), 0);
 
   if (list_type == LIST_ACCOUNT_MANAGE) {
     switch_account_enabled = gtk_switch_new ();
@@ -385,8 +385,8 @@ chatty_account_add_to_accounts_list (PurpleAccount *account,
 
   gtk_box_pack_start (vbox_labels, label_name, FALSE, FALSE, 4);
   gtk_box_pack_start (vbox_labels, label_protocol, FALSE, FALSE, 4);
-  gtk_box_pack_start (hbox, vbox_labels, FALSE, FALSE, 12);
-  gtk_box_pack_end (hbox, vbox, FALSE, FALSE, 6);
+  gtk_box_pack_start (hbox, GTK_WIDGET (vbox_labels), FALSE, FALSE, 12);
+  gtk_box_pack_end (hbox, GTK_WIDGET (vbox), FALSE, FALSE, 6);
 
   gtk_container_add (GTK_CONTAINER(row), GTK_WIDGET(hbox));
 
@@ -439,7 +439,7 @@ chatty_account_create_accounts_list (GtkWidget  *list,
   GtkBox      *vbox;
   HdyColumn   *hdy_column;
 
-  gtk_list_box_set_header_func (list,
+  gtk_list_box_set_header_func (GTK_LIST_BOX (list),
                                 chatty_account_list_separator,
                                 NULL,
                                 NULL);
@@ -453,11 +453,11 @@ chatty_account_create_accounts_list (GtkWidget  *list,
   gtk_container_add (GTK_CONTAINER(scroll),
                      list);
 
-  vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
+  vbox = GTK_BOX (gtk_box_new (GTK_ORIENTATION_VERTICAL, 0));
   gtk_box_pack_start (vbox, scroll, TRUE, TRUE, 0);
 
   if (button_text != NULL) {
-    hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
+    hbox = GTK_BOX (gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0));
 
     button = gtk_button_new_with_label (button_text);
     g_signal_connect_object (button,
@@ -466,7 +466,7 @@ chatty_account_create_accounts_list (GtkWidget  *list,
                              NULL, 0);
 
     gtk_box_pack_end (hbox, button, FALSE, FALSE, 0);
-    gtk_box_pack_start (vbox, hbox, FALSE, FALSE, 32);
+    gtk_box_pack_start (vbox, GTK_WIDGET (hbox), FALSE, FALSE, 32);
   }
 
   hdy_column = hdy_column_new ();
@@ -481,7 +481,7 @@ chatty_account_create_accounts_list (GtkWidget  *list,
                 NULL);
 
   gtk_container_add (GTK_CONTAINER(hdy_column),
-                     vbox);
+                     GTK_WIDGET (vbox));
 
   gtk_container_add (GTK_CONTAINER(parent),
                      GTK_WIDGET(hdy_column));
@@ -510,7 +510,7 @@ chatty_account_create_account_select_list (void)
                     NULL);
 
   chatty_account_create_accounts_list (chatty_account->list_select,
-                                       chatty->pane_view_select_account,
+                                       GTK_BOX (chatty->pane_view_select_account),
                                        NULL);
 }
 
@@ -754,7 +754,7 @@ chatty_account_init (void)
 
   chatty_account_create_account_select_list ();
   chatty_account_create_accounts_list (chatty_account->list_manage,
-                                       chatty->pane_view_manage_account,
+                                       GTK_BOX (chatty->pane_view_manage_account),
                                        _("Add account"));
 
   if (!purple_prefs_get_bool ("/purple/savedstatus/startup_current_status")) {
