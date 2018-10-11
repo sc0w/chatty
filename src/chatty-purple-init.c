@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+#define G_LOG_DOMAIN "chatty-purple"
 
 #include "purple.h"
 #include "chatty-purple-init.h"

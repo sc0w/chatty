@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+#define G_LOG_DOMAIN "chatty-account"
 
 #include <glib.h>
 #include <glib/gi18n.h>
