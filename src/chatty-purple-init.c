@@ -221,7 +221,7 @@ init_libpurple (void)
   purple_plugins_probe (G_MODULE_SUFFIX);
   iter = purple_plugins_get_all ();
 
-  for (int i = 0; iter; iter = iter->next) {
+  for (; iter; iter = iter->next) {
     PurplePlugin *plugin = iter->data;
     PurplePluginInfo *info = plugin->info;
 
@@ -256,8 +256,6 @@ static void
 signed_on (PurpleConnection *gc)
 {
   gchar *text;
-
-  chatty_data_t *chatty = chatty_get_data ();
   chatty_purple_data_t *chatty_purple = chatty_get_purple_data();
 
   PurpleAccount *account = purple_connection_get_account (gc);

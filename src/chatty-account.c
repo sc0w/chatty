@@ -150,10 +150,7 @@ static void
 cb_button_enter_account_data_clicked (GtkButton *sender,
                                       gpointer  data)
 {
-  chatty_data_t *chatty = chatty_get_data ();
-
   chatty_account_create_add_account_view ();
-
   chatty_window_change_view (CHATTY_VIEW_NEW_ACCOUNT);
 }
 
@@ -291,8 +288,6 @@ chatty_account_list_clear (GtkWidget *list)
   GList             *children;
   GList             *iter;
 
-  chatty_account_data_t *chatty_account = chatty_get_account_data ();
-
   children = gtk_container_get_children (GTK_CONTAINER(list));
 
   for (iter = children; iter != NULL; iter = g_list_next (iter))
@@ -412,7 +407,6 @@ chatty_account_populate_account_list (GtkWidget *list)
 {
   GList      *l;
   gboolean   ret = FALSE;
-  const char *path;
 
   chatty_account_data_t *chatty_account = chatty_get_account_data ();
 
@@ -444,10 +438,6 @@ chatty_account_create_accounts_list (GtkWidget  *list,
   GtkBox      *hbox;
   GtkBox      *vbox;
   HdyColumn   *hdy_column;
-
-  chatty_data_t *chatty = chatty_get_data ();
-
-  chatty_account_data_t *chatty_account = chatty_get_account_data ();
 
   gtk_list_box_set_header_func (list,
                                 chatty_account_list_separator,
@@ -674,8 +664,6 @@ chatty_account_add_account (const char *account_name,
                             const char *account_pwd)
 {
   PurpleAccount *account;
-
-  chatty_data_t *chatty = chatty_get_data ();
 
   account = purple_account_new (account_name, "prpl-jabber");
 

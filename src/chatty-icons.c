@@ -179,7 +179,6 @@ chatty_icon_get_buddy_icon (PurpleBlistNode *node,
   PurpleGroup               *group = NULL;
   const guchar              *data = NULL;
   GdkPixbuf                 *buf, *ret = NULL;
-  GtkImage                  *icon_default;
   PurpleBuddyIcon           *icon = NULL;
   PurpleAccount             *account = NULL;
   PurpleContact             *contact = NULL;

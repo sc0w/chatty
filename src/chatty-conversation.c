@@ -1207,7 +1207,6 @@ void
 chatty_conv_present_conversation (PurpleConversation *conv)
 {
   ChattyConversation *chatty_conv;
-  GdkModifierType    state;
 
   chatty_conv = CHATTY_CONVERSATION (conv);
 

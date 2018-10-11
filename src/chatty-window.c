@@ -139,10 +139,7 @@ chatty_window_set_header_title (const char *title)
 static void
 chatty_window_init_data ()
 {
-  chatty_data_t *chatty = chatty_get_data ();
-
   chatty_window_change_view (CHATTY_VIEW_CONVERSATIONS_LIST);
-
   libpurple_start ();
 }
 
@@ -154,8 +151,6 @@ chatty_window_activate (GtkApplication  *app,
   GtkBuilder         *builder;
   GtkWidget          *window;
   GSimpleActionGroup *simple_action_group;
-  GtkBox             *vbox;
-  HdyLeaflet         *hdy_leaflet;
 
   chatty_data_t *chatty = chatty_get_data ();
 

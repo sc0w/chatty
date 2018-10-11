@@ -213,7 +213,6 @@ static void
 cb_sign_on_off (PurpleConnection  *gc,
                 PurpleBuddyList   *blist)
 {
-  chatty_data_t *chatty = chatty_get_data ();
   // TODO ...
 }
 
