@@ -781,13 +781,13 @@ chatty_conv_find_conv (PurpleConversation * conv)
     PurpleBuddy *b = PURPLE_BUDDY (buddy_node);
     PurpleConversation *conv;
 
-    if (conv = purple_find_conversation_with_account (PURPLE_CONV_TYPE_IM,
+    conv = purple_find_conversation_with_account (PURPLE_CONV_TYPE_IM,
                                                        b->name,
-                                                       b->account)) {
-      if (conv->ui_data) {
+                                                       b->account);
+    if (!conv)
+        continue;
+    if (conv->ui_data)
         return conv->ui_data;
-      }
-    }
   }
 
   return NULL;
