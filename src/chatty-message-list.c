@@ -622,7 +622,7 @@ void
 chatty_msg_list_set_msg_type (ChattyMsgList *self,
                               guint         message_type)
 {
-  g_return_val_if_fail (CHATTY_IS_MSG_LIST (self), 0);
+  g_return_if_fail (CHATTY_IS_MSG_LIST (self));
 
   g_object_set (G_OBJECT (self), "message_type", message_type, NULL);
 }
@@ -633,7 +633,7 @@ chatty_msg_list_get_msg_type (ChattyMsgList *self)
 {
   ChattyMsgListPrivate *priv = chatty_msg_list_get_instance_private (self);
 
-  g_return_val_if_fail (CHATTY_IS_MSG_LIST (self), NULL);
+  g_return_val_if_fail (CHATTY_IS_MSG_LIST (self), MSG_TYPE_UNKNOWN);
 
   return priv->message_type;
 }

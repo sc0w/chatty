@@ -40,6 +40,7 @@ enum {
 
 
 enum {
+  MSG_TYPE_UNKNOWN,
   MSG_TYPE_IM,
   MSG_TYPE_IM_E2EE,
   MSG_TYPE_SMS,
