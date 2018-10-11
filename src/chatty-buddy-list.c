@@ -947,6 +947,7 @@ chatty_blist_update (PurpleBuddyList *list,
     case PURPLE_BLIST_CONTACT_NODE:
     case PURPLE_BLIST_GROUP_NODE:
     case PURPLE_BLIST_OTHER_NODE:
+    default:
       return;
   }
 }

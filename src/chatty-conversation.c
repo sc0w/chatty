@@ -1225,10 +1225,9 @@ chatty_conv_setup_pane (ChattyConversation *chatty_conv)
       gtk_style_context_add_class (sc, "button_send_blue");
       break;
     case PURPLE_CONV_TYPE_CHAT:
-      break;
     case PURPLE_CONV_TYPE_MISC:
-      break;
     case PURPLE_CONV_TYPE_ANY:
+    default:
       break;
   }
 
