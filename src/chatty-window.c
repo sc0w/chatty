@@ -141,6 +141,7 @@ chatty_window_activate (GtkApplication  *app,
   GtkBuilder         *builder;
   GtkWindow          *window;
   GSimpleActionGroup *simple_action_group;
+  GtkCssProvider *cssProvider = gtk_css_provider_new();
 
   chatty_data_t *chatty = chatty_get_data ();
 
@@ -163,7 +164,6 @@ chatty_window_activate (GtkApplication  *app,
 
   chatty_popover_actions_init (window);
 
-  GtkCssProvider *cssProvider = gtk_css_provider_new();
   gtk_css_provider_load_from_resource (cssProvider,
                                        "/sm/puri/chatty/css/style.css");
   gtk_style_context_add_provider_for_screen (gdk_screen_get_default(),

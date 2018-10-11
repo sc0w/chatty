@@ -519,11 +519,12 @@ chatty_add_message_history_to_conv (gpointer data)
     gchar         **line_split = NULL;
     gchar         **logs = NULL;
     gchar         *time_stamp;
+    GList         *history;
 
     conv_name = purple_conversation_get_name (chatty_conv->active_conv);
     account = purple_conversation_get_account (chatty_conv->active_conv);
     name = purple_buddy_get_name (purple_find_buddy (account, conv_name));
-    GList *history = purple_log_get_logs (PURPLE_LOG_IM, name, account);
+    history = purple_log_get_logs (PURPLE_LOG_IM, name, account);
 
     if (history == NULL) {
       g_list_free (history);
@@ -1135,11 +1136,10 @@ chatty_conv_im_with_buddy (PurpleAccount *account,
                            const char    *name)
 {
   PurpleConversation *conv;
+  ChattyConversation *chatty_conv;
 
   g_return_if_fail (account != NULL);
   g_return_if_fail (name != NULL);
-
-  ChattyConversation *chatty_conv;
 
   conv = purple_find_conversation_with_account (PURPLE_CONV_TYPE_IM,
                                                 name,

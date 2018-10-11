@@ -655,10 +655,9 @@ chatty_blist_show (PurpleBuddyList *list)
   void              *handle;
   GtkTreeView       *treeview;
   GtkStyleContext   *sc;
+  chatty_data_t *chatty = chatty_get_data ();
 
   chatty_blist = CHATTY_BLIST(list);
-
-  chatty_data_t *chatty = chatty_get_data ();
 
   chatty_blist->empty_avatar = gdk_pixbuf_new (GDK_COLORSPACE_RGB, TRUE, 8, 32, 32);
   gdk_pixbuf_fill (chatty_blist->empty_avatar, 0x00000000);

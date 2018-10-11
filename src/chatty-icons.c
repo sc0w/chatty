@@ -161,6 +161,7 @@ chatty_icon_get_buddy_icon (PurpleBlistNode *node,
                             orig_height,
                             scale_width,
                             scale_height;
+  float                     scale_size;
 
   if (PURPLE_BLIST_NODE_IS_CONTACT (node)) {
     buddy = purple_contact_get_priority_buddy((PurpleContact*)node);
@@ -257,7 +258,7 @@ chatty_icon_get_buddy_icon (PurpleBlistNode *node,
                                       &scale_height);
   }
 
-  float scale_size = 16.0 * (float)scale;
+  scale_size = 16.0 * (float)scale;
 
   if (scale) {
     GdkPixbuf *tmpbuf;
