@@ -122,7 +122,7 @@ chatty_icon_pixbuf_from_data (const guchar *buf, gsize count)
 GtkWidget *
 chatty_icon_get_avatar_button (int size)
 {
-  GtkImage        *image;
+  GtkWidget       *image;
   GtkWidget       *button_avatar;
   GtkStyleContext *sc;
 
@@ -197,7 +197,8 @@ chatty_icon_get_buddy_icon (PurpleBlistNode *node,
   }
 
   if (data == NULL && buddy) {
-    if (icon = purple_buddy_icons_find (buddy->account, buddy->name)) {
+    icon = purple_buddy_icons_find (buddy->account, buddy->name);
+    if (icon) {
       data = purple_buddy_icon_get_data (icon, &len);
     }
   }
