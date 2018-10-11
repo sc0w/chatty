@@ -443,7 +443,7 @@ chatty_blist_create_add_buddy_view (PurpleAccount *account,
 
   gtk_grid_attach (GTK_GRID (grid), button_avatar, 0, 1, 1, 1);
 
-  chatty->entry_buddy_name = gtk_entry_new ();
+  chatty->entry_buddy_name = GTK_ENTRY (gtk_entry_new ());
   gtk_entry_set_placeholder_text (GTK_ENTRY (chatty->entry_buddy_name),
                                   "id@any-server.com");
 
@@ -452,33 +452,33 @@ chatty_blist_create_add_buddy_view (PurpleAccount *account,
                     G_CALLBACK(cb_buddy_name_insert_text),
                     NULL);
 
-  gtk_grid_attach (GTK_GRID (grid), chatty->entry_buddy_name, 0, 2, 1, 1);
+  gtk_grid_attach (GTK_GRID (grid), GTK_WIDGET (chatty->entry_buddy_name), 0, 2, 1, 1);
 
-  chatty->entry_buddy_nick = gtk_entry_new ();
+  chatty->entry_buddy_nick = GTK_ENTRY (gtk_entry_new ());
   gtk_entry_set_placeholder_text (GTK_ENTRY (chatty->entry_buddy_nick),
                                   _("Nickname (optional)"));
-  gtk_grid_attach (GTK_GRID (grid), chatty->entry_buddy_nick, 0, 3, 1, 1);
+  gtk_grid_attach (GTK_GRID (grid), GTK_WIDGET (chatty->entry_buddy_nick), 0, 3, 1, 1);
 
-  chatty->entry_invite_msg = gtk_entry_new ();
-  gtk_widget_set_sensitive (chatty->entry_invite_msg, invite_enabled);
+  chatty->entry_invite_msg = GTK_ENTRY (gtk_entry_new ());
+  gtk_widget_set_sensitive (GTK_WIDGET (chatty->entry_invite_msg), invite_enabled);
   gtk_entry_set_placeholder_text (GTK_ENTRY (chatty->entry_invite_msg),
                                   _("Invite message"));
-  gtk_grid_attach (GTK_GRID (grid), chatty->entry_invite_msg, 0, 4, 1, 1);
+  gtk_grid_attach (GTK_GRID (grid), GTK_WIDGET (chatty->entry_invite_msg), 0, 4, 1, 1);
 
   chatty->button_add_buddy = gtk_button_new_with_label ("Add");
   gtk_grid_attach (GTK_GRID (grid), chatty->button_add_buddy, 0, 5, 1, 1);
-  gtk_widget_set_sensitive (chatty->button_add_buddy, FALSE);
+  gtk_widget_set_sensitive (GTK_WIDGET (chatty->button_add_buddy), FALSE);
   g_signal_connect (chatty->button_add_buddy,
                     "clicked",
                     G_CALLBACK (cb_button_new_conversation_clicked),
                     (gpointer) account);
 
-  gtk_widget_set_halign (GTK_GRID (grid), GTK_ALIGN_CENTER);
-  gtk_widget_set_valign (GTK_GRID (grid), GTK_ALIGN_CENTER);
+  gtk_widget_set_halign (GTK_WIDGET (grid), GTK_ALIGN_CENTER);
+  gtk_widget_set_valign (GTK_WIDGET (grid), GTK_ALIGN_CENTER);
 
   gtk_widget_show_all (grid);
 
-  gtk_box_pack_start (GTK_CONTAINER(chatty->pane_view_new_conversation),
+  gtk_box_pack_start (GTK_BOX (chatty->pane_view_new_conversation),
                       grid, TRUE, TRUE, 0);
 }
 
@@ -663,7 +663,7 @@ chatty_blist_show (PurpleBuddyList *list)
   chatty_blist->empty_avatar = gdk_pixbuf_new (GDK_COLORSPACE_RGB, TRUE, 8, 32, 32);
   gdk_pixbuf_fill (chatty_blist->empty_avatar, 0x00000000);
 
-  chatty_blist->scroll = gtk_scrolled_window_new ( NULL, NULL);
+  chatty_blist->scroll = GTK_SCROLLED_WINDOW (gtk_scrolled_window_new ( NULL, NULL));
   gtk_widget_show (GTK_WIDGET(chatty_blist->scroll));
 
   chatty_blist->treemodel = gtk_list_store_new (NUM_COLUMNS,
@@ -672,7 +672,7 @@ chatty_blist_show (PurpleBuddyList *list)
                                                 G_TYPE_STRING,
                                                 G_TYPE_STRING);
 
-  treeview = gtk_tree_view_new_with_model (GTK_TREE_MODEL(chatty_blist->treemodel));
+  treeview = GTK_TREE_VIEW (gtk_tree_view_new_with_model (GTK_TREE_MODEL(chatty_blist->treemodel)));
   gtk_tree_view_set_grid_lines (treeview, GTK_TREE_VIEW_GRID_LINES_HORIZONTAL);
   gtk_tree_view_set_activate_on_single_click (GTK_TREE_VIEW(treeview), TRUE);
   sc = gtk_widget_get_style_context (GTK_WIDGET(treeview));
@@ -697,8 +697,8 @@ chatty_blist_show (PurpleBuddyList *list)
 
   gtk_tree_view_columns_autosize (GTK_TREE_VIEW (treeview));
 
-  gtk_box_pack_start (GTK_CONTAINER(chatty->pane_view_buddy_list),
-                      chatty_blist->scroll,
+  gtk_box_pack_start (GTK_BOX (chatty->pane_view_buddy_list),
+                      GTK_WIDGET (chatty_blist->scroll),
                       TRUE, TRUE, 0);
 
 
