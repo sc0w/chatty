@@ -42,10 +42,10 @@ typedef enum {
   CHATTY_VIEW_CONVERSATIONS_LIST,
 } ChattyWindowState;
 
-enum {
+typedef enum {
   CHATTY_MESSAGE_MODE_XMPP,
   CHATTY_MESSAGE_MODE_SMS
-} e_message_mode;
+} ChattyWindowMessageMode;
 
 void chatty_window_activate (GtkApplication* app, gpointer user_data);
 void chatty_window_change_view (guint state);
