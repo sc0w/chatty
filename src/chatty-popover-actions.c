@@ -7,6 +7,7 @@
 
 #include <glib.h>
 #include <glib/gi18n.h>
+#include "chatty-popover-actions.h"
 #include "chatty-window.h"
 
 
