@@ -161,12 +161,17 @@ cb_button_add_account_clicked (GtkButton *sender,
 {
   const gchar *name, *pwd;
 
+  chatty_data_t *chatty = chatty_get_data ();
+
   chatty_account_data_t *chatty_account = chatty_get_account_data ();
 
   name = gtk_entry_get_text (GTK_ENTRY(chatty_account->entry_account_name));
   pwd  = gtk_entry_get_text (GTK_ENTRY(chatty_account->entry_account_pwd));
 
   chatty_account_add_account (name, pwd);
+
+  gtk_container_foreach (GTK_CONTAINER(chatty->pane_view_new_account),
+                         (GtkCallback)gtk_widget_destroy, NULL);
 
   chatty_window_change_view (CHATTY_VIEW_MANAGE_ACCOUNT_LIST);
 }
