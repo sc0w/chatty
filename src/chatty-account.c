@@ -49,7 +49,7 @@ struct auth_request
 };
 
 static void chatty_account_create_add_account_view ();
-static void chatty_account_add_account (name, pwd);
+static void chatty_account_add_account (const char *name, const char *pwd);
 static void chatty_account_add_to_accounts_list (PurpleAccount *account,
                                                  guint         list_type);
 
