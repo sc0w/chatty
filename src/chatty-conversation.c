@@ -389,16 +389,6 @@ chatty_conv_check_for_command (PurpleConversation *conv)
 }
 
 
-static int
-chatty_conv_message_compare (gconstpointer p1,
-                             gconstpointer p2)
-{
-  const PurpleConvMessage *m1 = p1, *m2 = p2;
-
-  return (m1->when > m2->when);
-}
-
-
 /**
  * chatty_conv_set_unseen:
  * @chatty_conv: a ChattyConversation
@@ -714,35 +704,6 @@ chatty_conv_stack_add_conv (ChattyConversation *chatty_conv)
 
 
 /**
- * chatty_conv_attach:
- * @conv: a PurpleConversation
- *
- * Attach a PurpleConversation
- *
- */
-static void
-chatty_conv_attach (PurpleConversation *conv)
-{
-  int timer;
-
-  purple_conversation_set_data (conv, "unseen-count", NULL);
-  purple_conversation_set_data (conv, "unseen-state", NULL);
-  purple_conversation_set_ui_ops (conv, chatty_conversations_get_conv_ui_ops ());
-
-  if (!CHATTY_CONVERSATION (conv)) {
-    chatty_conv_new (conv);
-  }
-
-  timer = GPOINTER_TO_INT (purple_conversation_get_data (conv, "close-timer"));
-
-  if (timer) {
-    purple_timeout_remove (timer);
-    purple_conversation_set_data (conv, "close-timer", NULL);
-  }
-}
-
-
-/**
  * chatty_conv_find_conv:
  * @conv: a PurpleConversation
  *
@@ -785,60 +746,6 @@ chatty_conv_find_conv (PurpleConversation * conv)
   }
 
   return NULL;
-}
-
-
-/**
- * chatty_conv_attach_to_conversation:
- * @conv:     a PurpleConversation
- *
- * Attach a PurpleConversation tio the Chatty-GUI
- *
- */
-gboolean
-chatty_conv_attach_to_conversation (PurpleConversation *conv)
-{
-  GList              *list;
-  GList              *convs;
-  ChattyConversation *chatty_conv;
-
-  chatty_conv_attach (conv);
-  chatty_conv = CHATTY_CONVERSATION(conv);
-
-  list = purple_conversation_get_message_history (conv);
-
-  if (list) {
-    if (purple_conversation_get_type (conv) == PURPLE_CONV_TYPE_IM) {
-      list = g_list_copy (list);
-
-      for (convs = purple_get_ims (); convs; convs = convs->next) {
-        if (convs->data != conv &&
-            chatty_conv_find_conv (convs->data) == chatty_conv) {
-          chatty_conv_attach(convs->data);
-          list =
-            g_list_concat (list,
-                           g_list_copy (purple_conversation_get_message_history (convs->data)));
-        }
-      }
-
-      list = g_list_sort(list, chatty_conv_message_compare);
-      chatty_conv->attach.current = list;
-      list = g_list_last(list);
-    } else {
-      g_return_val_if_reached (TRUE);
-    }
-
-    g_object_set_data(G_OBJECT(chatty_conv->msg_entry), "attach-start-time",
-        GINT_TO_POINTER (((PurpleConvMessage*)(list->data))->when));
-
-    chatty_conv->attach.timer = g_idle_add (chatty_add_message_history_to_conv, chatty_conv);
-  } else {
-    purple_signal_emit (chatty_conversations_get_handle(),
-                        "conversation-displayed",
-                        chatty_conv);
-  }
-
-  return TRUE;
 }
 
 
@@ -1103,21 +1010,6 @@ chatty_conv_present_conversation (PurpleConversation *conv)
   chatty_conv_switch_active_conversation (conv);
 
   chatty_conv_switch_conv (chatty_conv);
-}
-
-
-/**
- * chatty_conv_remove_chatty_conv:
- * @conv: a PurpleConversation
- *
- * Removes the GUI instance and the conversation
- * from the conversations list.
- *
- */
-void
-chatty_conv_remove_chatty_conv (ChattyConversation *chatty_conv)
-{
-
 }
 
 
