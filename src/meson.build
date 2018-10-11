@@ -27,6 +27,5 @@ chatty_sources += gnome.compile_resources('chatty-resources',
 
 executable('chatty', chatty_sources,
   dependencies: chatty_deps,
-  c_args: '-w',
   install: true,
 )
