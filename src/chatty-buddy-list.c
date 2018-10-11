@@ -123,7 +123,7 @@ cb_buddy_away (PurpleBuddy  *buddy,
                PurpleStatus *status)
 {
   // TODO set the status in the message list popover
-  printf ("Buddy \"%s\" (%s) changed status to %s\n",
+  g_debug ("Buddy \"%s\" (%s) changed status to %s",
             purple_buddy_get_name (buddy),
             purple_account_get_protocol_id (purple_buddy_get_account (buddy)),
             purple_status_get_id (status));
@@ -136,7 +136,7 @@ cb_buddy_idle (PurpleBuddy *buddy,
                gboolean     idle)
 {
   // TODO set the status in the message list popover
-  printf ("Buddy \"%s\" (%s) changed idle state to %s\n",
+  g_debug ("Buddy \"%s\" (%s) changed idle state to %s",
             purple_buddy_get_name(buddy),
             purple_account_get_protocol_id (purple_buddy_get_account (buddy)),
             (idle) ? "idle" : "not idle");
@@ -195,8 +195,8 @@ cb_buddy_signed_on_off (PurpleBuddy *buddy)
 
   // TODO set the status in the message list popover
 
-  printf ("Buddy \"%s\"\n (%s) signed on/off\n", purple_buddy_get_name (buddy),
-          purple_account_get_protocol_id (purple_buddy_get_account(buddy)));
+  g_debug ("Buddy \"%s\"\n (%s) signed on/off", purple_buddy_get_name (buddy),
+           purple_account_get_protocol_id (purple_buddy_get_account(buddy)));
 }
 
 static gboolean
@@ -255,8 +255,8 @@ cb_conversation_updated (PurpleConversation   *conv,
       }
 
       // TODO display the number in a notification icon
-      printf ("%d unread message from %s\n",
-              count, purple_conversation_get_title (l->data));
+      g_debug ("%d unread message from %s",
+               count, purple_conversation_get_title (l->data));
 
       l = l->next;
     }
@@ -1051,7 +1051,7 @@ chatty_blist_request_add_buddy (PurpleAccount *account,
   // TODO remove this callback when the similiar request triggering
   //      via PurpleAccountUiOps is working
 
-  printf ("chatty_blist_request_add_buddy: %s  %s  %s\n",
+  g_debug ("chatty_blist_request_add_buddy: %s  %s  %s",
            username, group, alias);
 }
 

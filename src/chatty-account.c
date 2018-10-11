@@ -600,7 +600,7 @@ chatty_account_request_authorization (PurpleAccount *account,
                                       PurpleAccountRequestAuthorizationCb deny_cb,
                                       void          *user_data)
 {
-  printf ("chatty_account_request_authorization\n");
+  g_debug ("chatty_account_request_authorization");
 
   return NULL;
 }

@@ -64,10 +64,10 @@ chatty_connection_sign_on (gpointer data)
   }
 
   status = purple_account_get_active_status (account);
-printf ("prä get all accounts \n");
+  g_debug ("About to get all accounts");
   if (purple_status_is_online (status))
   {
-printf ("get all accounts \n");
+    g_debug ("get all accounts");
     purple_account_connect(account);
   }
 
@@ -127,7 +127,7 @@ chatty_connection_report_disconnect_reason (PurpleConnection *gc,
 {
   PurpleAccount *account = purple_connection_get_account (gc);
 
-  printf ("Disconnected: \"%s\" (%s)\n  >Error: %d\n  >Reason: %s\n",
+  g_debug ("Disconnected: \"%s\" (%s)\n  >Error: %d\n  >Reason: %s",
                                 purple_account_get_username(account),
                                 purple_account_get_protocol_id(account),
                                 reason, text);
