@@ -12,33 +12,6 @@
 #include "chatty-icons.h"
 
 
-static GdkPixbuf *
-chatty_icon_pixbuf_from_buddy_icon (PurpleBuddyIcon *buddy_icon)
-{
-  GdkPixbuf         *icon;
-  const guchar      *data;
-  size_t            len;
-  GdkPixbufLoader   *loader;
-
-  data = purple_buddy_icon_get_data (buddy_icon, &len);
-
-  loader = gdk_pixbuf_loader_new ();
-  gdk_pixbuf_loader_set_size (loader, 48, 48);
-  gdk_pixbuf_loader_write (loader, data, len, NULL);
-  gdk_pixbuf_loader_close (loader, NULL);
-
-  icon = gdk_pixbuf_loader_get_pixbuf (loader);
-
-  if (icon) {
-    g_object_ref (icon);
-  }
-
-  g_object_unref (loader);
-
-  return icon;
-}
-
-
 gboolean
 chatty_icon_pixbuf_is_opaque (GdkPixbuf *pixbuf)
 {
@@ -149,7 +122,7 @@ chatty_icon_pixbuf_from_data (const guchar *buf, gsize count)
 GtkWidget *
 chatty_icon_get_avatar_button (int size)
 {
-  GtkImage        *image;
+  GtkWidget       *image;
   GtkWidget       *button_avatar;
   GtkStyleContext *sc;
 
@@ -179,7 +152,6 @@ chatty_icon_get_buddy_icon (PurpleBlistNode *node,
   PurpleGroup               *group = NULL;
   const guchar              *data = NULL;
   GdkPixbuf                 *buf, *ret = NULL;
-  GtkImage                  *icon_default;
   PurpleBuddyIcon           *icon = NULL;
   PurpleAccount             *account = NULL;
   PurpleContact             *contact = NULL;
@@ -225,7 +197,8 @@ chatty_icon_get_buddy_icon (PurpleBlistNode *node,
   }
 
   if (data == NULL && buddy) {
-    if (icon = purple_buddy_icons_find (buddy->account, buddy->name)) {
+    icon = purple_buddy_icons_find (buddy->account, buddy->name);
+    if (icon) {
       data = purple_buddy_icon_get_data (icon, &len);
     }
   }
@@ -407,7 +380,7 @@ chatty_icon_create_prpl_icon_from_prpl (PurplePlugin         *prpl,
                                         PurpleAccount        *account)
 {
   PurplePluginProtocolInfo *prpl_info;
-  gchar                     *protoname = NULL;
+  const gchar               *protoname = NULL;
   gchar                     *tmp;
   gchar                     *filename = NULL;
   GdkPixbuf                 *pixbuf;

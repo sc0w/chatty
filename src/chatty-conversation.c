@@ -271,106 +271,6 @@ cb_stack_cont_switch_conv (GtkNotebook *notebook,
 // *** end callbacks
 
 
-// TODO Setup an indicator for the buddy presence status
-// which could be shown by a small LED-like
-// icon in the buddy info-popover
-static const char *
-chatty_stock_id_from_status_primitive (PurpleStatusPrimitive prim)
-{
-  const char *stock = NULL;
-
-  switch (prim) {
-    case PURPLE_STATUS_UNSET:
-      break;
-    case PURPLE_STATUS_UNAVAILABLE:
-      break;
-    case PURPLE_STATUS_AWAY:
-      break;
-    case PURPLE_STATUS_EXTENDED_AWAY:
-      break;
-    case PURPLE_STATUS_INVISIBLE:
-      break;
-    case PURPLE_STATUS_OFFLINE:
-      break;
-    default:
-      break;
-  }
-  return stock;
-}
-
-
-static const char *
-chatty_conv_get_icon_stock (PurpleConversation *conv)
-{
-  PurpleAccount *account = NULL;
-  const char *stock = NULL;
-
-  g_return_val_if_fail (conv != NULL, NULL);
-
-  account = purple_conversation_get_account (conv);
-  g_return_val_if_fail (account != NULL, NULL);
-
-  if (purple_conversation_get_type (conv) == PURPLE_CONV_TYPE_IM) {
-    gchar *name = NULL;
-    PurpleBuddy *b;
-
-    name = purple_conversation_get_name(conv);
-    b = purple_find_buddy(account, name);
-
-    if (b != NULL) {
-      PurplePresence *p = purple_buddy_get_presence (b);
-      PurpleStatus *active = purple_presence_get_active_status (p);
-      PurpleStatusType *type = purple_status_get_type (active);
-      PurpleStatusPrimitive prim = purple_status_type_get_primitive (type);
-      stock = chatty_stock_id_from_status_primitive (prim);
-    } else {
-      ;
-    }
-  } else {
-    ;
-  }
-
-  return stock;
-}
-
-
-static GdkPixbuf *
-chatty_conv_get_icon (PurpleConversation *conv,
-                      GtkWidget          *parent,
-                      const char         *icon_size)
-{
-  PurpleAccount    *account = NULL;
-  gchar            *name    = NULL;
-  gchar            *stock   = NULL;
-  GdkPixbuf        *status  = NULL;
-  PurpleBlistUiOps *ops     = purple_blist_get_ui_ops();
-  GtkIconSize      size;
-
-  g_return_val_if_fail (conv != NULL, NULL);
-
-  account = purple_conversation_get_account (conv);
-  name = purple_conversation_get_name (conv);
-
-  g_return_val_if_fail (account != NULL, NULL);
-  g_return_val_if_fail (name != NULL, NULL);
-
-  if (purple_conversation_get_type (conv) == PURPLE_CONV_TYPE_IM) {
-    PurpleBuddy *b = purple_find_buddy (account, name);
-    if (b != NULL) {
-      if (ops && ops->update) {
-        ops->update(NULL, (PurpleBlistNode*)b);
-      }
-    }
-  }
-
-  stock = chatty_conv_get_icon_stock (conv);
-  size = gtk_icon_size_from_name (icon_size);
-  status = gtk_widget_render_icon (parent, stock, size, "GtkWidget");
-
-  return status;
-}
-
-
 // TODO
 // Needs to be set up for command handling in the message view
 // Mainly for testing purposes (SMS + OMEMO plugin)
@@ -496,14 +396,6 @@ chatty_conv_check_for_command (PurpleConversation *conv)
 }
 
 
-static void
-chatty_set_active_conv_header_content (PurpleConversation *conv)
-{
-  /* TODO set contact information like avatar, name and
-  infopanel data pointer here */
-}
-
-
 static int
 chatty_conv_message_compare (gconstpointer p1,
                              gconstpointer p2)
@@ -626,8 +518,8 @@ chatty_add_message_history_to_conv (gpointer data)
     GList         *msgs = NULL;
     ChattyLog     *log_data = NULL;
     PurpleAccount *account;
-    gchar         *name = NULL;
-    gchar         *conv_name;
+    const gchar   *name = NULL;
+    const gchar   *conv_name;
     gchar         *read_log;
     gchar         *read_message;
     gchar         *stripped;
@@ -716,7 +608,6 @@ chatty_add_message_history_to_conv (gpointer data)
 
     g_list_foreach (msgs, (GFunc)g_free, NULL);
     g_list_free (msgs);
-    g_free (name);
 
     g_object_set_data (G_OBJECT (chatty_conv->msg_entry),
                        "attach-start-time",
@@ -796,7 +687,7 @@ void
 chatty_conv_stack_add_conv (ChattyConversation *chatty_conv)
 {
   PurpleConversation      *conv = chatty_conv->active_conv;
-  gchar                   *tab_txt;
+  const gchar             *tab_txt;
   gchar                   *text;
   gchar                   **name_split;
 
@@ -815,7 +706,7 @@ chatty_conv_stack_add_conv (ChattyConversation *chatty_conv)
 
   gtk_widget_show (chatty_conv->tab_cont);
 
-  if (g_list_length(chatty_conv->convs == 1)) {
+  if (g_list_length(chatty_conv->convs) == 1) {
     gtk_notebook_set_current_page (GTK_NOTEBOOK(chatty->pane_view_message_list), 0);
   } else {
     gtk_notebook_set_show_tabs (GTK_NOTEBOOK(chatty->pane_view_message_list), FALSE);
@@ -890,13 +781,13 @@ chatty_conv_find_conv (PurpleConversation * conv)
     PurpleBuddy *b = PURPLE_BUDDY (buddy_node);
     PurpleConversation *conv;
 
-    if (conv = purple_find_conversation_with_account (PURPLE_CONV_TYPE_IM,
+    conv = purple_find_conversation_with_account (PURPLE_CONV_TYPE_IM,
                                                        b->name,
-                                                       b->account)) {
-      if (conv->ui_data) {
+                                                       b->account);
+    if (!conv)
+        continue;
+    if (conv->ui_data)
         return conv->ui_data;
-      }
-    }
   }
 
   return NULL;
@@ -1089,7 +980,7 @@ chatty_conv_write_conversation (PurpleConversation *conv,
                                 PurpleMessageFlags  flags,
                                 time_t              mtime)
 {
-  gchar *name;
+  const gchar *name;
 
   if (alias && *alias) {
     name = alias;
@@ -1207,7 +1098,6 @@ void
 chatty_conv_present_conversation (PurpleConversation *conv)
 {
   ChattyConversation *chatty_conv;
-  GdkModifierType    state;
 
   chatty_conv = CHATTY_CONVERSATION (conv);
 
@@ -1307,14 +1197,14 @@ chatty_conv_setup_pane (ChattyConversation *chatty_conv)
                     G_CALLBACK(cb_textview_keypress),
                     (gpointer) chatty_conv);
 
-  gtk_text_view_set_left_margin (chatty_conv->msg_entry, 10);
-  gtk_text_view_set_top_margin (chatty_conv->msg_entry, 10);
-  gtk_text_view_set_wrap_mode (chatty_conv->msg_entry, GTK_WRAP_WORD);
+  gtk_text_view_set_left_margin (GTK_TEXT_VIEW (chatty_conv->msg_entry), 10);
+  gtk_text_view_set_top_margin (GTK_TEXT_VIEW (chatty_conv->msg_entry), 10);
+  gtk_text_view_set_wrap_mode (GTK_TEXT_VIEW (chatty_conv->msg_entry), GTK_WRAP_WORD);
 
   scrolled_window = gtk_scrolled_window_new (NULL, NULL);
   sc = gtk_widget_get_style_context (scrolled_window);
   gtk_style_context_add_class (sc, "text_view_scroll");
-  gtk_scrolled_window_set_policy (scrolled_window,
+  gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrolled_window),
                                   GTK_POLICY_AUTOMATIC,
                                   GTK_POLICY_AUTOMATIC);
 
@@ -1323,7 +1213,7 @@ chatty_conv_setup_pane (ChattyConversation *chatty_conv)
 
   gtk_container_add (GTK_CONTAINER (scrolled_window), chatty_conv->msg_entry);
   gtk_container_set_border_width (GTK_CONTAINER (scrolled_window), 5);
-  gtk_box_pack_start (hbox, scrolled_window, TRUE, TRUE, 5);
+  gtk_box_pack_start (GTK_BOX (hbox), scrolled_window, TRUE, TRUE, 5);
 
   button_send = gtk_button_new ();
   gtk_widget_set_size_request (button_send, 45, 45);
@@ -1348,20 +1238,22 @@ chatty_conv_setup_pane (ChattyConversation *chatty_conv)
                     G_CALLBACK(cb_button_send_clicked),
                     (gpointer) chatty_conv);
 
-  image = gtk_image_new_from_icon_name ("pan-up-symbolic",
-                                        GTK_ICON_SIZE_BUTTON);
+  image = GTK_IMAGE (gtk_image_new_from_icon_name ("pan-up-symbolic",
+						   GTK_ICON_SIZE_BUTTON));
 
-  gtk_button_set_image (GTK_BUTTON (button_send), image);
+G_GNUC_BEGIN_IGNORE_DEPRECATIONS
+  gtk_button_set_image (GTK_BUTTON (button_send), GTK_WIDGET (image));
+G_GNUC_END_IGNORE_DEPRECATIONS
   gtk_widget_set_valign (button_send, GTK_ALIGN_CENTER);
 
-  gtk_box_pack_start (hbox, button_send, FALSE, FALSE, 6);
+  gtk_box_pack_start (GTK_BOX (hbox), button_send, FALSE, FALSE, 6);
 
-  chatty_conv->msg_list = chatty_msg_list_new (MSG_TYPE_IM, TRUE);
+  chatty_conv->msg_list = CHATTY_MSG_LIST (chatty_msg_list_new (MSG_TYPE_IM, TRUE));
 
-  gtk_box_pack_start (GTK_CONTAINER (vbox),
-                      chatty_conv->msg_list,
+  gtk_box_pack_start (GTK_BOX (vbox),
+                      GTK_WIDGET (chatty_conv->msg_list),
                       TRUE, TRUE, 0);
-  gtk_box_pack_start (GTK_CONTAINER (vbox),
+  gtk_box_pack_start (GTK_BOX (vbox),
                       hbox, FALSE, FALSE, 0);
 
   gtk_widget_show_all (vbox);
