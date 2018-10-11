@@ -48,7 +48,7 @@ struct auth_request
   PurpleAccountRequestAuthorizationCb deny_cb;
 };
 
-static void chatty_account_create_add_account_view ();
+static void chatty_account_create_add_account_view (void);
 static void chatty_account_add_account (const char *name, const char *pwd);
 static void chatty_account_add_to_accounts_list (PurpleAccount *account,
                                                  guint         list_type);
@@ -172,7 +172,7 @@ cb_button_add_account_clicked (GtkButton *sender,
 }
 
 
-void
+static void
 cb_list_account_select_row_activated (GtkListBox    *box,
                                      GtkListBoxRow *row,
                                      gpointer       user_data)
@@ -209,7 +209,7 @@ cb_list_account_select_row_activated (GtkListBox    *box,
 
 
 static void
-chatty_account_create_add_account_view ()
+chatty_account_create_add_account_view (void)
 {
   GtkWidget *grid;
   GtkWidget *button_avatar;
@@ -282,7 +282,7 @@ chatty_account_list_separator (GtkListBoxRow *row,
 }
 
 
-void
+static void
 chatty_account_list_clear (GtkWidget *list)
 {
   GList             *children;
@@ -700,7 +700,7 @@ chatty_accounts_get_ui_ops (void)
 }
 
 
-void *
+static void *
 chatty_account_get_handle (void) {
   static int handle;
 

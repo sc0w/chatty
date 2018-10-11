@@ -12,43 +12,6 @@
 #include "chatty-icons.h"
 
 
-gboolean
-chatty_icon_pixbuf_is_opaque (GdkPixbuf *pixbuf)
-{
-  int           height, rowstride, i;
-  unsigned char *pixels;
-  unsigned char *row;
-
-  if (!gdk_pixbuf_get_has_alpha(pixbuf))
-    return TRUE;
-
-  height = gdk_pixbuf_get_height (pixbuf);
-  rowstride = gdk_pixbuf_get_rowstride (pixbuf);
-  pixels = gdk_pixbuf_get_pixels (pixbuf);
-
-  row = pixels;
-  for (i = 3; i < rowstride; i+=4) {
-    if (row[i] < 0xfe)
-      return FALSE;
-  }
-
-  for (i = 1; i < height - 1; i++) {
-    row = pixels + (i * rowstride);
-    if (row[3] < 0xfe || row[rowstride - 1] < 0xfe) {
-      return FALSE;
-      }
-  }
-
-  row = pixels + ((height - 1) * rowstride);
-  for (i = 3; i < rowstride; i += 4) {
-    if (row[i] < 0xfe)
-      return FALSE;
-  }
-
-  return TRUE;
-}
-
-
 static GObject *
 chatty_icon_pixbuf_from_data_helper (const guchar *buf,
                                      gsize        count,
@@ -112,7 +75,7 @@ chatty_icon_pixbuf_from_data_helper (const guchar *buf,
 }
 
 
-GdkPixbuf *
+static GdkPixbuf *
 chatty_icon_pixbuf_from_data (const guchar *buf, gsize count)
 {
   return GDK_PIXBUF (chatty_icon_pixbuf_from_data_helper (buf, count, FALSE));
@@ -161,6 +124,7 @@ chatty_icon_get_buddy_icon (PurpleBlistNode *node,
                             orig_height,
                             scale_width,
                             scale_height;
+  float                     scale_size;
 
   if (PURPLE_BLIST_NODE_IS_CONTACT (node)) {
     buddy = purple_contact_get_priority_buddy((PurpleContact*)node);
@@ -257,7 +221,7 @@ chatty_icon_get_buddy_icon (PurpleBlistNode *node,
                                       &scale_height);
   }
 
-  float scale_size = 16.0 * (float)scale;
+  scale_size = 16.0 * (float)scale;
 
   if (scale) {
     GdkPixbuf *tmpbuf;
@@ -296,6 +260,7 @@ chatty_icon_get_buddy_icon (PurpleBlistNode *node,
                                    GDK_INTERP_BILINEAR);
   }
 
+  {
   cairo_format_t  format;
   cairo_surface_t *surface;
   cairo_t         *cr;
@@ -339,93 +304,11 @@ chatty_icon_get_buddy_icon (PurpleBlistNode *node,
 
   cairo_surface_destroy (surface);
   cairo_destroy (cr);
+  }
 
   g_object_unref(G_OBJECT(buf));
 
   return ret;
-}
-
-
-GdkPixbuf *
-chatty_icon_pixbuf_new_from_file (const gchar *filename)
-{
-  GdkPixbuf *pixbuf;
-  GError *error = NULL;
-
-  pixbuf = gdk_pixbuf_new_from_file (filename, &error);
-
-  if (!pixbuf || error) {
-    purple_debug_warning ("gtkutils", "gdk_pixbuf_new_from_file() "
-        "returned %s for file %s: %s\n",
-        pixbuf ? "something" : "nothing",
-        filename,
-        error ? error->message : "(no error message)");
-
-    if (error)
-      g_error_free(error);
-
-    if (pixbuf)
-      g_object_unref (G_OBJECT(pixbuf));
-
-    return NULL;
-  }
-
-  return pixbuf;
-}
-
-
-static GdkPixbuf *
-chatty_icon_create_prpl_icon_from_prpl (PurplePlugin         *prpl,
-                                        ChattyPurpleIconSize size,
-                                        PurpleAccount        *account)
-{
-  PurplePluginProtocolInfo *prpl_info;
-  const gchar               *protoname = NULL;
-  gchar                     *tmp;
-  gchar                     *filename = NULL;
-  GdkPixbuf                 *pixbuf;
-
-  prpl_info = PURPLE_PLUGIN_PROTOCOL_INFO(prpl);
-
-  if (prpl_info->list_icon == NULL)
-    return NULL;
-
-  protoname = prpl_info->list_icon(account, NULL);
-
-  if (protoname == NULL)
-    return NULL;
-
-  tmp = g_strconcat(protoname, ".png", NULL);
-
-  filename =
-    g_build_filename ("/usr/share/pixmaps/pidgin", "pixmaps", "pidgin", "protocols",
-                      size == CHATTY_PRPL_ICON_SMALL ? "16" :
-                      size == CHATTY_PRPL_ICON_MEDIUM ? "22" : "48",
-                      tmp, NULL);
-
-  g_free (tmp);
-
-  pixbuf = chatty_icon_pixbuf_new_from_file (filename);
-  g_free (filename);
-
-  return pixbuf;
-}
-
-
-GdkPixbuf *
-chatty_icon_create_prpl_icon (PurpleAccount        *account,
-                              ChattyPurpleIconSize size)
-{
-  PurplePlugin *prpl;
-
-  g_return_val_if_fail (account != NULL, NULL);
-
-  prpl = purple_find_prpl ( purple_account_get_protocol_id (account));
-
-  if (prpl == NULL)
-    return NULL;
-
-  return chatty_icon_create_prpl_icon_from_prpl (prpl, size, account);
 }
 
 

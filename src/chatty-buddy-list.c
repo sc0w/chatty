@@ -20,8 +20,8 @@
 #include "chatty-conversation.h"
 
 
-static gboolean editing_blist = FALSE;
-static ChattyBuddyList *chatty_blist = NULL;
+static gboolean _editing_blist = FALSE;
+static ChattyBuddyList *_chatty_blist = NULL;
 
 static void chatty_blist_new_node (PurpleBlistNode *node);
 static void chatty_blist_add_buddy_clear_entries (void);
@@ -51,11 +51,11 @@ cb_tree_view_row_activated (GtkTreeView       *treeview,
 
   chatty_data_t *chatty = chatty_get_data ();
 
-  gtk_tree_model_get_iter (GTK_TREE_MODEL(chatty_blist->treemodel),
+  gtk_tree_model_get_iter (GTK_TREE_MODEL(_chatty_blist->treemodel),
                            &iter,
                            path);
 
-  gtk_tree_model_get (GTK_TREE_MODEL(chatty_blist->treemodel),
+  gtk_tree_model_get (GTK_TREE_MODEL(_chatty_blist->treemodel),
                       &iter,
                       COLUMN_NODE,
                       &node,
@@ -496,9 +496,9 @@ chatty_blist_refresh (PurpleBuddyList *list,
 {
   PurpleBlistNode *node;
 
-  chatty_blist = CHATTY_BLIST(list);
+  _chatty_blist = CHATTY_BLIST(list);
 
-  if(!chatty_blist || !chatty_blist->treeview) {
+  if(!_chatty_blist || !_chatty_blist->treeview) {
     return;
   }
 
@@ -540,12 +540,12 @@ chatty_blist_hide_node (PurpleBuddyList *list,
 
   ChattyBlistNode *chatty_node = node->ui_data;
 
-  if (!chatty_node || !chatty_node->row || !chatty_blist) {
+  if (!chatty_node || !chatty_node->row || !_chatty_blist) {
     return;
   }
 
-  if (chatty_blist->selected_node == node) {
-    chatty_blist->selected_node = NULL;
+  if (_chatty_blist->selected_node == node) {
+    _chatty_blist->selected_node = NULL;
   }
 
   path = gtk_tree_row_reference_get_path (chatty_node->row);
@@ -554,12 +554,12 @@ chatty_blist_hide_node (PurpleBuddyList *list,
     return;
   }
 
-  if (!gtk_tree_model_get_iter (GTK_TREE_MODEL(chatty_blist->treemodel), &iter, path)) {
+  if (!gtk_tree_model_get_iter (GTK_TREE_MODEL(_chatty_blist->treemodel), &iter, path)) {
     gtk_tree_path_free (path);
     return;
   }
 
-  gtk_list_store_remove (chatty_blist->treemodel, &iter);
+  gtk_list_store_remove (_chatty_blist->treemodel, &iter);
 
   gtk_tree_path_free (path);
 
@@ -633,8 +633,8 @@ chatty_blist_add_columns (GtkTreeView *treeview)
 }
 
 
-void *
-chatty_blist_get_handle () {
+static void *
+chatty_blist_get_handle (void) {
   static int handle;
 
   return &handle;
@@ -655,24 +655,23 @@ chatty_blist_show (PurpleBuddyList *list)
   void              *handle;
   GtkTreeView       *treeview;
   GtkStyleContext   *sc;
-
-  chatty_blist = CHATTY_BLIST(list);
-
   chatty_data_t *chatty = chatty_get_data ();
 
-  chatty_blist->empty_avatar = gdk_pixbuf_new (GDK_COLORSPACE_RGB, TRUE, 8, 32, 32);
-  gdk_pixbuf_fill (chatty_blist->empty_avatar, 0x00000000);
+  _chatty_blist = CHATTY_BLIST(list);
 
-  chatty_blist->scroll = GTK_SCROLLED_WINDOW (gtk_scrolled_window_new ( NULL, NULL));
-  gtk_widget_show (GTK_WIDGET(chatty_blist->scroll));
+  _chatty_blist->empty_avatar = gdk_pixbuf_new (GDK_COLORSPACE_RGB, TRUE, 8, 32, 32);
+  gdk_pixbuf_fill (_chatty_blist->empty_avatar, 0x00000000);
 
-  chatty_blist->treemodel = gtk_list_store_new (NUM_COLUMNS,
-                                                G_TYPE_POINTER,
-                                                G_TYPE_OBJECT,
-                                                G_TYPE_STRING,
-                                                G_TYPE_STRING);
+  _chatty_blist->scroll = GTK_SCROLLED_WINDOW (gtk_scrolled_window_new ( NULL, NULL));
+  gtk_widget_show (GTK_WIDGET(_chatty_blist->scroll));
 
-  treeview = GTK_TREE_VIEW (gtk_tree_view_new_with_model (GTK_TREE_MODEL(chatty_blist->treemodel)));
+  _chatty_blist->treemodel = gtk_list_store_new (NUM_COLUMNS,
+                                                 G_TYPE_POINTER,
+                                                 G_TYPE_OBJECT,
+                                                 G_TYPE_STRING,
+                                                 G_TYPE_STRING);
+
+  treeview = GTK_TREE_VIEW (gtk_tree_view_new_with_model (GTK_TREE_MODEL(_chatty_blist->treemodel)));
   gtk_tree_view_set_grid_lines (treeview, GTK_TREE_VIEW_GRID_LINES_HORIZONTAL);
   gtk_tree_view_set_activate_on_single_click (GTK_TREE_VIEW(treeview), TRUE);
   sc = gtk_widget_get_style_context (GTK_WIDGET(treeview));
@@ -684,28 +683,28 @@ chatty_blist_show (PurpleBuddyList *list)
 
   gtk_tree_view_set_headers_visible (treeview, FALSE);
 
-  chatty_blist->treeview = treeview;
-  gtk_widget_show (GTK_WIDGET(chatty_blist->treeview));
+  _chatty_blist->treeview = treeview;
+  gtk_widget_show (GTK_WIDGET(_chatty_blist->treeview));
 
-  gtk_widget_set_name (GTK_WIDGET(chatty_blist->treeview),
+  gtk_widget_set_name (GTK_WIDGET(_chatty_blist->treeview),
                        "chatty_blist_treeview");
 
-  gtk_container_add (GTK_CONTAINER(chatty_blist->scroll),
-                     GTK_WIDGET(chatty_blist->treeview));
+  gtk_container_add (GTK_CONTAINER(_chatty_blist->scroll),
+                     GTK_WIDGET(_chatty_blist->treeview));
 
   chatty_blist_add_columns (GTK_TREE_VIEW (treeview));
 
   gtk_tree_view_columns_autosize (GTK_TREE_VIEW (treeview));
 
   gtk_box_pack_start (GTK_BOX (chatty->pane_view_buddy_list),
-                      GTK_WIDGET (chatty_blist->scroll),
+                      GTK_WIDGET (_chatty_blist->scroll),
                       TRUE, TRUE, 0);
 
 
   chatty_blist_refresh (list, FALSE);
   purple_blist_set_visible (TRUE);
 
-  chatty_blist->refresh_timer =
+  _chatty_blist->refresh_timer =
     purple_timeout_add_seconds(30,
                                (GSourceFunc)cb_chatty_blist_refresh_timer,
                                list);
@@ -713,22 +712,22 @@ chatty_blist_show (PurpleBuddyList *list)
   handle = chatty_blist_get_handle();
 
   handle = purple_connections_get_handle();
-  purple_signal_connect (handle, "signed-on", chatty_blist,
+  purple_signal_connect (handle, "signed-on", _chatty_blist,
                         PURPLE_CALLBACK(cb_sign_on_off), list);
-  purple_signal_connect (handle, "signed-off", chatty_blist,
+  purple_signal_connect (handle, "signed-off", _chatty_blist,
                         PURPLE_CALLBACK(cb_sign_on_off), list);
 
   handle = purple_conversations_get_handle();
 
-  purple_signal_connect (handle, "conversation-updated", chatty_blist,
+  purple_signal_connect (handle, "conversation-updated", _chatty_blist,
                          PURPLE_CALLBACK(cb_conversation_updated),
-                         chatty_blist);
-  purple_signal_connect (handle, "deleting-conversation", chatty_blist,
+                         _chatty_blist);
+  purple_signal_connect (handle, "deleting-conversation", _chatty_blist,
                          PURPLE_CALLBACK(cb_conversation_deleting),
-                         chatty_blist);
-  purple_signal_connect (handle, "conversation-created", chatty_blist,
+                         _chatty_blist);
+  purple_signal_connect (handle, "conversation-created", _chatty_blist,
                          PURPLE_CALLBACK(cb_conversation_created),
-                         chatty_blist);
+                         _chatty_blist);
 
   handle = chatty_blist_get_handle();
 
@@ -793,7 +792,7 @@ chatty_blist_update_node (PurpleBuddy     *buddy,
 
   ChattyBlistNode *chatty_node = node->ui_data;
 
-  if (editing_blist || (!PURPLE_BLIST_NODE_IS_BUDDY (node))) {
+  if (_editing_blist || (!PURPLE_BLIST_NODE_IS_BUDDY (node))) {
     return;
   }
 
@@ -802,8 +801,8 @@ chatty_blist_update_node (PurpleBuddy     *buddy,
                                        TRUE);
 
   if (!avatar) {
-    g_object_ref (G_OBJECT(chatty_blist->empty_avatar));
-    avatar = chatty_blist->empty_avatar;
+    g_object_ref (G_OBJECT(_chatty_blist->empty_avatar));
+    avatar = _chatty_blist->empty_avatar;
   } else if ((!PURPLE_BUDDY_IS_ONLINE(buddy) ||
     purple_presence_is_idle (presence))) {
     chatty_icon_do_alphashift (avatar, 77);
@@ -861,21 +860,21 @@ chatty_blist_update_node (PurpleBuddy     *buddy,
                               NULL);
 
   if (!chatty_node->row) {
-    gtk_list_store_append (chatty_blist->treemodel, &iter);
+    gtk_list_store_append (_chatty_blist->treemodel, &iter);
 
     path =
-      gtk_tree_model_get_path (GTK_TREE_MODEL(chatty_blist->treemodel), &iter);
+      gtk_tree_model_get_path (GTK_TREE_MODEL(_chatty_blist->treemodel), &iter);
     chatty_node->row =
-      gtk_tree_row_reference_new (GTK_TREE_MODEL(chatty_blist->treemodel), path);
+      gtk_tree_row_reference_new (GTK_TREE_MODEL(_chatty_blist->treemodel), path);
   } else {
     path = gtk_tree_row_reference_get_path (chatty_node->row);
     if (path != NULL) {
-      gtk_tree_model_get_iter (GTK_TREE_MODEL(chatty_blist->treemodel), &iter, path);
+      gtk_tree_model_get_iter (GTK_TREE_MODEL(_chatty_blist->treemodel), &iter, path);
     }
   }
 
   if (path != NULL) {
-    gtk_list_store_set (chatty_blist->treemodel, &iter,
+    gtk_list_store_set (_chatty_blist->treemodel, &iter,
                         COLUMN_NODE, node,
                         COLUMN_AVATAR, avatar,
                         COLUMN_NAME, name,
@@ -929,10 +928,10 @@ chatty_blist_update (PurpleBuddyList *list,
                      PurpleBlistNode *node)
 {
   if (list) {
-    chatty_blist = CHATTY_BLIST(list);
+    _chatty_blist = CHATTY_BLIST(list);
   }
 
-  if (!chatty_blist || !chatty_blist->treeview || !node) {
+  if (!_chatty_blist || !_chatty_blist->treeview || !node) {
     return;
   }
 
@@ -948,6 +947,7 @@ chatty_blist_update (PurpleBuddyList *list,
     case PURPLE_BLIST_CONTACT_NODE:
     case PURPLE_BLIST_GROUP_NODE:
     case PURPLE_BLIST_OTHER_NODE:
+    default:
       return;
   }
 }
@@ -968,26 +968,26 @@ chatty_blist_destroy (PurpleBuddyList *list)
     return;
   }
 
-  g_return_if_fail (list->ui_data == chatty_blist);
+  g_return_if_fail (list->ui_data == _chatty_blist);
 
-  purple_signals_disconnect_by_handle (chatty_blist);
+  purple_signals_disconnect_by_handle (_chatty_blist);
 
-  gtk_widget_destroy (GTK_WIDGET(chatty_blist->box));
+  gtk_widget_destroy (GTK_WIDGET(_chatty_blist->box));
 
-  if (chatty_blist->refresh_timer) {
-    purple_timeout_remove (chatty_blist->refresh_timer);
+  if (_chatty_blist->refresh_timer) {
+    purple_timeout_remove (_chatty_blist->refresh_timer);
   }
 
-  chatty_blist->refresh_timer = 0;
-  chatty_blist->box = NULL;
-  chatty_blist->treeview = NULL;
-  g_object_unref (G_OBJECT(chatty_blist->treemodel));
-  chatty_blist->treemodel = NULL;
-  g_object_unref (G_OBJECT(chatty_blist->empty_avatar));
+  _chatty_blist->refresh_timer = 0;
+  _chatty_blist->box = NULL;
+  _chatty_blist->treeview = NULL;
+  g_object_unref (G_OBJECT(_chatty_blist->treemodel));
+  _chatty_blist->treemodel = NULL;
+  g_object_unref (G_OBJECT(_chatty_blist->empty_avatar));
 
-  g_free (chatty_blist);
+  g_free (_chatty_blist);
 
-  chatty_blist = NULL;
+  _chatty_blist = NULL;
   purple_prefs_disconnect_by_handle (chatty_blist_get_handle ());
 }
 

@@ -48,7 +48,7 @@ chatty_back_action (GSimpleAction *action,
                     GVariant      *parameter,
                     gpointer       user_data)
 {
-  guint state_last;
+  ChattyWindowState state_last;
 
   chatty_data_t *chatty = chatty_get_data ();
 
@@ -66,6 +66,11 @@ chatty_back_action (GSimpleAction *action,
     case CHATTY_VIEW_NEW_CONVERSATION:
       chatty_empty_container (GTK_CONTAINER(chatty->pane_view_new_conversation));
       break;
+    case CHATTY_VIEW_MESSAGE_LIST:
+    case CHATTY_VIEW_SELECT_ACCOUNT_LIST:
+    case CHATTY_VIEW_CONVERSATIONS_LIST:
+    default:
+      break;
   }
 
   gtk_image_clear (GTK_IMAGE (chatty->header_icon));
@@ -73,7 +78,7 @@ chatty_back_action (GSimpleAction *action,
 
 
 void
-chatty_window_change_view (guint view)
+chatty_window_change_view (ChattyWindowState view)
 {
   gchar           *stack_id;
 
@@ -109,6 +114,9 @@ chatty_window_change_view (guint view)
       stack_id = "view-chat-list";
       chatty->view_state_next = CHATTY_VIEW_SELECT_ACCOUNT_LIST;
       break;
+
+    default:
+      break;
   }
 
   chatty->view_state_last = view;
@@ -127,7 +135,7 @@ chatty_window_set_header_title (const char *title)
 
 
 static void
-chatty_window_init_data ()
+chatty_window_init_data (void)
 {
   chatty_window_change_view (CHATTY_VIEW_CONVERSATIONS_LIST);
   libpurple_start ();
@@ -141,6 +149,7 @@ chatty_window_activate (GtkApplication  *app,
   GtkBuilder         *builder;
   GtkWindow          *window;
   GSimpleActionGroup *simple_action_group;
+  GtkCssProvider *cssProvider = gtk_css_provider_new();
 
   chatty_data_t *chatty = chatty_get_data ();
 
@@ -163,7 +172,6 @@ chatty_window_activate (GtkApplication  *app,
 
   chatty_popover_actions_init (window);
 
-  GtkCssProvider *cssProvider = gtk_css_provider_new();
   gtk_css_provider_load_from_resource (cssProvider,
                                        "/sm/puri/chatty/css/style.css");
   gtk_style_context_add_provider_for_screen (gdk_screen_get_default(),

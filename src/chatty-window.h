@@ -33,19 +33,19 @@ typedef struct {
 
 chatty_data_t *chatty_get_data(void);
 
-enum {
+typedef enum {
   CHATTY_VIEW_NEW_CONVERSATION,
   CHATTY_VIEW_NEW_ACCOUNT,
   CHATTY_VIEW_MESSAGE_LIST,
   CHATTY_VIEW_MANAGE_ACCOUNT_LIST,
   CHATTY_VIEW_SELECT_ACCOUNT_LIST,
   CHATTY_VIEW_CONVERSATIONS_LIST,
-} e_window_state;
+} ChattyWindowState;
 
-enum {
+typedef enum {
   CHATTY_MESSAGE_MODE_XMPP,
   CHATTY_MESSAGE_MODE_SMS
-} e_message_mode;
+} ChattyWindowMessageMode;
 
 void chatty_window_activate (GtkApplication* app, gpointer user_data);
 void chatty_window_change_view (guint state);

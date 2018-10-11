@@ -7,44 +7,8 @@
 
 #include <glib.h>
 #include <glib/gi18n.h>
+#include "chatty-popover-actions.h"
 #include "chatty-window.h"
-
-
-static void
-view_msg_list_cmd_call (GSimpleAction *action,
-                        GVariant      *parameter,
-                        gpointer       user_data)
-{
-
-}
-
-
-static void
-view_blist_cmd_show_in_contacts (GSimpleAction *action,
-                                 GVariant      *parameter,
-                                 gpointer       user_data)
-{
-
-}
-
-
-static void
-view_blist_cmd_delete_conversation (GSimpleAction *action,
-                                    GVariant      *parameter,
-                                    gpointer       user_data)
-{
-
-}
-
-
-static void
-view_blist_cmd_find (GSimpleAction *action,
-                     GVariant      *parameter,
-                     gpointer       user_data)
-{
-
-}
-
 
 static void
 view_blist_cmd_accounts (GSimpleAction *action,
@@ -52,15 +16,6 @@ view_blist_cmd_accounts (GSimpleAction *action,
                          gpointer       user_data)
 {
   chatty_window_change_view (CHATTY_VIEW_MANAGE_ACCOUNT_LIST);
-}
-
-
-static void
-view_blist_cmd_preferences (GSimpleAction *action,
-                            GVariant      *parameter,
-                            gpointer       user_data)
-{
-
 }
 
 
@@ -83,8 +38,6 @@ static const GActionEntry view_msg_list_entries [] =
 void
 chatty_popover_actions_init (GtkWindow *window)
 {
-  GAction            *action;
-  GActionGroup       *action_group;
   GSimpleActionGroup *simple_action_group;
 
   simple_action_group = g_simple_action_group_new ();
