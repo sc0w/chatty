@@ -772,15 +772,15 @@ chatty_conv_find_conv (PurpleConversation * conv)
        buddy_node;
        buddy_node = purple_blist_node_get_sibling_next (buddy_node)) {
     PurpleBuddy *b = PURPLE_BUDDY (buddy_node);
-    PurpleConversation *conv;
+    PurpleConversation *c;
 
-    conv = purple_find_conversation_with_account (PURPLE_CONV_TYPE_IM,
-                                                       b->name,
-                                                       b->account);
-    if (!conv)
+    c = purple_find_conversation_with_account (PURPLE_CONV_TYPE_IM,
+                                               b->name,
+                                               b->account);
+    if (!c)
         continue;
-    if (conv->ui_data)
-        return conv->ui_data;
+    if (c->ui_data)
+        return c->ui_data;
   }
 
   return NULL;
