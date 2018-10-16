@@ -826,8 +826,6 @@ chatty_conv_write_common (PurpleConversation *conv,
   gc = purple_account_get_connection(account);
   g_return_if_fail(gc != NULL || !(flags & (PURPLE_MESSAGE_SEND | PURPLE_MESSAGE_RECV)));
 
-  chatty_conv->last_msg = mtime;
-
   if (flags & PURPLE_MESSAGE_SEND) {
     newline = purple_strdup_withhtml (message);
     strip = purple_markup_strip_html (newline);

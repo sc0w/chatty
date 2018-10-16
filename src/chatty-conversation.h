@@ -43,8 +43,6 @@ struct chatty_conversation {
   guint               unseen_count;
   guint               unseen_state;
 
-  time_t              last_msg;
-
   struct {
     int timer;
     GList *current;

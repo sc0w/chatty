@@ -18,6 +18,7 @@ typedef struct {
   GtkTreeViewColumn *text_column;
   GtkScrolledWindow *scroll;
   GdkPixbuf         *empty_avatar;
+  GList             *blist_nodes;
 
   PurpleBlistNode   *selected_node;
 
@@ -43,7 +44,8 @@ typedef struct _chatty_blist_node {
 
   struct {
     PurpleConversation   *conv;
-    time_t               last_message;
+    guint                pending_messages;
+    gchar               *last_msg_timestamp;
     ChattyBlistNodeFlags flags;
   } conv;
 } ChattyBlistNode;
