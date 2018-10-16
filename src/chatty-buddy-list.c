@@ -301,17 +301,13 @@ cb_written_msg_update_ui (PurpleAccount       *account,
                           PurpleMessageFlags   flag,
                           PurpleBlistNode     *node)
 {
-  GDateTime              *local_time;
-
   ChattyBlistNode *ui = node->ui_data;
 
   if (ui->conv.conv != conv || !(flag & (PURPLE_MESSAGE_RECV))) {
     return;
   }
 
-  local_time = g_date_time_new_now_local ();
-
-  ui->conv.last_msg_timestamp = g_date_time_format (local_time, "%R");
+  ui->conv.last_msg_timestamp = g_date_time_new_now_local ();
   ui->conv.flags |= CHATTY_BLIST_NODE_HAS_PENDING_MESSAGE;
   ui->conv.pending_messages ++;
 
@@ -947,8 +943,11 @@ chatty_blist_update_node (PurpleBuddy     *buddy,
   GtkTreePath   *path;
   const gchar   *name = NULL;
   const gchar   *account_name;
-  gchar         *last_msg_str;
+  gchar         *last_msg_str = NULL;
   PurpleAccount *account;
+  GDateTime     *current_time;
+  GDateTime     *last_msg_time;
+  GTimeSpan     time_span;
 
   PurplePresence *presence = purple_buddy_get_presence (buddy);
 
@@ -972,7 +971,18 @@ chatty_blist_update_node (PurpleBuddy     *buddy,
 
   name = purple_buddy_get_alias (buddy);
 
-  last_msg_str = chatty_node->conv.last_msg_timestamp;
+  last_msg_time = chatty_node->conv.last_msg_timestamp;
+
+  if (last_msg_time != NULL) {
+    current_time = g_date_time_new_now_local ();
+    time_span = g_date_time_difference (current_time, last_msg_time);
+
+    if (time_span > G_TIME_SPAN_DAY) {
+      last_msg_str = g_date_time_format (last_msg_time, "%b %e");
+    } else {
+      last_msg_str = g_date_time_format (last_msg_time, "%R");
+    }
+  }
 
   account = purple_buddy_get_account (buddy);
   account_name = purple_account_get_username (account);
