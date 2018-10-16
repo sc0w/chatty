@@ -325,6 +325,11 @@ chatty_account_add_to_accounts_list (PurpleAccount *account,
                      "row-account",
                      account);
 
+  // TODO list only XMPP accounts for the time being
+  if ((g_strcmp0 (purple_account_get_protocol_id (account), "prpl-jabber")) != 0) {
+    return;
+  }
+
   prpl = purple_find_prpl (purple_account_get_protocol_id (account));
 
   if (prpl != NULL) {
