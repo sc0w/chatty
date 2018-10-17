@@ -721,8 +721,11 @@ chatty_blist_hide_node (PurpleBuddyList *list,
     chatty_blist_update (list, node);
   }
 
-  gtk_tree_row_reference_free (chatty_node->row);
+  if (chatty_node->conv.last_msg_timestamp != NULL) {
+    g_date_time_unref (chatty_node->conv.last_msg_timestamp);
+  }
 
+  gtk_tree_row_reference_free (chatty_node->row);
   chatty_node->row = NULL;
 }
 
@@ -982,7 +985,10 @@ chatty_blist_update_node (PurpleBuddy     *buddy,
     } else {
       last_msg_str = g_date_time_format (last_msg_time, "%R");
     }
+
+    g_date_time_unref (current_time);
   }
+
 
   account = purple_buddy_get_account (buddy);
   account_name = purple_account_get_username (account);
