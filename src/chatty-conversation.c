@@ -461,6 +461,41 @@ chatty_conv_find_unseen (ChattyUnseenState  state)
 }
 
 
+static ChattyLog*
+parse_message (const gchar* msg)
+{
+  ChattyLog *log;
+  g_auto(GStrv) timesplit=NULL, accountsplit=NULL, namesplit=NULL;
+
+  if (msg == NULL)
+    return NULL;
+
+  /* Separate the timestamp from the rest of the message */
+  timesplit = g_strsplit (msg, ") ", -1);
+  if (timesplit[0] == NULL)
+    return NULL;
+
+  log = g_new0 (ChattyLog, 1);
+  log->time_stamp = g_strdup(timesplit[0]);
+
+  if (timesplit[1] == NULL)
+    return log;
+
+  accountsplit = g_strsplit (timesplit[1], ": ", -1);
+
+  if (accountsplit[0] == NULL)
+    return log;
+
+  namesplit = g_strsplit (accountsplit[0], "/", -1);
+  log->name = g_strdup (namesplit[0]);
+
+  if (accountsplit[1] == NULL)
+    return log;
+
+  log->msg = g_strdup (accountsplit[1]);
+  return log;
+}
+
 /**
  * chatty_add_message_history_to_conv:
  * @data: a ChattyConversation
@@ -504,7 +539,6 @@ chatty_add_message_history_to_conv (gpointer data)
     const gchar   *name = NULL;
     const gchar   *conv_name;
     gchar         *read_log;
-    gchar         *read_message;
     gchar         *stripped;
     gchar         **line_split = NULL;
     gchar         **logs = NULL;
@@ -534,26 +568,11 @@ chatty_add_message_history_to_conv (gpointer data)
       logs = g_strsplit (stripped, "\n", -1);
 
       for (int num = 0; num < (g_strv_length (logs) - 1); num++) {
-        read_message = g_strdup (logs[num]);
-
-        log_data = g_new0 (ChattyLog, 1);
-
-        if (read_message != NULL) {
-          line_split = g_strsplit (read_message, ") ", -1);
-          log_data->time_stamp = line_split[0];
-        }
-
-        if (line_split[1] != NULL) {
-          line_split = g_strsplit (line_split[1], ": ", -1);
-          log_data->name = line_split[0];
-          log_data->msg = g_strdup (line_split[1]);
-          line_split = g_strsplit (log_data->name, "/", -1);
-          log_data->name = g_strdup (line_split[0]);
-        }
-
-        i++;
-        msgs = g_list_append (msgs, (gpointer)log_data);
-        g_free (read_message);
+	log_data = parse_message (logs[num]);
+	if (log_data) {
+	  i++;
+	  msgs = g_list_append (msgs, (gpointer)log_data);
+	}
       }
 
       line_split = g_strsplit (name, "/", -1);
