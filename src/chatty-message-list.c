@@ -57,19 +57,19 @@ G_DEFINE_TYPE_WITH_PRIVATE (ChattyMsgList, chatty_msg_list, GTK_TYPE_BOX)
 
 header_strings_t header_strings[3] = {
   {
-    .str_0 = "This is a IM conversation.",
-    .str_1 = "Your messages are not encrypted,",
-    .str_2 = "ask your counterpart to use E2EE.",
+    .str_0 = N_("This is a IM conversation."),
+    .str_1 = N_("Your messages are not encrypted,"),
+    .str_2 = N_("ask your counterpart to use E2EE."),
   },
   {
-    .str_0 = "This is a IM conversation.",
-    .str_1 = "Your messages are secured",
-    .str_2 = "by end-to-end encryption.",
+    .str_0 = N_("This is a IM conversation."),
+    .str_1 = N_("Your messages are secured"),
+    .str_2 = N_("by end-to-end encryption."),
   },
   {
-    .str_0 = "This is a SMS conversation.",
-    .str_1 = "Your messages are not encrypted,",
-    .str_2 = "and carrier rates may apply.",
+    .str_0 = N_("This is a SMS conversation."),
+    .str_1 = N_("Your messages are not encrypted,"),
+    .str_2 = N_("and carrier rates may apply."),
   },
 };
 
