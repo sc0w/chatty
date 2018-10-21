@@ -14,6 +14,9 @@
 #include "chatty-conversation.h"
 
 
+#define MAX_MSGS 50
+
+
 static void
 chatty_conv_write_conversation (PurpleConversation *conv,
                                 const char         *who,
@@ -555,13 +558,11 @@ chatty_add_message_history_to_conv (gpointer data)
       return FALSE;
     }
 
-    history = g_list_reverse (history);
-
     name = purple_buddy_get_alias (purple_find_buddy (account, conv_name));
 
-    // limit the log-list to 50 msgs since we currently have no
+    // limit the log-list to MAX_MSGS msgs since we currently have no
     // infinite scrolling implemented
-    for (int i = 0; history && i < 50; history = history->next) {
+    for (int i = 0; history && i < MAX_MSGS; history = history->next) {
       read_log = purple_log_read ((PurpleLog*)history->data, NULL);
       stripped = purple_markup_strip_html (read_log);
 
@@ -571,7 +572,7 @@ chatty_add_message_history_to_conv (gpointer data)
 	log_data = parse_message (logs[num]);
 	if (log_data) {
 	  i++;
-	  msgs = g_list_append (msgs, (gpointer)log_data);
+	  msgs = g_list_prepend (msgs, (gpointer)log_data);
 	}
       }
 
