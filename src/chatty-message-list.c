@@ -17,6 +17,8 @@
 #define INDICATOR_HEIGHT  40
 #define INDICATOR_MARGIN   2
 
+#define LONGPRESS_TIMEOUT 2000
+
 
 enum {
   PROP_0,
@@ -38,6 +40,7 @@ typedef struct
   GtkWidget         *button;
   GtkWidget         *indicator_row;
   GtkWidget         *typing_indicator;
+  GtkWidget         *label_pressed;
   gboolean          disclaimer_enable;
   gboolean          ruler_enable;
   gboolean          indicator_enable;
@@ -45,6 +48,7 @@ typedef struct
   guint             message_type;
   guint             width;
   guint             height;
+  guint             longpress_timeout_handle;
   guint32           refresh_timeout_handle;
 } ChattyMsgListPrivate;
 
@@ -132,7 +136,7 @@ init_css (void)
 static void
 cb_list_size_allocate (GtkWidget     *sender,
                        GtkAllocation *allocation,
-                       gpointer      self)
+                       gpointer       self)
 {
   GtkAdjustment *adj;
   gdouble       upper;
@@ -149,13 +153,13 @@ cb_list_size_allocate (GtkWidget     *sender,
 
 
 static void
-cb_list_focus (GtkWidget     *sender,
-               int           direction,
-               gpointer      self)
+cb_list_focus (GtkWidget *sender,
+               int        direction,
+               gpointer   self)
 {
   GtkAdjustment *adj;
-  gdouble       upper;
-  gdouble       size;
+  gdouble        upper;
+  gdouble        size;
 
   ChattyMsgListPrivate *priv = chatty_msg_list_get_instance_private (self);
 
@@ -164,6 +168,75 @@ cb_list_focus (GtkWidget     *sender,
   size = gtk_adjustment_get_page_size (adj);
   upper = gtk_adjustment_get_upper (adj);
   gtk_adjustment_set_value (adj, upper - size);
+}
+
+
+static gint
+cb_longpress_timeout (gpointer self)
+{
+  const char *label_text = NULL;
+
+  GtkClipboard* clipboard;
+
+  ChattyMsgListPrivate *priv = chatty_msg_list_get_instance_private (self);
+
+  clipboard = gtk_clipboard_get (GDK_SELECTION_CLIPBOARD);
+
+  label_text = gtk_label_get_text (GTK_LABEL(priv->label_pressed));
+
+  if (label_text != NULL) {
+    gtk_clipboard_set_text (clipboard, label_text, -1);
+  }
+
+  priv->longpress_timeout_handle = 0;
+
+  return FALSE;
+}
+
+
+static void
+chatty_msg_list_longpress_timeout_start (ChattyMsgList *self)
+{
+  ChattyMsgListPrivate *priv = chatty_msg_list_get_instance_private (self);
+
+  if (!priv->longpress_timeout_handle) {
+      priv->longpress_timeout_handle = g_timeout_add (LONGPRESS_TIMEOUT,
+                                                      cb_longpress_timeout,
+                                                      (gpointer) self);
+  }
+}
+
+
+static void
+chatty_msg_list_longpress_timeout_stop (ChattyMsgList *self)
+{
+  ChattyMsgListPrivate *priv = chatty_msg_list_get_instance_private (self);
+
+  if (priv->longpress_timeout_handle) {
+      g_source_remove (priv->longpress_timeout_handle);
+      priv->longpress_timeout_handle = 0;
+  }
+}
+
+
+static void
+cb_msg_label_pressed (GtkWidget      *event_box,
+                      GdkEventButton *event,
+                      gpointer        self)
+{
+  ChattyMsgListPrivate *priv = chatty_msg_list_get_instance_private (self);
+
+  priv->label_pressed = g_object_get_data (G_OBJECT(event_box), "label");
+  chatty_msg_list_longpress_timeout_start (self);
+}
+
+
+static void
+cb_msg_label_released (GtkWidget      *event_box,
+                       GdkEventButton *event,
+                       gpointer        self)
+{
+  chatty_msg_list_longpress_timeout_stop (self);
 }
 
 
@@ -458,19 +531,22 @@ chatty_msg_list_clear (ChattyMsgList *self)
 
 void
 chatty_msg_list_add_message (ChattyMsgList *self,
-                             guint message_dir,
-                             const gchar *message,
-                             const gchar *footer)
+                             guint          message_dir,
+                             const gchar   *message,
+                             const gchar   *footer)
 {
   GtkListBoxRow   *row;
   GtkBox          *box;
   GtkBox          *vbox;
+  GtkWidget       *ebox;
+  GtkWidget       *overlay;
   GtkRevealer     *revealer;
-  GtkLabel        *labelMessage;
-  GtkLabel        *labelTimestamp;
+  GtkLabel        *label_msg;
+  GtkLabel        *label_timestamp;
   GtkStyleContext *sc;
   gchar           *style;
   gchar           *str;
+  gint           width, height;
 
   ChattyMsgListPrivate *priv = chatty_msg_list_get_instance_private (self);
 
@@ -487,7 +563,8 @@ chatty_msg_list_add_message (ChattyMsgList *self,
   gtk_container_set_border_width (GTK_CONTAINER (box), 4);
 
   revealer = GTK_REVEALER (gtk_revealer_new ());
-  gtk_revealer_set_transition_type (revealer, GTK_REVEALER_TRANSITION_TYPE_SLIDE_UP);
+  gtk_revealer_set_transition_type (revealer,
+                                    GTK_REVEALER_TRANSITION_TYPE_SLIDE_UP);
   gtk_revealer_set_transition_duration (revealer, 350);
 
   gtk_container_add (GTK_CONTAINER (revealer), GTK_WIDGET (box));
@@ -495,17 +572,37 @@ chatty_msg_list_add_message (ChattyMsgList *self,
 
   vbox = GTK_BOX (gtk_box_new (GTK_ORIENTATION_VERTICAL, 0));
 
-  labelMessage = GTK_LABEL (gtk_label_new (message));
-  gtk_label_set_line_wrap_mode (labelMessage, PANGO_WRAP_WORD);
-  gtk_label_set_line_wrap (labelMessage, TRUE);
-  gtk_label_set_max_width_chars (labelMessage, 22);
-  gtk_label_set_selectable (labelMessage, TRUE);
+  label_msg = GTK_LABEL (gtk_label_new (message));
+  gtk_label_set_line_wrap_mode (label_msg, PANGO_WRAP_WORD);
+  gtk_label_set_line_wrap (label_msg, TRUE);
+  gtk_label_set_max_width_chars (label_msg, 22);
+  gtk_label_set_selectable (label_msg, TRUE);
+
+  gtk_widget_get_size_request (GTK_WIDGET(label_msg), &width, &height);
+  overlay = gtk_overlay_new ();
+  gtk_widget_set_size_request (GTK_WIDGET(overlay), width, height);
+  gtk_container_add (GTK_CONTAINER(overlay), GTK_WIDGET(label_msg));
+
+  ebox = gtk_event_box_new ();
+  g_object_set_data (G_OBJECT(ebox), "label", label_msg);
+  gtk_widget_set_size_request (GTK_WIDGET(ebox), width, height);
+  gtk_event_box_set_visible_window (GTK_EVENT_BOX(ebox), FALSE);
+  gtk_widget_set_events (GTK_WIDGET(ebox), GDK_BUTTON_PRESS_MASK);
+  g_signal_connect (G_OBJECT(ebox), "button_press_event",
+                    G_CALLBACK(cb_msg_label_pressed),
+                    (gpointer)self);
+  g_signal_connect (G_OBJECT(ebox), "button_release_event",
+                    G_CALLBACK(cb_msg_label_released),
+                    (gpointer)self);
+
+  gtk_overlay_add_overlay (GTK_OVERLAY(overlay), ebox);
+  gtk_overlay_set_overlay_pass_through (GTK_OVERLAY(overlay), ebox, TRUE);
 
   if (message_dir == MSG_IS_INCOMING) {
-    gtk_box_pack_start (box, GTK_WIDGET (vbox), FALSE, TRUE, 8);
+    gtk_box_pack_start (box, GTK_WIDGET(vbox), FALSE, TRUE, 8);
     style = "bubble_white";
   } else if (message_dir == MSG_IS_OUTGOING) {
-    gtk_box_pack_end (box, GTK_WIDGET (vbox), FALSE, FALSE, 8);
+    gtk_box_pack_end (box, GTK_WIDGET(vbox), FALSE, FALSE, 8);
     style = "bubble_blue";
   }
 
@@ -513,19 +610,19 @@ chatty_msg_list_add_message (ChattyMsgList *self,
     style = "bubble_green";
   }
 
-  sc = gtk_widget_get_style_context (GTK_WIDGET(labelMessage));
+  sc = gtk_widget_get_style_context (GTK_WIDGET(label_msg));
   gtk_style_context_add_class (sc, style);
 
-  gtk_box_pack_start (vbox, GTK_WIDGET(labelMessage), FALSE, FALSE, 0);
+  gtk_box_pack_start (vbox, GTK_WIDGET(overlay), FALSE, FALSE, 0);
 
   if (footer != NULL) {
-    labelTimestamp = GTK_LABEL (gtk_label_new (NULL));
+    label_timestamp = GTK_LABEL(gtk_label_new (NULL));
     str = g_strconcat ("<small>", footer, "</small>", NULL);
 
-    gtk_label_set_xalign (labelTimestamp, 1);
-    gtk_widget_set_sensitive (GTK_WIDGET(labelTimestamp), FALSE);
-    gtk_label_set_markup (labelTimestamp, str);
-    gtk_box_pack_start (vbox, GTK_WIDGET(labelTimestamp), FALSE, FALSE, 10);
+    gtk_label_set_xalign (label_timestamp, 1);
+    gtk_widget_set_sensitive (GTK_WIDGET(label_timestamp), FALSE);
+    gtk_label_set_markup (label_timestamp, str);
+    gtk_box_pack_start (vbox, GTK_WIDGET(label_timestamp), FALSE, FALSE, 10);
     g_free (str);
   }
 
@@ -540,8 +637,8 @@ chatty_msg_list_add_message (ChattyMsgList *self,
 static void
 chatty_msg_list_constructed (GObject *object)
 {
-  ChattyMsgList *self = CHATTY_MSG_LIST (object);
-  GtkStyleContext *sc;
+  ChattyMsgList        *self = CHATTY_MSG_LIST (object);
+  GtkStyleContext      *sc;
   ChattyMsgListPrivate *priv = chatty_msg_list_get_instance_private (self);
 
   init_css();
@@ -564,7 +661,7 @@ chatty_msg_list_constructed (GObject *object)
 static void
 chatty_msg_list_class_init (ChattyMsgListClass *klass)
 {
-  GObjectClass *object_class = G_OBJECT_CLASS (klass);
+  GObjectClass   *object_class = G_OBJECT_CLASS (klass);
   GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
 
   object_class->constructed = chatty_msg_list_constructed;
