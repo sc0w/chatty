@@ -475,11 +475,12 @@ parse_message (const gchar* msg)
 
   /* Separate the timestamp from the rest of the message */
   timesplit = g_strsplit (msg, ") ", -1);
-  if (timesplit[0] == NULL)
+  /* Format is '(x:y:z' */
+  if (timesplit[0] == NULL || strlen (timesplit[0]) < 6)
     return NULL;
 
   log = g_new0 (ChattyLog, 1);
-  log->time_stamp = g_strdup(timesplit[0]);
+  log->time_stamp = g_strdup(&(timesplit[0][1]));
 
   if (timesplit[1] == NULL)
     return log;
@@ -592,7 +593,7 @@ chatty_add_message_history_to_conv (gpointer data)
       log_data = msgs->data;
 
       if (msgs == (g_list_last (msgs))) {
-        time_stamp = log_data->time_stamp + 2;
+        time_stamp = log_data->time_stamp;
       } else {
         time_stamp = NULL;
       }
