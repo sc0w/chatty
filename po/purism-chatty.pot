@@ -1,0 +1,126 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the purism-chatty package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: purism-chatty\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-10-21 17:07+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: data/sm.puri.Chatty.desktop.in:3
+msgid "purism-chatty"
+msgstr ""
+
+#: src/chatty-account.c:234
+msgid "id@any-server"
+msgstr ""
+
+#: src/chatty-account.c:243
+msgid "Password"
+msgstr ""
+
+#: src/chatty-account.c:247 src/chatty-account.c:768
+msgid "Add account"
+msgstr ""
+
+#: src/chatty-buddy-list.c:613
+msgid "Nickname (optional)"
+msgstr ""
+
+#: src/chatty-buddy-list.c:619
+msgid "Invite message"
+msgstr ""
+
+#: src/chatty-conversation.c:337
+msgid "Unknown command."
+msgstr ""
+
+#: src/chatty-conversation.c:348
+msgid "Wrong number of arguments for the command."
+msgstr ""
+
+#: src/chatty-conversation.c:356
+msgid "The command failed."
+msgstr ""
+
+#: src/chatty-conversation.c:366
+msgid "That command only works in chats, not IMs."
+msgstr ""
+
+#: src/chatty-conversation.c:372
+msgid "That command only works in IMs, not chats."
+msgstr ""
+
+#: src/chatty-conversation.c:380
+msgid "That command doesn't work on this protocol."
+msgstr ""
+
+#: src/chatty-message-list.c:56 src/chatty-message-list.c:61
+msgid "This is a IM conversation."
+msgstr ""
+
+#: src/chatty-message-list.c:57 src/chatty-message-list.c:67
+msgid "Your messages are not encrypted,"
+msgstr ""
+
+#: src/chatty-message-list.c:58
+msgid "ask your counterpart to use E2EE."
+msgstr ""
+
+#: src/chatty-message-list.c:62
+msgid "Your messages are secured"
+msgstr ""
+
+#: src/chatty-message-list.c:63
+msgid "by end-to-end encryption."
+msgstr ""
+
+#: src/chatty-message-list.c:66
+msgid "This is a SMS conversation."
+msgstr ""
+
+#: src/chatty-message-list.c:68
+msgid "and carrier rates may apply."
+msgstr ""
+
+#: src/chatty-message-list.c:579
+msgid "Message Type"
+msgstr ""
+
+#: src/chatty-message-list.c:580
+msgid "Select the message type"
+msgstr ""
+
+#: src/chatty-message-list.c:586
+msgid "Messagemode Disclaimer"
+msgstr ""
+
+#: src/chatty-message-list.c:587
+msgid "Enables a disclaimer with privacy advice"
+msgstr ""
+
+#: src/chatty-message-list.c:593
+msgid "Timestamp Ruler"
+msgstr ""
+
+#: src/chatty-message-list.c:594
+msgid "Enables a ruler that shows a timestamp"
+msgstr ""
+
+#: src/chatty-message-list.c:600
+msgid "Typing Indicator"
+msgstr ""
+
+#: src/chatty-message-list.c:601
+msgid "Enables the typing indicator"
+msgstr ""
