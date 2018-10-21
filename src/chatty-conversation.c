@@ -474,7 +474,7 @@ parse_message (const gchar* msg)
     return NULL;
 
   /* Separate the timestamp from the rest of the message */
-  timesplit = g_strsplit (msg, ") ", -1);
+  timesplit = g_strsplit (msg, ") ", 2);
   /* Format is '(x:y:z' */
   if (timesplit[0] == NULL || strlen (timesplit[0]) < 6)
     return NULL;
@@ -485,12 +485,12 @@ parse_message (const gchar* msg)
   if (timesplit[1] == NULL)
     return log;
 
-  accountsplit = g_strsplit (timesplit[1], ": ", -1);
+  accountsplit = g_strsplit (timesplit[1], ": ", 2);
 
   if (accountsplit[0] == NULL)
     return log;
 
-  namesplit = g_strsplit (accountsplit[0], "/", -1);
+  namesplit = g_strsplit (accountsplit[0], "/", 2);
   log->name = g_strdup (namesplit[0]);
 
   if (accountsplit[1] == NULL)
