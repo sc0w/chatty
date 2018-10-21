@@ -499,6 +499,7 @@ chatty_msg_list_add_message (ChattyMsgList *self,
   gtk_label_set_line_wrap_mode (labelMessage, PANGO_WRAP_WORD);
   gtk_label_set_line_wrap (labelMessage, TRUE);
   gtk_label_set_max_width_chars (labelMessage, 22);
+  gtk_label_set_selectable (labelMessage, TRUE);
 
   if (message_dir == MSG_IS_INCOMING) {
     gtk_box_pack_start (box, GTK_WIDGET (vbox), FALSE, TRUE, 8);
