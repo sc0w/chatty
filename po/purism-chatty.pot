@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: purism-chatty\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-10-21 17:07+0200\n"
+"POT-Creation-Date: 2018-10-24 12:19+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -65,62 +65,66 @@ msgstr ""
 msgid "That command doesn't work on this protocol."
 msgstr ""
 
-#: src/chatty-message-list.c:56 src/chatty-message-list.c:61
+#: src/chatty-message-list.c:60 src/chatty-message-list.c:65
 msgid "This is a IM conversation."
 msgstr ""
 
-#: src/chatty-message-list.c:57 src/chatty-message-list.c:67
+#: src/chatty-message-list.c:61 src/chatty-message-list.c:71
 msgid "Your messages are not encrypted,"
 msgstr ""
 
-#: src/chatty-message-list.c:58
+#: src/chatty-message-list.c:62
 msgid "ask your counterpart to use E2EE."
 msgstr ""
 
-#: src/chatty-message-list.c:62
+#: src/chatty-message-list.c:66
 msgid "Your messages are secured"
 msgstr ""
 
-#: src/chatty-message-list.c:63
+#: src/chatty-message-list.c:67
 msgid "by end-to-end encryption."
 msgstr ""
 
-#: src/chatty-message-list.c:66
+#: src/chatty-message-list.c:70
 msgid "This is a SMS conversation."
 msgstr ""
 
-#: src/chatty-message-list.c:68
+#: src/chatty-message-list.c:72
 msgid "and carrier rates may apply."
 msgstr ""
 
-#: src/chatty-message-list.c:579
+#: src/chatty-message-list.c:676
 msgid "Message Type"
 msgstr ""
 
-#: src/chatty-message-list.c:580
+#: src/chatty-message-list.c:677
 msgid "Select the message type"
 msgstr ""
 
-#: src/chatty-message-list.c:586
+#. Translators: Whether a disclaimer should be
+#. displayed (GObject property)
+#: src/chatty-message-list.c:685
 msgid "Messagemode Disclaimer"
 msgstr ""
 
-#: src/chatty-message-list.c:587
+#. Translators: Whether a disclaimer should be
+#. displayed (GObject property)
+#: src/chatty-message-list.c:688
 msgid "Enables a disclaimer with privacy advice"
 msgstr ""
 
-#: src/chatty-message-list.c:593
+#: src/chatty-message-list.c:694
 msgid "Timestamp Ruler"
 msgstr ""
 
-#: src/chatty-message-list.c:594
+#: src/chatty-message-list.c:695
 msgid "Enables a ruler that shows a timestamp"
 msgstr ""
 
-#: src/chatty-message-list.c:600
+#: src/chatty-message-list.c:701
 msgid "Typing Indicator"
 msgstr ""
 
-#: src/chatty-message-list.c:601
+#: src/chatty-message-list.c:702
 msgid "Enables the typing indicator"
 msgstr ""
