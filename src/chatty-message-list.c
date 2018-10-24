@@ -680,7 +680,11 @@ chatty_msg_list_class_init (ChattyMsgListClass *klass)
 
   props[PROP_DISCLAIMER] =
     g_param_spec_boolean ("disclaimer",
+			  /* Translators: Whether a disclaimer should be
+                             displayed (GObject property) */
                           _("Messagemode Disclaimer"),
+			  /* Translators: Whether a disclaimer should be
+                             displayed (GObject property) */
                           _("Enables a disclaimer with privacy advice"),
                           TRUE,
                           G_PARAM_READWRITE | G_PARAM_EXPLICIT_NOTIFY);
