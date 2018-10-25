@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: purism-chatty\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-10-24 12:19+0200\n"
+"POT-Creation-Date: 2018-10-24 13:01+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -91,40 +91,4 @@ msgstr ""
 
 #: src/chatty-message-list.c:72
 msgid "and carrier rates may apply."
-msgstr ""
-
-#: src/chatty-message-list.c:676
-msgid "Message Type"
-msgstr ""
-
-#: src/chatty-message-list.c:677
-msgid "Select the message type"
-msgstr ""
-
-#. Translators: Whether a disclaimer should be
-#. displayed (GObject property)
-#: src/chatty-message-list.c:685
-msgid "Messagemode Disclaimer"
-msgstr ""
-
-#. Translators: Whether a disclaimer should be
-#. displayed (GObject property)
-#: src/chatty-message-list.c:688
-msgid "Enables a disclaimer with privacy advice"
-msgstr ""
-
-#: src/chatty-message-list.c:694
-msgid "Timestamp Ruler"
-msgstr ""
-
-#: src/chatty-message-list.c:695
-msgid "Enables a ruler that shows a timestamp"
-msgstr ""
-
-#: src/chatty-message-list.c:701
-msgid "Typing Indicator"
-msgstr ""
-
-#: src/chatty-message-list.c:702
-msgid "Enables the typing indicator"
 msgstr ""

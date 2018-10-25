@@ -673,33 +673,29 @@ chatty_msg_list_class_init (ChattyMsgListClass *klass)
 
   props[PROP_TYPE] =
     g_param_spec_int ("message_type",
-                      _("Message Type"),
-                      _("Select the message type"),
+                      "Message Type",
+                      "Select the message type",
                       MSG_TYPE_IM, MSG_TYPE_LAST, MSG_TYPE_IM,
                       G_PARAM_READWRITE | G_PARAM_EXPLICIT_NOTIFY);
 
   props[PROP_DISCLAIMER] =
     g_param_spec_boolean ("disclaimer",
-			  /* Translators: Whether a disclaimer should be
-                             displayed (GObject property) */
-                          _("Messagemode Disclaimer"),
-			  /* Translators: Whether a disclaimer should be
-                             displayed (GObject property) */
-                          _("Enables a disclaimer with privacy advice"),
+                          "Messagemode Disclaimer",
+                          "Enables a disclaimer with privacy advice",
                           TRUE,
                           G_PARAM_READWRITE | G_PARAM_EXPLICIT_NOTIFY);
 
   props[PROP_RULER] =
     g_param_spec_boolean ("ruler",
-                          _("Timestamp Ruler"),
-                          _("Enables a ruler that shows a timestamp"),
+                          "Timestamp Ruler",
+                          "Enables a ruler that shows a timestamp",
                           FALSE,
                           G_PARAM_READWRITE | G_PARAM_EXPLICIT_NOTIFY);
 
   props[PROP_INDICATOR] =
     g_param_spec_boolean ("indicator",
-                          _("Typing Indicator"),
-                          _("Enables the typing indicator"),
+                          "Typing Indicator",
+                          "Enables the typing indicator",
                           TRUE,
                           G_PARAM_READWRITE | G_PARAM_EXPLICIT_NOTIFY);
 
