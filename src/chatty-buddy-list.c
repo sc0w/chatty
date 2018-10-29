@@ -33,7 +33,7 @@ static void chatty_blist_update (PurpleBuddyList *list,
 
 static void chatty_blist_hide_node (PurpleBuddyList *list,
                                     PurpleBlistNode *node,
-                                    gboolean        update);
+                                    gboolean         update);
 
 static void chatty_blist_update_buddy (PurpleBuddyList *list,
                                        PurpleBlistNode *node);
@@ -108,11 +108,11 @@ cb_button_new_conversation_clicked (GtkButton *sender,
 
 
 static void
-cb_buddy_name_insert_text (GtkEntry *entry,
-                           const    gchar *text,
-                           gint     length,
-                           gint     *position,
-                           gpointer data)
+cb_buddy_name_insert_text (GtkEntry    *entry,
+                           const gchar *text,
+                           gint         length,
+                           gint        *position,
+                           gpointer     data)
 {
   chatty_data_t *chatty = chatty_get_data ();
 
@@ -227,7 +227,7 @@ cb_sign_on_off (PurpleConnection  *gc,
 
 static void
 cb_conversation_updated (PurpleConversation   *conv,
-                         PurpleConvUpdateType type,
+                         PurpleConvUpdateType  type,
                          ChattyBuddyList      *chatty_blist)
 {
   GList *convs = NULL;
@@ -687,7 +687,7 @@ chatty_blist_refresh (PurpleBuddyList *list,
 static void
 chatty_blist_hide_node (PurpleBuddyList *list,
                         PurpleBlistNode *node,
-                        gboolean        update)
+                        gboolean         update)
 {
   GtkTreeIter iter;
   GtkTreePath *path;
@@ -747,8 +747,8 @@ chatty_blist_add_columns (GtkTreeView *treeview)
   column = gtk_tree_view_column_new_with_attributes ("Avatar",
                                                      renderer,
                                                      "pixbuf",
-                                                      COLUMN_AVATAR,
-                                                      NULL);
+                                                     COLUMN_AVATAR,
+                                                     NULL);
 
   gtk_tree_view_column_set_sort_column_id (column, COLUMN_NAME);
   gtk_cell_renderer_set_padding (renderer, 12, 12);
@@ -758,8 +758,8 @@ chatty_blist_add_columns (GtkTreeView *treeview)
   column = gtk_tree_view_column_new_with_attributes ("Name",
                                                      renderer,
                                                      "text",
-                                                      COLUMN_NAME,
-                                                      NULL);
+                                                     COLUMN_NAME,
+                                                     NULL);
 
   gtk_tree_view_column_set_sort_column_id (column, COLUMN_NAME);
   gtk_tree_view_column_set_attributes (column, renderer,
@@ -773,8 +773,8 @@ chatty_blist_add_columns (GtkTreeView *treeview)
   column = gtk_tree_view_column_new_with_attributes ("Time",
                                                      renderer,
                                                      "text",
-                                                      COLUMN_TIME,
-                                                      NULL);
+                                                     COLUMN_TIME,
+                                                     NULL);
 
   gtk_tree_view_column_set_sort_column_id (column, COLUMN_NAME);
   gtk_tree_view_column_set_attributes (column,

@@ -17,7 +17,7 @@
                  <property name="visible">True</property>
                  <property name="can_focus">True</property>
                  <property name="receives_default">False</property>
-                 <property name="action_name">msg-list.copy-msg-text</property>
+                 <property name="action_name">msg_list.copy-msg-text</property>
                  <property name="text" translatable="yes">Copy text</property>
                </object>
                <packing>
@@ -40,12 +40,12 @@
                </packing>
              </child>
              <child>
-               <object class="GtkModelButton" id="delete-msg-button">
+               <object class="GtkModelButton" id="more-button">
                  <property name="visible">True</property>
                  <property name="can_focus">True</property>
                  <property name="receives_default">False</property>
-                 <property name="action_name">msg-list.delete-msg</property>
-                 <property name="text" translatable="yes">Delete message</property>
+                 <property name="action_name">msg_list.more</property>
+                 <property name="text" translatable="yes">More...</property>
                </object>
                <packing>
                  <property name="expand">False</property>
