@@ -43,15 +43,15 @@ struct auth_request
   char                                *username;
   char                                *alias;
   PurpleAccount                       *account;
-  gboolean                            add_buddy_after_auth;
-  PurpleAccountRequestAuthorizationCb auth_cb;
-  PurpleAccountRequestAuthorizationCb deny_cb;
+  gboolean                             add_buddy_after_auth;
+  PurpleAccountRequestAuthorizationCb  auth_cb;
+  PurpleAccountRequestAuthorizationCb  deny_cb;
 };
 
 static void chatty_account_create_add_account_view (void);
 static void chatty_account_add_account (const char *name, const char *pwd);
 static void chatty_account_add_to_accounts_list (PurpleAccount *account,
-                                                 guint         list_type);
+                                                 guint          list_type);
 
 
 static void
@@ -65,7 +65,7 @@ chatty_account_free_user_data (ChattyAccountAddUserData *data)
 
 static void
 cb_account_added (PurpleAccount *account,
-                  gpointer      user_data)
+                  gpointer       user_data)
 {
   chatty_account_add_to_accounts_list (account, LIST_ACCOUNT_MANAGE);
 }
@@ -73,7 +73,7 @@ cb_account_added (PurpleAccount *account,
 
 static void
 cb_account_removed (PurpleAccount *account,
-                    gpointer      user_data)
+                    gpointer       user_data)
 {
   // TODO remove account from liststore
 }
@@ -81,7 +81,7 @@ cb_account_removed (PurpleAccount *account,
 
 static void
 cb_account_enabled_disabled (PurpleAccount *account,
-                             gpointer user_data)
+                             gpointer       user_data)
 {
   // TODO update account in liststore
 }
@@ -129,11 +129,11 @@ cb_switch_on_off_state_changed (GtkSwitch *widget,
 
 
 static void
-cb_account_name_insert_text (GtkEntry *entry,
-                             const    gchar *text,
-                             gint     length,
-                             gint     *position,
-                             gpointer data)
+cb_account_name_insert_text (GtkEntry    *entry,
+                             const gchar *text,
+                             gint         length,
+                             gint        *position,
+                             gpointer     data)
 {
   chatty_account_data_t *chatty_account = chatty_get_account_data ();
 
@@ -148,7 +148,7 @@ cb_account_name_insert_text (GtkEntry *entry,
 
 static void
 cb_button_enter_account_data_clicked (GtkButton *sender,
-                                      gpointer  data)
+                                      gpointer   data)
 {
   chatty_account_create_add_account_view ();
   chatty_window_change_view (CHATTY_VIEW_NEW_ACCOUNT);
@@ -157,7 +157,7 @@ cb_button_enter_account_data_clicked (GtkButton *sender,
 
 static void
 cb_button_add_account_clicked (GtkButton *sender,
-                               gpointer  data)
+                               gpointer   data)
 {
   const gchar *name, *pwd;
 
@@ -178,7 +178,7 @@ cb_button_add_account_clicked (GtkButton *sender,
 
 
 static void
-cb_list_account_select_row_activated (GtkListBox    *box,
+cb_list_account_select_row_activated (GtkListBox   *box,
                                      GtkListBoxRow *row,
                                      gpointer       user_data)
 {
@@ -290,8 +290,8 @@ chatty_account_list_separator (GtkListBoxRow *row,
 static void
 chatty_account_list_clear (GtkWidget *list)
 {
-  GList             *children;
-  GList             *iter;
+  GList  *children;
+  GList  *iter;
 
   children = gtk_container_get_children (GTK_CONTAINER(list));
 
@@ -304,7 +304,7 @@ chatty_account_list_clear (GtkWidget *list)
 
 static void
 chatty_account_add_to_accounts_list (PurpleAccount *account,
-                                     guint         list_type)
+                                     guint          list_type)
 {
   GtkBox                   *hbox;
   GtkBox                   *vbox;
@@ -317,6 +317,7 @@ chatty_account_add_to_accounts_list (PurpleAccount *account,
   PurplePlugin             *prpl;
   PurplePluginProtocolInfo *prpl_info = NULL;
   gchar                    *markup_str;
+  const gchar              *protocol_id;
 
   chatty_account_data_t *chatty_account = chatty_get_account_data ();
 
@@ -325,8 +326,11 @@ chatty_account_add_to_accounts_list (PurpleAccount *account,
                      "row-account",
                      account);
 
-  // TODO list only XMPP accounts for the time being
-  if ((g_strcmp0 (purple_account_get_protocol_id (account), "prpl-jabber")) != 0) {
+  protocol_id = purple_account_get_protocol_id (account);
+
+  // TODO list only SMS and XMPP accounts for the time being
+  if ((g_strcmp0 (protocol_id, "prpl-jabber")) != 0 &&
+      (g_strcmp0 (protocol_id, "prpl-mm-sms")) != 0) {
     return;
   }
 
@@ -415,7 +419,7 @@ chatty_account_add_to_accounts_list (PurpleAccount *account,
 static gboolean
 chatty_account_populate_account_list (GtkWidget *list)
 {
-  GList      *l;
+  GList     *l;
   gboolean   ret = FALSE;
 
   chatty_account_data_t *chatty_account = chatty_get_account_data ();
@@ -597,7 +601,7 @@ chatty_account_request_authorization (PurpleAccount *account,
                                       const char    *id,
                                       const char    *alias,
                                       const char    *message,
-                                      gboolean      on_list,
+                                      gboolean       on_list,
                                       PurpleAccountRequestAuthorizationCb auth_cb,
                                       PurpleAccountRequestAuthorizationCb deny_cb,
                                       void          *user_data)
@@ -670,6 +674,20 @@ chatty_account_request_add (PurpleAccount *account,
 
 
 static void
+chatty_account_add_sms_account (void)
+{
+  PurpleAccount *account;
+
+  account = purple_account_new ("SMS", "prpl-mm-sms");
+
+  purple_account_set_password (account, NULL);
+  purple_account_set_remember_password (account, TRUE);
+
+  purple_accounts_add (account);
+}
+
+
+static void
 chatty_account_add_account (const char *account_name,
                             const char *account_pwd)
 {
@@ -680,7 +698,7 @@ chatty_account_add_account (const char *account_name,
   purple_account_set_password (account, account_pwd);
   // TODO make remember_password choosable when the
   //      account-settings view is introduced
- 	purple_account_set_remember_password (account, TRUE);
+  purple_account_set_remember_password (account, TRUE);
 
   purple_accounts_add (account);
 }
@@ -768,10 +786,12 @@ chatty_account_init (void)
                                        _("Add account"));
 
   if (!purple_prefs_get_bool ("/purple/savedstatus/startup_current_status")) {
-    purple_savedstatus_activate(purple_savedstatus_get_startup());
+    purple_savedstatus_activate (purple_savedstatus_get_startup ());
   }
 
-  purple_accounts_restore_current_statuses ();
+  if (purple_accounts_find ("SMS", "prpl-mm-sms") != NULL) {
+    chatty_account_add_sms_account ();
+  }
 }
 
 
