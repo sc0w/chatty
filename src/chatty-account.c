@@ -188,6 +188,9 @@ cb_list_account_select_row_activated (GtkListBox   *box,
   PurplePlugin             *prpl = NULL;
   PurplePluginProtocolInfo *prpl_info = NULL;
   gboolean                  invite_enabled = TRUE;
+  const gchar              *protocol_id;
+
+  chatty_data_t *chatty = chatty_get_data ();
 
   account = g_object_get_data (G_OBJECT (row), "row-account");
 
@@ -209,6 +212,14 @@ cb_list_account_select_row_activated (GtkListBox   *box,
 
   chatty_blist_create_add_buddy_view (account, invite_enabled);
 
+  protocol_id = purple_account_get_protocol_id (account);
+
+  if (g_strcmp0 (protocol_id, "prpl-mm-sms") == 0) {
+    gtk_label_set_text (GTK_LABEL(chatty->label_buddy_id), _("Number"));
+  } else {
+    gtk_label_set_text (GTK_LABEL(chatty->label_buddy_id), _("XMPP Id"));
+  }
+
   chatty_window_change_view (CHATTY_VIEW_NEW_CONVERSATION);
 }
 
@@ -216,6 +227,7 @@ cb_list_account_select_row_activated (GtkListBox   *box,
 static void
 chatty_account_create_add_account_view (void)
 {
+  // TODO create this view in a *.ui file for interface builder
   GtkWidget *grid;
   GtkWidget *button_avatar;
 

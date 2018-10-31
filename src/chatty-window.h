@@ -27,6 +27,7 @@ typedef struct {
   GtkEntry          *entry_buddy_name;
   GtkEntry          *entry_buddy_nick;
   GtkEntry          *entry_invite_msg;
+  GtkWidget         *label_buddy_id;
   gint              view_state_last;
   gint              view_state_next;
 } chatty_data_t;

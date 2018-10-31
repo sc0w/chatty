@@ -12,37 +12,17 @@
         <property name="border_width">12</property>
         <property name="orientation">vertical</property>
         <child>
-          <object class="GtkBox">
+          <object class="GtkModelButton">
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="margin_bottom">6</property>
-            <property name="spacing">6</property>
-            <property name="homogeneous">True</property>
-            <child>
-              <object class="GtkButton">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="receives_default">False</property>
-                <property name="action_name">blist.find</property>
-                <child>
-                  <object class="GtkImage">
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="icon_name">system-search-symbolic</property>
-                  </object>
-                </child>
-              </object>
-              <packing>
-                <property name="expand">True</property>
-                <property name="fill">True</property>
-                <property name="position">0</property>
-              </packing>
-            </child>
+            <property name="can_focus">True</property>
+            <property name="receives_default">False</property>
+            <property name="action_name">blist.accounts</property>
+            <property name="text" translatable="yes">Account Settings</property>
           </object>
           <packing>
             <property name="expand">False</property>
             <property name="fill">True</property>
-            <property name="position">0</property>
+            <property name="position">1</property>
           </packing>
         </child>
         <child>
@@ -55,20 +35,6 @@
           <packing>
             <property name="expand">False</property>
             <property name="fill">True</property>
-            <property name="position">1</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkModelButton">
-            <property name="visible">True</property>
-            <property name="can_focus">True</property>
-            <property name="receives_default">False</property>
-            <property name="action_name">blist.accounts</property>
-            <property name="text" translatable="yes">Manage accounts</property>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
             <property name="position">2</property>
           </packing>
         </child>
@@ -77,13 +43,27 @@
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">False</property>
-            <property name="action_name">blist.preferences</property>
-            <property name="text" translatable="yes">Preferences</property>
+            <property name="action_name">blist.help</property>
+            <property name="text" translatable="yes">Help</property>
           </object>
           <packing>
             <property name="expand">False</property>
             <property name="fill">True</property>
             <property name="position">3</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkModelButton">
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="receives_default">False</property>
+            <property name="action_name">blist.about</property>
+            <property name="text" translatable="yes">About Chats</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">4</property>
           </packing>
         </child>
       </object>
@@ -102,12 +82,12 @@
         <property name="border_width">12</property>
         <property name="orientation">vertical</property>
         <child>
-          <object class="GtkModelButton" id="buddy-status-button">
+          <object class="GtkModelButton" id="call-button">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="receives_default">False</property>
-            <property name="action_name">msg_view.buddy-presence</property>
-            <property name="text" translatable="yes">Buddy is online</property>
+            <property name="action_name">msg_view.search</property>
+            <property name="text" translatable="yes">Search Messages</property>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -116,12 +96,12 @@
           </packing>
         </child>
         <child>
-          <object class="GtkModelButton" id="encryption-status-button">
+          <object class="GtkModelButton" id="show-in-contacts">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="receives_default">False</property>
-            <property name="action_name">msg_view.encryption</property>
-            <property name="text" translatable="yes">Encryption: OMEMO</property>
+            <property name="action_name">msg_view.details</property>
+            <property name="text" translatable="yes">Contact Details</property>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -143,58 +123,17 @@
           </packing>
         </child>
         <child>
-          <object class="GtkModelButton" id="call-button">
+          <object class="GtkModelButton" id="delete-conversation-button">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="receives_default">False</property>
-            <property name="action_name">msg_view.call</property>
-            <property name="text" translatable="yes">Call</property>
+            <property name="action_name">msg_view.delete-chat</property>
+            <property name="text" translatable="yes">Delete Chat</property>
           </object>
           <packing>
             <property name="expand">False</property>
             <property name="fill">True</property>
             <property name="position">3</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkModelButton" id="show-in-contacts">
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="receives_default">False</property>
-            <property name="action_name">msg_view.show-in-contacts</property>
-            <property name="text" translatable="yes">Show in contacts</property>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">4</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkSeparator">
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="margin_top">6</property>
-            <property name="margin_bottom">6</property>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">5</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkModelButton" id="delete-conversation-button">
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="receives_default">False</property>
-            <property name="action_name">msg_view.delete-conversation</property>
-            <property name="text" translatable="yes">Delete conversation</property>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">6</property>
           </packing>
         </child>
       </object>
@@ -287,7 +226,7 @@
             <child>
               <object class="GtkHeaderBar" id="header_view_buddy_list">
                 <property name="can_focus">False</property>
-                <property name="title" translatable="yes">Conversations</property>
+                <property name="title" translatable="yes">Chats</property>
                 <child>
                   <object class="GtkButton">
                     <property name="can_focus">False</property>
@@ -328,6 +267,7 @@
             <child>
               <object class="GtkHeaderBar" id="header_view_message_list">
                 <property name="can_focus">False</property>
+                <property name="spacing">24</property>
                 <child>
                   <object class="GtkButton">
                     <property name="can_focus">False</property>
@@ -377,7 +317,7 @@
             <child>
               <object class="GtkHeaderBar" id="header_view_manage_account">
                 <property name="can_focus">False</property>
-                <property name="title" translatable="yes">Manage accounts</property>
+                <property name="title" translatable="yes">Account Settings</property>
                 <child>
                   <object class="GtkButton">
                     <property name="can_focus">False</property>
@@ -401,7 +341,7 @@
             <child>
               <object class="GtkHeaderBar" id="header_view_select_account">
                 <property name="can_focus">False</property>
-                <property name="title" translatable="yes">Select account for conversation</property>
+                <property name="title" translatable="yes">Select account for chat</property>
                 <child>
                   <object class="GtkButton">
                     <property name="can_focus">False</property>
@@ -425,7 +365,7 @@
             <child>
               <object class="GtkHeaderBar" id="header_view_new_conversation">
                 <property name="can_focus">False</property>
-                <property name="title" translatable="yes">Add new conversation</property>
+                <property name="title" translatable="yes">Add new chat</property>
                 <child>
                   <object class="GtkButton">
                     <property name="can_focus">False</property>

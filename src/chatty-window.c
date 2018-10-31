@@ -138,18 +138,19 @@ static void
 chatty_window_init_data (void)
 {
   chatty_window_change_view (CHATTY_VIEW_CONVERSATIONS_LIST);
+
   libpurple_start ();
 }
 
 
 void
-chatty_window_activate (GtkApplication  *app,
+chatty_window_activate (GtkApplication *app,
                         gpointer        user_data)
 {
   GtkBuilder         *builder;
   GtkWindow          *window;
   GSimpleActionGroup *simple_action_group;
-  GtkCssProvider *cssProvider = gtk_css_provider_new();
+  GtkCssProvider     *cssProvider = gtk_css_provider_new();
 
   chatty_data_t *chatty = chatty_get_data ();
 

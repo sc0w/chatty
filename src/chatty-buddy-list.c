@@ -52,9 +52,12 @@ cb_tree_view_row_activated (GtkTreeView       *treeview,
                             GtkTreeViewColumn *column,
                             gpointer           user_data)
 {
+  PurpleAccount   *account;
+  const gchar     *protocol_id;
   PurpleBlistNode *node;
-  GtkTreeIter     iter;
+  GtkTreeIter      iter;
   GdkPixbuf       *avatar;
+  guint            color;
 
   chatty_data_t *chatty = chatty_get_data ();
 
@@ -77,14 +80,25 @@ cb_tree_view_row_activated (GtkTreeView       *treeview,
       buddy = (PurpleBuddy*)node;
     }
 
-    chatty_conv_im_with_buddy (purple_buddy_get_account (buddy),
+    account = purple_buddy_get_account (buddy);
+
+    chatty_conv_im_with_buddy (account,
                                purple_buddy_get_name (buddy));
 
     chatty_window_change_view (CHATTY_VIEW_MESSAGE_LIST);
     chatty_window_set_header_title (purple_buddy_get_name (buddy));
 
+    protocol_id = purple_account_get_protocol_id (account);
+
+    if (g_strcmp0 (protocol_id, "prpl-mm-sms") == 0) {
+      color = CHATTY_ICON_COLOR_GREEN;
+    } else {
+      color = CHATTY_ICON_COLOR_BLUE;
+    }
+
     avatar = chatty_icon_get_buddy_icon ((PurpleBlistNode *)buddy,
-                                         CHATTY_PRPL_ICON_MEDIUM,
+                                         CHATTY_ICON_SIZE_MEDIUM,
+                                         color,
                                          TRUE);
 
     if (avatar != NULL) {
@@ -532,7 +546,7 @@ chatty_blist_buddy_is_displayable (PurpleBuddy *buddy)
 void
 chatty_blist_add_buddy (PurpleAccount *account)
 {
-  const gchar        *who, *whoalias, *invite;
+  const gchar        *who, *whoalias;
   PurpleBuddy        *b;
   PurpleConversation *c;
   PurpleBuddyIcon    *icon;
@@ -546,16 +560,10 @@ chatty_blist_add_buddy (PurpleAccount *account)
     whoalias = NULL;
   }
 
-  invite = gtk_entry_get_text (GTK_ENTRY(chatty->entry_invite_msg));
-
-  if (*invite == '\0') {
-    invite = NULL;
-  }
-
   b = purple_buddy_new (account, who, whoalias);
   purple_blist_add_buddy (b, NULL, NULL, NULL);
 
-  purple_account_add_buddy_with_invite (account, b, invite);
+  purple_account_add_buddy_with_invite (account, b, NULL);
 
   c = purple_find_conversation_with_account (PURPLE_CONV_TYPE_IM,
                                              who,
@@ -577,50 +585,53 @@ chatty_blist_add_buddy_clear_entries (void) {
 
   gtk_entry_set_text (GTK_ENTRY(chatty->entry_buddy_name), "");
   gtk_entry_set_text (GTK_ENTRY(chatty->entry_buddy_nick), "");
-  gtk_entry_set_text (GTK_ENTRY(chatty->entry_invite_msg), "");
 }
+
 
 
 void
 chatty_blist_create_add_buddy_view (PurpleAccount *account,
                                     gboolean       invite_enabled)
 {
+// TODO create this view in a *.ui file for interface builder
   GtkWidget   *grid;
+  GtkWidget   *label;
   GtkWidget   *button_avatar;
 
   chatty_data_t *chatty = chatty_get_data ();
 
   grid = gtk_grid_new ();
-  gtk_grid_set_row_spacing (GTK_GRID (grid), 20);
+  gtk_grid_set_row_spacing (GTK_GRID (grid), 30);
+  gtk_grid_set_column_spacing (GTK_GRID (grid), 10);
 
   button_avatar = chatty_icon_get_avatar_button (80);
 
-  gtk_grid_attach (GTK_GRID (grid), button_avatar, 0, 1, 1, 1);
+  gtk_grid_attach (GTK_GRID (grid), button_avatar, 0, 0, 2, 1);
+
+
+  chatty->label_buddy_id = gtk_label_new (NULL);
+
+  gtk_grid_attach (GTK_GRID (grid), chatty->label_buddy_id, 0, 1, 1, 1);
+
 
   chatty->entry_buddy_name = GTK_ENTRY (gtk_entry_new ());
-  gtk_entry_set_placeholder_text (GTK_ENTRY (chatty->entry_buddy_name),
-                                  "id@any-server.com");
 
   g_signal_connect (G_OBJECT(chatty->entry_buddy_name),
                     "insert_text",
                     G_CALLBACK(cb_buddy_name_insert_text),
                     NULL);
 
-  gtk_grid_attach (GTK_GRID (grid), GTK_WIDGET (chatty->entry_buddy_name), 0, 2, 1, 1);
+  gtk_grid_attach (GTK_GRID (grid), GTK_WIDGET (chatty->entry_buddy_name), 1, 1, 1, 1);
+
+  label = gtk_label_new ("Name");
+
+  gtk_grid_attach (GTK_GRID (grid), GTK_WIDGET (label), 0, 2, 1, 1);
 
   chatty->entry_buddy_nick = GTK_ENTRY (gtk_entry_new ());
-  gtk_entry_set_placeholder_text (GTK_ENTRY (chatty->entry_buddy_nick),
-                                  _("Nickname (optional)"));
-  gtk_grid_attach (GTK_GRID (grid), GTK_WIDGET (chatty->entry_buddy_nick), 0, 3, 1, 1);
-
-  chatty->entry_invite_msg = GTK_ENTRY (gtk_entry_new ());
-  gtk_widget_set_sensitive (GTK_WIDGET (chatty->entry_invite_msg), invite_enabled);
-  gtk_entry_set_placeholder_text (GTK_ENTRY (chatty->entry_invite_msg),
-                                  _("Invite message"));
-  gtk_grid_attach (GTK_GRID (grid), GTK_WIDGET (chatty->entry_invite_msg), 0, 4, 1, 1);
+  gtk_grid_attach (GTK_GRID (grid), GTK_WIDGET (chatty->entry_buddy_nick), 1, 2, 1, 1);
 
   chatty->button_add_buddy = gtk_button_new_with_label ("Add");
-  gtk_grid_attach (GTK_GRID (grid), chatty->button_add_buddy, 0, 5, 1, 1);
+  gtk_grid_attach (GTK_GRID (grid), chatty->button_add_buddy, 1, 3, 1, 1);
   gtk_widget_set_sensitive (GTK_WIDGET (chatty->button_add_buddy), FALSE);
   g_signal_connect (chatty->button_add_buddy,
                     "clicked",
@@ -781,6 +792,7 @@ chatty_blist_add_columns (GtkTreeView *treeview)
                                        renderer,
                                        "markup", COLUMN_TIME,
                                        NULL);
+
   g_object_set (renderer,
                 "xalign", 0.95,
                 "yalign", 0.2,
@@ -945,23 +957,35 @@ chatty_blist_update_node (PurpleBuddy     *buddy,
   GdkPixbuf     *avatar;
   GtkTreePath   *path;
   const gchar   *name = NULL;
-  const gchar   *account_name;
+  const gchar   *protocol_id;
   gchar         *last_msg_str = NULL;
   PurpleAccount *account;
   GDateTime     *current_time;
   GDateTime     *last_msg_time;
-  GTimeSpan     time_span;
+  GTimeSpan      time_span;
+  guint          color;
 
   PurplePresence *presence = purple_buddy_get_presence (buddy);
 
   ChattyBlistNode *chatty_node = node->ui_data;
 
+  account = purple_buddy_get_account (buddy);
+
   if (_editing_blist || (!PURPLE_BLIST_NODE_IS_BUDDY (node))) {
     return;
   }
 
+  protocol_id = purple_account_get_protocol_id (account);
+
+  if (g_strcmp0 (protocol_id, "prpl-mm-sms") == 0) {
+    color = CHATTY_ICON_COLOR_GREEN;
+  } else {
+    color = CHATTY_ICON_COLOR_BLUE;
+  }
+
   avatar = chatty_icon_get_buddy_icon ((PurpleBlistNode *)buddy,
-                                       CHATTY_PRPL_ICON_LARGE,
+                                       CHATTY_ICON_SIZE_LARGE,
+                                       color,
                                        TRUE);
 
   if (!avatar) {
@@ -989,31 +1013,15 @@ chatty_blist_update_node (PurpleBuddy     *buddy,
     g_date_time_unref (current_time);
   }
 
-
-  account = purple_buddy_get_account (buddy);
-  account_name = purple_account_get_username (account);
-
   if (chatty_node->conv.flags & CHATTY_BLIST_NODE_HAS_PENDING_MESSAGE) {
     name = g_strconcat ("<b><span color='#646464'>",
                         name,
                         "</span></b>",
-                        " ",
-                        "<small><span color='darkgrey'>",
-                        "(",
-                        account_name,
-                        ")",
-                        "</span></small>",
                         NULL);
   } else {
     name = g_strconcat ("<span color='#646464'>",
                         name,
                         "</span>",
-                        " ",
-                        "<small><span color='darkgrey'>",
-                        "(",
-                        account_name,
-                        ")",
-                        "</span></small>",
                         NULL);
   }
 
