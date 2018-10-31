@@ -561,6 +561,8 @@ chatty_add_message_history_to_conv (gpointer data)
 
     name = purple_buddy_get_alias (purple_find_buddy (account, conv_name));
 
+    history = g_list_reverse (history);
+
     // limit the log-list to MAX_MSGS msgs since we currently have no
     // infinite scrolling implemented
     for (int i = 0; history && i < MAX_MSGS; history = history->next) {
@@ -570,11 +572,12 @@ chatty_add_message_history_to_conv (gpointer data)
       logs = g_strsplit (stripped, "\n", -1);
 
       for (int num = 0; num < (g_strv_length (logs) - 1); num++) {
-	log_data = parse_message (logs[num]);
-	if (log_data) {
-	  i++;
-	  msgs = g_list_prepend (msgs, (gpointer)log_data);
-	}
+        log_data = parse_message (logs[num]);
+
+        if (log_data) {
+          i++;
+          msgs = g_list_prepend (msgs, (gpointer)log_data);
+        }
       }
 
       line_split = g_strsplit (name, "/", -1);
@@ -588,6 +591,8 @@ chatty_add_message_history_to_conv (gpointer data)
 
     g_list_foreach (history, (GFunc)purple_log_free, NULL);
     g_list_free (history);
+
+    msgs = g_list_reverse (msgs);
 
     for (; msgs; msgs = msgs->next) {
       log_data = msgs->data;
@@ -890,6 +895,7 @@ chatty_conv_write_common (PurpleConversation *conv,
  *
  * The function is called from the
  * struct 'PurpleConversationUiOps'
+ * when a message was sent or received
  *
  */
 static void
@@ -944,7 +950,7 @@ chatty_get_conv_blist_node (PurpleConversation *conv)
     case PURPLE_CONV_TYPE_ANY:
     default:
       g_warning ("Unhandled converstation type %d",
-		 purple_conversation_get_type (conv));
+     purple_conversation_get_type (conv));
       break;
   }
   return node;
@@ -1085,7 +1091,8 @@ chatty_conv_im_with_buddy (PurpleAccount *account,
  *
  */
 static GtkWidget *
-chatty_conv_setup_pane (ChattyConversation *chatty_conv)
+chatty_conv_setup_pane (ChattyConversation *chatty_conv,
+                        guint               msg_type)
 {
   GtkWidget       *vbox;
   GtkWidget       *hbox;
@@ -1093,8 +1100,6 @@ chatty_conv_setup_pane (ChattyConversation *chatty_conv)
   GtkWidget       *button_send;
   GtkImage        *image;
   GtkStyleContext *sc;
-
-  PurpleConversation *conv = chatty_conv->active_conv;
 
   chatty_conv->msg_buffer = gtk_text_buffer_new (NULL);
   chatty_conv->msg_entry = gtk_text_view_new_with_buffer (chatty_conv->msg_buffer);
@@ -1128,16 +1133,16 @@ chatty_conv_setup_pane (ChattyConversation *chatty_conv)
   gtk_widget_set_size_request (button_send, 45, 45);
   sc = gtk_widget_get_style_context (button_send);
 
-  switch (purple_conversation_get_type (conv)) {
-    case PURPLE_CONV_TYPE_UNKNOWN:
+  switch (msg_type) {
+    case MSG_TYPE_SMS:
       gtk_style_context_add_class (sc, "button_send_green");
       break;
-    case PURPLE_CONV_TYPE_IM:
+    case MSG_TYPE_IM:
+    case MSG_TYPE_IM_E2EE:
       gtk_style_context_add_class (sc, "button_send_blue");
       break;
-    case PURPLE_CONV_TYPE_CHAT:
-    case PURPLE_CONV_TYPE_MISC:
-    case PURPLE_CONV_TYPE_ANY:
+    case MSG_TYPE_UNKNOWN:
+      break;
     default:
       break;
   }
@@ -1147,7 +1152,7 @@ chatty_conv_setup_pane (ChattyConversation *chatty_conv)
                     (gpointer) chatty_conv);
 
   image = GTK_IMAGE (gtk_image_new_from_icon_name ("pan-up-symbolic",
-						   GTK_ICON_SIZE_BUTTON));
+                                                   GTK_ICON_SIZE_BUTTON));
 
 G_GNUC_BEGIN_IGNORE_DEPRECATIONS
   gtk_button_set_image (GTK_BUTTON (button_send), GTK_WIDGET (image));
@@ -1156,7 +1161,7 @@ G_GNUC_END_IGNORE_DEPRECATIONS
 
   gtk_box_pack_start (GTK_BOX (hbox), button_send, FALSE, FALSE, 6);
 
-  chatty_conv->msg_list = CHATTY_MSG_LIST (chatty_msg_list_new (MSG_TYPE_IM, TRUE));
+  chatty_conv->msg_list = CHATTY_MSG_LIST (chatty_msg_list_new (msg_type, TRUE));
 
   gtk_box_pack_start (GTK_BOX (vbox),
                       GTK_WIDGET (chatty_conv->msg_list),
@@ -1182,16 +1187,23 @@ G_GNUC_END_IGNORE_DEPRECATIONS
 void
 chatty_conv_new (PurpleConversation *conv)
 {
+  PurpleAccount      *account;
+  PurpleBuddy        *buddy;
   PurpleValue        *value;
   PurpleBlistNode    *conv_node;
   ChattyConversation *chatty_conv;
+  const gchar        *protocol_id;
+  const gchar        *conv_name;
+  guint               msg_type;
 
   PurpleConversationType conv_type = purple_conversation_get_type (conv);
 
   if (conv_type == PURPLE_CONV_TYPE_IM && (chatty_conv = chatty_conv_find_conv (conv))) {
     conv->ui_data = chatty_conv;
-    if (!g_list_find (chatty_conv->convs, conv))
+
+    if (!g_list_find (chatty_conv->convs, conv)) {
       chatty_conv->convs = g_list_prepend (chatty_conv->convs, conv);
+    }
 
     chatty_conv_switch_active_conversation (conv);
 
@@ -1203,11 +1215,31 @@ chatty_conv_new (PurpleConversation *conv)
   chatty_conv->active_conv = conv;
   chatty_conv->convs = g_list_prepend (chatty_conv->convs, conv);
 
+  account = purple_conversation_get_account (conv);
+  protocol_id = purple_account_get_protocol_id (account);
+
   if (conv_type == PURPLE_CONV_TYPE_IM) {
     chatty_conv->conv_header = g_malloc0 (sizeof (ChattyConvViewHeader));
   }
 
-  chatty_conv->tab_cont = chatty_conv_setup_pane (chatty_conv);
+  // A new SMS must be added directly to the conversations list
+  // without buddy-request confirmation
+  if (g_strcmp0 (protocol_id, "prpl-mm-sms") == 0) {
+    msg_type = MSG_TYPE_SMS;
+
+    conv_name = purple_conversation_get_name (conv);
+
+    buddy = purple_find_buddy (account, conv_name);
+
+    if (buddy == NULL) {
+      buddy = purple_buddy_new (account, conv_name, NULL);
+      purple_blist_add_buddy (buddy, NULL, NULL, NULL);
+    }
+  } else {
+    msg_type = MSG_TYPE_IM;
+  }
+
+  chatty_conv->tab_cont = chatty_conv_setup_pane (chatty_conv, msg_type);
   g_object_set_data (G_OBJECT(chatty_conv->tab_cont),
                      "ChattyConversation",
                      chatty_conv);
