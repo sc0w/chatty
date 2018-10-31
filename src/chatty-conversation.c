@@ -561,8 +561,6 @@ chatty_add_message_history_to_conv (gpointer data)
 
     name = purple_buddy_get_alias (purple_find_buddy (account, conv_name));
 
-    history = g_list_reverse (history);
-
     // limit the log-list to MAX_MSGS msgs since we currently have no
     // infinite scrolling implemented
     for (int i = 0; history && i < MAX_MSGS; history = history->next) {
@@ -591,8 +589,6 @@ chatty_add_message_history_to_conv (gpointer data)
 
     g_list_foreach (history, (GFunc)purple_log_free, NULL);
     g_list_free (history);
-
-    msgs = g_list_reverse (msgs);
 
     for (; msgs; msgs = msgs->next) {
       log_data = msgs->data;
