@@ -33,23 +33,24 @@ static GParamSpec *props[PROP_LAST_PROP];
 
 typedef struct
 {
-  GtkBox            *disclaimer;
-  GtkBox            *container;
-  GtkWidget         *list;
-  GtkWidget         *scroll;
-  GtkWidget         *button;
-  GtkWidget         *indicator_row;
-  GtkWidget         *typing_indicator;
-  GtkWidget         *label_pressed;
-  gboolean          disclaimer_enable;
-  gboolean          ruler_enable;
-  gboolean          indicator_enable;
-  gboolean          animation_enable;
-  guint             message_type;
-  guint             width;
-  guint             height;
-  guint             longpress_timeout_handle;
-  guint32           refresh_timeout_handle;
+  GtkBox      *disclaimer;
+  GtkBox      *container;
+  GtkWidget   *list;
+  GtkWidget   *scroll;
+  GtkWidget   *button;
+  GtkWidget   *indicator_row;
+  GtkWidget   *typing_indicator;
+  GtkWidget   *label_pressed;
+  GtkWidget   *menu_popover;
+  gboolean     disclaimer_enable;
+  gboolean     ruler_enable;
+  gboolean     indicator_enable;
+  gboolean     animation_enable;
+  guint        message_type;
+  guint        width;
+  guint        height;
+  guint        longpress_timeout_handle;
+  guint32      refresh_timeout_handle;
 } ChattyMsgListPrivate;
 
 
@@ -134,6 +135,33 @@ init_css (void)
 
 
 static void
+msg_list_cmd_copy (GSimpleAction *action,
+                   GVariant      *parameter,
+                   gpointer       user_data)
+{
+  const char *label_text = NULL;
+
+  GtkClipboard* clipboard;
+
+  ChattyMsgListPrivate *priv = chatty_msg_list_get_instance_private (user_data);
+
+  clipboard = gtk_clipboard_get (GDK_SELECTION_CLIPBOARD);
+
+  label_text = gtk_label_get_text (GTK_LABEL(priv->label_pressed));
+
+  if (label_text != NULL) {
+    gtk_clipboard_set_text (clipboard, label_text, -1);
+  }
+}
+
+
+static const GActionEntry msg_list_entries [] =
+{
+  { "copy-msg-text",  msg_list_cmd_copy }
+};
+
+
+static void
 cb_list_size_allocate (GtkWidget     *sender,
                        GtkAllocation *allocation,
                        gpointer       self)
@@ -179,6 +207,12 @@ cb_longpress_timeout (gpointer self)
   GtkClipboard* clipboard;
 
   ChattyMsgListPrivate *priv = chatty_msg_list_get_instance_private (self);
+
+  gtk_popover_set_relative_to (GTK_POPOVER(priv->menu_popover),
+                               GTK_WIDGET(priv->label_pressed));
+
+  gtk_popover_popup (GTK_POPOVER(priv->menu_popover));
+
 
   clipboard = gtk_clipboard_get (GDK_SELECTION_CLIPBOARD);
 
@@ -546,7 +580,7 @@ chatty_msg_list_add_message (ChattyMsgList *self,
   GtkStyleContext *sc;
   gchar           *style;
   gchar           *str;
-  gint           width, height;
+  gint             width, height;
 
   ChattyMsgListPrivate *priv = chatty_msg_list_get_instance_private (self);
 
@@ -637,9 +671,12 @@ chatty_msg_list_add_message (ChattyMsgList *self,
 static void
 chatty_msg_list_constructed (GObject *object)
 {
-  ChattyMsgList        *self = CHATTY_MSG_LIST (object);
+  GtkBuilder           *builder;
+  GSimpleActionGroup   *simple_action_group;
   GtkStyleContext      *sc;
+  ChattyMsgList        *self = CHATTY_MSG_LIST (object);
   ChattyMsgListPrivate *priv = chatty_msg_list_get_instance_private (self);
+  const gchar          *path;
 
   init_css();
 
@@ -655,6 +692,23 @@ chatty_msg_list_constructed (GObject *object)
                            "focus",
                            G_CALLBACK (cb_list_focus),
                            (gpointer) self, 0);
+
+  path = "/sm/puri/chatty/ui/chatty-message-list-popover.ui";
+  builder = gtk_builder_new_from_resource (path);
+
+  priv->menu_popover =
+    GTK_WIDGET(gtk_builder_get_object (builder, "label_msg_popover"));
+
+  simple_action_group = g_simple_action_group_new ();
+
+  g_action_map_add_action_entries (G_ACTION_MAP (simple_action_group),
+                                   msg_list_entries,
+                                   G_N_ELEMENTS (msg_list_entries),
+                                   (gpointer) self);
+
+  gtk_widget_insert_action_group (GTK_WIDGET (self),
+                                  "msg_list",
+                                  G_ACTION_GROUP (simple_action_group));
 }
 
 
