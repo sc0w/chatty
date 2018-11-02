@@ -189,6 +189,7 @@ chatty_window_activate (GtkApplication *app,
   chatty->pane_view_new_conversation = GTK_BOX (gtk_builder_get_object (builder, "pane_view_new_conversation"));
   chatty->pane_view_buddy_list = GTK_BOX (gtk_builder_get_object (builder, "pane_view_buddy_list"));
 
+  g_object_unref (builder);
   gtk_widget_show_all (GTK_WIDGET (window));
   chatty_window_init_data ();
 }

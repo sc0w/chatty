@@ -336,7 +336,7 @@ chatty_account_add_to_accounts_list (PurpleAccount *account,
   row = gtk_list_box_row_new ();
   g_object_set_data (G_OBJECT(row),
                      "row-account",
-                     account);
+                     (gpointer) account);
 
   protocol_id = purple_account_get_protocol_id (account);
 
