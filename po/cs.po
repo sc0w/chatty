@@ -1,0 +1,93 @@
+# Jaroslav Svoboda <multi.flexi@seznam.cz>, 2018. #zanata
+msgid ""
+msgstr ""
+"Project-Id-Version: purism-chatty\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-10-24 13:01+0200\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"PO-Revision-Date: 2018-10-24 10:05+0000\n"
+"Last-Translator: Jaroslav Svoboda <multi.flexi@seznam.cz>\n"
+"Language-Team: Czech\n"
+"Language: cs\n"
+"X-Generator: Zanata 4.6.2\n"
+"Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2\n"
+
+#: data/sm.puri.Chatty.desktop.in:3
+msgid "purism-chatty"
+msgstr "purism-chatty"
+
+#: src/chatty-account.c:234
+#, fuzzy
+msgid "id@any-server"
+msgstr "id@server"
+
+#: src/chatty-account.c:243
+msgid "Password"
+msgstr "Heslo"
+
+#: src/chatty-account.c:247 src/chatty-account.c:768
+msgid "Add account"
+msgstr "Přidat účet"
+
+#: src/chatty-buddy-list.c:613
+msgid "Nickname (optional)"
+msgstr "Přezdívka (volitelné)"
+
+#: src/chatty-buddy-list.c:619
+msgid "Invite message"
+msgstr "Pozvánka"
+
+#: src/chatty-conversation.c:337
+msgid "Unknown command."
+msgstr "Neznámý příkaz."
+
+#: src/chatty-conversation.c:348
+msgid "Wrong number of arguments for the command."
+msgstr "Nesprávný počet argumentů pro příkaz."
+
+#: src/chatty-conversation.c:356
+msgid "The command failed."
+msgstr "Příkaz selhal."
+
+#: src/chatty-conversation.c:366
+msgid "That command only works in chats, not IMs."
+msgstr "Příkaz funguje pouze v rozhovorech, ne v IM."
+
+#: src/chatty-conversation.c:372
+msgid "That command only works in IMs, not chats."
+msgstr "Příkaz funguje pouze v IM, ne v rozhovorech."
+
+#: src/chatty-conversation.c:380
+msgid "That command doesn't work on this protocol."
+msgstr "Příkaz nefunguje s tímto protokolem."
+
+#: src/chatty-message-list.c:60 src/chatty-message-list.c:65
+msgid "This is a IM conversation."
+msgstr "Toto je IM konverzace."
+
+#: src/chatty-message-list.c:61 src/chatty-message-list.c:71
+msgid "Your messages are not encrypted,"
+msgstr "Vaše zprávy nejsou šifrovány,"
+
+#: src/chatty-message-list.c:62
+msgid "ask your counterpart to use E2EE."
+msgstr "požádejte váš protějšek o užití E2EE."
+
+#: src/chatty-message-list.c:66
+msgid "Your messages are secured"
+msgstr "Vaše zprávy jsou zabezpečeny"
+
+#: src/chatty-message-list.c:67
+msgid "by end-to-end encryption."
+msgstr "E2E šifrováním."
+
+#: src/chatty-message-list.c:70
+msgid "This is a SMS conversation."
+msgstr "Toto je SMS konverzace."
+
+#: src/chatty-message-list.c:72
+#, fuzzy
+msgid "and carrier rates may apply."
+msgstr "a může být zpoplatněno operátorem."
