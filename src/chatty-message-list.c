@@ -540,6 +540,7 @@ chatty_msg_list_hide_typing_indicator (ChattyMsgList *self)
     gtk_widget_hide (GTK_WIDGET(priv->typing_indicator));
     gtk_widget_destroy (GTK_WIDGET(priv->typing_indicator));
     gtk_widget_destroy (GTK_WIDGET(priv->indicator_row));
+    priv->typing_indicator = NULL;
   }
 }
 
@@ -692,6 +693,8 @@ chatty_msg_list_constructed (GObject *object)
                            "focus",
                            G_CALLBACK (cb_list_focus),
                            (gpointer) self, 0);
+
+  priv->typing_indicator = NULL;
 
   path = "/sm/puri/chatty/ui/chatty-message-list-popover.ui";
   builder = gtk_builder_new_from_resource (path);

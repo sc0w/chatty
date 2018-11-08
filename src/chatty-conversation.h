@@ -40,8 +40,8 @@ struct chatty_conversation {
   GtkTextBuffer       *msg_buffer;
   GtkWidget           *tab_cont;
   GtkWidget           *icon;
-  guint               unseen_count;
-  guint               unseen_state;
+  guint                unseen_count;
+  guint                unseen_state;
 
   struct {
     int timer;

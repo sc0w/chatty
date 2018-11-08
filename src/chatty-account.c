@@ -173,21 +173,20 @@ cb_button_add_account_clicked (GtkButton *sender,
   gtk_container_foreach (GTK_CONTAINER(chatty->pane_view_new_account),
                          (GtkCallback)gtk_widget_destroy, NULL);
 
-  chatty_window_change_view (CHATTY_VIEW_MANAGE_ACCOUNT_LIST);
+  chatty_window_change_view (CHATTY_VIEW_MANAGE_ACCOUNT);
 }
 
 
 static void
-cb_list_account_select_row_activated (GtkListBox   *box,
-                                     GtkListBoxRow *row,
-                                     gpointer       user_data)
+cb_list_account_select_row_activated (GtkListBox    *box,
+                                      GtkListBoxRow *row,
+                                      gpointer       user_data)
 {
   PurpleAccount *account;
 
   PurpleConnection         *pc = NULL;
   PurplePlugin             *prpl = NULL;
   PurplePluginProtocolInfo *prpl_info = NULL;
-  gboolean                  invite_enabled = TRUE;
   const gchar              *protocol_id;
 
   chatty_data_t *chatty = chatty_get_data ();
@@ -207,12 +206,12 @@ cb_list_account_select_row_activated (GtkListBox   *box,
   }
 
   if (prpl_info && !(prpl_info->options & OPT_PROTO_INVITE_MESSAGE)) {
-    invite_enabled = FALSE;
+    // TODO setup UI for invite msg?
   }
 
-  chatty_blist_create_add_buddy_view (account, invite_enabled);
-
   protocol_id = purple_account_get_protocol_id (account);
+
+  chatty_blist_create_add_buddy_view (account);
 
   if (g_strcmp0 (protocol_id, "prpl-mm-sms") == 0) {
     gtk_label_set_text (GTK_LABEL(chatty->label_buddy_id), _("Number"));
@@ -220,7 +219,7 @@ cb_list_account_select_row_activated (GtkListBox   *box,
     gtk_label_set_text (GTK_LABEL(chatty->label_buddy_id), _("XMPP Id"));
   }
 
-  chatty_window_change_view (CHATTY_VIEW_NEW_CONVERSATION);
+  chatty_window_change_view (CHATTY_VIEW_ADD_CONTACT);
 }
 
 

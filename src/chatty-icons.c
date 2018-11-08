@@ -325,6 +325,94 @@ chatty_icon_get_buddy_icon (PurpleBlistNode *node,
 }
 
 
+static GdkPixbuf *
+chatty_icon_pixbuf_new_from_file (const gchar *filename)
+{
+  GdkPixbuf *pixbuf;
+  GError *error = NULL;
+
+  pixbuf = gdk_pixbuf_new_from_file (filename, &error);
+
+  if (!pixbuf || error) {
+    purple_debug_warning ("gtkutils", "gdk_pixbuf_new_from_file() "
+                          "returned %s for file %s: %s\n",
+                          pixbuf ? "something" : "nothing",
+                          filename,
+                          error ? error->message : "(no error message)");
+
+    if (error) {
+      g_error_free(error);
+    }
+
+    if (pixbuf) {
+      g_object_unref (G_OBJECT(pixbuf));
+    }
+
+    return NULL;
+  }
+
+  return pixbuf;
+}
+
+
+static GdkPixbuf *
+chatty_icon_create_prpl_icon_from_prpl (PurplePlugin         *prpl,
+                                        ChattyPurpleIconSize  size,
+                                        PurpleAccount        *account)
+{
+  PurplePluginProtocolInfo  *prpl_info;
+  const gchar               *protoname = NULL;
+  gchar                     *tmp;
+  gchar                     *filename = NULL;
+  GdkPixbuf                 *pixbuf;
+
+  prpl_info = PURPLE_PLUGIN_PROTOCOL_INFO(prpl);
+
+  if (prpl_info->list_icon == NULL) {
+    return NULL;
+  }
+
+  protoname = prpl_info->list_icon(account, NULL);
+
+  if (protoname == NULL) {
+    return NULL;
+  }
+
+  tmp = g_strconcat (protoname, ".png", NULL);
+
+  filename =
+    g_build_filename ("/usr/share/", "pixmaps", "pidgin", "protocols",
+                      size == CHATTY_ICON_SIZE_SMALL ? "16" :
+                      size == CHATTY_ICON_SIZE_MEDIUM ? "22" : "48",
+                      tmp, NULL);
+
+  g_free (tmp);
+
+  pixbuf = chatty_icon_pixbuf_new_from_file (filename);
+  g_free (filename);
+
+  return pixbuf;
+}
+
+
+GdkPixbuf *
+chatty_icon_create_prpl_icon (PurpleAccount        *account,
+                              ChattyPurpleIconSize  size)
+{
+  PurplePlugin *prpl;
+
+  g_return_val_if_fail (account != NULL, NULL);
+
+  prpl = purple_find_prpl ( purple_account_get_protocol_id (account));
+
+  if (prpl == NULL) {
+    return NULL;
+  }
+
+  return chatty_icon_create_prpl_icon_from_prpl (prpl, size, account);
+}
+
+
 /* Altered from do_colorshift in gnome-panel */
 void
 chatty_icon_do_alphashift (GdkPixbuf *pixbuf,
@@ -335,13 +423,14 @@ chatty_icon_do_alphashift (GdkPixbuf *pixbuf,
   guchar *pixels;
   int     val;
 
-  if (!gdk_pixbuf_get_has_alpha(pixbuf))
+  if (!gdk_pixbuf_get_has_alpha (pixbuf)) {
     return;
+  }
 
-  width = gdk_pixbuf_get_width(pixbuf);
-  height = gdk_pixbuf_get_height(pixbuf);
-  padding = gdk_pixbuf_get_rowstride(pixbuf) - width * 4;
-  pixels = gdk_pixbuf_get_pixels(pixbuf);
+  width = gdk_pixbuf_get_width (pixbuf);
+  height = gdk_pixbuf_get_height (pixbuf);
+  padding = gdk_pixbuf_get_rowstride (pixbuf) - width * 4;
+  pixels = gdk_pixbuf_get_pixels (pixbuf);
 
   for (i = 0; i < height; i++) {
     for (j = 0; j < width; j++) {
@@ -351,6 +440,7 @@ chatty_icon_do_alphashift (GdkPixbuf *pixbuf,
       val = *pixels - shift;
       *(pixels++) = CLAMP(val, 0, 255);
     }
+
     pixels += padding;
   }
 }

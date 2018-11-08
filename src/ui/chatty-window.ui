@@ -3,7 +3,7 @@
 <interface>
   <requires lib="gtk+" version="3.20"/>
   <requires lib="libhandy" version="0.0"/>
-  <object class="GtkPopoverMenu" id="header_view_buddy_list_popover">
+  <object class="GtkPopoverMenu" id="header_view_chat_list_popover">
     <property name="can_focus">False</property>
     <child>
       <object class="GtkBox">
@@ -16,7 +16,7 @@
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">False</property>
-            <property name="action_name">blist.accounts</property>
+            <property name="action_name">chat_list.account-settings</property>
             <property name="text" translatable="yes">Account Settings</property>
           </object>
           <packing>
@@ -43,7 +43,7 @@
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">False</property>
-            <property name="action_name">blist.help</property>
+            <property name="action_name">chat_list.help</property>
             <property name="text" translatable="yes">Help</property>
           </object>
           <packing>
@@ -57,7 +57,7 @@
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">False</property>
-            <property name="action_name">blist.about</property>
+            <property name="action_name">chat_list.about</property>
             <property name="text" translatable="yes">About Chats</property>
           </object>
           <packing>
@@ -123,7 +123,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkModelButton" id="delete-conversation-button">
+          <object class="GtkModelButton" id="delete-chat-button">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="receives_default">False</property>
@@ -152,38 +152,11 @@
         <property name="border_width">12</property>
         <property name="orientation">vertical</property>
         <child>
-          <object class="GtkModelButton" id="search-contacts">
+          <object class="GtkModelButton" id="account-vcard-button">
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">False</property>
-            <property name="action_name">add_Chat.show-in-contacts</property>
-            <property name="text" translatable="yes">Search contacts</property>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">0</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkSeparator">
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="margin_top">6</property>
-            <property name="margin_bottom">6</property>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">1</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkModelButton" id="import-vcard-button">
-            <property name="visible">True</property>
-            <property name="can_focus">True</property>
-            <property name="receives_default">False</property>
-            <property name="action_name">add_chat.buddy-presence</property>
+            <property name="action_name">add_account.via-vcard</property>
             <property name="text" translatable="yes">Import vCard</property>
           </object>
           <packing>
@@ -193,12 +166,12 @@
           </packing>
         </child>
         <child>
-          <object class="GtkModelButton" id="scan-qr-button">
+          <object class="GtkModelButton" id="account-qr-button">
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">False</property>
-            <property name="action_name">add_chat.encryption</property>
-            <property name="text" translatable="yes">Scan QR code</property>
+            <property name="action_name">add_chat.via-qr-code</property>
+            <property name="text" translatable="yes">Add via QR Code</property>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -206,6 +179,76 @@
             <property name="position">3</property>
           </packing>
         </child>
+      </object>
+      <packing>
+        <property name="submenu">main</property>
+        <property name="position">1</property>
+      </packing>
+    </child>
+  </object>
+  <object class="GtkPopoverMenu" id="header_view_new_chat_popover">
+    <property name="can_focus">False</property>
+    <child>
+      <object class="GtkBox">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="border_width">12</property>
+        <property name="orientation">vertical</property>
+        <child>
+          <object class="GtkModelButton" id="contact-id-button">
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="receives_default">False</property>
+            <property name="action_name">new_chat.add-contact-by-id</property>
+            <property name="text" translatable="yes">Add Contact by ID</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">2</property>
+          </packing>
+        </child>
+         <child>
+           <object class="GtkSeparator">
+             <property name="visible">True</property>
+             <property name="can_focus">False</property>
+             <property name="margin_top">6</property>
+             <property name="margin_bottom">6</property>
+           </object>
+           <packing>
+             <property name="expand">False</property>
+             <property name="fill">True</property>
+             <property name="position">2</property>
+           </packing>
+         </child>
+        <child>
+          <object class="GtkModelButton" id="contact-qr-button">
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="receives_default">False</property>
+            <property name="action_name">new_chat.add-contact-via-qr-code</property>
+            <property name="text" translatable="yes">Add contact via QR Code</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">2</property>
+          </packing>
+        </child>
+         <child>
+           <object class="GtkModelButton" id="contact-vcard-button">
+             <property name="visible">True</property>
+             <property name="can_focus">True</property>
+             <property name="receives_default">False</property>
+             <property name="action_name">new_chat.add-contact-via-vard</property>
+             <property name="text" translatable="yes">Add contact via vCard</property>
+           </object>
+           <packing>
+             <property name="expand">False</property>
+             <property name="fill">True</property>
+             <property name="position">3</property>
+           </packing>
+         </child>
       </object>
       <packing>
         <property name="submenu">main</property>
@@ -224,7 +267,7 @@
             <property name="transition_type">slide-left-right</property>
             <property name="visible-child-name" bind-source="panes_stack" bind-property="visible-child-name" bind-flags="bidirectional|sync-create"/>
             <child>
-              <object class="GtkHeaderBar" id="header_view_buddy_list">
+              <object class="GtkHeaderBar" id="header_view_chat_list">
                 <property name="can_focus">False</property>
                 <property name="title" translatable="yes">Chats</property>
                 <child>
@@ -245,7 +288,7 @@
                   <object class="GtkMenuButton">
                     <property name="can_focus">False</property>
                     <property name="receives_default">False</property>
-                    <property name="popover">header_view_buddy_list_popover</property>
+                    <property name="popover">header_view_chat_list_popover</property>
                     <child>
                       <object class="GtkImage">
                         <property name="visible">True</property>
@@ -311,7 +354,6 @@
               </object>
               <packing>
                 <property name="name">view-message-list</property>
-                <property name="position">1</property>
               </packing>
             </child>
             <child>
@@ -341,7 +383,7 @@
             <child>
               <object class="GtkHeaderBar" id="header_view_select_account">
                 <property name="can_focus">False</property>
-                <property name="title" translatable="yes">Select account for chat</property>
+                <property name="title" translatable="yes">Chat Account</property>
                 <child>
                   <object class="GtkButton">
                     <property name="can_focus">False</property>
@@ -359,13 +401,53 @@
               </object>
               <packing>
                 <property name="name">view-select-account</property>
-                <property name="position">3</property>
               </packing>
             </child>
             <child>
-              <object class="GtkHeaderBar" id="header_view_new_conversation">
+              <object class="GtkHeaderBar" id="header_view_new_chat">
                 <property name="can_focus">False</property>
-                <property name="title" translatable="yes">Add new chat</property>
+                <property name="title" translatable="yes">New Chat</property>
+                <child>
+                  <object class="GtkButton">
+                    <property name="can_focus">False</property>
+                    <property name="receives_default">False</property>
+                    <property name="action_name">win.back</property>
+                    <child>
+                      <object class="GtkImage">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="icon_name">go-previous-symbolic</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkMenuButton">
+                    <property name="can_focus">False</property>
+                    <property name="receives_default">False</property>
+                    <property name="popover">header_view_new_chat_popover</property>
+                    <child>
+                      <object class="GtkImage">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="icon_name">view-more-symbolic</property>
+                      </object>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="pack_type">end</property>
+                    <property name="position">3</property>
+                  </packing>
+                </child>
+              </object>
+              <packing>
+                <property name="name">view-new-chat</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkHeaderBar" id="header_view_new_contact">
+                <property name="can_focus">False</property>
+                <property name="title" translatable="yes">New contact</property>
                 <child>
                   <object class="GtkButton">
                     <property name="can_focus">False</property>
@@ -382,8 +464,7 @@
                 </child>
               </object>
               <packing>
-                <property name="name">view-new-chat</property>
-                <property name="position">4</property>
+                <property name="name">view-new-contact</property>
               </packing>
             </child>
             <child>
@@ -425,7 +506,6 @@
               </object>
               <packing>
                 <property name="name">view-new-account</property>
-                <property name="position">5</property>
               </packing>
             </child>
           </object>
@@ -437,11 +517,19 @@
         <property name="can_focus">False</property>
         <property name="transition_type">slide-left-right</property>
         <child>
-          <object class="GtkBox" id="pane_view_buddy_list">
+          <object class="GtkBox" id="pane_view_chat_list">
             <property name="can_focus">False</property>
           </object>
           <packing>
             <property name="name">view-chat-list</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkBox" id="pane_view_new_contact">
+            <property name="can_focus">False</property>
+          </object>
+          <packing>
+            <property name="name">view-new-contact</property>
           </packing>
         </child>
         <child>
@@ -472,7 +560,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkBox" id="pane_view_new_conversation">
+          <object class="GtkBox" id="pane_view_new_chat">
             <property name="can_focus">False</property>
           </object>
           <packing>
