@@ -1187,6 +1187,7 @@ chatty_conv_new (PurpleConversation *conv)
 {
   PurpleAccount      *account;
   PurpleBuddy        *buddy;
+  PurpleGroup        *group;
   PurpleValue        *value;
   PurpleBlistNode    *conv_node;
   ChattyConversation *chatty_conv;
@@ -1231,7 +1232,8 @@ chatty_conv_new (PurpleConversation *conv)
 
     if (buddy == NULL) {
       buddy = purple_buddy_new (account, conv_name, NULL);
-      purple_blist_add_buddy (buddy, NULL, NULL, NULL);
+      group = purple_group_new ("chatlist");
+      purple_blist_add_buddy (buddy, NULL, group, NULL);
     }
   } else {
     msg_type = MSG_TYPE_IM;
