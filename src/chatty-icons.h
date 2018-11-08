@@ -24,6 +24,9 @@ typedef enum
    CHATTY_ICON_COLOR_BLUE
 } ChattyPurpleIconColor;
 
+GdkPixbuf *
+chatty_icon_create_prpl_icon (PurpleAccount        *account,
+                              ChattyPurpleIconSize size);
 
 GdkPixbuf *
 chatty_icon_get_buddy_icon (PurpleBlistNode *node,
