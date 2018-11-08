@@ -13,18 +13,15 @@
 
 typedef struct {
   GtkBox            *box;
-  GtkTreeView       *treeview;
-  GtkListStore      *treemodel;
+  GtkTreeView       *treeview_chats;
+  GtkListStore      *treemodel_chats;
+  GtkTreeView       *treeview_contacts;
+  GtkListStore      *treemodel_contacts;
   GtkTreeViewColumn *text_column;
-  GtkScrolledWindow *scroll;
-  GdkPixbuf         *empty_avatar;
   GList             *blist_nodes;
-
   PurpleBlistNode   *selected_node;
-
   guint             *messaging_mode;
   guint             refresh_timer;
-
   gpointer          priv;
 } ChattyBuddyList;
 
@@ -36,11 +33,12 @@ typedef enum {
 
 
 typedef struct _chatty_blist_node {
-  GtkTreeRowReference *row;
-  GtkTreeIter         iter;
-  gboolean            contact_expanded;
-  gboolean            recent_signonoff;
-  gint                recent_signonoff_timer;
+  GtkTreeRowReference *row_chat;
+  GtkTreeRowReference *row_contact;
+  GtkTreeIter          iter;
+  gboolean             contact_expanded;
+  gboolean             recent_signonoff;
+  gint                 recent_signonoff_timer;
 
   struct {
     PurpleConversation   *conv;
@@ -63,8 +61,8 @@ enum
   COLUMN_NODE,
   COLUMN_AVATAR,
   COLUMN_NAME,
-  COLUMN_TIME,
-  NUM_COLUMNS,
+  COLUMN_LAST,
+  NUM_COLUMNS
 };
 
 
@@ -89,9 +87,10 @@ PurpleBlistUiOps *chatty_blist_get_ui_ops (void);
 
 void chatty_blist_init (void);
 void chatty_blist_uninit (void);
+void chatty_blist_returned_from_chat (void);
 void chatty_blist_add_buddy (PurpleAccount *account);
 void chatty_blist_refresh (PurpleBuddyList *list, gboolean remove);
-void chatty_blist_create_add_buddy_view (PurpleAccount *account,
-                                         gboolean       invite_enabled);
+void chatty_blist_create_add_buddy_view (PurpleAccount *account);
+void chatty_blist_chat_list_remove_buddy (void);
 
 #endif

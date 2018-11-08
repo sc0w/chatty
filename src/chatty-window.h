@@ -15,11 +15,12 @@
 typedef struct {
   GtkWindow         *main_window;
   GtkStack          *panes_stack;
-  GtkBox            *pane_view_buddy_list;
+  GtkBox            *pane_view_chat_list;
+  GtkBox            *pane_view_new_contact;
+  GtkBox            *pane_view_select_account;
   GtkWidget         *pane_view_message_list;
   GtkBox            *pane_view_manage_account;
-  GtkBox            *pane_view_select_account;
-  GtkBox            *pane_view_new_conversation;
+  GtkBox            *pane_view_new_chat;
   GtkBox            *pane_view_new_account;
   GtkHeaderBar      *header_view_message_list;
   GtkWidget         *header_icon;
@@ -28,19 +29,20 @@ typedef struct {
   GtkEntry          *entry_buddy_nick;
   GtkEntry          *entry_invite_msg;
   GtkWidget         *label_buddy_id;
-  gint              view_state_last;
-  gint              view_state_next;
+  gint               view_state_last;
+  gint               view_state_next;
 } chatty_data_t;
 
 chatty_data_t *chatty_get_data(void);
 
 typedef enum {
-  CHATTY_VIEW_NEW_CONVERSATION,
+  CHATTY_VIEW_NEW_CHAT,
+  CHATTY_VIEW_SELECT_ACCOUNT,
   CHATTY_VIEW_NEW_ACCOUNT,
   CHATTY_VIEW_MESSAGE_LIST,
-  CHATTY_VIEW_MANAGE_ACCOUNT_LIST,
-  CHATTY_VIEW_SELECT_ACCOUNT_LIST,
-  CHATTY_VIEW_CONVERSATIONS_LIST,
+  CHATTY_VIEW_MANAGE_ACCOUNT,
+  CHATTY_VIEW_CHAT_LIST,
+  CHATTY_VIEW_ADD_CONTACT
 } ChattyWindowState;
 
 typedef enum {

@@ -334,7 +334,7 @@ chatty_conv_check_for_command (PurpleConversation *conv)
           if (*spaceslash != '/') {
             purple_conversation_write (conv,
                                        "",
-                                       _("Unknown command."),
+                                       "Unknown command.",
                                        PURPLE_MESSAGE_NO_LOG,
                                        time(NULL));
             retval = TRUE;
@@ -345,7 +345,7 @@ chatty_conv_check_for_command (PurpleConversation *conv)
       case PURPLE_CMD_STATUS_WRONG_ARGS:
         purple_conversation_write (conv,
                                    "",
-                                   _("Wrong number of arguments for the command."),
+                                   "Wrong number of arguments for the command.",
                                    PURPLE_MESSAGE_NO_LOG,
                                    time(NULL));
         retval = TRUE;
@@ -353,7 +353,7 @@ chatty_conv_check_for_command (PurpleConversation *conv)
       case PURPLE_CMD_STATUS_FAILED:
         purple_conversation_write (conv,
                                    "",
-                                   error ? error : _("The command failed."),
+                                   error ? error : "The command failed.",
                                    PURPLE_MESSAGE_NO_LOG,
                                    time(NULL));
         g_free(error);
@@ -363,13 +363,13 @@ chatty_conv_check_for_command (PurpleConversation *conv)
         if (purple_conversation_get_type (conv) == PURPLE_CONV_TYPE_IM)
           purple_conversation_write (conv,
                                      "",
-                                     _("That command only works in chats, not IMs."),
+                                     "That command only works in chats, not IMs.",
                                      PURPLE_MESSAGE_NO_LOG,
                                      time(NULL));
         else
           purple_conversation_write (conv,
                                      "",
-                                     _("That command only works in IMs, not chats."),
+                                     "That command only works in IMs, not chats.",
                                      PURPLE_MESSAGE_NO_LOG,
                                      time(NULL));
         retval = TRUE;
@@ -377,7 +377,7 @@ chatty_conv_check_for_command (PurpleConversation *conv)
       case PURPLE_CMD_STATUS_WRONG_PRPL:
         purple_conversation_write (conv,
                                    "",
-                                   _("That command doesn't work on this protocol."),
+                                   "That command doesn't work on this protocol.",
                                    PURPLE_MESSAGE_NO_LOG,
                                    time(NULL));
         retval = TRUE;
