@@ -570,7 +570,7 @@ chatty_add_message_history_to_conv (gpointer data)
 
       logs = g_strsplit (stripped, "\n", -1);
 
-      for (int num = 0; num < (g_strv_length (logs) - 1); num++) {
+      for (int num = g_strv_length (logs) - 1; num >= 0; num--) {
         log_data = parse_message (logs[num]);
 
         if (log_data) {
