@@ -684,7 +684,7 @@ chatty_account_request_add (PurpleAccount *account,
 }
 
 
-static void
+void
 chatty_account_add_sms_account (void)
 {
   PurpleAccount *account;
@@ -798,10 +798,6 @@ chatty_account_init (void)
 
   if (!purple_prefs_get_bool ("/purple/savedstatus/startup_current_status")) {
     purple_savedstatus_activate (purple_savedstatus_get_startup ());
-  }
-
-  if (purple_accounts_find ("SMS", "prpl-mm-sms") != NULL) {
-    chatty_account_add_sms_account ();
   }
 }
 

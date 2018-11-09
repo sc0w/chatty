@@ -250,6 +250,10 @@ init_libpurple (void)
   purple_pounces_load ();
   purple_blist_show ();
   purple_accounts_restore_current_statuses ();
+
+  if (purple_accounts_find ("SMS", "prpl-mm-sms") == NULL) {
+    chatty_account_add_sms_account ();
+  }
 }
 
 
