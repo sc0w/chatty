@@ -216,7 +216,7 @@ cb_list_account_select_row_activated (GtkListBox    *box,
   if (g_strcmp0 (protocol_id, "prpl-mm-sms") == 0) {
     gtk_label_set_text (GTK_LABEL(chatty->label_buddy_id), _("Number"));
   } else {
-    gtk_label_set_text (GTK_LABEL(chatty->label_buddy_id), _("XMPP Id"));
+    gtk_label_set_text (GTK_LABEL(chatty->label_buddy_id), _("XMPP ID"));
   }
 
   chatty_window_change_view (CHATTY_VIEW_ADD_CONTACT);
@@ -267,6 +267,9 @@ chatty_account_create_add_account_view (void)
   gtk_widget_set_valign (GTK_WIDGET (grid), GTK_ALIGN_CENTER);
 
   gtk_widget_show_all (grid);
+
+  gtk_widget_set_can_focus (GTK_WIDGET(chatty_account->entry_account_name), TRUE);
+  gtk_widget_grab_focus (GTK_WIDGET(chatty_account->entry_account_name));
 
   gtk_box_pack_start (GTK_BOX(chatty->pane_view_new_account),
                       grid, TRUE, TRUE, 0);
