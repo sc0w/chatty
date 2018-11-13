@@ -165,8 +165,9 @@ cb_textview_keypress (GtkWidget   *widget,
                       GdkEventKey *pKey,
                       gpointer     data)
 {
-  if (pKey->type == GDK_KEY_PRESS && pKey->keyval == GDK_KEY_Return)
+  if (pKey->keyval == GDK_KEY_Return) {
     cb_button_send_clicked (NULL, data);
+  }
 
   return FALSE;
 }
@@ -264,6 +265,21 @@ cb_stack_cont_switch_conv (GtkNotebook *notebook,
 
 // *** end callbacks
 
+
+static gchar *
+chatty_conv_check_for_links (const gchar *message)
+{
+  gchar  *msg_html;
+  gchar  *msg_xhtml = NULL;
+
+  msg_html = purple_markup_linkify (message);
+  // convert all tags to lowercase for GtkLabel markup parser
+  purple_markup_html_to_xhtml (msg_html, &msg_xhtml, NULL);
+
+  g_free (msg_html);
+
+  return msg_xhtml;
+}
 
 // TODO
 // Needs to be set up for command handling in the message view
@@ -545,10 +561,12 @@ chatty_add_message_history_to_conv (gpointer data)
     const gchar   *b_name;
     gchar         *read_log;
     gchar         *stripped;
-    gchar         **line_split = NULL;
-    gchar         **logs = NULL;
+    gchar        **line_split = NULL;
+    gchar        **logs = NULL;
     gchar         *time_stamp;
+    gchar         *msg_html;
     GList         *history;
+    guint          msg_dir;
 
     conv_name = purple_conversation_get_name (chatty_conv->active_conv);
     account = purple_conversation_get_account (chatty_conv->active_conv);
@@ -601,16 +619,19 @@ chatty_add_message_history_to_conv (gpointer data)
       }
 
       if ((g_strcmp0 (log_data->name, name)) == 0) {
-        chatty_msg_list_add_message (chatty_conv->msg_list,
-                                     MSG_IS_INCOMING,
-                                     log_data->msg,
-                                     time_stamp);
+        msg_dir = MSG_IS_INCOMING;
       } else {
-        chatty_msg_list_add_message (chatty_conv->msg_list,
-                                     MSG_IS_OUTGOING,
-                                     log_data->msg,
-                                     time_stamp);
+        msg_dir = MSG_IS_OUTGOING;
       }
+
+      msg_html = chatty_conv_check_for_links (log_data->msg);
+
+      chatty_msg_list_add_message (chatty_conv->msg_list,
+                                   msg_dir,
+                                   msg_html,
+                                   time_stamp);
+
+      g_free (msg_html);
     }
 
     g_list_foreach (msgs, (GFunc)g_free, NULL);
@@ -823,10 +844,11 @@ chatty_conv_write_common (PurpleConversation *conv,
                           PurpleMessageFlags  flags,
                           time_t              mtime)
 {
-  ChattyConversation     *chatty_conv;
-  PurpleConnection       *gc;
-  PurpleAccount          *account;
-  gchar                  *strip, *newline;
+  ChattyConversation  *chatty_conv;
+  PurpleConnection    *gc;
+  PurpleAccount       *account;
+  gchar               *msg_html;
+  guint                msg_dir;
 
   chatty_conv = CHATTY_CONVERSATION (conv);
 
@@ -846,38 +868,27 @@ chatty_conv_write_common (PurpleConversation *conv,
   }
 
   account = purple_conversation_get_account(conv);
-  g_return_if_fail(account != NULL);
-  gc = purple_account_get_connection(account);
-  g_return_if_fail(gc != NULL || !(flags & (PURPLE_MESSAGE_SEND | PURPLE_MESSAGE_RECV)));
+  g_return_if_fail (account != NULL);
+  gc = purple_account_get_connection (account);
+  g_return_if_fail (gc != NULL || !(flags & (PURPLE_MESSAGE_SEND | PURPLE_MESSAGE_RECV)));
 
-  if (flags & PURPLE_MESSAGE_SEND) {
-    newline = purple_strdup_withhtml (message);
-    strip = purple_markup_strip_html (newline);
+  if (*message != '\0') {
+    if (flags & PURPLE_MESSAGE_SEND) {
+      msg_dir = MSG_IS_OUTGOING;
+    } else if (flags & PURPLE_MESSAGE_RECV) {
+      msg_dir = MSG_IS_INCOMING;
+    }
+
+    msg_html = chatty_conv_check_for_links (message);
 
     chatty_msg_list_add_message (chatty_conv->msg_list,
-                                 MSG_IS_OUTGOING,
-                                 strip,
+                                 msg_dir,
+                                 msg_html,
                                  NULL);
 
     chatty_conv_set_unseen (chatty_conv, CHATTY_UNSEEN_NONE);
 
-    g_free (newline);
-    g_free (strip);
-  }
-
-  if (flags & PURPLE_MESSAGE_RECV) {
-    newline = purple_strdup_withhtml (message);
-    strip = purple_markup_strip_html (newline);
-
-    chatty_msg_list_add_message (chatty_conv->msg_list,
-                                 MSG_IS_INCOMING,
-                                 strip,
-                                 NULL);
-
-    chatty_conv_set_unseen (chatty_conv, CHATTY_UNSEEN_TEXT);
-
-    g_free (newline);
-    g_free (strip);
+    g_free (msg_html);
   }
 }
 
@@ -948,7 +959,7 @@ chatty_get_conv_blist_node (PurpleConversation *conv)
     case PURPLE_CONV_TYPE_ANY:
     default:
       g_warning ("Unhandled converstation type %d",
-     purple_conversation_get_type (conv));
+                 purple_conversation_get_type (conv));
       break;
   }
   return node;

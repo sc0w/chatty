@@ -574,7 +574,6 @@ chatty_msg_list_add_message (ChattyMsgList *self,
   GtkBox          *box;
   GtkBox          *vbox;
   GtkWidget       *ebox;
-  GtkWidget       *overlay;
   GtkRevealer     *revealer;
   GtkLabel        *label_msg;
   GtkLabel        *label_timestamp;
@@ -608,15 +607,14 @@ chatty_msg_list_add_message (ChattyMsgList *self,
   vbox = GTK_BOX (gtk_box_new (GTK_ORIENTATION_VERTICAL, 0));
 
   label_msg = GTK_LABEL (gtk_label_new (message));
-  gtk_label_set_line_wrap_mode (label_msg, PANGO_WRAP_WORD);
+  gtk_label_set_use_markup (GTK_LABEL (label_msg), TRUE);
   gtk_label_set_line_wrap (label_msg, TRUE);
+  gtk_label_set_line_wrap_mode (label_msg, PANGO_WRAP_WORD_CHAR);
+  // TODO adjust num_chars dynamically to scale labels
+  //      according to widget width
   gtk_label_set_max_width_chars (label_msg, 22);
-  gtk_label_set_selectable (label_msg, TRUE);
 
   gtk_widget_get_size_request (GTK_WIDGET(label_msg), &width, &height);
-  overlay = gtk_overlay_new ();
-  gtk_widget_set_size_request (GTK_WIDGET(overlay), width, height);
-  gtk_container_add (GTK_CONTAINER(overlay), GTK_WIDGET(label_msg));
 
   ebox = gtk_event_box_new ();
   g_object_set_data (G_OBJECT(ebox), "label", label_msg);
@@ -630,8 +628,7 @@ chatty_msg_list_add_message (ChattyMsgList *self,
                     G_CALLBACK(cb_msg_label_released),
                     (gpointer)self);
 
-  gtk_overlay_add_overlay (GTK_OVERLAY(overlay), ebox);
-  gtk_overlay_set_overlay_pass_through (GTK_OVERLAY(overlay), ebox, TRUE);
+  gtk_container_add (GTK_CONTAINER(ebox), GTK_WIDGET(label_msg));
 
   if (message_dir == MSG_IS_INCOMING) {
     gtk_box_pack_start (box, GTK_WIDGET(vbox), FALSE, TRUE, 8);
@@ -648,7 +645,7 @@ chatty_msg_list_add_message (ChattyMsgList *self,
   sc = gtk_widget_get_style_context (GTK_WIDGET(label_msg));
   gtk_style_context_add_class (sc, style);
 
-  gtk_box_pack_start (vbox, GTK_WIDGET(overlay), FALSE, FALSE, 0);
+  gtk_box_pack_start (vbox, GTK_WIDGET(ebox), FALSE, FALSE, 0);
 
   if (footer != NULL) {
     label_timestamp = GTK_LABEL(gtk_label_new (NULL));
