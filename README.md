@@ -13,7 +13,7 @@ sudo apt install git meson libgtk-3-dev libpurple-dev modemmanager libmxml-dev l
 
 ### Build and install the SMS plugin
 ``` bash
-git clonegit@source.puri.sm:Librem5/purple-mm-sms.git
+git clone git@source.puri.sm:Librem5/purple-mm-sms.git
 make
 make install
 ```
