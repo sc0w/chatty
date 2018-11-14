@@ -559,10 +559,6 @@ chatty_add_message_history_to_conv (gpointer data)
     gchar         *name = NULL;
     const gchar   *conv_name;
     const gchar   *b_name;
-    gchar         *read_log;
-    gchar         *stripped;
-    gchar        **line_split = NULL;
-    gchar        **logs = NULL;
     gchar         *time_stamp;
     gchar         *msg_html;
     GList         *history;
@@ -583,8 +579,10 @@ chatty_add_message_history_to_conv (gpointer data)
     // limit the log-list to MAX_MSGS msgs since we currently have no
     // infinite scrolling implemented
     for (int i = 0; history && i < MAX_MSGS; history = history->next) {
-      read_log = purple_log_read ((PurpleLog*)history->data, NULL);
-      stripped = purple_markup_strip_html (read_log);
+      g_auto(GStrv) line_split = NULL;
+      g_auto(GStrv) logs = NULL;
+      g_autofree gchar *read_log = purple_log_read ((PurpleLog*)history->data, NULL);
+      g_autofree gchar *stripped = purple_markup_strip_html (read_log);
 
       logs = g_strsplit (stripped, "\n", -1);
 
@@ -599,11 +597,6 @@ chatty_add_message_history_to_conv (gpointer data)
 
       line_split = g_strsplit (b_name, "/", -1);
       name = g_strdup (line_split[0]);
-
-      g_free (read_log);
-      g_free (stripped);
-      g_strfreev (logs);
-      g_strfreev (line_split);
     }
 
     g_list_foreach (history, (GFunc)purple_log_free, NULL);
