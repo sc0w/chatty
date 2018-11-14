@@ -484,6 +484,7 @@ static ChattyLog*
 parse_message (const gchar* msg)
 {
   ChattyLog *log;
+  char *timestamp;
   g_auto(GStrv) timesplit=NULL, accountsplit=NULL, namesplit=NULL;
 
   if (msg == NULL)
@@ -495,8 +496,11 @@ parse_message (const gchar* msg)
   if (timesplit[0] == NULL || strlen (timesplit[0]) < 6)
     return NULL;
 
+  timestamp = strchr(timesplit[0], '(');
+  g_return_val_if_fail (timestamp != NULL, NULL);
+
   log = g_new0 (ChattyLog, 1);
-  log->time_stamp = g_strdup(&(timesplit[0][1]));
+  log->time_stamp = g_strdup(&timestamp[1]);
 
   if (timesplit[1] == NULL)
     return log;
