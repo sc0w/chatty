@@ -195,9 +195,10 @@ PurpleCoreUiOps core_uiops =
 static void
 init_libpurple (void)
 {
-  gchar *search_path;
-  GList *iter;
-  GList *names = NULL;
+  PurpleAccount *account;
+  gchar         *search_path;
+  GList         *iter;
+  GList         *names = NULL;
 
   purple_debug_set_enabled (FALSE);
   purple_debug_set_verbose (FALSE);
@@ -232,7 +233,7 @@ init_libpurple (void)
     if (g_strcmp0 (info->id, "core-mancho-omemo") == 0) {
       if (!purple_plugin_is_loaded (plugin)) {
         purple_plugin_load (plugin);
-        g_debug("Loaded plugin %s", info->name);
+        g_debug ("Loaded plugin %s", info->name);
       }
 
       purple_plugins_save_loaded (CHATTY_PREFS_ROOT "/plugins/loaded");
@@ -249,11 +250,17 @@ init_libpurple (void)
   purple_plugins_init ();
   purple_pounces_load ();
   purple_blist_show ();
-  purple_accounts_restore_current_statuses ();
 
-  if (purple_accounts_find ("SMS", "prpl-mm-sms") == NULL) {
+  account = purple_accounts_find ("SMS", "prpl-mm-sms");
+
+  if (account == NULL) {
     chatty_account_add_sms_account ();
+    purple_account_set_enabled (account, CHATTY_UI, TRUE);
+  } else {
+    purple_account_set_enabled (account, CHATTY_UI, TRUE);
   }
+
+  purple_accounts_restore_current_statuses ();
 }
 
 
