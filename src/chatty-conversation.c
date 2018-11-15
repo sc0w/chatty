@@ -1157,12 +1157,14 @@ chatty_conv_setup_pane (ChattyConversation *chatty_conv,
                     G_CALLBACK(cb_button_send_clicked),
                     (gpointer) chatty_conv);
 
-  image = GTK_IMAGE (gtk_image_new_from_icon_name ("pan-up-symbolic",
-                                                   GTK_ICON_SIZE_BUTTON));
+  gtk_icon_theme_add_resource_path (gtk_icon_theme_get_default (),
+                                    "/sm/puri/chatty/icons/ui/");
 
-G_GNUC_BEGIN_IGNORE_DEPRECATIONS
+  image = GTK_IMAGE (gtk_image_new_from_icon_name ("send-symbolic",
+                                                   GTK_ICON_SIZE_LARGE_TOOLBAR));
+
   gtk_button_set_image (GTK_BUTTON (button_send), GTK_WIDGET (image));
-G_GNUC_END_IGNORE_DEPRECATIONS
+
   gtk_widget_set_valign (button_send, GTK_ALIGN_CENTER);
 
   gtk_box_pack_start (GTK_BOX (hbox), button_send, FALSE, FALSE, 6);
