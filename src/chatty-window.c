@@ -182,6 +182,7 @@ chatty_window_activate (GtkApplication *app,
 
   chatty->header_view_message_list = GTK_HEADER_BAR (gtk_builder_get_object (builder, "header_view_message_list"));
   chatty->header_icon = GTK_WIDGET (gtk_builder_get_object (builder, "header_icon"));
+  chatty->header_spinner = GTK_WIDGET (gtk_builder_get_object (builder, "header_spinner"));
   chatty->panes_stack = GTK_STACK (gtk_builder_get_object (builder, "panes_stack"));
   chatty->pane_view_message_list = GTK_WIDGET (gtk_builder_get_object (builder, "pane_view_message_list"));
   chatty->pane_view_manage_account = GTK_BOX (gtk_builder_get_object (builder, "pane_view_manage_account"));

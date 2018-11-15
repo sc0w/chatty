@@ -24,6 +24,7 @@ typedef struct {
   GtkBox            *pane_view_new_account;
   GtkHeaderBar      *header_view_message_list;
   GtkWidget         *header_icon;
+  GtkWidget         *header_spinner;
   GtkWidget         *button_add_buddy;
   GtkEntry          *entry_buddy_name;
   GtkEntry          *entry_buddy_nick;
