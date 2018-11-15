@@ -198,7 +198,6 @@ init_libpurple (void)
   PurpleAccount *account;
   gchar         *search_path;
   GList         *iter;
-  GList         *names = NULL;
 
   purple_debug_set_enabled (FALSE);
   purple_debug_set_verbose (FALSE);
@@ -238,14 +237,7 @@ init_libpurple (void)
 
       purple_plugins_save_loaded (CHATTY_PREFS_ROOT "/plugins/loaded");
     }
-
-    // if (info && info->name) {
-    //   printf("\t%d: %s\n", i++, info->name);
-    //   names = g_list_append (names, info->id);
-    // }
   }
-
-  g_list_free (names);
 
   purple_plugins_init ();
   purple_pounces_load ();
@@ -255,31 +247,11 @@ init_libpurple (void)
 
   if (account == NULL) {
     chatty_account_add_sms_account ();
-    purple_account_set_enabled (account, CHATTY_UI, TRUE);
-  } else {
-    purple_account_set_enabled (account, CHATTY_UI, TRUE);
   }
 
+  purple_account_set_enabled (account, CHATTY_UI, TRUE);
+
   purple_accounts_restore_current_statuses ();
-}
-
-
-static void
-signed_on (PurpleConnection *gc)
-{
-  gchar *text;
-  chatty_purple_data_t *chatty_purple = chatty_get_purple_data();
-
-  PurpleAccount *account = purple_connection_get_account (gc);
-  chatty_purple->account = account;
-
-  text = g_strdup_printf ("Connected: %s %s",
-                          purple_account_get_username (account),
-                          purple_account_get_protocol_id (account));
-
-  g_debug ("%s", text);
-
-  g_free (text);
 }
 
 
@@ -299,12 +271,6 @@ static void
 connect_to_signals (void)
 {
   static int handle;
-
-  purple_signal_connect (purple_connections_get_handle (),
-                         "signed-on",
-                         &handle,
-                         PURPLE_CALLBACK (signed_on),
-                         NULL);
 
   purple_signal_connect (purple_accounts_get_handle (),
                          "account-authorization-requested",
