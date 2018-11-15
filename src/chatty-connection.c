@@ -28,7 +28,9 @@ chatty_connection_connect_progress (PurpleConnection *gc,
                                     size_t            step,
                                     size_t            step_count)
 {
-  // TODO maybe welcome screen with animation?
+  chatty_data_t *chatty = chatty_get_data ();
+
+  gtk_spinner_start (GTK_SPINNER(chatty->header_spinner));
 }
 
 
@@ -37,7 +39,13 @@ chatty_connection_connected (PurpleConnection *gc)
 {
   PurpleAccount *account;
 
+  chatty_data_t *chatty = chatty_get_data ();
+
   account  = purple_connection_get_account (gc);
+
+  if (purple_connections_get_connecting () == NULL) {
+    gtk_spinner_stop (GTK_SPINNER(chatty->header_spinner));
+  }
 
   g_hash_table_remove(auto_reconns, account);
 }
