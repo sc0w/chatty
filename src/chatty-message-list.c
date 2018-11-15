@@ -261,7 +261,12 @@ cb_msg_label_pressed (GtkWidget      *event_box,
   ChattyMsgListPrivate *priv = chatty_msg_list_get_instance_private (self);
 
   priv->label_pressed = g_object_get_data (G_OBJECT(event_box), "label");
-  chatty_msg_list_longpress_timeout_start (self);
+
+  if (event->button == 3) {
+    cb_longpress_timeout (self);
+  } else {
+    chatty_msg_list_longpress_timeout_start (self);
+  }
 }
 
 
