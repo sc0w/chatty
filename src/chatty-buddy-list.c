@@ -26,7 +26,7 @@ static ChattyBuddyList *_chatty_blist = NULL;
 
 static void chatty_blist_new_node (PurpleBlistNode *node);
 static void chatty_blist_add_buddy_clear_entries (void);
-static void chatty_blist_contact_list_queue_refilter (GtkTreeModelFilter *filter);
+static void chatty_blist_queue_refilter (GtkTreeModelFilter *filter);
 
 static void chatty_blist_update (PurpleBuddyList *list,
                                  PurpleBlistNode *node);
@@ -126,7 +126,7 @@ static void
 cb_search_entry_changed (GtkSearchEntry     *entry,
                          GtkTreeModelFilter *filter)
 {
-  chatty_blist_contact_list_queue_refilter (filter);
+  chatty_blist_queue_refilter (filter);
 }
 
 
@@ -979,6 +979,82 @@ chatty_blist_get_handle (void) {
 
 
 /**
+ * chatty_blist_do_refilter:
+ * @filter:  a GtkTreeModelFilter
+ *
+ * Performs list filtering after filter_timeout
+ *
+ */
+static gboolean
+chatty_blist_do_refilter (GtkTreeModelFilter *filter)
+{
+  gtk_tree_model_filter_refilter (filter);
+
+  _chatty_blist->filter_timeout = 0;
+
+  return (FALSE);
+}
+
+
+/**
+ * chatty_blist_queue_refilter:
+ * @filter:  a GtkTreeModelFilter
+ *
+ * Prevent from filtering after every keypress
+ * if query string is typed very quickly
+ *
+ */
+static void
+chatty_blist_queue_refilter (GtkTreeModelFilter *filter)
+{
+  if (_chatty_blist->filter_timeout) {
+    g_source_remove (_chatty_blist->filter_timeout);
+  }
+
+  _chatty_blist->filter_timeout =
+    g_timeout_add (300,
+                   (GSourceFunc)chatty_blist_do_refilter,
+                   filter);
+}
+
+
+/**
+ * chatty_blist_entry_visible_func:
+ * @model:  a GtkTreeModel
+ " @iter:    a GtkTreeIter
+ " @entry    a GtkEntry
+ *
+ * Filters the current row according to entry-text
+ *
+ */
+static gboolean
+chatty_blist_entry_visible_func (GtkTreeModel *model,
+                                 GtkTreeIter  *iter,
+                                 GtkEntry     *entry)
+{
+  const gchar *query;
+  gchar       *str;
+  gboolean     visible = FALSE;
+
+  query = gtk_entry_get_text (entry);
+
+  if (*query == '\0') {
+    return( TRUE );
+  }
+
+  gtk_tree_model_get (model, iter, 2, &str, -1);
+
+  if (str && strstr (str, query)) {
+    visible = TRUE;
+  }
+
+  g_free (str);
+
+  return visible;
+}
+
+
+/**
  * chatty_blist_create_chat_list:
  * @list:  a PurpleBuddyList
  *
@@ -990,11 +1066,27 @@ static void
 chatty_blist_create_chat_list (PurpleBuddyList *list)
 {
   GtkTreeView       *treeview;
+  GtkTreeModel      *filter;
+  GtkWidget         *vbox;
+  GtkWidget         *search_entry;
   GtkScrolledWindow *scroll;
   GtkStyleContext   *sc;
   chatty_data_t     *chatty = chatty_get_data ();
 
   _chatty_blist = CHATTY_BLIST(list);
+
+  _chatty_blist->filter_timeout = 0;
+
+  vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
+
+  search_entry = gtk_search_entry_new ();
+
+  g_object_set  (G_OBJECT(search_entry),
+                 "margin", 12, NULL);
+
+  gtk_box_pack_start (GTK_BOX (vbox),
+                      GTK_WIDGET (search_entry),
+                      FALSE, FALSE, 0);
 
   scroll = GTK_SCROLLED_WINDOW (gtk_scrolled_window_new ( NULL, NULL));
   gtk_widget_show (GTK_WIDGET(scroll));
@@ -1005,7 +1097,19 @@ chatty_blist_create_chat_list (PurpleBuddyList *list)
                                                        G_TYPE_STRING,
                                                        G_TYPE_STRING);
 
-  treeview = GTK_TREE_VIEW (gtk_tree_view_new_with_model (GTK_TREE_MODEL(_chatty_blist->treemodel_chats)));
+  filter = gtk_tree_model_filter_new (GTK_TREE_MODEL(_chatty_blist->treemodel_chats), NULL);
+
+  g_signal_connect (search_entry,
+                    "search-changed",
+                    G_CALLBACK (cb_search_entry_changed),
+                    GTK_TREE_MODEL_FILTER(filter));
+
+  gtk_tree_model_filter_set_visible_func (GTK_TREE_MODEL_FILTER(filter),
+                                          (GtkTreeModelFilterVisibleFunc)chatty_blist_entry_visible_func,
+                                          GTK_ENTRY(search_entry),
+                                          NULL);
+
+  treeview = GTK_TREE_VIEW(gtk_tree_view_new_with_model (filter));
   gtk_tree_view_set_grid_lines (treeview, GTK_TREE_VIEW_GRID_LINES_HORIZONTAL);
   gtk_tree_view_set_activate_on_single_click (GTK_TREE_VIEW(treeview), TRUE);
   sc = gtk_widget_get_style_context (GTK_WIDGET(treeview));
@@ -1034,87 +1138,13 @@ chatty_blist_create_chat_list (PurpleBuddyList *list)
 
   gtk_tree_view_columns_autosize (GTK_TREE_VIEW (treeview));
 
+  gtk_box_pack_start (GTK_BOX (vbox), GTK_WIDGET (scroll), TRUE, TRUE, 0);
+
   gtk_box_pack_start (GTK_BOX (chatty->pane_view_chat_list),
-                      GTK_WIDGET (scroll),
+                      GTK_WIDGET (vbox),
                       TRUE, TRUE, 0);
 
   gtk_widget_show_all (GTK_WIDGET(chatty->pane_view_chat_list));
-}
-
-
-/**
- * chatty_blist_contact_list_do_refilter:
- * @filter:  a GtkTreeModelFilter
- *
- * Performs list filtering after filter_timeout
- *
- */
-static gboolean
-chatty_blist_contact_list_do_refilter (GtkTreeModelFilter *filter)
-{
-  gtk_tree_model_filter_refilter (filter);
-
-  _chatty_blist->filter_timeout = 0;
-
-  return (FALSE);
-}
-
-
-/**
- * chatty_blist_contact_list_queue_refilter:
- * @filter:  a GtkTreeModelFilter
- *
- * Prevent from filtering after every keypress
- * if query string is typed very quickly
- *
- */
-static void
-chatty_blist_contact_list_queue_refilter (GtkTreeModelFilter *filter)
-{
-  if (_chatty_blist->filter_timeout) {
-    g_source_remove (_chatty_blist->filter_timeout);
-  }
-
-  _chatty_blist->filter_timeout =
-    g_timeout_add (300,
-                   (GSourceFunc)chatty_blist_contact_list_do_refilter,
-                   filter);
-}
-
-
-/**
- * chatty_blist_contact_list_visible_func:
- * @model:  a GtkTreeModel
- " @iter:    a GtkTreeIter
- " @entry    a GtkEntry
- *
- * Filters the current row according to entry-text
- *
- */
-static gboolean
-chatty_blist_contact_list_visible_func (GtkTreeModel *model,
-                                        GtkTreeIter  *iter,
-                                        GtkEntry     *entry)
-{
-  const gchar *query;
-  gchar       *str;
-  gboolean     visible = FALSE;
-
-  query = gtk_entry_get_text (entry);
-
-  if (*query == '\0') {
-    return( TRUE );
-  }
-
-  gtk_tree_model_get (model, iter, 2, &str, -1);
-
-  if (str && strstr (str, query)) {
-    visible = TRUE;
-  }
-
-  g_free (str);
-
-  return visible;
 }
 
 
@@ -1132,6 +1162,7 @@ chatty_blist_create_contact_list (PurpleBuddyList *list)
   GtkTreeView       *treeview;
   GtkTreeModel      *filter;
   GtkWidget         *vbox;
+  GtkWidget         *search_entry;
   GtkScrolledWindow *scroll;
   GtkStyleContext   *sc;
   chatty_data_t     *chatty = chatty_get_data ();
@@ -1142,13 +1173,13 @@ chatty_blist_create_contact_list (PurpleBuddyList *list)
 
   vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
 
-  _chatty_blist->search_entry = gtk_search_entry_new ();
+  search_entry = gtk_search_entry_new ();
 
-  g_object_set  (G_OBJECT(_chatty_blist->search_entry),
+  g_object_set  (G_OBJECT(search_entry),
                  "margin", 12, NULL);
 
   gtk_box_pack_start (GTK_BOX (vbox),
-                      GTK_WIDGET (_chatty_blist->search_entry),
+                      GTK_WIDGET (search_entry),
                       FALSE, FALSE, 0);
 
   scroll = GTK_SCROLLED_WINDOW (gtk_scrolled_window_new ( NULL, NULL));
@@ -1162,17 +1193,17 @@ chatty_blist_create_contact_list (PurpleBuddyList *list)
 
   filter = gtk_tree_model_filter_new (GTK_TREE_MODEL(_chatty_blist->treemodel_contacts), NULL);
 
-  g_signal_connect (_chatty_blist->search_entry,
+  g_signal_connect (search_entry,
                     "search-changed",
                     G_CALLBACK (cb_search_entry_changed),
                     GTK_TREE_MODEL_FILTER(filter));
 
   gtk_tree_model_filter_set_visible_func (GTK_TREE_MODEL_FILTER(filter),
-                                          (GtkTreeModelFilterVisibleFunc)chatty_blist_contact_list_visible_func,
-                                          GTK_ENTRY(_chatty_blist->search_entry),
+                                          (GtkTreeModelFilterVisibleFunc)chatty_blist_entry_visible_func,
+                                          GTK_ENTRY(search_entry),
                                           NULL);
 
-  treeview = GTK_TREE_VIEW(gtk_tree_view_new_with_model(filter));
+  treeview = GTK_TREE_VIEW(gtk_tree_view_new_with_model (filter));
   gtk_tree_view_set_grid_lines (treeview, GTK_TREE_VIEW_GRID_LINES_HORIZONTAL);
   gtk_tree_view_set_activate_on_single_click (GTK_TREE_VIEW(treeview), TRUE);
   sc = gtk_widget_get_style_context (GTK_WIDGET(treeview));

@@ -17,14 +17,13 @@ typedef struct {
   GtkListStore      *treemodel_chats;
   GtkTreeView       *treeview_contacts;
   GtkListStore      *treemodel_contacts;
-  GtkWidget         *search_entry;
   GtkTreeViewColumn *text_column;
   GList             *blist_nodes;
   PurpleBlistNode   *selected_node;
   guint             *messaging_mode;
-  guint             refresh_timer;
-  gint              filter_timeout;
-  gpointer          priv;
+  guint              refresh_timer;
+  gint               filter_timeout;
+  gpointer           priv;
 } ChattyBuddyList;
 
 
