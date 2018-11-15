@@ -22,9 +22,13 @@ make
 make install
 ```
 
+This can be skipped if SMS support is not needed.
+
 ### Build and install the OMEMO plugin
 Please go to the git page where you'll find all the information on how to build and use the
 [libpurple-omemo-plugin](https://github.com/manchito/libpurple-omemo-plugin)
+
+This can be skipped if encrypted messaging is not needed.
 
 ### Build Chatty
 ``` bash
