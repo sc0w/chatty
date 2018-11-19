@@ -38,6 +38,7 @@ struct chatty_conversation {
   ChattyMsgList       *msg_list;
   GtkWidget           *msg_entry;
   GtkTextBuffer       *msg_buffer;
+  GtkWidget           *button_send;
   GtkWidget           *tab_cont;
   GtkWidget           *icon;
   guint                unseen_count;

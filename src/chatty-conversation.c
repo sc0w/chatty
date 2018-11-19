@@ -151,22 +151,64 @@ cb_button_send_clicked (GtkButton *sender,
 
   if (gtk_text_buffer_get_char_count (chatty_conv->msg_buffer)) {
     purple_conv_im_send (PURPLE_CONV_IM (conv), message);
-    gtk_text_buffer_delete (chatty_conv->msg_buffer,
-                            &start,
-                            &end);
+    gtk_widget_hide (chatty_conv->button_send);
   }
 
+  gtk_text_buffer_delete (chatty_conv->msg_buffer, &start, &end);
+
   g_free (message);
+}
+
+static gboolean
+cb_textview_focus_in (GtkWidget *widget,
+                      GdkEvent  *event,
+                      gpointer   user_data)
+{
+  GtkStyleContext *sc;
+
+  sc = gtk_widget_get_style_context (GTK_WIDGET(user_data));
+
+  gtk_style_context_add_class (sc, "msg_entry_focused");
+
+  return FALSE;
+}
+
+
+static gboolean
+cb_textview_focus_out (GtkWidget *widget,
+                       GdkEvent  *event,
+                       gpointer   user_data)
+{
+  GtkStyleContext *sc;
+
+  sc = gtk_widget_get_style_context (GTK_WIDGET(user_data));
+
+  gtk_style_context_remove_class (sc, "msg_entry_focused");
+  gtk_style_context_add_class (sc, "msg_entry");
+
+  return FALSE;
 }
 
 
 static gboolean
 cb_textview_keypress (GtkWidget   *widget,
-                      GdkEventKey *pKey,
+                      GdkEventKey *key_event,
                       gpointer     data)
 {
-  if (pKey->keyval == GDK_KEY_Return) {
+  ChattyConversation  *chatty_conv;
+
+  chatty_conv = (ChattyConversation *)data;
+
+  if (!key_event->state & GDK_SHIFT_MASK && key_event->keyval == GDK_KEY_Return) {
     cb_button_send_clicked (NULL, data);
+
+    return TRUE;
+  }
+
+  if (gtk_text_buffer_get_char_count (chatty_conv->msg_buffer)) {
+    gtk_widget_show (chatty_conv->button_send);
+  } else {
+    gtk_widget_hide (chatty_conv->button_send);
   }
 
   return FALSE;
@@ -184,6 +226,7 @@ cb_received_im_msg (PurpleAccount       *account,
 
   if (conv) {
     timer = GPOINTER_TO_INT(purple_conversation_get_data (conv, "close-timer"));
+
     if (timer) {
       purple_timeout_remove (timer);
       purple_conversation_set_data (conv, "close-timer", GINT_TO_POINTER(0));
@@ -1100,44 +1143,47 @@ static GtkWidget *
 chatty_conv_setup_pane (ChattyConversation *chatty_conv,
                         guint               msg_type)
 {
+  GtkBuilder      *builder;
   GtkWidget       *vbox;
-  GtkWidget       *hbox;
-  GtkWidget       *scrolled_window;
-  GtkWidget       *button_send;
-  GtkImage        *image;
+  GtkWidget       *box;
+  GtkWidget       *frame;
   GtkStyleContext *sc;
 
+  gtk_icon_theme_add_resource_path (gtk_icon_theme_get_default (),
+                                    "/sm/puri/chatty/icons/ui/");
+
+  builder = gtk_builder_new_from_resource ("/sm/puri/chatty/ui/chatty-pane-msg-view.ui");
+
+  chatty_conv->msg_entry = GTK_WIDGET(gtk_builder_get_object (builder, "text_input"));
+  box = GTK_WIDGET(gtk_builder_get_object (builder, "msg_input_box"));
+  frame = GTK_WIDGET(gtk_builder_get_object (builder, "frame"));
+  chatty_conv->button_send = GTK_WIDGET(gtk_builder_get_object (builder, "button_send"));
+
+  vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
+
   chatty_conv->msg_buffer = gtk_text_buffer_new (NULL);
-  chatty_conv->msg_entry = gtk_text_view_new_with_buffer (chatty_conv->msg_buffer);
-  g_object_set_data(G_OBJECT(chatty_conv->msg_buffer), "user_data", chatty_conv);
-  sc = gtk_widget_get_style_context (chatty_conv->msg_entry);
-  gtk_style_context_add_class (sc, "text_view");
+  gtk_text_view_set_buffer (GTK_TEXT_VIEW(chatty_conv->msg_entry),
+                            chatty_conv->msg_buffer);
+
+  g_object_set_data (G_OBJECT(chatty_conv->msg_buffer),
+                              "user_data", chatty_conv);
+
   g_signal_connect (G_OBJECT(chatty_conv->msg_entry),
-                    "key_press_event",
+                    "key-press-event",
                     G_CALLBACK(cb_textview_keypress),
                     (gpointer) chatty_conv);
 
-  gtk_text_view_set_left_margin (GTK_TEXT_VIEW (chatty_conv->msg_entry), 10);
-  gtk_text_view_set_top_margin (GTK_TEXT_VIEW (chatty_conv->msg_entry), 10);
-  gtk_text_view_set_wrap_mode (GTK_TEXT_VIEW (chatty_conv->msg_entry), GTK_WRAP_WORD);
+  g_signal_connect (G_OBJECT(chatty_conv->msg_entry),
+                    "focus-in-event",
+                    G_CALLBACK(cb_textview_focus_in),
+                    (gpointer) frame);
 
-  scrolled_window = gtk_scrolled_window_new (NULL, NULL);
-  sc = gtk_widget_get_style_context (scrolled_window);
-  gtk_style_context_add_class (sc, "text_view_scroll");
-  gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrolled_window),
-                                  GTK_POLICY_AUTOMATIC,
-                                  GTK_POLICY_AUTOMATIC);
+  g_signal_connect (G_OBJECT(chatty_conv->msg_entry),
+                    "focus-out-event",
+                    G_CALLBACK(cb_textview_focus_out),
+                    (gpointer) frame);
 
-  vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
-  hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
-
-  gtk_container_add (GTK_CONTAINER (scrolled_window), chatty_conv->msg_entry);
-  gtk_container_set_border_width (GTK_CONTAINER (scrolled_window), 5);
-  gtk_box_pack_start (GTK_BOX (hbox), scrolled_window, TRUE, TRUE, 5);
-
-  button_send = gtk_button_new ();
-  gtk_widget_set_size_request (button_send, 45, 45);
-  sc = gtk_widget_get_style_context (button_send);
+  sc = gtk_widget_get_style_context (chatty_conv->button_send);
 
   switch (msg_type) {
     case MSG_TYPE_SMS:
@@ -1153,29 +1199,17 @@ chatty_conv_setup_pane (ChattyConversation *chatty_conv,
       break;
   }
 
-  g_signal_connect (button_send, "clicked",
+  g_signal_connect (chatty_conv->button_send, "clicked",
                     G_CALLBACK(cb_button_send_clicked),
                     (gpointer) chatty_conv);
-
-  gtk_icon_theme_add_resource_path (gtk_icon_theme_get_default (),
-                                    "/sm/puri/chatty/icons/ui/");
-
-  image = GTK_IMAGE (gtk_image_new_from_icon_name ("send-symbolic",
-                                                   GTK_ICON_SIZE_LARGE_TOOLBAR));
-
-  gtk_button_set_image (GTK_BUTTON (button_send), GTK_WIDGET (image));
-
-  gtk_widget_set_valign (button_send, GTK_ALIGN_CENTER);
-
-  gtk_box_pack_start (GTK_BOX (hbox), button_send, FALSE, FALSE, 6);
 
   chatty_conv->msg_list = CHATTY_MSG_LIST (chatty_msg_list_new (msg_type, TRUE));
 
   gtk_box_pack_start (GTK_BOX (vbox),
                       GTK_WIDGET (chatty_conv->msg_list),
                       TRUE, TRUE, 0);
-  gtk_box_pack_start (GTK_BOX (vbox),
-                      hbox, FALSE, FALSE, 0);
+
+  gtk_box_pack_start (GTK_BOX (vbox), box, FALSE, FALSE, 0);
 
   gtk_widget_show_all (vbox);
 
@@ -1253,6 +1287,8 @@ chatty_conv_new (PurpleConversation *conv)
   g_object_set_data (G_OBJECT(chatty_conv->tab_cont),
                      "ChattyConversation",
                      chatty_conv);
+
+  gtk_widget_hide (chatty_conv->button_send);
   gtk_widget_show (chatty_conv->tab_cont);
 
   if (chatty_conv->tab_cont == NULL) {
