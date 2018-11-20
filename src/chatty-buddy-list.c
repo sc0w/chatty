@@ -25,7 +25,6 @@
 static ChattyBuddyList *_chatty_blist = NULL;
 
 static void chatty_blist_new_node (PurpleBlistNode *node);
-static void chatty_blist_add_buddy_clear_entries (void);
 static void chatty_blist_queue_refilter (GtkTreeModelFilter *filter);
 
 static void chatty_blist_update (PurpleBuddyList *list,
@@ -138,7 +137,7 @@ cb_button_new_conversation_clicked (GtkButton *sender,
 
   chatty_blist_add_buddy (account);
   chatty_window_change_view (CHATTY_VIEW_CHAT_LIST);
-  chatty_blist_add_buddy_clear_entries();
+
   gtk_container_foreach (GTK_CONTAINER(chatty->pane_view_new_contact),
                          (GtkCallback)gtk_widget_destroy, NULL);
 }
@@ -668,15 +667,6 @@ void
 chatty_blist_returned_from_chat (void)
 {
    _chatty_blist->selected_node = NULL;
-}
-
-
-static void
-chatty_blist_add_buddy_clear_entries (void) {
-  chatty_data_t *chatty = chatty_get_data ();
-
-  gtk_entry_set_text (GTK_ENTRY(chatty->entry_buddy_name), "");
-  gtk_entry_set_text (GTK_ENTRY(chatty->entry_buddy_nick), "");
 }
 
 
