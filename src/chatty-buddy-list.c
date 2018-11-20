@@ -134,9 +134,13 @@ static void
 cb_button_new_conversation_clicked (GtkButton *sender,
                                     gpointer   account)
 {
+  chatty_data_t *chatty = chatty_get_data ();
+
   chatty_blist_add_buddy (account);
   chatty_window_change_view (CHATTY_VIEW_CHAT_LIST);
   chatty_blist_add_buddy_clear_entries();
+  gtk_container_foreach (GTK_CONTAINER(chatty->pane_view_new_contact),
+                         (GtkCallback)gtk_widget_destroy, NULL);
 }
 
 
