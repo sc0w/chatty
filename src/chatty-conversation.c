@@ -323,16 +323,26 @@ cb_msg_input_vadjust (GObject     *sender,
                       gpointer     data)
 {
   GtkAdjustment *vadjust;
+  GtkWidget     *vscroll;
   gdouble        upper;
   gdouble        page_size;
+  gint           max_height;
 
   ChattyConversation *chatty_conv = data;
 
   vadjust = gtk_scrolled_window_get_vadjustment (GTK_SCROLLED_WINDOW(chatty_conv->msg_scrolled));
+  vscroll = gtk_scrolled_window_get_vscrollbar (GTK_SCROLLED_WINDOW(chatty_conv->msg_scrolled));
   upper = gtk_adjustment_get_upper (GTK_ADJUSTMENT(vadjust));
   page_size = gtk_adjustment_get_page_size (GTK_ADJUSTMENT(vadjust));
+  max_height = gtk_scrolled_window_get_max_content_height (GTK_SCROLLED_WINDOW(chatty_conv->msg_scrolled));
 
   gtk_adjustment_set_value (vadjust, upper - page_size);
+
+  if (upper > (gdouble)max_height) {
+    gtk_widget_set_visible (vscroll, TRUE);
+  } else {
+    gtk_widget_set_visible (vscroll, FALSE);
+  }
 
   gtk_widget_queue_draw (chatty_conv->msg_frame);
 }
@@ -1177,7 +1187,6 @@ chatty_conv_setup_pane (ChattyConversation *chatty_conv,
 {
   GtkBuilder      *builder;
   GtkWidget       *scrolled;
-  GtkWidget       *vscroll;
   GtkAdjustment   *vadjust;
   GtkWidget       *vbox;
   GtkWidget       *box;
@@ -1196,9 +1205,8 @@ chatty_conv_setup_pane (ChattyConversation *chatty_conv,
   scrolled = GTK_WIDGET(gtk_builder_get_object (builder, "scrolled"));
   chatty_conv->button_send = GTK_WIDGET(gtk_builder_get_object (builder, "button_send"));
 
-  vscroll = gtk_scrolled_window_get_vscrollbar (GTK_SCROLLED_WINDOW(scrolled));
-  gtk_widget_set_visible (vscroll, FALSE);
   vadjust = gtk_scrolled_window_get_vadjustment (GTK_SCROLLED_WINDOW(scrolled));
+
   g_signal_connect_after (G_OBJECT (vadjust),
                           "notify::upper",
                           G_CALLBACK (cb_msg_input_vadjust),

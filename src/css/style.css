@@ -46,14 +46,14 @@
 
 .button_send_blue {
   border-radius: 5px;
-  border-width: 0px;
+  border-width: 1px;
   background: #4a90d9;
   color: white;
 }
 
 .button_send_green {
   border-radius: 5px;
-  border-width: 0px;
+  border-width: 1px;
   background: #6cba3d;
   color: white;
 }

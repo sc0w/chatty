@@ -80,7 +80,6 @@
          <property name="valign">center</property>
          <style>
            <class name="button_send"/>
-           <class name="flat"/>
          </style>
          <child>
            <object class="GtkImage">
