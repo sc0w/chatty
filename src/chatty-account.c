@@ -444,8 +444,14 @@ chatty_account_populate_account_list (GtkWidget *list)
     ret = TRUE;
 
     if (list == chatty_account->list_manage) {
-      chatty_account_add_to_accounts_list ((PurpleAccount *)l->data,
-                                           LIST_ACCOUNT_MANAGE);
+      const gchar *protocol_id;
+
+      protocol_id = purple_account_get_protocol_id ((PurpleAccount *)l->data);
+
+      if (!(g_strcmp0 (protocol_id, "prpl-mm-sms") == 0)) {
+        chatty_account_add_to_accounts_list ((PurpleAccount *)l->data,
+                                             LIST_ACCOUNT_MANAGE);
+      }
     } else {
       chatty_account_add_to_accounts_list ((PurpleAccount *)l->data,
                                            LIST_ACCOUNT_SELECT);
