@@ -18,9 +18,21 @@ can [build it from souce][2].
 ### Build and install the SMS plugin
 ``` bash
 git clone git@source.puri.sm:Librem5/purple-mm-sms.git
+cd purple-mm-sms
 make
 make install
 ```
+
+### Build and install the 'carbons' plugin
+Message synchronization between devices according to XEP-0280
+
+``` bash
+git clone https://github.com/gkdr/carbons.git
+cd carbons
+make
+make install
+```
+
 
 This can be skipped if SMS support is not needed.
 

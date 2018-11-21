@@ -193,11 +193,32 @@ PurpleCoreUiOps core_uiops =
 
 
 static void
+chatty_purple_load_plugin (const char *name)
+{
+  GList             *iter;
+
+  iter = purple_plugins_get_all ();
+
+  for (; iter; iter = iter->next) {
+    PurplePlugin      *plugin = iter->data;
+    PurplePluginInfo  *info = plugin->info;
+
+    if (g_strcmp0 (info->id, name) == 0) {
+      if (!purple_plugin_is_loaded (plugin)) {
+        purple_plugin_load (plugin);
+        purple_plugins_save_loaded (CHATTY_PREFS_ROOT "/plugins/loaded");
+        g_debug ("Loaded plugin %s", info->name);
+      }
+    }
+  }
+}
+
+
+static void
 init_libpurple (void)
 {
   PurpleAccount *account;
   gchar         *search_path;
-  GList         *iter;
 
   purple_debug_set_enabled (FALSE);
   purple_debug_set_verbose (FALSE);
@@ -219,25 +240,9 @@ init_libpurple (void)
   purple_plugins_load_saved (CHATTY_PREFS_ROOT "/plugins/loaded");
 
   purple_plugins_probe (G_MODULE_SUFFIX);
-  iter = purple_plugins_get_all ();
 
-  for (; iter; iter = iter->next) {
-    PurplePlugin *plugin = iter->data;
-    PurplePluginInfo *info = plugin->info;
-
-    // TODO maybe we can simply load all plugins that will finally be
-    //      packed into ./purple/plugins on the Librem5 ?
-    //      Alternatively we can compile a list with plugin ids
-    //      that we have approved for chatty
-    if (g_strcmp0 (info->id, "core-mancho-omemo") == 0) {
-      if (!purple_plugin_is_loaded (plugin)) {
-        purple_plugin_load (plugin);
-        g_debug ("Loaded plugin %s", info->name);
-      }
-
-      purple_plugins_save_loaded (CHATTY_PREFS_ROOT "/plugins/loaded");
-    }
-  }
+  chatty_purple_load_plugin ("core-mancho-omemo");
+  chatty_purple_load_plugin ("core-riba-carbons");
 
   purple_plugins_init ();
   purple_pounces_load ();
