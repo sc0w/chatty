@@ -193,19 +193,28 @@ cb_textview_focus_out (GtkWidget *widget,
 
 
 static gboolean
-cb_textview_keypress (GtkWidget   *widget,
-                      GdkEventKey *key_event,
-                      gpointer     data)
+cb_textview_key_pressed (GtkWidget   *widget,
+                         GdkEventKey *key_event,
+                         gpointer     data)
 {
-  ChattyConversation  *chatty_conv;
-
-  chatty_conv = (ChattyConversation *)data;
-
   if (!key_event->state & GDK_SHIFT_MASK && key_event->keyval == GDK_KEY_Return) {
     cb_button_send_clicked (NULL, data);
 
     return TRUE;
   }
+
+  return FALSE;
+}
+
+
+static gboolean
+cb_textview_key_released (GtkWidget   *widget,
+                          GdkEventKey *key_event,
+                          gpointer     data)
+{
+  ChattyConversation  *chatty_conv;
+
+  chatty_conv = (ChattyConversation *)data;
 
   if (gtk_text_buffer_get_char_count (chatty_conv->msg_buffer)) {
     gtk_widget_show (chatty_conv->button_send);
@@ -213,7 +222,7 @@ cb_textview_keypress (GtkWidget   *widget,
     gtk_widget_hide (chatty_conv->button_send);
   }
 
-  return FALSE;
+  return TRUE;
 }
 
 
@@ -1209,7 +1218,12 @@ chatty_conv_setup_pane (ChattyConversation *chatty_conv,
 
   g_signal_connect (G_OBJECT(chatty_conv->msg_entry),
                     "key-press-event",
-                    G_CALLBACK(cb_textview_keypress),
+                    G_CALLBACK(cb_textview_key_pressed),
+                    (gpointer) chatty_conv);
+
+  g_signal_connect (G_OBJECT(chatty_conv->msg_entry),
+                    "key-release-event",
+                    G_CALLBACK(cb_textview_key_released),
                     (gpointer) chatty_conv);
 
   g_signal_connect (G_OBJECT(chatty_conv->msg_entry),
