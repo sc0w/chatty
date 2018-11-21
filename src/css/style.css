@@ -1,7 +1,6 @@
-
-.msg_entry {
+.msg_entry_defocused {
   border-style: solid;
-  border-width: 1px;
+  border-width: 2px;
   border-radius: 3px;
   transition: border-color 0.25s linear;
   transition: border-width 0.25s linear;
@@ -11,12 +10,12 @@
 
 .msg_entry_focused {
   border-style: solid;
+  border-width: 2px;
   border-radius: 3px;
   transition: border-color 0.25s linear;
   transition: border-width 0.25s linear;
   background: @theme_base_color;
   border-color: @theme_selected_bg_color;
-  border-width: 2px;
 }
 
 .text_input {

@@ -37,6 +37,8 @@ struct chatty_conversation {
   GList               *convs;
   ChattyMsgList       *msg_list;
   GtkWidget           *msg_entry;
+  GtkWidget           *msg_frame;
+  GtkWidget           *msg_scrolled;
   GtkTextBuffer       *msg_buffer;
   GtkWidget           *button_send;
   GtkWidget           *tab_cont;
@@ -45,7 +47,7 @@ struct chatty_conversation {
   guint                unseen_state;
 
   struct {
-    int timer;
+    int    timer;
     GList *current;
   } attach;
 

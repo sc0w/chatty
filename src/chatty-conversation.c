@@ -159,6 +159,7 @@ cb_button_send_clicked (GtkButton *sender,
   g_free (message);
 }
 
+
 static gboolean
 cb_textview_focus_in (GtkWidget *widget,
                       GdkEvent  *event,
@@ -168,6 +169,7 @@ cb_textview_focus_in (GtkWidget *widget,
 
   sc = gtk_widget_get_style_context (GTK_WIDGET(user_data));
 
+  gtk_style_context_remove_class (sc, "msg_entry_defocused");
   gtk_style_context_add_class (sc, "msg_entry_focused");
 
   return FALSE;
@@ -184,7 +186,7 @@ cb_textview_focus_out (GtkWidget *widget,
   sc = gtk_widget_get_style_context (GTK_WIDGET(user_data));
 
   gtk_style_context_remove_class (sc, "msg_entry_focused");
-  gtk_style_context_add_class (sc, "msg_entry");
+  gtk_style_context_add_class (sc, "msg_entry_defocused");
 
   return FALSE;
 }
@@ -303,6 +305,27 @@ cb_stack_cont_switch_conv (GtkNotebook *notebook,
   chatty_conv = CHATTY_CONVERSATION(conv);
 
   chatty_conv_set_unseen (chatty_conv, CHATTY_UNSEEN_NONE);
+}
+
+
+static void
+cb_msg_input_vadjust (GObject     *sender,
+                      GParamSpec  *pspec,
+                      gpointer     data)
+{
+  GtkAdjustment *vadjust;
+  gdouble        upper;
+  gdouble        page_size;
+
+  ChattyConversation *chatty_conv = data;
+
+  vadjust = gtk_scrolled_window_get_vadjustment (GTK_SCROLLED_WINDOW(chatty_conv->msg_scrolled));
+  upper = gtk_adjustment_get_upper (GTK_ADJUSTMENT(vadjust));
+  page_size = gtk_adjustment_get_page_size (GTK_ADJUSTMENT(vadjust));
+
+  gtk_adjustment_set_value (vadjust, upper - page_size);
+
+  gtk_widget_queue_draw (chatty_conv->msg_frame);
 }
 
 
@@ -1144,6 +1167,9 @@ chatty_conv_setup_pane (ChattyConversation *chatty_conv,
                         guint               msg_type)
 {
   GtkBuilder      *builder;
+  GtkWidget       *scrolled;
+  GtkWidget       *vscroll;
+  GtkAdjustment   *vadjust;
   GtkWidget       *vbox;
   GtkWidget       *box;
   GtkWidget       *frame;
@@ -1155,9 +1181,22 @@ chatty_conv_setup_pane (ChattyConversation *chatty_conv,
   builder = gtk_builder_new_from_resource ("/sm/puri/chatty/ui/chatty-pane-msg-view.ui");
 
   chatty_conv->msg_entry = GTK_WIDGET(gtk_builder_get_object (builder, "text_input"));
+
   box = GTK_WIDGET(gtk_builder_get_object (builder, "msg_input_box"));
   frame = GTK_WIDGET(gtk_builder_get_object (builder, "frame"));
+  scrolled = GTK_WIDGET(gtk_builder_get_object (builder, "scrolled"));
   chatty_conv->button_send = GTK_WIDGET(gtk_builder_get_object (builder, "button_send"));
+
+  vscroll = gtk_scrolled_window_get_vscrollbar (GTK_SCROLLED_WINDOW(scrolled));
+  gtk_widget_set_visible (vscroll, FALSE);
+  vadjust = gtk_scrolled_window_get_vadjustment (GTK_SCROLLED_WINDOW(scrolled));
+  g_signal_connect_after (G_OBJECT (vadjust),
+                          "notify::upper",
+                          G_CALLBACK (cb_msg_input_vadjust),
+                          (gpointer) chatty_conv);
+
+  chatty_conv->msg_scrolled = scrolled;
+  chatty_conv->msg_frame = frame;
 
   vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
 

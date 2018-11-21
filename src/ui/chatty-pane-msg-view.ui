@@ -37,7 +37,7 @@
         <property name="visible">True</property>
         <child>
           <object class="GtkScrolledWindow" id="scrolled">
-            <property name="max_content_height">100</property>
+            <property name="max_content_height">90</property>
             <property name="propagate_natural_height">True</property>
             <property name="visible">True</property>
             <child>
