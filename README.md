@@ -23,6 +23,8 @@ make
 make install
 ```
 
+This can be skipped if SMS support is not needed.
+
 ### Build and install the 'carbons' plugin
 Message synchronization between devices according to XEP-0280
 
@@ -32,9 +34,6 @@ cd carbons
 make
 make install
 ```
-
-
-This can be skipped if SMS support is not needed.
 
 ### Build and install the OMEMO plugin
 Please go to the git page where you'll find all the information on how to build and use the
