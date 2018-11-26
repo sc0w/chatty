@@ -1076,7 +1076,7 @@ chatty_blist_create_chat_list (PurpleBuddyList *list)
   search_entry = gtk_search_entry_new ();
 
   g_object_set  (G_OBJECT(search_entry),
-                 "margin", 12, NULL);
+                 "margin", 6, NULL);
 
   gtk_box_pack_start (GTK_BOX (vbox),
                       GTK_WIDGET (search_entry),
@@ -1170,7 +1170,7 @@ chatty_blist_create_contact_list (PurpleBuddyList *list)
   search_entry = gtk_search_entry_new ();
 
   g_object_set  (G_OBJECT(search_entry),
-                 "margin", 12, NULL);
+                 "margin", 6, NULL);
 
   gtk_box_pack_start (GTK_BOX (vbox),
                       GTK_WIDGET (search_entry),
@@ -1325,7 +1325,7 @@ chatty_blist_remove (PurpleBuddyList *list,
  *
  */
 static void
-chatty_blist_contacts_update_contact (PurpleBuddy     *buddy,
+chatty_blist_contacts_update_node (PurpleBuddy     *buddy,
                                       PurpleBlistNode *node)
 {
   GtkTreeIter    iter;
@@ -1389,6 +1389,7 @@ chatty_blist_contacts_update_contact (PurpleBuddy     *buddy,
       gtk_tree_row_reference_new (GTK_TREE_MODEL(_chatty_blist->treemodel_contacts), path);
   } else {
     path = gtk_tree_row_reference_get_path (chatty_node->row_contact);
+
     if (path != NULL) {
       gtk_tree_model_get_iter (GTK_TREE_MODEL(_chatty_blist->treemodel_contacts), &iter, path);
     }
@@ -1568,9 +1569,9 @@ chatty_blist_update_buddy (PurpleBuddyList *list,
     } else {
       chatty_blist_chats_hide_node (list, node, TRUE);
     }
-  } else {
-    chatty_blist_contacts_update_contact (buddy, node);
   }
+
+  chatty_blist_contacts_update_node (buddy, node);
 }
 
 

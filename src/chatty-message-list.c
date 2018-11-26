@@ -92,7 +92,7 @@ init_css (void)
                                   " .bubble_green {\n"
                                   "   font-size: 17px;\n"
                                   "   background-color: #e0fad0;\n"
-                                  "   box-shadow: 0px 0px 2px 1px #888888;\n"
+                                  "   box-shadow: 0px 1px 2px 1px rgba(0, 0, 0, 0.3);\n"
                                   "   border-radius:   6px;\n"
                                   "   padding-left:   10px;\n"
                                   "   padding-right:  10px;\n"
@@ -103,7 +103,7 @@ init_css (void)
                                   "   font-size: 17px;\n"
                                   "   color: black;\n"
                                   "   background-color: #e4f0fc;\n"
-                                  "   box-shadow: 0px 0px 2px 1px #888888;\n"
+                                  "   box-shadow: 0px 1px 2px 1px rgba(0, 0, 0, 0.3);\n"
                                   "   border-radius:   6px;\n"
                                   "   padding-left:   10px;\n"
                                   "   padding-right:  10px;\n"
@@ -114,7 +114,7 @@ init_css (void)
                                   "   font-size: 17px;\n"
                                   "   color: black;\n"
                                   "   background-color: white;\n"
-                                  "   box-shadow: 0px 0px 2px 1px #888888;\n"
+                                  "   box-shadow: 0px 1px 2px 1px rgba(0, 0, 0, 0.3);\n"
                                   "   border-radius:   6px;\n"
                                   "   padding-left:   10px;\n"
                                   "   padding-right:  10px;\n"
@@ -400,7 +400,9 @@ chatty_msg_list_hide_header (ChattyMsgList *self)
 {
   ChattyMsgListPrivate *priv = chatty_msg_list_get_instance_private (self);
 
-  gtk_widget_hide (GTK_WIDGET(priv->disclaimer));
+  if (GTK_WIDGET(priv->disclaimer) != NULL) {
+    gtk_widget_hide (GTK_WIDGET(priv->disclaimer));
+  }
 }
 
 

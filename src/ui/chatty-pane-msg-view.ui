@@ -33,7 +33,7 @@
     <child>
       <object class="GtkBox" id="frame">
         <property name="orientation">horizontal</property>
-        <property name="margin">12</property>
+        <property name="margin">6</property>
         <property name="visible">True</property>
         <child>
           <object class="GtkScrolledWindow" id="scrolled">
