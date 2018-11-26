@@ -1,6 +1,7 @@
 stages:
   - build
   - test
+  - package
 
 .tags: &tags
   tags:
@@ -39,6 +40,6 @@ test:debian-gcc:
 build-debian-package:
   <<: *tags
   image: debian:buster
-  stage: build
+  stage: package
   script:
     - dpkg-buildpackage -uc -us
