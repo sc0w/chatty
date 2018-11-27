@@ -3,7 +3,9 @@ Section: net
 Priority: optional
 Maintainer: Andrea Schäfer <andrea.schaefer@puri.sm>
 Build-Depends:
+ appstream-util,
  debhelper (>= 11),
+ desktop-file-utils,
  libgtk-3-dev,
  libhandy-0.0-dev (>= 0.0.4),
  libpurple-dev,

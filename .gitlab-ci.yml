@@ -1,5 +1,11 @@
 stages:
   - build
+  - test
+  - package
+
+.tags: &tags
+  tags:
+    - librem5
 
 before_script:
   - export DEBIAN_FRONTEND=noninteractive
@@ -11,19 +17,29 @@ before_script:
   - apt-get -y build-dep .
 
 build-debian-gcc:
+  <<: *tags
   image: debian:buster
-  tags:
-    - librem5
   stage: build
   script:
     - export LC_ALL=C.UTF-8
     - meson . _build --werror
     - ninja -C _build
+  artifacts:
+    paths:
+      - _build
+
+test:debian-gcc:
+  <<: *tags
+  stage: test
+  dependencies:
+    - build-debian-gcc
+  script:
+    - export LC_ALL=C.UTF-8
+    - ninja -C _build test
 
 build-debian-package:
+  <<: *tags
   image: debian:buster
-  tags:
-    - librem5
-  stage: build
+  stage: package
   script:
     - dpkg-buildpackage -uc -us
