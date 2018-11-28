@@ -69,6 +69,8 @@ void chatty_conv_im_with_buddy (PurpleAccount *account, const char *username);
 void *chatty_conversations_get_handle (void);
 void chatty_conversations_init (void);
 void chatty_conversations_uninit (void);
+ChattyLog* chatty_conv_message_get_last_msg (PurpleBuddy *buddy);
+gboolean chatty_conv_delete_message_history (PurpleBuddy *buddy);
 GList *chatty_conv_find_unseen (ChattyUnseenState  state);
 void chatty_conv_set_unseen (ChattyConversation *chatty_conv,
                              ChattyUnseenState   state);

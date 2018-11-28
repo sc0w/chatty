@@ -190,6 +190,8 @@ chatty_window_activate (GtkApplication *app,
 
   chatty_popover_actions_init (window);
 
+  chatty->main_window = window;
+
   gtk_css_provider_load_from_resource (cssProvider,
                                        "/sm/puri/chatty/css/style.css");
   gtk_style_context_add_provider_for_screen (gdk_screen_get_default(),

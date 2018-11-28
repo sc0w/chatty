@@ -44,7 +44,8 @@ typedef struct _chatty_blist_node {
   struct {
     PurpleConversation   *conv;
     guint                 pending_messages;
-    GDateTime            *last_msg_timestamp;
+    char                 *last_msg_timestamp;
+    const char           *last_message;
     ChattyBlistNodeFlags  flags;
   } conv;
 } ChattyBlistNode;

@@ -565,12 +565,21 @@ chatty_conv_find_unseen (ChattyUnseenState  state)
 }
 
 
+/**
+ * chatty_conv_parse_message:
+ * @msg: a char pointer
+ *
+ * Parse a chat single chat log message
+ *
+ */
 static ChattyLog*
-parse_message (const gchar* msg)
+chatty_conv_parse_message (const gchar* msg)
 {
-  ChattyLog *log;
-  char *timestamp;
-  g_auto(GStrv) timesplit=NULL, accountsplit=NULL, namesplit=NULL;
+  ChattyLog     *log;
+  char          *timestamp;
+  g_auto(GStrv)  timesplit = NULL,
+                 accountsplit = NULL,
+                 namesplit = NULL;
 
   if (msg == NULL)
     return NULL;
@@ -605,8 +614,90 @@ parse_message (const gchar* msg)
   return log;
 }
 
+
 /**
- * chatty_add_message_history_to_conv:
+ * chatty_conv_message_get_last_msg:
+ * @buddy: a PurpleBuddy
+ *
+ * Get the last message from log
+ *
+ */
+ChattyLog*
+chatty_conv_message_get_last_msg (PurpleBuddy *buddy)
+{
+  GList         *history;
+  ChattyLog     *log_data = NULL;
+  PurpleAccount *account;
+  g_auto(GStrv)  logs = NULL;
+  gchar         *read_log;
+  gchar         *stripped;
+  const gchar   *b_name;
+  int            num_logs;
+
+  account = purple_buddy_get_account (buddy);
+  b_name = purple_buddy_get_name (buddy);
+  history = purple_log_get_logs (PURPLE_LOG_IM, b_name, account);
+
+  if (history == NULL) {
+    g_list_free (history);
+    return NULL;
+  }
+
+  history = g_list_first (history);
+
+  read_log = purple_log_read ((PurpleLog*)history->data, NULL);
+  stripped = purple_markup_strip_html (read_log);
+
+  logs = g_strsplit (stripped, "\n", -1);
+  num_logs = g_strv_length (logs) - 2;
+
+  log_data = chatty_conv_parse_message (logs[num_logs]);
+
+  g_list_foreach (history, (GFunc)purple_log_free, NULL);
+  g_list_free (history);
+  g_free (read_log);
+  g_free (stripped);
+
+  return log_data;;
+}
+
+
+/**
+ * chatty_conv_delete_message_history:
+ * @buddy: a PurpleBuddy
+ *
+ * Delete all logs from the given buddyname
+ *
+ */
+gboolean
+chatty_conv_delete_message_history (PurpleBuddy *buddy)
+{
+  GList         *history;
+  PurpleAccount *account;
+  const gchar   *b_name;
+
+  account = purple_buddy_get_account (buddy);
+  b_name = purple_buddy_get_name (buddy);
+  history = purple_log_get_logs (PURPLE_LOG_IM, b_name, account);
+
+  if (history == NULL) {
+    g_list_free (history);
+    return FALSE;
+  }
+
+  for (int i = 0; history && i < MAX_MSGS; history = history->next) {
+    purple_log_delete ((PurpleLog*)history->data);
+  }
+
+  g_list_foreach (history, (GFunc)purple_log_free, NULL);
+  g_list_free (history);
+
+  return TRUE;
+}
+
+
+/**
+ * chatty_conv_add_message_history_to_conv:
  * @data: a ChattyConversation
  *
  * Parse the chat log and add the
@@ -614,7 +705,7 @@ parse_message (const gchar* msg)
  *
  */
 static gboolean
-chatty_add_message_history_to_conv (gpointer data)
+chatty_conv_add_message_history_to_conv (gpointer data)
 {
   ChattyConversation *chatty_conv = data;
 
@@ -676,7 +767,7 @@ chatty_add_message_history_to_conv (gpointer data)
       logs = g_strsplit (stripped, "\n", -1);
 
       for (int num = g_strv_length (logs) - 1; num >= 0; num--) {
-        log_data = parse_message (logs[num]);
+        log_data = chatty_conv_parse_message (logs[num]);
 
         if (log_data) {
           i++;
@@ -1094,8 +1185,6 @@ chatty_conv_switch_active_conversation (PurpleConversation *conv)
  * Brings the conversation-pane of chatty_conv to
  * the front
  *
- * Returns: return value
- *
  */
 static void
 chatty_conv_switch_conv (ChattyConversation *chatty_conv)
@@ -1103,8 +1192,24 @@ chatty_conv_switch_conv (ChattyConversation *chatty_conv)
   chatty_data_t *chatty = chatty_get_data();
 
   gtk_notebook_set_current_page (GTK_NOTEBOOK(chatty->pane_view_message_list),
-                                 gtk_notebook_page_num (GTK_NOTEBOOK(chatty->pane_view_message_list),
-                                 chatty_conv->tab_cont));
+                                 gtk_notebook_page_num (GTK_NOTEBOOK(chatty->pane_view_message_list), chatty_conv->tab_cont));
+}
+
+
+/**
+ * chatty_conv_remove_conv:
+ * @chatty_conv: a ChattyConversation
+ *
+ * Remove the conversation-pane of chatty_conv
+ *
+ */
+static void
+chatty_conv_remove_conv (ChattyConversation *chatty_conv)
+{
+  chatty_data_t *chatty = chatty_get_data();
+
+  gtk_notebook_remove_page (GTK_NOTEBOOK(chatty->pane_view_message_list),
+                            gtk_notebook_page_num (GTK_NOTEBOOK(chatty->pane_view_message_list), chatty_conv->tab_cont));
 }
 
 
@@ -1264,7 +1369,7 @@ chatty_conv_setup_pane (ChattyConversation *chatty_conv,
                     G_CALLBACK(cb_button_send_clicked),
                     (gpointer) chatty_conv);
 
-  chatty_conv->msg_list = CHATTY_MSG_LIST (chatty_msg_list_new (msg_type, TRUE));
+  chatty_conv->msg_list = CHATTY_MSG_LIST (chatty_msg_list_new (msg_type, FALSE));
 
   gtk_box_pack_start (GTK_BOX (vbox),
                       GTK_WIDGET (chatty_conv->msg_list),
@@ -1373,7 +1478,7 @@ chatty_conv_new (PurpleConversation *conv)
     purple_conversation_set_logging (conv, purple_value_get_boolean (value));
   }
 
-  chatty_conv->attach.timer = g_idle_add (chatty_add_message_history_to_conv, chatty_conv);
+  chatty_conv->attach.timer = g_idle_add (chatty_conv_add_message_history_to_conv, chatty_conv);
 
   if (CHATTY_IS_CHATTY_CONVERSATION (conv)) {
     purple_signal_emit (chatty_conversations_get_handle (),
@@ -1400,15 +1505,7 @@ chatty_conv_destroy (PurpleConversation *conv)
 
   chatty_conv->convs = g_list_remove (chatty_conv->convs, conv);
 
-  if (chatty_conv->convs) {
-    if (chatty_conv->active_conv == conv) {
-      chatty_conv->active_conv = chatty_conv->convs->data;
-      purple_conversation_update (chatty_conv->active_conv,
-                                  PURPLE_CONV_UPDATE_FEATURES);
-    }
-
-    return;
-  }
+  chatty_conv_remove_conv (chatty_conv);
 
   if (chatty_conv->attach.timer) {
     g_source_remove(chatty_conv->attach.timer);
