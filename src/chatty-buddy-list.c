@@ -75,24 +75,13 @@ cb_tree_view_row_activated (GtkTreeView       *treeview,
 
   if (PURPLE_BLIST_NODE_IS_BUDDY(node)) {
     PurpleBuddy *buddy;
-    PurpleGroup *group;
-    const char  *name;
 
     buddy = (PurpleBuddy*)node;
-    group = purple_buddy_get_group (buddy);
-    name = purple_group_get_name (group);
     account = purple_buddy_get_account (buddy);
 
     _chatty_blist->selected_node = node;
 
     protocol_id = purple_account_get_protocol_id (account);
-
-    // if the chat was started with a node from the contacts list
-    // move the Buddy to the blist group "chatlist"
-    if (g_strcmp0 (name, "chatlist") != 0) {
-      group = purple_group_new ("chatlist");
-      purple_blist_add_buddy (buddy, NULL, group, NULL);
-    }
 
     if (g_strcmp0 (protocol_id, "prpl-mm-sms") == 0) {
       color = CHATTY_ICON_COLOR_GREEN;
@@ -103,7 +92,7 @@ cb_tree_view_row_activated (GtkTreeView       *treeview,
     avatar = chatty_icon_get_buddy_icon ((PurpleBlistNode *)buddy,
                                          CHATTY_ICON_SIZE_MEDIUM,
                                          color,
-                                         TRUE);
+                                         FALSE);
 
     chatty_conv_im_with_buddy (account,
                                purple_buddy_get_name (buddy));
@@ -317,6 +306,7 @@ cb_conversation_deleting (PurpleConversation  *conv,
   cb_conversation_updated (conv, PURPLE_CONV_UPDATE_UNSEEN, chatty_blist);
 }
 
+
 static void
 cb_conversation_deleted_update_ui (PurpleConversation        *conv,
                                    struct _chatty_blist_node *ui)
@@ -327,7 +317,9 @@ cb_conversation_deleted_update_ui (PurpleConversation        *conv,
 
   ui->conv.conv = NULL;
   ui->conv.flags = 0;
+  ui->conv.pending_messages = 0;
 }
+
 
 static void
 cb_written_msg_update_ui (PurpleAccount       *account,
@@ -343,8 +335,6 @@ cb_written_msg_update_ui (PurpleAccount       *account,
     return;
   }
 
-  ui->conv.last_msg_timestamp = g_date_time_new_now_local ();
-
   if (node != _chatty_blist->selected_node) {
     ui->conv.flags |= CHATTY_BLIST_NODE_HAS_PENDING_MESSAGE;
     ui->conv.pending_messages ++;
@@ -355,12 +345,12 @@ cb_written_msg_update_ui (PurpleAccount       *account,
 
 
 static void
-cb_displayed_msg_update_ui (ChattyConversation *gtkconv,
+cb_displayed_msg_update_ui (ChattyConversation *chatty_conv,
                             PurpleBlistNode    *node)
 {
   ChattyBlistNode *ui = node->ui_data;
 
-  if (ui->conv.conv != gtkconv->active_conv) {
+  if (ui->conv.conv != chatty_conv->active_conv) {
     return;
   }
 
@@ -567,7 +557,7 @@ chatty_blist_buddy_is_displayable (PurpleBuddy *buddy)
 {
   struct _chatty_blist_node *chatty_node;
 
-  if(!buddy) {
+  if (!buddy) {
     return FALSE;
   }
 
@@ -584,7 +574,7 @@ chatty_blist_buddy_is_displayable (PurpleBuddy *buddy)
 /**
  * chatty_blist_chat_list_remove_buddy:
  *
- * Remove active chat buddy from list
+ * Remove active chat buddy from chats-list
  *
  * called from view_msg_list_cmd_delete in
  * chatty-popover-actions.c
@@ -595,14 +585,49 @@ chatty_blist_chat_list_remove_buddy (void)
 {
   PurpleBlistNode *node;
   PurpleBuddy     *buddy;
+  ChattyBlistNode *ui;
+  GtkWidget       *dialog;
+  const char      *buddy_name;
+  int              response;
+
+  chatty_data_t *chatty = chatty_get_data ();
 
   node = _chatty_blist->selected_node;
   buddy = (PurpleBuddy*)node;
 
-  // move buddy to contacts-list
-  purple_blist_add_buddy (buddy, NULL, NULL, NULL);
+  buddy_name = purple_buddy_get_alias (buddy);
 
-  chatty_window_change_view (CHATTY_VIEW_CHAT_LIST);
+  dialog = gtk_message_dialog_new (chatty->main_window,
+                                   GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+                                   GTK_MESSAGE_QUESTION,
+                                   GTK_BUTTONS_NONE,
+                                   _("Delete Chat with %s?"),
+                                   buddy_name);
+
+  gtk_dialog_add_buttons (GTK_DIALOG(dialog),
+                          _("Cancel"),
+                          GTK_RESPONSE_CANCEL,
+                          _("Delete"),
+                          GTK_RESPONSE_OK,
+                          NULL);
+
+  gtk_message_dialog_format_secondary_text (GTK_MESSAGE_DIALOG(dialog),
+                                            _("This deletes the conversation history"));
+
+  gtk_dialog_set_default_response (GTK_DIALOG(dialog), GTK_RESPONSE_CANCEL);
+  gtk_window_set_position (GTK_WINDOW(dialog), GTK_WIN_POS_CENTER_ON_PARENT);
+
+  response = gtk_dialog_run (GTK_DIALOG(dialog));
+
+  if (response == GTK_RESPONSE_OK) {
+    ui = node->ui_data;
+
+    chatty_conv_delete_message_history (buddy);
+    purple_conversation_destroy (ui->conv.conv);
+    chatty_window_change_view (CHATTY_VIEW_CHAT_LIST);
+  }
+
+  gtk_widget_destroy (dialog);
 }
 
 
@@ -619,7 +644,6 @@ chatty_blist_add_buddy (PurpleAccount *account)
 {
   const gchar        *who, *whoalias;
   PurpleBuddy        *buddy;
-  PurpleGroup        *group;
   PurpleConversation *conv;
   PurpleBuddyIcon    *icon;
 
@@ -633,9 +657,8 @@ chatty_blist_add_buddy (PurpleAccount *account)
   }
 
   buddy = purple_buddy_new (account, who, whoalias);
-  group = purple_group_new ("chatlist");
 
-  purple_blist_add_buddy (buddy, NULL, group, NULL);
+  purple_blist_add_buddy (buddy, NULL, NULL, NULL);
 
   purple_account_add_buddy_with_invite (account, buddy, NULL);
 
@@ -837,10 +860,6 @@ chatty_blist_chats_hide_node (PurpleBuddyList *list,
     chatty_blist_update (list, node);
   }
 
-  if (chatty_node->conv.last_msg_timestamp != NULL) {
-    g_date_time_unref (chatty_node->conv.last_msg_timestamp);
-  }
-
   gtk_tree_row_reference_free (chatty_node->row_chat);
   chatty_node->row_chat = NULL;
 }
@@ -866,7 +885,6 @@ chatty_blist_contact_list_add_columns (GtkTreeView *treeview)
                                                      COLUMN_AVATAR,
                                                      NULL);
 
-  gtk_tree_view_column_set_sort_column_id (column, COLUMN_NAME);
   gtk_cell_renderer_set_padding (renderer, 12, 12);
   gtk_tree_view_append_column (treeview, column);
 
@@ -877,7 +895,6 @@ chatty_blist_contact_list_add_columns (GtkTreeView *treeview)
                                                      COLUMN_NAME,
                                                      NULL);
 
-  gtk_tree_view_column_set_sort_column_id (column, COLUMN_NAME);
   gtk_tree_view_column_set_attributes (column, renderer,
                                        "markup", COLUMN_NAME,
                                        NULL);
@@ -892,7 +909,6 @@ chatty_blist_contact_list_add_columns (GtkTreeView *treeview)
                                                      COLUMN_LAST,
                                                      NULL);
 
-  gtk_tree_view_column_set_sort_column_id (column, COLUMN_NAME);
 
   g_object_set (renderer,
                 "xalign", 0.95,
@@ -923,7 +939,6 @@ chatty_blist_chat_list_add_columns (GtkTreeView *treeview)
                                                      COLUMN_AVATAR,
                                                      NULL);
 
-  gtk_tree_view_column_set_sort_column_id (column, COLUMN_NAME);
   gtk_cell_renderer_set_padding (renderer, 12, 12);
   gtk_tree_view_append_column (treeview, column);
 
@@ -934,12 +949,17 @@ chatty_blist_chat_list_add_columns (GtkTreeView *treeview)
                                                      COLUMN_NAME,
                                                      NULL);
 
-  gtk_tree_view_column_set_sort_column_id (column, COLUMN_NAME);
   gtk_tree_view_column_set_attributes (column, renderer,
                                        "markup", COLUMN_NAME,
                                        NULL);
 
-  gtk_cell_renderer_set_alignment (renderer, 0.0, 0.2);
+  g_object_set (renderer,
+                // TODO derive width-chars from screen width
+                "width-chars", 34,
+                "ellipsize", PANGO_ELLIPSIZE_END,
+                NULL);
+
+  gtk_cell_renderer_set_alignment (renderer, 0.0, 0.4);
   gtk_tree_view_append_column (treeview, column);
 
   renderer = gtk_cell_renderer_text_new ();
@@ -949,7 +969,6 @@ chatty_blist_chat_list_add_columns (GtkTreeView *treeview)
                                                      COLUMN_LAST,
                                                      NULL);
 
-  gtk_tree_view_column_set_sort_column_id (column, COLUMN_NAME);
   gtk_tree_view_column_set_attributes (column,
                                        renderer,
                                        "markup", COLUMN_LAST,
@@ -1062,6 +1081,7 @@ chatty_blist_create_chat_list (PurpleBuddyList *list)
   GtkTreeView       *treeview;
   GtkTreeModel      *filter;
   GtkWidget         *vbox;
+  GtkWidget         *box;
   GtkWidget         *search_entry;
   GtkScrolledWindow *scroll;
   GtkStyleContext   *sc;
@@ -1073,13 +1093,19 @@ chatty_blist_create_chat_list (PurpleBuddyList *list)
 
   vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
 
+  chatty->search_bar = gtk_search_bar_new ();
   search_entry = gtk_search_entry_new ();
+  gtk_search_bar_set_show_close_button (GTK_SEARCH_BAR (chatty->search_bar), TRUE);
+  gtk_search_bar_connect_entry (GTK_SEARCH_BAR (chatty->search_bar),
+                                GTK_ENTRY (search_entry));
 
-  g_object_set  (G_OBJECT(search_entry),
-                 "margin", 12, NULL);
+  box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 10);
+  gtk_widget_set_halign (box, GTK_ALIGN_CENTER);
+  gtk_box_pack_start (GTK_BOX (box), search_entry, FALSE, FALSE, 0);
+  gtk_container_add (GTK_CONTAINER (chatty->search_bar), box);
 
   gtk_box_pack_start (GTK_BOX (vbox),
-                      GTK_WIDGET (search_entry),
+                      GTK_WIDGET (chatty->search_bar),
                       FALSE, FALSE, 0);
 
   scroll = GTK_SCROLLED_WINDOW (gtk_scrolled_window_new ( NULL, NULL));
@@ -1170,7 +1196,7 @@ chatty_blist_create_contact_list (PurpleBuddyList *list)
   search_entry = gtk_search_entry_new ();
 
   g_object_set  (G_OBJECT(search_entry),
-                 "margin", 12, NULL);
+                 "margin", 6, NULL);
 
   gtk_box_pack_start (GTK_BOX (vbox),
                       GTK_WIDGET (search_entry),
@@ -1317,6 +1343,102 @@ chatty_blist_remove (PurpleBuddyList *list,
 
 
 /**
+ * chatty_blist_chats_sort:
+ * @node:     a PurpleBlistNode
+ * @cur_iter: a PurpleBuddy
+ * @iter:     a PurpleBlistNode
+ *
+ * Sorts the chats-list based on
+ * purple_log_get_activity_score
+ *
+ */
+static void
+chatty_blist_chats_sort (PurpleBlistNode *node,
+                         GtkTreeIter     *cur_iter,
+                         GtkTreeIter     *iter)
+{
+  GtkTreeIter more_z;
+
+  int activity_score = 0, this_log_activity_score = 0;
+  const char *buddy_name, *this_buddy_name;
+
+  if(cur_iter && (gtk_tree_model_iter_n_children(GTK_TREE_MODEL(_chatty_blist->treemodel_chats), NULL) == 1)) {
+    *iter = *cur_iter;
+    return;
+  }
+
+  if (PURPLE_BLIST_NODE_IS_BUDDY(node)) {
+    PurpleBuddy *buddy;
+
+    buddy = (PurpleBuddy*)node;
+    activity_score = purple_log_get_activity_score (PURPLE_LOG_IM,
+                                                    buddy->name,
+                                                    buddy->account);
+
+    buddy_name = purple_buddy_get_alias ((PurpleBuddy*)node);
+  }
+
+  if (!gtk_tree_model_iter_children (GTK_TREE_MODEL(_chatty_blist->treemodel_chats),
+                                     &more_z,
+                                     NULL)) {
+
+    gtk_list_store_insert (_chatty_blist->treemodel_chats, iter, 0);
+
+    return;
+  }
+
+  do {
+    PurpleBlistNode *n;
+    PurpleBuddy     *buddy;
+    int              cmp;
+
+    gtk_tree_model_get (GTK_TREE_MODEL(_chatty_blist->treemodel_chats),
+                        &more_z,
+                        COLUMN_NODE,
+                        &n,
+                        -1);
+
+    this_log_activity_score = 0;
+
+    if(PURPLE_BLIST_NODE_IS_BUDDY(n)) {
+      buddy = (PurpleBuddy*)n;
+
+      this_log_activity_score += purple_log_get_activity_score (PURPLE_LOG_IM,
+                                                                buddy->name,
+                                                                buddy->account);
+
+      this_buddy_name = purple_buddy_get_alias ((PurpleBuddy*)n);
+    } else {
+      this_buddy_name = NULL;
+    }
+
+    cmp = purple_utf8_strcasecmp (buddy_name, this_buddy_name);
+
+    if (!PURPLE_BLIST_NODE_IS_BUDDY(n) || activity_score > this_log_activity_score ||
+        ((activity_score == this_log_activity_score) &&
+         (cmp < 0 || (cmp == 0 && node < n)))) {
+
+      if (cur_iter != NULL) {
+        gtk_list_store_move_before (_chatty_blist->treemodel_chats, cur_iter, &more_z);
+        *iter = *cur_iter;
+        return;
+      }
+    }
+  } while (gtk_tree_model_iter_next (GTK_TREE_MODEL(_chatty_blist->treemodel_chats),
+                                     &more_z));
+
+  if (cur_iter != NULL) {
+    gtk_list_store_move_before (_chatty_blist->treemodel_chats, cur_iter, NULL);
+    *iter = *cur_iter;
+    return;
+  } else {
+    gtk_list_store_append (_chatty_blist->treemodel_chats, iter);
+    return;
+  }
+}
+
+
+/**
  * chatty_blist_contacts_add_contact:
  * @buddy: a PurpleBuddy
  * @node:  a PurpleBlistNode
@@ -1325,12 +1447,11 @@ chatty_blist_remove (PurpleBuddyList *list,
  *
  */
 static void
-chatty_blist_contacts_update_contact (PurpleBuddy     *buddy,
-                                      PurpleBlistNode *node)
+chatty_blist_contacts_update_node (PurpleBuddy     *buddy,
+                                   PurpleBlistNode *node)
 {
   GtkTreeIter    iter;
   GdkPixbuf     *avatar;
-  GdkPixbuf     *prpl_icon;
   GtkTreePath   *path;
   gchar         *name = NULL;
   const gchar   *alias;
@@ -1338,8 +1459,6 @@ chatty_blist_contacts_update_contact (PurpleBuddy     *buddy,
   const gchar   *protocol_id;
   PurpleAccount *account;
   guint          color;
-
-  PurplePresence *presence = purple_buddy_get_presence (buddy);
 
   ChattyBlistNode *chatty_node = node->ui_data;
 
@@ -1361,11 +1480,7 @@ chatty_blist_contacts_update_contact (PurpleBuddy     *buddy,
   avatar = chatty_icon_get_buddy_icon ((PurpleBlistNode *)buddy,
                                        CHATTY_ICON_SIZE_LARGE,
                                        color,
-                                       TRUE);
-
-  if ((!PURPLE_BUDDY_IS_ONLINE(buddy) || purple_presence_is_idle (presence))) {
-    chatty_icon_do_alphashift (avatar, 77);
-  }
+                                       FALSE);
 
   alias = purple_buddy_get_alias (buddy);
 
@@ -1378,8 +1493,6 @@ chatty_blist_contacts_update_contact (PurpleBuddy     *buddy,
                       "</span>",
                       NULL);
 
-  prpl_icon = chatty_icon_create_prpl_icon (account, CHATTY_ICON_SIZE_SMALL);
-
   if (!chatty_node->row_contact) {
     gtk_list_store_append (_chatty_blist->treemodel_contacts, &iter);
 
@@ -1389,6 +1502,7 @@ chatty_blist_contacts_update_contact (PurpleBuddy     *buddy,
       gtk_tree_row_reference_new (GTK_TREE_MODEL(_chatty_blist->treemodel_contacts), path);
   } else {
     path = gtk_tree_row_reference_get_path (chatty_node->row_contact);
+
     if (path != NULL) {
       gtk_tree_model_get_iter (GTK_TREE_MODEL(_chatty_blist->treemodel_contacts), &iter, path);
     }
@@ -1399,16 +1513,11 @@ chatty_blist_contacts_update_contact (PurpleBuddy     *buddy,
                         COLUMN_NODE, node,
                         COLUMN_AVATAR, avatar,
                         COLUMN_NAME, name,
-                        COLUMN_LAST, prpl_icon,
                         -1);
   }
 
   if (avatar) {
     g_object_unref (avatar);
-  }
-
-  if (prpl_icon) {
-    g_object_unref (prpl_icon);
   }
 
   gtk_tree_path_free (path);
@@ -1429,6 +1538,7 @@ chatty_blist_chats_update_node (PurpleBuddy     *buddy,
                                 PurpleBlistNode *node)
 {
   GtkTreeIter    iter;
+  GtkTreeIter    cur_iter;
   GdkPixbuf     *avatar;
   GtkTreePath   *path;
   gchar         *name = NULL;
@@ -1436,12 +1546,7 @@ chatty_blist_chats_update_node (PurpleBuddy     *buddy,
   const gchar   *protocol_id;
   gchar         *last_msg_str = NULL;
   PurpleAccount *account;
-  GDateTime     *current_time;
-  GDateTime     *last_msg_time;
-  GTimeSpan      time_span;
   guint          color;
-
-  PurplePresence *presence = purple_buddy_get_presence (buddy);
 
   ChattyBlistNode *chatty_node = node->ui_data;
 
@@ -1462,60 +1567,47 @@ chatty_blist_chats_update_node (PurpleBuddy     *buddy,
   avatar = chatty_icon_get_buddy_icon ((PurpleBlistNode *)buddy,
                                        CHATTY_ICON_SIZE_LARGE,
                                        color,
-                                       TRUE);
-
-  if ((!PURPLE_BUDDY_IS_ONLINE(buddy) || purple_presence_is_idle (presence))) {
-    chatty_icon_do_alphashift (avatar, 77);
-  }
+                                       FALSE);
 
   alias = purple_buddy_get_alias (buddy);
 
-  last_msg_time = chatty_node->conv.last_msg_timestamp;
-
-  if (last_msg_time != NULL) {
-    current_time = g_date_time_new_now_local ();
-    time_span = g_date_time_difference (current_time, last_msg_time);
-
-    if (time_span > G_TIME_SPAN_DAY) {
-      last_msg_str = g_date_time_format (last_msg_time, "%b %e");
-    } else {
-      last_msg_str = g_date_time_format (last_msg_time, "%R");
-    }
-
-    g_date_time_unref (current_time);
-  }
+  last_msg_str = g_strconcat ("<span color='#646464'><small>",
+                              chatty_node->conv.last_msg_timestamp,
+                              "</small></span>",
+                              NULL);
 
   if (chatty_node->conv.flags & CHATTY_BLIST_NODE_HAS_PENDING_MESSAGE) {
-    name = g_strconcat ("<b><span color='#646464'>",
+    name = g_strconcat ("<span color='#646464'><b>",
                         alias,
-                        "</span></b>",
+                        "</b></span>",
+                        "\n",
+                        "<small>",
+                        chatty_node->conv.last_message,
+                        "</small>",
                         NULL);
   } else {
     name = g_strconcat ("<span color='#646464'>",
                         alias,
-                        "</span>",
+                        "\n",
+                        "<small>",
+                        chatty_node->conv.last_message,
+                        "</small></span>",
                         NULL);
-  }
-
-  if (last_msg_str != NULL) {
-    last_msg_str = g_strconcat ("<span color='darkgrey'>",
-                                last_msg_str, "</span>",
-                                NULL);
   }
 
   if (!chatty_node->row_chat) {
     gtk_list_store_append (_chatty_blist->treemodel_chats, &iter);
-
-    path =
-      gtk_tree_model_get_path (GTK_TREE_MODEL(_chatty_blist->treemodel_chats), &iter);
-    chatty_node->row_chat =
-      gtk_tree_row_reference_new (GTK_TREE_MODEL(_chatty_blist->treemodel_chats), path);
   } else {
     path = gtk_tree_row_reference_get_path (chatty_node->row_chat);
+
     if (path != NULL) {
-      gtk_tree_model_get_iter (GTK_TREE_MODEL(_chatty_blist->treemodel_chats), &iter, path);
+      gtk_tree_model_get_iter (GTK_TREE_MODEL(_chatty_blist->treemodel_chats), &cur_iter, path);
+      chatty_blist_chats_sort (node, &cur_iter, &iter);
     }
   }
+
+  path = gtk_tree_model_get_path (GTK_TREE_MODEL(_chatty_blist->treemodel_chats), &iter);
+  chatty_node->row_chat = gtk_tree_row_reference_new (GTK_TREE_MODEL(_chatty_blist->treemodel_chats), path);
 
   if (path != NULL) {
     gtk_list_store_set (_chatty_blist->treemodel_chats, &iter,
@@ -1549,28 +1641,27 @@ static void
 chatty_blist_update_buddy (PurpleBuddyList *list,
                            PurpleBlistNode *node)
 {
-  PurpleBuddy *buddy;
-  PurpleGroup *group;
-  const char  *name;
+  PurpleBuddy     *buddy;
+  ChattyLog       *log_data = NULL;
+  ChattyBlistNode *ui;
 
   g_return_if_fail (PURPLE_BLIST_NODE_IS_BUDDY(node));
 
   buddy = (PurpleBuddy*)node;
-  group = purple_buddy_get_group (buddy);
-  name = purple_group_get_name (group);
 
-  // Only update node or add node to chatlist view if
-  // contact resides in blist.xml group "chatlist"
-  // otherwise assign it to contacts list view
-  if (g_strcmp0 (name, "chatlist") == 0) {
-    if (chatty_blist_buddy_is_displayable (buddy)) {
-      chatty_blist_chats_update_node (buddy, node);
-    } else {
-      chatty_blist_chats_hide_node (list, node, TRUE);
-    }
+  log_data = chatty_conv_message_get_last_msg (buddy);
+
+  if (log_data != NULL && chatty_blist_buddy_is_displayable (buddy)) {
+    ui = node->ui_data;
+    ui->conv.last_message = log_data->msg;
+    ui->conv.last_msg_timestamp = log_data->time_stamp;
+
+    chatty_blist_chats_update_node (buddy, node);
   } else {
-    chatty_blist_contacts_update_contact (buddy, node);
+    chatty_blist_chats_hide_node (list, node, TRUE);
   }
+
+  chatty_blist_contacts_update_node (buddy, node);
 }
 
 

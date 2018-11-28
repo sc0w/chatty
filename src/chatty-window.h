@@ -25,6 +25,7 @@ typedef struct {
   GtkHeaderBar      *header_view_message_list;
   GtkWidget         *header_icon;
   GtkWidget         *header_spinner;
+  GtkWidget         *search_bar;
   GtkWidget         *button_add_buddy;
   GtkEntry          *entry_buddy_name;
   GtkEntry          *entry_buddy_nick;

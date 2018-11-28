@@ -24,9 +24,14 @@ static void chatty_back_action (GSimpleAction *action,
                                 GVariant      *parameter,
                                 gpointer       user_data);
 
+static void chatty_search_action (GSimpleAction *action,
+                                GVariant      *parameter,
+                                gpointer       user_data);
+
 
 static const GActionEntry window_action_entries [] = {
   { "add", chatty_back_action },
+  { "search", chatty_search_action },
   { "back", chatty_back_action },
 };
 
@@ -40,6 +45,17 @@ chatty_data_t *chatty_get_data (void)
 static void
 chatty_empty_container (GtkContainer *container) {
   gtk_container_foreach (container, (GtkCallback)gtk_widget_destroy, NULL);
+}
+
+
+static void
+chatty_search_action (GSimpleAction *action,
+                    GVariant      *parameter,
+                    gpointer       user_data)
+{
+  chatty_data_t *chatty = chatty_get_data ();
+
+  gtk_search_bar_set_search_mode (GTK_SEARCH_BAR (chatty->search_bar), TRUE);
 }
 
 
@@ -83,7 +99,7 @@ chatty_back_action (GSimpleAction *action,
 void
 chatty_window_change_view (ChattyWindowState view)
 {
-  gchar           *stack_id;
+  gchar         *stack_id;
 
   chatty_data_t *chatty = chatty_get_data ();
 
@@ -173,6 +189,8 @@ chatty_window_activate (GtkApplication *app,
   gtk_window_set_default_size (GTK_WINDOW (window), 400, 640);
 
   chatty_popover_actions_init (window);
+
+  chatty->main_window = window;
 
   gtk_css_provider_load_from_resource (cssProvider,
                                        "/sm/puri/chatty/css/style.css");
