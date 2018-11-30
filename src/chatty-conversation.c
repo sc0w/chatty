@@ -180,7 +180,7 @@ cb_button_send_clicked (GtkButton *sender,
     chatty_msg_list_add_message (chatty_conv->msg_list,
                                  MSG_IS_OUTGOING,
                                  message,
-                                 "sending...");
+                                 _("sending..."));
 
     purple_conv_im_send (PURPLE_CONV_IM (conv), message);
     gtk_widget_hide (chatty_conv->button_send);

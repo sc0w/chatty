@@ -64,18 +64,33 @@ static void
 chatty_xeps_display_received (const char* node_id)
 {
   GtkWidget *bubble_footer;
+  GDateTime *time;
+  gchar     *footer_str = NULL;
 
   if (node_id == NULL) {
     return;
   }
 
+  time = g_date_time_new_now_local ();
+  footer_str = g_date_time_format (time, "%R");
+  g_date_time_unref (time);
+
   bubble_footer = (GtkWidget*) g_hash_table_lookup (ht_bubble_node, node_id);
 
+  footer_str = g_strconcat ("<small>",
+                            footer_str,
+                            "<span color='#6cba3d'>"
+                            " ✓",
+                            "</span></small>",
+                            NULL);
+
   if (bubble_footer != NULL) {
-    gtk_label_set_text (GTK_LABEL(bubble_footer), "✓");
+    gtk_label_set_markup (GTK_LABEL(bubble_footer), footer_str);
 
     g_hash_table_remove (ht_bubble_node, node_id);
   }
+
+  g_free (footer_str);
 }
 
 
@@ -156,7 +171,7 @@ cb_chatty_xeps_xmlnode_received (PurpleConnection  *gc,
         node_id = xmlnode_get_attrib (*packet , "id");
         node_ns = xmlnode_get_namespace (node_request);
 
-        if (strcmp (node_ns, "urn:xmpp:receipts") == 0) {
+        if (g_strcmp0 (node_ns, "urn:xmpp:receipts") == 0) {
           message = xmlnode_new ("message");
           xmlnode_set_attrib (message, "to", from);
 
