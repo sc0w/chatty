@@ -114,6 +114,33 @@ cb_update_buddy_status (PurpleBuddy  *buddy,
 
 
 static void
+cb_msg_list_message_added (ChattyMsgList *sender,
+                           GtkWidget     *bubble,
+                           gpointer       data)
+{
+  GtkWidget           *child;
+  GList               *children;
+  ChattyConversation  *chatty_conv;
+
+  chatty_conv  = (ChattyConversation *)data;
+
+  children = gtk_container_get_children (GTK_CONTAINER(bubble));
+
+  do {
+    child = children->data;
+
+    if (g_strcmp0 (gtk_widget_get_name (child), "label-footer") == 0) {
+      chatty_conv->msg_bubble_footer = child;
+    }
+  } while ((children = g_list_next (children)) != NULL);
+
+  children = g_list_first (children);
+  g_list_foreach (children, (GFunc)g_free, NULL);
+  g_list_free (children);
+}
+
+
+static void
 cb_button_send_clicked (GtkButton *sender,
                         gpointer   data)
 {
@@ -150,6 +177,11 @@ cb_button_send_clicked (GtkButton *sender,
                                       FALSE);
 
   if (gtk_text_buffer_get_char_count (chatty_conv->msg_buffer)) {
+    chatty_msg_list_add_message (chatty_conv->msg_list,
+                                 MSG_IS_OUTGOING,
+                                 message,
+                                 "sending...");
+
     purple_conv_im_send (PURPLE_CONV_IM (conv), message);
     gtk_widget_hide (chatty_conv->button_send);
   }
@@ -1021,7 +1053,6 @@ chatty_conv_write_common (PurpleConversation *conv,
   PurpleConnection    *gc;
   PurpleAccount       *account;
   gchar               *msg_html;
-  guint                msg_dir;
 
   chatty_conv = CHATTY_CONVERSATION (conv);
 
@@ -1046,22 +1077,18 @@ chatty_conv_write_common (PurpleConversation *conv,
   g_return_if_fail (gc != NULL || !(flags & (PURPLE_MESSAGE_SEND | PURPLE_MESSAGE_RECV)));
 
   if (*message != '\0') {
-    if (flags & PURPLE_MESSAGE_SEND) {
-      msg_dir = MSG_IS_OUTGOING;
-    } else if (flags & PURPLE_MESSAGE_RECV) {
-      msg_dir = MSG_IS_INCOMING;
+    if (flags & PURPLE_MESSAGE_RECV) {
+      msg_html = chatty_conv_check_for_links (message);
+
+      chatty_msg_list_add_message (chatty_conv->msg_list,
+                                   MSG_IS_INCOMING,
+                                   msg_html,
+                                   NULL);
+
+      g_free (msg_html);
     }
 
-    msg_html = chatty_conv_check_for_links (message);
-
-    chatty_msg_list_add_message (chatty_conv->msg_list,
-                                 msg_dir,
-                                 msg_html,
-                                 NULL);
-
     chatty_conv_set_unseen (chatty_conv, CHATTY_UNSEEN_NONE);
-
-    g_free (msg_html);
   }
 }
 
@@ -1365,11 +1392,17 @@ chatty_conv_setup_pane (ChattyConversation *chatty_conv,
       break;
   }
 
-  g_signal_connect (chatty_conv->button_send, "clicked",
+  g_signal_connect (chatty_conv->button_send,
+                    "clicked",
                     G_CALLBACK(cb_button_send_clicked),
                     (gpointer) chatty_conv);
 
   chatty_conv->msg_list = CHATTY_MSG_LIST (chatty_msg_list_new (msg_type, FALSE));
+
+  g_signal_connect (chatty_conv->msg_list,
+                    "message-added",
+                    G_CALLBACK(cb_msg_list_message_added),
+                    (gpointer) chatty_conv);
 
   gtk_box_pack_start (GTK_BOX (vbox),
                       GTK_WIDGET (chatty_conv->msg_list),

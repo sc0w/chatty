@@ -31,6 +31,13 @@ enum {
 
 static GParamSpec *props[PROP_LAST_PROP];
 
+enum {
+  SIGNAL_MESSAGE_ADDED,
+  SIGNAL_LAST_SIGNAL,
+};
+
+static guint signals [SIGNAL_LAST_SIGNAL];
+
 typedef struct
 {
   GtkBox      *disclaimer;
@@ -583,7 +590,7 @@ chatty_msg_list_add_message (ChattyMsgList *self,
   GtkWidget       *ebox;
   GtkRevealer     *revealer;
   GtkLabel        *label_msg;
-  GtkLabel        *label_timestamp;
+  GtkLabel        *label_footer;
   GtkStyleContext *sc;
   gchar           *style;
   gchar           *str;
@@ -614,6 +621,7 @@ chatty_msg_list_add_message (ChattyMsgList *self,
   vbox = GTK_BOX (gtk_box_new (GTK_ORIENTATION_VERTICAL, 0));
 
   label_msg = GTK_LABEL (gtk_label_new (message));
+  gtk_widget_set_name (GTK_WIDGET(label_msg), "label-msg");
   gtk_label_set_use_markup (GTK_LABEL (label_msg), TRUE);
   gtk_label_set_line_wrap (label_msg, TRUE);
   gtk_label_set_line_wrap_mode (label_msg, PANGO_WRAP_WORD_CHAR);
@@ -655,15 +663,21 @@ chatty_msg_list_add_message (ChattyMsgList *self,
   gtk_box_pack_start (vbox, GTK_WIDGET(ebox), FALSE, FALSE, 0);
 
   if (footer != NULL) {
-    label_timestamp = GTK_LABEL(gtk_label_new (NULL));
+    label_footer = GTK_LABEL(gtk_label_new (NULL));
+    gtk_widget_set_name (GTK_WIDGET(label_footer), "label-footer");
     str = g_strconcat ("<small>", footer, "</small>", NULL);
 
-    gtk_label_set_xalign (label_timestamp, 1);
-    gtk_widget_set_sensitive (GTK_WIDGET(label_timestamp), FALSE);
-    gtk_label_set_markup (label_timestamp, str);
-    gtk_box_pack_start (vbox, GTK_WIDGET(label_timestamp), FALSE, FALSE, 10);
+    gtk_label_set_xalign (label_footer, 1);
+    gtk_widget_set_sensitive (GTK_WIDGET(label_footer), FALSE);
+    gtk_label_set_markup (label_footer, str);
+    gtk_box_pack_start (vbox, GTK_WIDGET(label_footer), FALSE, FALSE, 10);
     g_free (str);
   }
+
+  g_signal_emit (self,
+                 signals[SIGNAL_MESSAGE_ADDED],
+                 0,
+                 G_OBJECT(vbox));
 
   chatty_msg_list_hide_header (self);
 
@@ -761,6 +775,16 @@ chatty_msg_list_class_init (ChattyMsgListClass *klass)
                           G_PARAM_READWRITE | G_PARAM_EXPLICIT_NOTIFY);
 
   g_object_class_install_properties (object_class, PROP_LAST_PROP, props);
+
+  signals[SIGNAL_MESSAGE_ADDED] =
+    g_signal_new ("message-added",
+                  G_TYPE_FROM_CLASS (klass),
+                  G_SIGNAL_RUN_LAST,
+                  0,
+                  NULL, NULL, NULL,
+                  G_TYPE_NONE,
+                  1,
+                  G_TYPE_OBJECT);
 
   gtk_widget_class_set_template_from_resource (widget_class,
     "/sm/puri/chatty/ui/chatty-message-list.ui");

@@ -37,6 +37,7 @@ struct chatty_conversation {
   GList               *convs;
   ChattyMsgList       *msg_list;
   GtkWidget           *msg_entry;
+  GtkWidget           *msg_bubble_footer;
   GtkWidget           *msg_frame;
   GtkWidget           *msg_scrolled;
   GtkTextBuffer       *msg_buffer;

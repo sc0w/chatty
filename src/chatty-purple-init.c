@@ -17,6 +17,7 @@
 #include "chatty-config.h"
 #include "chatty-icons.h"
 #include "chatty-account.h"
+#include "chatty-xeps.h"
 #include "chatty-message-list.h"
 #include "chatty-buddy-list.h"
 #include "chatty-connection.h"
@@ -247,6 +248,8 @@ init_libpurple (void)
   purple_plugins_init ();
   purple_pounces_load ();
   purple_blist_show ();
+
+  chatty_xeps_init ();
 
   account = purple_accounts_find ("SMS", "prpl-mm-sms");
 
