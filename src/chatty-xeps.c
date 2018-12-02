@@ -47,6 +47,8 @@ cb_chatty_xep_deleting_conversation (PurpleConversation *conv)
                                cb_ht_bubble_node_check_items,
                                chatty_conv->msg_bubble_footer);
 
+  g_hash_table_unref (ht_bubble_node);
+
   g_debug ("conversation closed");
 }
 
