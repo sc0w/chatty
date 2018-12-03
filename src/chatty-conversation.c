@@ -1633,12 +1633,10 @@ chatty_conversations_init (void)
   chatty_conv_container_init ();
 
   purple_prefs_add_none (CHATTY_PREFS_ROOT "/conversations");
-  purple_prefs_add_bool (CHATTY_PREFS_ROOT "/conversations/use_smooth_scrolling", TRUE);
   purple_prefs_add_bool (CHATTY_PREFS_ROOT "/conversations/im/show_buddy_icons", TRUE);
 
   purple_prefs_add_bool (CHATTY_PREFS_ROOT "/conversations/show_timestamps", TRUE);
-  purple_prefs_add_bool (CHATTY_PREFS_ROOT "/conversations/tabs", TRUE);
-  purple_prefs_add_int (CHATTY_PREFS_ROOT "/conversations/scrollback_lines", 4000);
+  purple_prefs_add_bool (CHATTY_PREFS_ROOT "/conversations/tabs", FALSE);
 
   purple_signal_register (handle, "conversation-switched",
                           purple_marshal_VOID__POINTER, NULL, 1,

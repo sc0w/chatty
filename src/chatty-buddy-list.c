@@ -1459,6 +1459,9 @@ chatty_blist_contacts_update_node (PurpleBuddy     *buddy,
   const gchar   *protocol_id;
   PurpleAccount *account;
   guint          color;
+  gboolean       blur;
+
+  PurplePresence *presence = purple_buddy_get_presence (buddy);
 
   ChattyBlistNode *chatty_node = node->ui_data;
 
@@ -1477,10 +1480,24 @@ chatty_blist_contacts_update_node (PurpleBuddy     *buddy,
     color = CHATTY_ICON_COLOR_BLUE;
   }
 
+  if (purple_prefs_get_bool (CHATTY_PREFS_ROOT "/blist/greyout_offline_buddies") &&
+      !PURPLE_BUDDY_IS_ONLINE(buddy)) {
+
+    blur = TRUE;
+  } else {
+    blur = FALSE;
+  }
+
   avatar = chatty_icon_get_buddy_icon ((PurpleBlistNode *)buddy,
                                        CHATTY_ICON_SIZE_LARGE,
                                        color,
-                                       FALSE);
+                                       blur);
+
+  if (purple_prefs_get_bool (CHATTY_PREFS_ROOT "/blist/blur_idle_buddies") &&
+      purple_presence_is_idle (presence)) {
+
+    chatty_icon_do_alphashift (avatar, 77);
+  }
 
   alias = purple_buddy_get_alias (buddy);
 
@@ -1547,6 +1564,9 @@ chatty_blist_chats_update_node (PurpleBuddy     *buddy,
   gchar         *last_msg_str = NULL;
   PurpleAccount *account;
   guint          color;
+  gboolean       blur;
+
+  PurplePresence *presence = purple_buddy_get_presence (buddy);
 
   ChattyBlistNode *chatty_node = node->ui_data;
 
@@ -1564,10 +1584,24 @@ chatty_blist_chats_update_node (PurpleBuddy     *buddy,
     color = CHATTY_ICON_COLOR_BLUE;
   }
 
+  if (purple_prefs_get_bool (CHATTY_PREFS_ROOT "/blist/greyout_offline_buddies") &&
+      !PURPLE_BUDDY_IS_ONLINE(buddy)) {
+
+    blur = TRUE;
+  } else {
+    blur = FALSE;
+  }
+
   avatar = chatty_icon_get_buddy_icon ((PurpleBlistNode *)buddy,
                                        CHATTY_ICON_SIZE_LARGE,
                                        color,
-                                       FALSE);
+                                       blur);
+
+  if (purple_prefs_get_bool (CHATTY_PREFS_ROOT "/blist/blur_idle_buddies") &&
+      purple_presence_is_idle (presence)) {
+
+    chatty_icon_do_alphashift (avatar, 77);
+  }
 
   alias = purple_buddy_get_alias (buddy);
 
@@ -1850,6 +1884,8 @@ void chatty_blist_init (void)
   purple_prefs_add_bool (CHATTY_PREFS_ROOT "/blist/show_buddy_icons", TRUE);
   purple_prefs_add_bool (CHATTY_PREFS_ROOT "/blist/show_idle_time", TRUE);
   purple_prefs_add_bool (CHATTY_PREFS_ROOT "/blist/show_offline_buddies", TRUE);
+  purple_prefs_add_bool (CHATTY_PREFS_ROOT "/blist/greyout_offline_buddies", FALSE);
+  purple_prefs_add_bool (CHATTY_PREFS_ROOT "/blist/blur_idle_buddies", FALSE);
   purple_prefs_add_bool (CHATTY_PREFS_ROOT "/blist/show_protocol_icons", FALSE);
 
   purple_prefs_connect_callback (&handle,
@@ -1866,6 +1902,14 @@ void chatty_blist_init (void)
                                  NULL);
   purple_prefs_connect_callback (&handle,
                                  CHATTY_PREFS_ROOT "/blist/show_protocol_icons",
+                                 cb_chatty_prefs_change_update_list,
+                                 NULL);
+  purple_prefs_connect_callback (&handle,
+                                 CHATTY_PREFS_ROOT "/blist/blur_idle_buddies",
+                                 cb_chatty_prefs_change_update_list,
+                                 NULL);
+  purple_prefs_connect_callback (&handle,
+                                 CHATTY_PREFS_ROOT "/blist/greyout_offline_buddies",
                                  cb_chatty_prefs_change_update_list,
                                  NULL);
 
