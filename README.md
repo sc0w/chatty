@@ -35,9 +35,9 @@ make
 make install
 ```
 
-### Build and install the OMEMO plugin
+### Build and install the 'lurch' plugin
 Please go to the git page where you'll find all the information on how to build and use the
-[libpurple-omemo-plugin](https://github.com/manchito/libpurple-omemo-plugin)
+[lurch OMEMO plugin](https://github.com/gkdr/lurch)
 
 This can be skipped if encrypted messaging is not needed.
 

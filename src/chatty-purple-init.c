@@ -242,7 +242,7 @@ init_libpurple (void)
 
   purple_plugins_probe (G_MODULE_SUFFIX);
 
-  chatty_purple_load_plugin ("core-mancho-omemo");
+  chatty_purple_load_plugin ("core-riba-lurch");
   chatty_purple_load_plugin ("core-riba-carbons");
 
   purple_plugins_init ();
