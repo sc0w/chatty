@@ -940,8 +940,10 @@ chatty_conv_stack_add_conv (ChattyConversation *chatty_conv)
 
   gtk_widget_show (chatty_conv->tab_cont);
 
-  if (g_list_length(chatty_conv->convs) == 1) {
-    gtk_notebook_set_current_page (GTK_NOTEBOOK(chatty->pane_view_message_list), 0);
+  gtk_notebook_set_current_page (GTK_NOTEBOOK(chatty->pane_view_message_list), 0);
+
+  if (purple_prefs_get_bool (CHATTY_PREFS_ROOT "/conversations/tabs")) {
+    gtk_notebook_set_show_tabs (GTK_NOTEBOOK(chatty->pane_view_message_list), TRUE);
   } else {
     gtk_notebook_set_show_tabs (GTK_NOTEBOOK(chatty->pane_view_message_list), FALSE);
   }
@@ -1443,10 +1445,6 @@ chatty_conv_new (PurpleConversation *conv)
   if (conv_type == PURPLE_CONV_TYPE_IM && (chatty_conv = chatty_conv_find_conv (conv))) {
     conv->ui_data = chatty_conv;
 
-    if (!g_list_find (chatty_conv->convs, conv)) {
-      chatty_conv->convs = g_list_prepend (chatty_conv->convs, conv);
-    }
-
     chatty_conv_switch_active_conversation (conv);
 
     return;
@@ -1455,7 +1453,6 @@ chatty_conv_new (PurpleConversation *conv)
   chatty_conv = g_new0 (ChattyConversation, 1);
   conv->ui_data = chatty_conv;
   chatty_conv->active_conv = conv;
-  chatty_conv->convs = g_list_prepend (chatty_conv->convs, conv);
 
   account = purple_conversation_get_account (conv);
   protocol_id = purple_account_get_protocol_id (account);
@@ -1535,8 +1532,6 @@ chatty_conv_destroy (PurpleConversation *conv)
   ChattyConversation *chatty_conv;
 
   chatty_conv = CHATTY_CONVERSATION (conv);
-
-  chatty_conv->convs = g_list_remove (chatty_conv->convs, conv);
 
   chatty_conv_remove_conv (chatty_conv);
 

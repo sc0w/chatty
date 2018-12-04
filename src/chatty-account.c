@@ -6,13 +6,26 @@
 
 #define G_LOG_DOMAIN "chatty-account"
 
+#include "account.h"
+#include "accountopt.h"
+#include "core.h"
+#include "debug.h"
+#include "notify.h"
+#include "plugin.h"
+#include "prefs.h"
+#include "prpl.h"
+#include "request.h"
+#include "savedstatuses.h"
+#include "signals.h"
+#include "util.h"
+
+
 #include <glib.h>
 #include <glib/gi18n.h>
 #include <glib-object.h>
 #include <gtk/gtk.h>
 #include <stdlib.h>
 #include <string.h>
-#include <purple.h>
 #define HANDY_USE_UNSTABLE_API
 #include <handy.h>
 #include "chatty-buddy-list.h"
@@ -748,7 +761,7 @@ chatty_accounts_get_ui_ops (void)
 }
 
 
-static void *
+void *
 chatty_account_get_handle (void) {
   static int handle;
 

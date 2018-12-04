@@ -131,15 +131,13 @@ static void
 chatty_quit (void)
 {
   chatty_conversations_uninit ();
-  purple_conversations_set_ui_ops (NULL);
-
   chatty_blist_uninit ();
-  purple_blist_set_ui_ops (NULL);
-
   chatty_connection_uninit();
-  purple_connections_set_ui_ops (NULL);
-
   chatty_account_uninit();
+
+  purple_conversations_set_ui_ops (NULL);
+  purple_connections_set_ui_ops (NULL);
+  purple_blist_set_ui_ops (NULL);
   purple_accounts_set_ui_ops (NULL);
 
   gtk_main_quit();
@@ -150,15 +148,13 @@ static void
 chatty_purple_ui_init (void)
 {
   chatty_account_init ();
-  purple_accounts_set_ui_ops (chatty_accounts_get_ui_ops ());
-
   chatty_connection_init ();
-  purple_connections_set_ui_ops (chatty_connection_get_ui_ops ());
-
   chatty_blist_init ();
-  purple_blist_set_ui_ops (chatty_blist_get_ui_ops ());
-
   chatty_conversations_init ();
+
+  purple_accounts_set_ui_ops (chatty_accounts_get_ui_ops ());
+  purple_connections_set_ui_ops (chatty_connection_get_ui_ops ());
+  purple_blist_set_ui_ops (chatty_blist_get_ui_ops ());
   purple_conversations_set_ui_ops (chatty_conversations_get_conv_ui_ops ());
 }
 
@@ -221,7 +217,7 @@ init_libpurple (void)
   PurpleAccount *account;
   gchar         *search_path;
 
-  purple_debug_set_enabled (FALSE);
+  purple_debug_set_enabled (TRUE);
   purple_debug_set_verbose (FALSE);
 
   purple_core_set_ui_ops (&core_uiops);
@@ -259,6 +255,7 @@ init_libpurple (void)
 
   purple_account_set_enabled (account, CHATTY_UI, TRUE);
 
+  purple_savedstatus_activate (purple_savedstatus_get_startup());
   purple_accounts_restore_current_statuses ();
 }
 
