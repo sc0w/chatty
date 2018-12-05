@@ -217,7 +217,7 @@ init_libpurple (void)
   PurpleAccount *account;
   gchar         *search_path;
 
-  purple_debug_set_enabled (TRUE);
+  purple_debug_set_enabled (FALSE);
   purple_debug_set_verbose (FALSE);
 
   purple_core_set_ui_ops (&core_uiops);
@@ -260,31 +260,6 @@ init_libpurple (void)
 }
 
 
-static int
-account_authorization_requested (PurpleAccount *account,
-                                 const char    *user)
-{
-  g_debug ("User \"%s\" (%s) has sent a buddy request",
-           user,
-           purple_account_get_protocol_id (account));
-
-  return 1;
-}
-
-
-static void
-connect_to_signals (void)
-{
-  static int handle;
-
-  purple_signal_connect (purple_accounts_get_handle (),
-                         "account-authorization-requested",
-                         &handle,
-                         PURPLE_CALLBACK (account_authorization_requested),
-                         NULL);
-}
-
-
 void
 libpurple_start (void) {
   signal (SIGCHLD, SIG_IGN);
@@ -293,6 +268,4 @@ libpurple_start (void) {
 
   g_debug ("libpurple initialized. Running version %s.",
            purple_core_get_version ());
-
-  connect_to_signals ();
 }

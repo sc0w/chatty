@@ -660,6 +660,8 @@ chatty_blist_add_buddy (PurpleAccount *account)
 
   purple_blist_add_buddy (buddy, NULL, NULL, NULL);
 
+  g_debug ("chatty_blist_add_buddy: %s ", purple_buddy_get_name (buddy));
+
   purple_account_add_buddy_with_invite (account, buddy, NULL);
 
   conv = purple_find_conversation_with_account (PURPLE_CONV_TYPE_IM,
@@ -1793,11 +1795,23 @@ chatty_blist_request_add_buddy (PurpleAccount *account,
                                 const char    *group,
                                 const char    *alias)
 {
-  // TODO remove this callback when the similiar request triggering
-  //      via PurpleAccountUiOps is working
+  PurpleBuddy *buddy;
+  const char  *account_name;
+
+  buddy = purple_find_buddy (account, username);
+
+  if (buddy == NULL) {
+    buddy = purple_buddy_new (account, username, alias);
+
+    purple_blist_add_buddy (buddy, NULL, NULL, NULL);
+  }
+
+  purple_account_add_buddy (account, buddy);
+
+  account_name = purple_account_get_username (account);
 
   g_debug ("chatty_blist_request_add_buddy: %s  %s  %s",
-           username, group, alias);
+           account_name, username, alias);
 }
 
 

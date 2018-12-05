@@ -5,6 +5,8 @@
  */
 
 
+#define G_LOG_DOMAIN "chatty-conversation"
+
 #include "purple.h"
 #include <glib.h>
 #include <glib/gi18n.h>
@@ -768,6 +770,7 @@ chatty_conv_add_message_history_to_conv (gpointer data)
     GList         *msgs = NULL;
     ChattyLog     *log_data = NULL;
     PurpleAccount *account;
+    PurpleBuddy   *buddy;
     gchar         *name = NULL;
     const gchar   *conv_name;
     const gchar   *b_name;
@@ -778,7 +781,14 @@ chatty_conv_add_message_history_to_conv (gpointer data)
 
     conv_name = purple_conversation_get_name (chatty_conv->active_conv);
     account = purple_conversation_get_account (chatty_conv->active_conv);
-    b_name = purple_buddy_get_name (purple_find_buddy (account, conv_name));
+
+    buddy = purple_find_buddy (account, conv_name);
+
+    if (buddy == NULL) {
+      return FALSE;
+    }
+
+    b_name = purple_buddy_get_name (buddy);
     history = purple_log_get_logs (PURPLE_LOG_IM, b_name, account);
 
     if (history == NULL) {
@@ -1432,7 +1442,6 @@ chatty_conv_new (PurpleConversation *conv)
 {
   PurpleAccount      *account;
   PurpleBuddy        *buddy;
-  PurpleGroup        *group;
   PurpleValue        *value;
   PurpleBlistNode    *conv_node;
   ChattyConversation *chatty_conv;
@@ -1461,8 +1470,8 @@ chatty_conv_new (PurpleConversation *conv)
     chatty_conv->conv_header = g_malloc0 (sizeof (ChattyConvViewHeader));
   }
 
-  // A new SMS must be added directly to the conversations list
-  // without buddy-request confirmation
+  // A new SMS contact must be added directly to the
+  // roster, without buddy-request confirmation
   if (g_strcmp0 (protocol_id, "prpl-mm-sms") == 0) {
     msg_type = MSG_TYPE_SMS;
 
@@ -1472,8 +1481,9 @@ chatty_conv_new (PurpleConversation *conv)
 
     if (buddy == NULL) {
       buddy = purple_buddy_new (account, conv_name, NULL);
-      group = purple_group_new ("chatlist");
-      purple_blist_add_buddy (buddy, NULL, group, NULL);
+      purple_blist_add_buddy (buddy, NULL, NULL, NULL);
+
+      g_debug ("Buddy SMS: %s added to roster", purple_buddy_get_name (buddy));
     }
   } else {
     msg_type = MSG_TYPE_IM;
