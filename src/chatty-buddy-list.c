@@ -20,6 +20,8 @@
 #include "chatty-purple-init.h"
 #include "chatty-buddy-list.h"
 #include "chatty-conversation.h"
+#define HANDY_USE_UNSTABLE_API
+#include <handy.h>
 
 
 static ChattyBuddyList *_chatty_blist = NULL;
@@ -1081,29 +1083,39 @@ chatty_blist_create_chat_list (PurpleBuddyList *list)
   GtkTreeView       *treeview;
   GtkTreeModel      *filter;
   GtkWidget         *vbox;
-  GtkWidget         *box;
+  HdyColumn         *hdy_column;
   GtkWidget         *search_entry;
   GtkScrolledWindow *scroll;
   GtkStyleContext   *sc;
   chatty_data_t     *chatty = chatty_get_data ();
 
   _chatty_blist = CHATTY_BLIST(list);
-
   _chatty_blist->filter_timeout = 0;
 
   vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
 
-  chatty->search_bar = gtk_search_bar_new ();
+  chatty->search_bar = hdy_search_bar_new ();
+  g_object_set  (G_OBJECT(chatty->search_bar),
+                 "hexpand", TRUE,
+                 "halign",  GTK_ALIGN_FILL,
+                 NULL);
+
   search_entry = gtk_search_entry_new ();
-  gtk_search_bar_set_show_close_button (GTK_SEARCH_BAR (chatty->search_bar), TRUE);
-  gtk_search_bar_connect_entry (GTK_SEARCH_BAR (chatty->search_bar),
+  g_object_set  (G_OBJECT(search_entry),
+                 "hexpand", TRUE,
+                 NULL);
+  hdy_search_bar_set_show_close_button (HDY_SEARCH_BAR (chatty->search_bar), FALSE);
+  hdy_search_bar_connect_entry (HDY_SEARCH_BAR (chatty->search_bar),
                                 GTK_ENTRY (search_entry));
 
-  box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 10);
-  gtk_widget_set_halign (box, GTK_ALIGN_CENTER);
-  gtk_box_pack_start (GTK_BOX (box), search_entry, FALSE, FALSE, 0);
-  gtk_container_add (GTK_CONTAINER (chatty->search_bar), box);
+  hdy_column = hdy_column_new ();
+  g_object_set (G_OBJECT(hdy_column),
+                "maximum-width", 600,
+                "hexpand", TRUE,
+                NULL);
 
+  gtk_container_add (GTK_CONTAINER(hdy_column), GTK_WIDGET(search_entry));
+  gtk_container_add (GTK_CONTAINER (chatty->search_bar), GTK_WIDGET(hdy_column));
   gtk_box_pack_start (GTK_BOX (vbox),
                       GTK_WIDGET (chatty->search_bar),
                       FALSE, FALSE, 0);
@@ -1182,6 +1194,8 @@ chatty_blist_create_contact_list (PurpleBuddyList *list)
   GtkTreeView       *treeview;
   GtkTreeModel      *filter;
   GtkWidget         *vbox;
+  HdyColumn         *hdy_column;
+  GtkWidget         *search_bar;
   GtkWidget         *search_entry;
   GtkScrolledWindow *scroll;
   GtkStyleContext   *sc;
@@ -1193,13 +1207,31 @@ chatty_blist_create_contact_list (PurpleBuddyList *list)
 
   vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
 
+  search_bar = hdy_search_bar_new ();
+  g_object_set  (G_OBJECT(search_bar),
+                 "hexpand", TRUE,
+                 "halign",  GTK_ALIGN_FILL,
+                 NULL);
+
   search_entry = gtk_search_entry_new ();
-
   g_object_set  (G_OBJECT(search_entry),
-                 "margin", 6, NULL);
+                 "hexpand", TRUE,
+                 NULL);
+  hdy_search_bar_set_show_close_button (HDY_SEARCH_BAR (search_bar), FALSE);
+  hdy_search_bar_set_search_mode (HDY_SEARCH_BAR (search_bar), TRUE);
+  hdy_search_bar_connect_entry (HDY_SEARCH_BAR (search_bar),
+                                GTK_ENTRY (search_entry));
 
+  hdy_column = hdy_column_new ();
+  g_object_set (G_OBJECT(hdy_column),
+                "maximum-width", 600,
+                "hexpand", TRUE,
+                NULL);
+
+  gtk_container_add (GTK_CONTAINER(hdy_column), GTK_WIDGET(search_entry));
+  gtk_container_add (GTK_CONTAINER(search_bar), GTK_WIDGET(hdy_column));
   gtk_box_pack_start (GTK_BOX (vbox),
-                      GTK_WIDGET (search_entry),
+                      GTK_WIDGET (search_bar),
                       FALSE, FALSE, 0);
 
   scroll = GTK_SCROLLED_WINDOW (gtk_scrolled_window_new ( NULL, NULL));
