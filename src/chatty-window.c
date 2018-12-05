@@ -25,13 +25,13 @@ static void chatty_back_action (GSimpleAction *action,
                                 gpointer       user_data);
 
 static void chatty_search_action (GSimpleAction *action,
-                                GVariant      *parameter,
-                                gpointer       user_data);
+                                  GVariant      *state,
+                                  gpointer       user_data);
 
 
 static const GActionEntry window_action_entries [] = {
   { "add", chatty_back_action },
-  { "search", chatty_search_action },
+  { "search", NULL, NULL, "false", chatty_search_action },
   { "back", chatty_back_action },
 };
 
@@ -50,12 +50,18 @@ chatty_empty_container (GtkContainer *container) {
 
 static void
 chatty_search_action (GSimpleAction *action,
-                    GVariant      *parameter,
-                    gpointer       user_data)
+                      GVariant      *state,
+                      gpointer       user_data)
 {
+  gboolean active;
+
   chatty_data_t *chatty = chatty_get_data ();
 
-  gtk_search_bar_set_search_mode (GTK_SEARCH_BAR (chatty->search_bar), TRUE);
+  active = g_variant_get_boolean (state);
+
+  hdy_search_bar_set_search_mode (HDY_SEARCH_BAR (chatty->search_bar), active);
+
+  g_simple_action_set_state (action, g_variant_new_boolean (active));
 }
 
 
