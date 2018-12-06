@@ -34,7 +34,6 @@ struct chatty_log {
 
 struct chatty_conversation {
   PurpleConversation  *active_conv;
-  GList               *convs;
   ChattyMsgList       *msg_list;
   GtkWidget           *msg_entry;
   GtkWidget           *msg_bubble_footer;

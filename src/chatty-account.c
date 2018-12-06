@@ -12,9 +12,9 @@
 #include <gtk/gtk.h>
 #include <stdlib.h>
 #include <string.h>
-#include <purple.h>
 #define HANDY_USE_UNSTABLE_API
 #include <handy.h>
+#include "purple.h"
 #include "chatty-buddy-list.h"
 #include "chatty-icons.h"
 #include "chatty-window.h"
@@ -28,13 +28,6 @@ chatty_account_data_t *chatty_get_account_data (void)
 {
   return &chatty_account_data;
 }
-
-
-typedef struct {
-  PurpleAccount *account;
-  char          *username;
-  char          *alias;
-} ChattyAccountAddUserData;
 
 
 struct auth_request
@@ -52,15 +45,6 @@ static void chatty_account_create_add_account_view (void);
 static void chatty_account_add_account (const char *name, const char *pwd);
 static void chatty_account_add_to_accounts_list (PurpleAccount *account,
                                                  guint          list_type);
-
-
-static void
-chatty_account_free_user_data (ChattyAccountAddUserData *data)
-{
-  g_free (data->username);
-  g_free (data->alias);
-  g_free (data);
-}
 
 
 static void
@@ -84,30 +68,6 @@ cb_account_enabled_disabled (PurpleAccount *account,
                              gpointer       user_data)
 {
   // TODO update account in liststore
-}
-
-
-static void
-cb_dialog_response (GtkDialog *dialog,
-                    gint       response_id,
-                    gpointer   user_data)
-{
-  ChattyAccountAddUserData *data = user_data;
-
-  if (response_id == GTK_RESPONSE_OK) {
-    PurpleConnection *gc = purple_account_get_connection (data->account);
-
-    if (g_list_find(purple_connections_get_all(), gc)) {
-      purple_blist_request_add_buddy (data->account,
-                                      data->username,
-                                      NULL,
-                                      data->alias);
-    }
-
-    chatty_account_free_user_data (data);
-  } else {
-    gtk_widget_destroy (GTK_WIDGET (dialog));
-  }
 }
 
 
@@ -549,33 +509,6 @@ chatty_account_create_account_select_list (void)
 }
 
 
-static char *
-chatty_account_compile_info (PurpleAccount    *account,
-                             PurpleConnection *gc,
-                             const char       *remote_user,
-                             const char       *id,
-                             const char       *alias,
-                             const char       *msg)
-{
-  if (msg != NULL && *msg == '\0') {
-    msg = NULL;
-  }
-
-  return g_strdup_printf("%s%s%s%s has made %s her or his buddy%s%s",
-                         remote_user,
-                         (alias != NULL ? " ("  : ""),
-                         (alias != NULL ? alias : ""),
-                         (alias != NULL ? ")"   : ""),
-                         (id != NULL
-                          ? id
-                          : (purple_connection_get_display_name (gc) != NULL
-                             ? purple_connection_get_display_name (gc)
-                             : purple_account_get_username (account))),
-                         (msg != NULL ? ": " : "."),
-                         (msg != NULL ? msg  : ""));
-}
-
-
 static void
 chatty_account_notify_added (PurpleAccount *account,
                              const char    *remote_user,
@@ -583,35 +516,53 @@ chatty_account_notify_added (PurpleAccount *account,
                              const char    *alias,
                              const char    *msg)
 {
-  char             *buffer;
-  GtkWidget        *dialog;
-  PurpleConnection *gc;
+  GtkWidget  *dialog;
 
   chatty_data_t *chatty = chatty_get_data ();
 
-  gc = purple_account_get_connection(account);
+  dialog = gtk_message_dialog_new (chatty->main_window,
+                                   GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+                                   GTK_MESSAGE_INFO,
+                                   GTK_BUTTONS_OK,
+                                   _("Contact added"));
 
-  buffer = chatty_account_compile_info (account,
-                                        gc,
-                                        remote_user,
-                                        id,
-                                        alias,
-                                        msg);
 
-  dialog = gtk_dialog_new_with_buttons ("Add buddy to your list?",
-                                         GTK_WINDOW(chatty->main_window),
-                                         GTK_DIALOG_DESTROY_WITH_PARENT,
-                                         GTK_MESSAGE_INFO,
-                                         GTK_BUTTONS_OK,
-                                         buffer,
-                                         NULL);
+  gtk_message_dialog_format_secondary_text (GTK_MESSAGE_DIALOG(dialog),
+                                            _("User %s has added %s to the contacts"),
+                                            remote_user,
+                                            id);
 
-  gtk_window_set_position (GTK_WINDOW(dialog),
-                           GTK_WIN_POS_CENTER_ON_PARENT);
+  gtk_dialog_set_default_response (GTK_DIALOG(dialog), GTK_RESPONSE_CANCEL);
+  gtk_window_set_position (GTK_WINDOW(dialog), GTK_WIN_POS_CENTER_ON_PARENT);
 
   gtk_widget_show_all (GTK_WIDGET(dialog));
+}
 
-  g_free (buffer);
+
+static void
+chatty_account_free_auth_request (struct auth_request *ar)
+{
+  g_free (ar->username);
+  g_free (ar->alias);
+  g_free (ar);
+}
+
+
+static void
+chatty_account_authorize_and_add (struct auth_request *ar)
+{
+  ar->auth_cb(ar->data);
+
+  if (ar->add_buddy_after_auth) {
+    purple_blist_request_add_buddy (ar->account, ar->username, NULL, ar->alias);
+  }
+}
+
+
+static void
+chatty_account_deny_authorize (struct auth_request *ar)
+{
+  ar->deny_cb(ar->data);
 }
 
 
@@ -626,14 +577,62 @@ chatty_account_request_authorization (PurpleAccount *account,
                                       PurpleAccountRequestAuthorizationCb deny_cb,
                                       void          *user_data)
 {
-  g_debug ("chatty_account_request_authorization");
+  GtkWidget           *dialog;
+  struct auth_request *ar;
+  int                  response;
+
+  chatty_data_t *chatty = chatty_get_data ();
+
+  dialog = gtk_message_dialog_new (chatty->main_window,
+                                   GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+                                   GTK_MESSAGE_QUESTION,
+                                   GTK_BUTTONS_NONE,
+                                   _("Authorize %s?"),
+                                   (alias != NULL ? alias : remote_user));
+
+  gtk_dialog_add_buttons (GTK_DIALOG(dialog),
+                          _("Reject"),
+                          GTK_RESPONSE_CANCEL,
+                          _("Accept"),
+                          GTK_RESPONSE_OK,
+                          NULL);
+
+  gtk_message_dialog_format_secondary_text (GTK_MESSAGE_DIALOG(dialog),
+                                            _("Add %s to contact list"),
+                                            remote_user);
+
+  gtk_dialog_set_default_response (GTK_DIALOG(dialog), GTK_RESPONSE_CANCEL);
+  gtk_window_set_position (GTK_WINDOW(dialog), GTK_WIN_POS_CENTER_ON_PARENT);
+
+  ar = g_new0 (struct auth_request, 1);
+  ar->auth_cb = auth_cb;
+  ar->deny_cb = deny_cb;
+  ar->data = user_data;
+  ar->username = g_strdup (remote_user);
+  ar->alias = g_strdup (alias);
+  ar->account = account;
+  ar->add_buddy_after_auth = !on_list;
+
+  response = gtk_dialog_run (GTK_DIALOG(dialog));
+
+  if (response == GTK_RESPONSE_OK) {
+    chatty_account_authorize_and_add (ar);
+  } else {
+    chatty_account_deny_authorize (ar);
+  }
+
+  gtk_widget_destroy (dialog);
+
+  chatty_account_free_auth_request (ar);
+
+  g_debug ("Request authorization user: %s alias: %s", remote_user, alias);
 
   return NULL;
 }
 
 
 static void
-chatty_account_request_close(void *ui_handle)
+chatty_account_request_close (void *ui_handle)
 {
   gtk_widget_destroy( GTK_WIDGET(ui_handle));
 }
@@ -646,50 +645,15 @@ chatty_account_request_add (PurpleAccount *account,
                             const char    *alias,
                             const char    *msg)
 {
-  char                     *buffer;
-  GtkWidget                *dialog, *label, *content_area;
-  PurpleConnection         *gc;
-  ChattyAccountAddUserData *data;
-
-  chatty_data_t *chatty = chatty_get_data ();
+  PurpleConnection *gc;
 
   gc = purple_account_get_connection (account);
 
-  data = g_new0 (ChattyAccountAddUserData, 1);
-  data->account  = account;
-  data->username = g_strdup (remote_user);
-  data->alias    = g_strdup (alias);
+  if (g_list_find (purple_connections_get_all (), gc)) {
+    purple_blist_request_add_buddy (account, remote_user, NULL, alias);
+  }
 
-  buffer = chatty_account_compile_info (account,
-                                        gc,
-                                        remote_user,
-                                        id,
-                                        alias,
-                                        msg);
-
-  dialog = gtk_dialog_new_with_buttons ("Buddy request",
-                                         GTK_WINDOW(chatty->main_window),
-                                         GTK_DIALOG_DESTROY_WITH_PARENT,
-                                         "Add buddy to your list?",
-                                         GTK_BUTTONS_YES_NO,
-                                         NULL);
-
-  gtk_window_set_position (GTK_WINDOW(dialog),
-                           GTK_WIN_POS_CENTER_ON_PARENT);
-
-  content_area = gtk_dialog_get_content_area (GTK_DIALOG (dialog));
-  label = gtk_label_new (buffer);
-
-  g_signal_connect_swapped (dialog,
-                           "response",
-                           G_CALLBACK (cb_dialog_response),
-                           data);
-
-  gtk_container_add (GTK_CONTAINER (content_area), label);
-
-  gtk_widget_show_all (dialog);
-
-  g_free (buffer);
+  g_debug ("chatty_account_request_add");
 }
 
 
@@ -724,9 +688,6 @@ chatty_account_add_account (const char *account_name,
 }
 
 
-// TODO even though the struct is properly registered
-//      to the libpurple core, it doesn't call
-//      the assigned functions
 static PurpleAccountUiOps ui_ops =
 {
   chatty_account_notify_added,
@@ -748,7 +709,7 @@ chatty_accounts_get_ui_ops (void)
 }
 
 
-static void *
+void *
 chatty_account_get_handle (void) {
   static int handle;
 

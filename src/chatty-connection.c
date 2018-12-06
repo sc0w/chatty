@@ -74,10 +74,11 @@ chatty_connection_sign_on (gpointer data)
 
   status = purple_account_get_active_status (account);
   g_debug ("About to get all accounts");
+
   if (purple_status_is_online (status))
   {
     g_debug ("get all accounts");
-    purple_account_connect(account);
+    purple_account_connect (account);
   }
 
   return FALSE;
@@ -90,6 +91,8 @@ chatty_connection_network_connected (void)
   GList *list, *l;
 
   l = list = purple_accounts_get_all_active ();
+
+  g_debug ("chatty_connection_network_connected");
 
   while (l) {
     PurpleAccount *account = (PurpleAccount*)l->data;

@@ -12,12 +12,12 @@
 
 typedef struct
 {
-  GtkWidget         *list_manage;
-  GtkWidget         *list_select;
-  GtkWidget         *button_add_account;
-  GtkWidget         *button_delete_account;
-  GtkEntry          *entry_account_name;
-  GtkEntry          *entry_account_pwd;
+  GtkWidget *list_manage;
+  GtkWidget *list_select;
+  GtkWidget *button_add_account;
+  GtkWidget *button_delete_account;
+  GtkEntry  *entry_account_name;
+  GtkEntry  *entry_account_pwd;
 } chatty_account_data_t;
 
 
@@ -31,6 +31,7 @@ chatty_account_data_t *chatty_get_account_data(void);
 
 PurpleAccountUiOps *chatty_accounts_get_ui_ops(void);
 
+void *chatty_account_get_handle (void);
 void chatty_account_init (void);
 void chatty_account_uninit (void);
 void chatty_account_add_sms_account (void);

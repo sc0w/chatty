@@ -5,6 +5,8 @@
  */
 
 
+#define G_LOG_DOMAIN "chatty-conversation"
+
 #include "purple.h"
 #include <glib.h>
 #include <glib/gi18n.h>
@@ -768,6 +770,7 @@ chatty_conv_add_message_history_to_conv (gpointer data)
     GList         *msgs = NULL;
     ChattyLog     *log_data = NULL;
     PurpleAccount *account;
+    PurpleBuddy   *buddy;
     gchar         *name = NULL;
     const gchar   *conv_name;
     const gchar   *b_name;
@@ -778,7 +781,14 @@ chatty_conv_add_message_history_to_conv (gpointer data)
 
     conv_name = purple_conversation_get_name (chatty_conv->active_conv);
     account = purple_conversation_get_account (chatty_conv->active_conv);
-    b_name = purple_buddy_get_name (purple_find_buddy (account, conv_name));
+
+    buddy = purple_find_buddy (account, conv_name);
+
+    if (buddy == NULL) {
+      return FALSE;
+    }
+
+    b_name = purple_buddy_get_name (buddy);
     history = purple_log_get_logs (PURPLE_LOG_IM, b_name, account);
 
     if (history == NULL) {
@@ -940,8 +950,10 @@ chatty_conv_stack_add_conv (ChattyConversation *chatty_conv)
 
   gtk_widget_show (chatty_conv->tab_cont);
 
-  if (g_list_length(chatty_conv->convs) == 1) {
-    gtk_notebook_set_current_page (GTK_NOTEBOOK(chatty->pane_view_message_list), 0);
+  gtk_notebook_set_current_page (GTK_NOTEBOOK(chatty->pane_view_message_list), 0);
+
+  if (purple_prefs_get_bool (CHATTY_PREFS_ROOT "/conversations/tabs")) {
+    gtk_notebook_set_show_tabs (GTK_NOTEBOOK(chatty->pane_view_message_list), TRUE);
   } else {
     gtk_notebook_set_show_tabs (GTK_NOTEBOOK(chatty->pane_view_message_list), FALSE);
   }
@@ -1430,7 +1442,6 @@ chatty_conv_new (PurpleConversation *conv)
 {
   PurpleAccount      *account;
   PurpleBuddy        *buddy;
-  PurpleGroup        *group;
   PurpleValue        *value;
   PurpleBlistNode    *conv_node;
   ChattyConversation *chatty_conv;
@@ -1443,10 +1454,6 @@ chatty_conv_new (PurpleConversation *conv)
   if (conv_type == PURPLE_CONV_TYPE_IM && (chatty_conv = chatty_conv_find_conv (conv))) {
     conv->ui_data = chatty_conv;
 
-    if (!g_list_find (chatty_conv->convs, conv)) {
-      chatty_conv->convs = g_list_prepend (chatty_conv->convs, conv);
-    }
-
     chatty_conv_switch_active_conversation (conv);
 
     return;
@@ -1455,7 +1462,6 @@ chatty_conv_new (PurpleConversation *conv)
   chatty_conv = g_new0 (ChattyConversation, 1);
   conv->ui_data = chatty_conv;
   chatty_conv->active_conv = conv;
-  chatty_conv->convs = g_list_prepend (chatty_conv->convs, conv);
 
   account = purple_conversation_get_account (conv);
   protocol_id = purple_account_get_protocol_id (account);
@@ -1464,8 +1470,8 @@ chatty_conv_new (PurpleConversation *conv)
     chatty_conv->conv_header = g_malloc0 (sizeof (ChattyConvViewHeader));
   }
 
-  // A new SMS must be added directly to the conversations list
-  // without buddy-request confirmation
+  // A new SMS contact must be added directly to the
+  // roster, without buddy-request confirmation
   if (g_strcmp0 (protocol_id, "prpl-mm-sms") == 0) {
     msg_type = MSG_TYPE_SMS;
 
@@ -1475,8 +1481,9 @@ chatty_conv_new (PurpleConversation *conv)
 
     if (buddy == NULL) {
       buddy = purple_buddy_new (account, conv_name, NULL);
-      group = purple_group_new ("chatlist");
-      purple_blist_add_buddy (buddy, NULL, group, NULL);
+      purple_blist_add_buddy (buddy, NULL, NULL, NULL);
+
+      g_debug ("Buddy SMS: %s added to roster", purple_buddy_get_name (buddy));
     }
   } else {
     msg_type = MSG_TYPE_IM;
@@ -1535,8 +1542,6 @@ chatty_conv_destroy (PurpleConversation *conv)
   ChattyConversation *chatty_conv;
 
   chatty_conv = CHATTY_CONVERSATION (conv);
-
-  chatty_conv->convs = g_list_remove (chatty_conv->convs, conv);
 
   chatty_conv_remove_conv (chatty_conv);
 

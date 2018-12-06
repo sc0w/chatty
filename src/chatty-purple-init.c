@@ -131,18 +131,18 @@ static void
 chatty_quit (void)
 {
   chatty_conversations_uninit ();
-  purple_conversations_set_ui_ops (NULL);
-
   chatty_blist_uninit ();
-  purple_blist_set_ui_ops (NULL);
-
   chatty_connection_uninit();
-  purple_connections_set_ui_ops (NULL);
-
   chatty_account_uninit();
+
+  purple_conversations_set_ui_ops (NULL);
+  purple_connections_set_ui_ops (NULL);
+  purple_blist_set_ui_ops (NULL);
   purple_accounts_set_ui_ops (NULL);
 
-  gtk_main_quit();
+  chatty_xeps_close ();
+
+  gtk_main_quit ();
 }
 
 
@@ -150,15 +150,13 @@ static void
 chatty_purple_ui_init (void)
 {
   chatty_account_init ();
-  purple_accounts_set_ui_ops (chatty_accounts_get_ui_ops ());
-
   chatty_connection_init ();
-  purple_connections_set_ui_ops (chatty_connection_get_ui_ops ());
-
   chatty_blist_init ();
-  purple_blist_set_ui_ops (chatty_blist_get_ui_ops ());
-
   chatty_conversations_init ();
+
+  purple_accounts_set_ui_ops (chatty_accounts_get_ui_ops ());
+  purple_connections_set_ui_ops (chatty_connection_get_ui_ops ());
+  purple_blist_set_ui_ops (chatty_blist_get_ui_ops ());
   purple_conversations_set_ui_ops (chatty_conversations_get_conv_ui_ops ());
 }
 
@@ -193,10 +191,11 @@ PurpleCoreUiOps core_uiops =
 };
 
 
-static void
+static gboolean
 chatty_purple_load_plugin (const char *name)
 {
-  GList             *iter;
+  GList    *iter;
+  gboolean  result;
 
   iter = purple_plugins_get_all ();
 
@@ -205,13 +204,18 @@ chatty_purple_load_plugin (const char *name)
     PurplePluginInfo  *info = plugin->info;
 
     if (g_strcmp0 (info->id, name) == 0) {
+      result = TRUE;
+      g_debug ("Found plugin %s", info->name);
+
       if (!purple_plugin_is_loaded (plugin)) {
-        purple_plugin_load (plugin);
+        result = purple_plugin_load (plugin);
         purple_plugins_save_loaded (CHATTY_PREFS_ROOT "/plugins/loaded");
         g_debug ("Loaded plugin %s", info->name);
       }
     }
   }
+
+  return result;
 }
 
 
@@ -251,40 +255,18 @@ init_libpurple (void)
 
   chatty_xeps_init ();
 
-  account = purple_accounts_find ("SMS", "prpl-mm-sms");
+  if (chatty_purple_load_plugin ("prpl-mm-sms")) {
+    account = purple_accounts_find ("SMS", "prpl-mm-sms");
 
-  if (account == NULL) {
-    chatty_account_add_sms_account ();
+    if (account == NULL) {
+      chatty_account_add_sms_account ();
+    }
   }
 
   purple_account_set_enabled (account, CHATTY_UI, TRUE);
 
+  purple_savedstatus_activate (purple_savedstatus_get_startup());
   purple_accounts_restore_current_statuses ();
-}
-
-
-static int
-account_authorization_requested (PurpleAccount *account,
-                                 const char    *user)
-{
-  g_debug ("User \"%s\" (%s) has sent a buddy request",
-           user,
-           purple_account_get_protocol_id (account));
-
-  return 1;
-}
-
-
-static void
-connect_to_signals (void)
-{
-  static int handle;
-
-  purple_signal_connect (purple_accounts_get_handle (),
-                         "account-authorization-requested",
-                         &handle,
-                         PURPLE_CALLBACK (account_authorization_requested),
-                         NULL);
 }
 
 
@@ -296,6 +278,4 @@ libpurple_start (void) {
 
   g_debug ("libpurple initialized. Running version %s.",
            purple_core_get_version ());
-
-  connect_to_signals ();
 }
