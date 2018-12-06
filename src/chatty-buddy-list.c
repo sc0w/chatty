@@ -1593,9 +1593,12 @@ chatty_blist_chats_update_node (PurpleBuddy     *buddy,
   GdkPixbuf     *avatar;
   GtkTreePath   *path;
   gchar         *name = NULL;
+  const gchar   *tag;
   const gchar   *alias;
+  const gchar   *b_name;
   const gchar   *protocol_id;
-  gchar         *last_msg_str = NULL;
+  gchar         *last_msg_text = NULL;
+  gchar         *last_msg_ts = NULL;
   PurpleAccount *account;
   guint          color;
   gboolean       blur;
@@ -1637,20 +1640,41 @@ chatty_blist_chats_update_node (PurpleBuddy     *buddy,
     chatty_icon_do_alphashift (avatar, 77);
   }
 
+  b_name = purple_buddy_get_name (buddy);
   alias = purple_buddy_get_alias (buddy);
 
-  last_msg_str = g_strconcat ("<span color='#646464'><small>",
-                              chatty_node->conv.last_msg_timestamp,
-                              "</small></span>",
+  if ((g_strcmp0 (chatty_node->conv.last_message_name, b_name)) == 0) {
+    tag = "";
+  } else {
+    tag = _("Me: ");
+  }
+
+  if (chatty_node->conv.last_message == NULL) {
+    chatty_node->conv.last_message = "";
+  }
+
+  last_msg_text = g_strconcat ("<span color='#c0c0c0'>",
+                              tag,
+                              "</span>",
+                              "<span color='#646464'>",
+                              chatty_node->conv.last_message,
+                              "</span>",
                               NULL);
 
+  last_msg_ts = g_strconcat ("<span color='#646464'>",
+                             "<small>",
+                             chatty_node->conv.last_msg_timestamp,
+                             "</small>"
+                             "</span>",
+                             NULL);
+
   if (chatty_node->conv.flags & CHATTY_BLIST_NODE_HAS_PENDING_MESSAGE) {
-    name = g_strconcat ("<span color='#646464'><b>",
+    name = g_strconcat ("<span color='#646464'>",
                         alias,
-                        "</b></span>",
+                        "</span>",
                         "\n",
                         "<small>",
-                        chatty_node->conv.last_message,
+                        last_msg_text,
                         "</small>",
                         NULL);
   } else {
@@ -1658,8 +1682,9 @@ chatty_blist_chats_update_node (PurpleBuddy     *buddy,
                         alias,
                         "\n",
                         "<small>",
-                        chatty_node->conv.last_message,
-                        "</small></span>",
+                        last_msg_text,
+                        "</small>",
+                        "</span>",
                         NULL);
   }
 
@@ -1682,7 +1707,7 @@ chatty_blist_chats_update_node (PurpleBuddy     *buddy,
                         COLUMN_NODE, node,
                         COLUMN_AVATAR, avatar,
                         COLUMN_NAME, name,
-                        COLUMN_LAST, last_msg_str,
+                        COLUMN_LAST, last_msg_ts,
                         -1);
   }
 
@@ -1691,7 +1716,8 @@ chatty_blist_chats_update_node (PurpleBuddy     *buddy,
   }
 
   gtk_tree_path_free (path);
-  g_free (last_msg_str);
+  g_free (last_msg_text);
+  g_free (last_msg_ts);
   g_free (name);
 }
 
@@ -1722,6 +1748,7 @@ chatty_blist_update_buddy (PurpleBuddyList *list,
   if (log_data != NULL && chatty_blist_buddy_is_displayable (buddy)) {
     ui = node->ui_data;
     ui->conv.last_message = log_data->msg;
+    ui->conv.last_message_name = log_data->name;
     ui->conv.last_msg_timestamp = log_data->time_stamp;
 
     chatty_blist_chats_update_node (buddy, node);

@@ -841,10 +841,12 @@ chatty_conv_add_message_history_to_conv (gpointer data)
 
       msg_html = chatty_conv_check_for_links (log_data->msg);
 
-      chatty_msg_list_add_message (chatty_conv->msg_list,
-                                   msg_dir,
-                                   msg_html,
-                                   time_stamp);
+      if (msg_html[0] != '\0') {
+        chatty_msg_list_add_message (chatty_conv->msg_list,
+                                     msg_dir,
+                                     msg_html,
+                                     time_stamp);
+      }
 
       g_free (msg_html);
     }
@@ -1639,9 +1641,11 @@ chatty_conversations_init (void)
 
   purple_prefs_add_none (CHATTY_PREFS_ROOT "/conversations");
   purple_prefs_add_bool (CHATTY_PREFS_ROOT "/conversations/im/show_buddy_icons", TRUE);
-
   purple_prefs_add_bool (CHATTY_PREFS_ROOT "/conversations/show_timestamps", TRUE);
   purple_prefs_add_bool (CHATTY_PREFS_ROOT "/conversations/tabs", FALSE);
+
+  purple_prefs_add_bool ("/purple/logging/log_system", FALSE);
+  purple_prefs_set_bool ("/purple/logging/log_system", FALSE);
 
   purple_signal_register (handle, "conversation-switched",
                           purple_marshal_VOID__POINTER, NULL, 1,
