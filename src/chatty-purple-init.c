@@ -140,7 +140,9 @@ chatty_quit (void)
   purple_blist_set_ui_ops (NULL);
   purple_accounts_set_ui_ops (NULL);
 
-  gtk_main_quit();
+  chatty_xeps_close ();
+
+  gtk_main_quit ();
 }
 
 
@@ -189,10 +191,11 @@ PurpleCoreUiOps core_uiops =
 };
 
 
-static void
+static gboolean
 chatty_purple_load_plugin (const char *name)
 {
-  GList             *iter;
+  GList    *iter;
+  gboolean  result;
 
   iter = purple_plugins_get_all ();
 
@@ -201,13 +204,18 @@ chatty_purple_load_plugin (const char *name)
     PurplePluginInfo  *info = plugin->info;
 
     if (g_strcmp0 (info->id, name) == 0) {
+      result = TRUE;
+      g_debug ("Found plugin %s", info->name);
+
       if (!purple_plugin_is_loaded (plugin)) {
-        purple_plugin_load (plugin);
+        result = purple_plugin_load (plugin);
         purple_plugins_save_loaded (CHATTY_PREFS_ROOT "/plugins/loaded");
         g_debug ("Loaded plugin %s", info->name);
       }
     }
   }
+
+  return result;
 }
 
 
@@ -247,10 +255,12 @@ init_libpurple (void)
 
   chatty_xeps_init ();
 
-  account = purple_accounts_find ("SMS", "prpl-mm-sms");
+  if (chatty_purple_load_plugin ("prpl-mm-sms")) {
+    account = purple_accounts_find ("SMS", "prpl-mm-sms");
 
-  if (account == NULL) {
-    chatty_account_add_sms_account ();
+    if (account == NULL) {
+      chatty_account_add_sms_account ();
+    }
   }
 
   purple_account_set_enabled (account, CHATTY_UI, TRUE);

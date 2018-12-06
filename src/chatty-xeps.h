@@ -12,5 +12,6 @@
 
 
 void chatty_xeps_init (void);
+void chatty_xeps_close (void);
 
 #endif
