@@ -34,6 +34,7 @@ test:debian-gcc:
   dependencies:
     - build-debian-gcc
   script:
+    - export G_DEBUG=fatal-warnings
     - export LC_ALL=C.UTF-8
     - ninja -C _build test
 
