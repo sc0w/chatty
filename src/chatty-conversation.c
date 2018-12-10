@@ -954,7 +954,7 @@ chatty_conv_stack_add_conv (ChattyConversation *chatty_conv)
 
   gtk_notebook_set_current_page (GTK_NOTEBOOK(chatty->pane_view_message_list), 0);
 
-  if (purple_prefs_get_bool (CHATTY_PREFS_ROOT "/conversations/tabs")) {
+  if (purple_prefs_get_bool (CHATTY_PREFS_ROOT "/conversations/show_tabs")) {
     gtk_notebook_set_show_tabs (GTK_NOTEBOOK(chatty->pane_view_message_list), TRUE);
   } else {
     gtk_notebook_set_show_tabs (GTK_NOTEBOOK(chatty->pane_view_message_list), FALSE);
@@ -1642,7 +1642,7 @@ chatty_conversations_init (void)
   purple_prefs_add_none (CHATTY_PREFS_ROOT "/conversations");
   purple_prefs_add_bool (CHATTY_PREFS_ROOT "/conversations/im/show_buddy_icons", TRUE);
   purple_prefs_add_bool (CHATTY_PREFS_ROOT "/conversations/show_timestamps", TRUE);
-  purple_prefs_add_bool (CHATTY_PREFS_ROOT "/conversations/tabs", FALSE);
+  purple_prefs_add_bool (CHATTY_PREFS_ROOT "/conversations/show_tabs", FALSE);
 
   purple_prefs_add_bool ("/purple/logging/log_system", FALSE);
   purple_prefs_set_bool ("/purple/logging/log_system", FALSE);
