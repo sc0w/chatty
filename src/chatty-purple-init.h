@@ -10,6 +10,8 @@
 
 #include "purple.h"
 
+#define CHATTY_APP_NAME     "Chatty"
+#define CHATTY_VERSION      "v0.0.1"
 #define CHATTY_UI           "chatty-ui"
 #define CHATTY_PREFS_ROOT   "/chatty"
 

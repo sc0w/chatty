@@ -19,6 +19,9 @@ main (int   argc,
   GtkApplication *app;
   int status;
 
+  g_set_prgname (CHATTY_APP_NAME);
+  g_set_application_name (CHATTY_APP_NAME);
+
   app = gtk_application_new ("sm.puri.Chatty", G_APPLICATION_FLAGS_NONE);
   g_signal_connect (app, "activate", G_CALLBACK (chatty_window_activate), NULL);
   status = g_application_run (G_APPLICATION (app), argc, argv);

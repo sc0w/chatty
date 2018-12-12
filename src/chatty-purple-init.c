@@ -23,6 +23,7 @@
 #include "chatty-connection.h"
 #include "chatty-conversation.h"
 
+static GHashTable *ui_info = NULL;
 
 static chatty_purple_data_t chatty_purple_data;
 
@@ -109,7 +110,7 @@ glib_input_add (gint                 fd,
 
 
 static
-PurpleEventLoopUiOps glib_eventloops =
+PurpleEventLoopUiOps eventloop_ops =
 {
   g_timeout_add,
   g_source_remove,
@@ -127,8 +128,15 @@ PurpleEventLoopUiOps glib_eventloops =
 };
 
 
+static PurpleEventLoopUiOps *
+chatty_eventloop_get_ui_ops (void)
+{
+  return &eventloop_ops;
+}
+
+
 static void
-chatty_quit (void)
+chatty_purple_quit (void)
 {
   chatty_conversations_uninit ();
   chatty_blist_uninit ();
@@ -139,6 +147,10 @@ chatty_quit (void)
   purple_connections_set_ui_ops (NULL);
   purple_blist_set_ui_ops (NULL);
   purple_accounts_set_ui_ops (NULL);
+
+  if (NULL != ui_info) {
+    g_hash_table_destroy (ui_info);
+  }
 
   chatty_xeps_close ();
 
@@ -170,6 +182,10 @@ chatty_purple_prefs_init (void)
   purple_prefs_add_none (CHATTY_PREFS_ROOT "/plugins");
   purple_prefs_add_path_list (CHATTY_PREFS_ROOT "/plugins/loaded", NULL);
 
+  purple_prefs_add_none (CHATTY_PREFS_ROOT "/debug");
+  purple_prefs_add_bool (CHATTY_PREFS_ROOT "/debug/enabled", FALSE);
+  purple_prefs_add_bool (CHATTY_PREFS_ROOT "/debug/verbose", FALSE);
+
   purple_prefs_add_none (CHATTY_PREFS_ROOT "/filelocations");
   purple_prefs_add_path (CHATTY_PREFS_ROOT "/filelocations/last_save_folder", "");
   purple_prefs_add_path (CHATTY_PREFS_ROOT "/filelocations/last_open_folder", "");
@@ -177,18 +193,41 @@ chatty_purple_prefs_init (void)
 }
 
 
+static GHashTable *
+chatty_purple_ui_get_info (void)
+{
+  if (NULL == ui_info) {
+    ui_info = g_hash_table_new (g_str_hash, g_str_equal);
+
+    g_hash_table_insert (ui_info, "name", CHATTY_APP_NAME);
+    g_hash_table_insert (ui_info, "version", CHATTY_VERSION);
+    g_hash_table_insert (ui_info, "dev_website", "https://source.puri.sm/Librem5/chatty");
+    g_hash_table_insert (ui_info, "client_type", "phone");
+  }
+
+  return ui_info;
+}
+
+
 static
-PurpleCoreUiOps core_uiops =
+PurpleCoreUiOps core_ui_ops =
 {
   chatty_purple_prefs_init,
   NULL,
   chatty_purple_ui_init,
-  chatty_quit,
-  NULL,
+  chatty_purple_quit,
+  chatty_purple_ui_get_info,
   NULL,
   NULL,
   NULL
 };
+
+
+static PurpleCoreUiOps *
+chatty_core_get_ui_ops (void)
+{
+  return &core_ui_ops;
+}
 
 
 static gboolean
@@ -224,12 +263,16 @@ init_libpurple (void)
 {
   PurpleAccount *account;
   gchar         *search_path;
+  gboolean       debug;
 
-  purple_debug_set_enabled (FALSE);
-  purple_debug_set_verbose (FALSE);
+  debug = purple_prefs_get_bool (CHATTY_PREFS_ROOT "/debug/enabled");
+  purple_debug_set_enabled (debug);
 
-  purple_core_set_ui_ops (&core_uiops);
-  purple_eventloop_set_ui_ops (&glib_eventloops);
+  debug = purple_prefs_get_bool (CHATTY_PREFS_ROOT "/debug/verbose");
+  purple_debug_set_verbose (debug);
+
+  purple_core_set_ui_ops (chatty_core_get_ui_ops ());
+  purple_eventloop_set_ui_ops (chatty_eventloop_get_ui_ops ());
 
   search_path = g_build_filename (purple_user_dir (), "plugins", NULL);
   purple_plugins_add_search_path (search_path);
@@ -250,6 +293,7 @@ init_libpurple (void)
   chatty_purple_load_plugin ("core-riba-carbons");
 
   purple_plugins_init ();
+  purple_network_force_online();
   purple_pounces_load ();
   purple_blist_show ();
 
