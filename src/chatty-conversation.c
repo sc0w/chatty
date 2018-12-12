@@ -151,6 +151,8 @@ cb_button_send_clicked (GtkButton *sender,
   PurpleAccount       *account;
   GtkTextIter          start, end;
   gchar               *message = NULL;
+  const gchar         *protocol_id;
+  const gchar         *footer_text;
 
   chatty_conv  = (ChattyConversation *)data;
   conv = chatty_conv->active_conv;
@@ -163,6 +165,16 @@ cb_button_send_clicked (GtkButton *sender,
 
   if (!purple_account_is_connected (account)) {
     return;
+  }
+
+  protocol_id = purple_account_get_protocol_id (account);
+
+  // TODO don't show chat-bubble send-receipt text
+  // in SMS conversations for the time being
+  if (g_strcmp0 (protocol_id, "prpl-mm-sms") == 0) {
+    footer_text = NULL;
+  } else {
+    footer_text = _("sending...");
   }
 
   gtk_widget_grab_focus (chatty_conv->msg_entry);
@@ -182,7 +194,7 @@ cb_button_send_clicked (GtkButton *sender,
     chatty_msg_list_add_message (chatty_conv->msg_list,
                                  MSG_IS_OUTGOING,
                                  message,
-                                 _("sending..."));
+                                 footer_text);
 
     purple_conv_im_send (PURPLE_CONV_IM (conv), message);
     gtk_widget_hide (chatty_conv->button_send);
