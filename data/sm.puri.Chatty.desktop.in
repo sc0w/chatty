@@ -1,7 +1,10 @@
 [Desktop Entry]
-Name=purism-chatty
-Exec=purism-chatty
+Name=Chatty
+Exec=chatty
+Icon=sm.puri.Chatty
+Comment=SMS and XMPP chat application
+Keywords=XMPP;SMS;chat;jabber;messaging;modem
 Terminal=false
 Type=Application
-Categories=GTK;
+Categories=GNOME;GTK;Messaging
 StartupNotify=true

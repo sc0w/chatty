@@ -1,3 +1,16 @@
+chatty (0.0.2) purple; urgency=medium
+
+  * Added app icon
+  * Added purple-command support
+  * Added SMS send receipts
+  * Added application info to libpurple core
+  * Fixed fatal-warnings issue related to markup parsing
+  * Fixed segfault when last conversation was deleted in chats list
+  * Replaced GtkSearchBar with HdySearchBar
+  * Added handling for XMPP authorization requests
+
+ -- Andrea Schaefer <andrea@localhost.localdomain>  Fri, 14 Dec 2018 18:55:21 +0100
+
 chatty (0.0.1) purple; urgency=low
 
   * Initial release

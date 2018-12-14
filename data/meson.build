@@ -7,6 +7,11 @@ desktop_file = i18n.merge_file(
   install_dir: join_paths(get_option('datadir'), 'applications')
 )
 
+iconsdir = join_paths(get_option('datadir'), 'icons', 'hicolor')
+foreach size: ['scalable', 'symbolic']
+  install_subdir('icons/hicolor/' + size, install_dir: iconsdir)
+endforeach
+
 desktop_utils = find_program('desktop-file-validate', required: false)
 if desktop_utils.found()
   test('Validate desktop file', desktop_utils,
