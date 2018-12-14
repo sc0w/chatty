@@ -63,6 +63,14 @@ typedef enum
 } ChattyUnseenState;
 
 
+enum
+{
+  CHATTY_SMS_RECEIPT_NONE      = -1,
+  CHATTY_SMS_RECEIPT_MM_ACKN   =  0,
+  CHATTY_SMS_RECEIPT_SMSC_ACKN,
+} e_sms_receipt_states;
+
+
 PurpleConversationUiOps *chatty_conversations_get_conv_ui_ops(void);
 
 void chatty_conv_im_with_buddy (PurpleAccount *account, const char *username);

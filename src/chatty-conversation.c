@@ -18,6 +18,7 @@
 
 #define MAX_MSGS 50
 
+static GHashTable *ht_sms_id = NULL;
 
 static void
 chatty_conv_write_conversation (PurpleConversation *conv,
@@ -143,6 +144,60 @@ cb_msg_list_message_added (ChattyMsgList *sender,
 
 
 static void
+cb_sms_show_send_receipt (const char *sms_id,
+                          int         status)
+{
+  GtkWidget   *bubble_footer;
+  GDateTime   *time;
+  gchar       *footer_str = NULL;
+  const gchar *color;
+  const gchar *symbol;
+
+  if (sms_id == NULL) {
+    return;
+  }
+
+  switch (status) {
+    case CHATTY_SMS_RECEIPT_NONE:
+      color = "<span color='red'>";
+      symbol = " x";
+      break;
+    case CHATTY_SMS_RECEIPT_MM_ACKN:
+      color = "<span color='grey'>";
+      symbol = " ✓";
+      break;
+    case CHATTY_SMS_RECEIPT_SMSC_ACKN:
+      color = "<span color='#6cba3d'>";
+      symbol = " ✓";
+      break;
+    default:
+      return;
+  }
+
+  time = g_date_time_new_now_local ();
+  footer_str = g_date_time_format (time, "%R");
+  g_date_time_unref (time);
+
+  bubble_footer = (GtkWidget*) g_hash_table_lookup (ht_sms_id, sms_id);
+
+  footer_str = g_strconcat ("<small>",
+                            footer_str,
+                            color,
+                            symbol,
+                            "</span></small>",
+                            NULL);
+
+  if (bubble_footer != NULL) {
+    gtk_label_set_markup (GTK_LABEL(bubble_footer), footer_str);
+
+    g_hash_table_remove (ht_sms_id, sms_id);
+  }
+
+  g_free (footer_str);
+}
+
+
+static void
 cb_button_send_clicked (GtkButton *sender,
                         gpointer   data)
 {
@@ -152,7 +207,8 @@ cb_button_send_clicked (GtkButton *sender,
   GtkTextIter          start, end;
   gchar               *message = NULL;
   const gchar         *protocol_id;
-  const gchar         *footer_text;
+  gchar                sms_id_str[12];
+  guint                sms_id;
 
   chatty_conv  = (ChattyConversation *)data;
   conv = chatty_conv->active_conv;
@@ -168,14 +224,6 @@ cb_button_send_clicked (GtkButton *sender,
   }
 
   protocol_id = purple_account_get_protocol_id (account);
-
-  // TODO don't show chat-bubble send-receipt text
-  // in SMS conversations for the time being
-  if (g_strcmp0 (protocol_id, "prpl-mm-sms") == 0) {
-    footer_text = NULL;
-  } else {
-    footer_text = _("sending...");
-  }
 
   gtk_widget_grab_focus (chatty_conv->msg_entry);
 
@@ -194,9 +242,29 @@ cb_button_send_clicked (GtkButton *sender,
     chatty_msg_list_add_message (chatty_conv->msg_list,
                                  MSG_IS_OUTGOING,
                                  message,
-                                 footer_text);
+                                 _("sending..."));
+
+    // provide a msg-id to the sms-plugin for send-receipts
+    if (g_strcmp0 (protocol_id, "prpl-mm-sms") == 0) {
+      sms_id = g_random_int ();
+
+      sprintf (sms_id_str, "%i", sms_id);
+
+      g_hash_table_insert (ht_sms_id,
+                           strdup (sms_id_str), chatty_conv->msg_bubble_footer);
+
+      g_debug ("hash table insert sms_id_str: %s  ht_size: %i\n",
+               sms_id_str, g_hash_table_size (ht_sms_id));
+
+      purple_conv_im_send_with_flags (PURPLE_CONV_IM (conv),
+                                      sms_id_str,
+                                      PURPLE_MESSAGE_NO_LOG |
+                                      PURPLE_MESSAGE_NOTIFY |
+                                      PURPLE_MESSAGE_INVISIBLE);
+    }
 
     purple_conv_im_send (PURPLE_CONV_IM (conv), message);
+
     gtk_widget_hide (chatty_conv->button_send);
   }
 
@@ -1542,6 +1610,15 @@ chatty_conv_new (PurpleConversation *conv)
 }
 
 
+static gboolean
+cb_ht_check_items (gpointer key,
+                   gpointer value,
+                   gpointer user_data)
+{
+  return ((GtkWidget*)value == user_data) ? TRUE : FALSE;
+}
+
+
 /**
  * chatty_conv_destroy:
  * @conv: a PurpleConversation
@@ -1562,6 +1639,12 @@ chatty_conv_destroy (PurpleConversation *conv)
   if (chatty_conv->attach.timer) {
     g_source_remove(chatty_conv->attach.timer);
   }
+
+  g_hash_table_foreach_remove (ht_sms_id,
+                               cb_ht_check_items,
+                               chatty_conv->msg_bubble_footer);
+
+  g_hash_table_destroy (ht_sms_id);
 
   g_free (chatty_conv);
 }
@@ -1678,6 +1761,10 @@ chatty_conversations_init (void)
                          handle, PURPLE_CALLBACK (cb_update_buddy_status), NULL);
 
   purple_signal_connect (purple_conversations_get_handle (),
+                         "sms-sent", &handle,
+                         PURPLE_CALLBACK (cb_sms_show_send_receipt), NULL);
+
+  purple_signal_connect (purple_conversations_get_handle (),
                          "buddy-typing", &handle,
                          PURPLE_CALLBACK (cb_buddy_typing), NULL);
 
@@ -1696,6 +1783,11 @@ chatty_conversations_init (void)
   purple_signal_connect (chatty_conversations_get_handle(),
                          "conversation-switched",
                          handle, PURPLE_CALLBACK (cb_conversation_switched), NULL);
+
+  ht_sms_id  = g_hash_table_new_full (g_str_hash,
+                                      g_str_equal,
+                                      g_free,
+                                      NULL);
 }
 
 
