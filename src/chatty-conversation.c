@@ -215,7 +215,11 @@ cb_button_send_clicked (GtkButton *sender,
 
   account = purple_conversation_get_account (conv);
 
+  gtk_text_buffer_get_bounds (chatty_conv->msg_buffer, &start, &end);
+
   if (chatty_conv_check_for_command (conv)) {
+    gtk_widget_hide (chatty_conv->button_send);
+    gtk_text_buffer_delete (chatty_conv->msg_buffer, &start, &end);
     return;
   }
 
@@ -228,10 +232,6 @@ cb_button_send_clicked (GtkButton *sender,
   gtk_widget_grab_focus (chatty_conv->msg_entry);
 
   purple_idle_touch ();
-
-  if (purple_conversation_get_type(conv) == PURPLE_CONV_TYPE_IM)
-
-  gtk_text_buffer_get_bounds (chatty_conv->msg_buffer, &start, &end);
 
   message = gtk_text_buffer_get_text (chatty_conv->msg_buffer,
                                       &start,
@@ -480,11 +480,78 @@ chatty_conv_check_for_links (const gchar *message)
   return msg_xhtml;
 }
 
-// TODO
-// Needs to be set up for command handling in the message view
-// Mainly for testing purposes (SMS + OMEMO plugin)
-// Commands have to be registered with the libpurple core
-// accordingly then (like for key ackn in OMEMO or SMS operations)
+
+static PurpleCmdRet
+cb_chatty_cmd (PurpleConversation  *conv,
+               const gchar         *cmd,
+               gchar              **args,
+               gchar              **error,
+               void                *data)
+{
+  char *msg = NULL;
+
+  if (!g_strcmp0 (args[0], "help")) {
+    msg = g_strdup ("Commands for setting properties:\n\n"
+                    "General settings:\n"
+                    " - '/chatty help': Displays this message.\n"
+                    "\n"
+                    "XMPP settings:\n"
+                    " - '/chatty show offline': Show offline contacts in chats list.\n"
+                    " - '/chatty hide offline': Hide offline contacts in chats list.\n"
+                    " - '/chatty full offline': Show regular offline avatars.\n"
+                    " - '/chatty grey offline': Grey out offline avatars.\n"
+                    " - '/chatty show idle': Blur avatar of idle contacts.\n"
+                    " - '/chatty hide idle': Don't blur avatar of idle contacts.\n");
+  } else if (!g_strcmp0 (args[0], "show")) {
+    if (!g_strcmp0 (args[1], "offline")) {
+      purple_prefs_set_bool (CHATTY_PREFS_ROOT "/blist/show_offline_buddies", TRUE);
+      msg = g_strdup("Offline contacts will be shown.");
+    } else if (!g_strcmp0 (args[1], "idle")) {
+      purple_prefs_set_bool (CHATTY_PREFS_ROOT "/blist/blur_idle_buddies", TRUE);
+      msg = g_strdup("Offline user avatars will be blurred.");
+    }
+  } else if (!g_strcmp0 (args[0], "hide")) {
+    if (!g_strcmp0 (args[1], "offline")) {
+      purple_prefs_set_bool (CHATTY_PREFS_ROOT "/blist/show_offline_buddies", FALSE);
+      msg = g_strdup("Offline contacts will be hidden.");
+    } else if (!g_strcmp0 (args[1], "idle")) {
+      purple_prefs_set_bool (CHATTY_PREFS_ROOT "/blist/blur_idle_buddies", FALSE);
+      msg = g_strdup("Offline user avatars will not be blurred.");
+    }
+  } else if (!g_strcmp0 (args[0], "grey")) {
+    if (!g_strcmp0 (args[1], "offline")) {
+      purple_prefs_set_bool (CHATTY_PREFS_ROOT "/blist/greyout_offline_buddies", TRUE);
+      msg = g_strdup("Offline user avatars will be greyed out.");
+    }
+  } if (!g_strcmp0 (args[0], "full")) {
+    if (!g_strcmp0 (args[1], "offline")) {
+      purple_prefs_set_bool (CHATTY_PREFS_ROOT "/blist/greyout_offline_buddies", FALSE);
+      msg = g_strdup("Offline user avatars will not be greyed out.");
+    }
+  }
+
+  if (msg) {
+    purple_conversation_write (conv,
+                               "chatty",
+                               msg,
+                               PURPLE_MESSAGE_SYSTEM | PURPLE_MESSAGE_NO_LOG,
+                               time(NULL));
+
+    g_free (msg);
+  }
+
+  return PURPLE_CMD_RET_OK;
+}
+
+
+/**
+ * chatty_conv_check_for_command:
+ * @conv: a PurpleConversation
+ *
+ * Checks message for being a command
+ * indicated by a "/" prefix
+ *
+ */
 static gboolean
 chatty_conv_check_for_command (PurpleConversation *conv)
 {
@@ -493,10 +560,13 @@ chatty_conv_check_for_command (PurpleConversation *conv)
   const gchar        *prefix;
   gboolean            retval = FALSE;
   GtkTextIter         start, end;
+  PurpleMessageFlags  flags = 0;
 
   chatty_conv = CHATTY_CONVERSATION(conv);
 
   prefix = "/";
+
+  flags |= PURPLE_MESSAGE_NO_LOG | PURPLE_MESSAGE_SYSTEM;
 
   gtk_text_buffer_get_bounds (chatty_conv->msg_buffer,
                               &start,
@@ -513,14 +583,17 @@ chatty_conv_check_for_command (PurpleConversation *conv)
     cmdline = cmd + strlen (prefix);
 
     if (purple_strequal (cmdline, "xyzzy")) {
-      purple_conversation_write (conv, "", "Nothing happens",
-          PURPLE_MESSAGE_NO_LOG, time(NULL));
+      purple_conversation_write (conv,
+                                 "",
+                                 "Nothing happens",
+                                 flags,
+                                 time(NULL));
 
       g_free (cmd);
       return TRUE;
     }
 
-    status = purple_cmd_do_command (conv, cmdline, NULL, &error);
+    status = purple_cmd_do_command (conv, cmdline, cmdline, &error);
 
     switch (status) {
       case PURPLE_CMD_STATUS_OK:
@@ -534,8 +607,8 @@ chatty_conv_check_for_command (PurpleConversation *conv)
         if ((gc = purple_conversation_get_gc (conv)))
           prpl_info = PURPLE_PLUGIN_PROTOCOL_INFO(gc->prpl);
 
-        if ((prpl_info != NULL) && (prpl_info->options &
-            OPT_PROTO_SLASH_COMMANDS_NATIVE)) {
+        if ((prpl_info != NULL) &&
+            (prpl_info->options & OPT_PROTO_SLASH_COMMANDS_NATIVE)) {
           gchar *spaceslash;
 
           /* If the first word in the entered text has a '/' in it, then the user
@@ -550,7 +623,7 @@ chatty_conv_check_for_command (PurpleConversation *conv)
             purple_conversation_write (conv,
                                        "",
                                        "Unknown command.",
-                                       PURPLE_MESSAGE_NO_LOG,
+                                       flags,
                                        time(NULL));
             retval = TRUE;
           }
@@ -561,7 +634,7 @@ chatty_conv_check_for_command (PurpleConversation *conv)
         purple_conversation_write (conv,
                                    "",
                                    "Wrong number of arguments for the command.",
-                                   PURPLE_MESSAGE_NO_LOG,
+                                   flags,
                                    time(NULL));
         retval = TRUE;
         break;
@@ -569,7 +642,7 @@ chatty_conv_check_for_command (PurpleConversation *conv)
         purple_conversation_write (conv,
                                    "",
                                    error ? error : "The command failed.",
-                                   PURPLE_MESSAGE_NO_LOG,
+                                   flags,
                                    time(NULL));
         g_free(error);
         retval = TRUE;
@@ -579,13 +652,13 @@ chatty_conv_check_for_command (PurpleConversation *conv)
           purple_conversation_write (conv,
                                      "",
                                      "That command only works in chats, not IMs.",
-                                     PURPLE_MESSAGE_NO_LOG,
+                                     flags,
                                      time(NULL));
         else
           purple_conversation_write (conv,
                                      "",
                                      "That command only works in IMs, not chats.",
-                                     PURPLE_MESSAGE_NO_LOG,
+                                     flags,
                                      time(NULL));
         retval = TRUE;
         break;
@@ -593,12 +666,12 @@ chatty_conv_check_for_command (PurpleConversation *conv)
         purple_conversation_write (conv,
                                    "",
                                    "That command doesn't work on this protocol.",
-                                   PURPLE_MESSAGE_NO_LOG,
+                                   flags,
                                    time(NULL));
         retval = TRUE;
         break;
       default:
-        break; /* nothing to do */
+        break;
     }
   }
 
@@ -1025,7 +1098,7 @@ chatty_conv_stack_add_conv (ChattyConversation *chatty_conv)
                             chatty_conv->tab_cont, NULL);
 
   name_split = g_strsplit (tab_txt, "@", -1);
-  text = g_strdup_printf("%s %s",name_split[0], " >");
+  text = g_strdup_printf ("%s %s",name_split[0], " >");
 
   gtk_notebook_set_tab_label_text (GTK_NOTEBOOK(chatty->pane_view_message_list),
                                    chatty_conv->tab_cont, text);
@@ -1180,6 +1253,11 @@ chatty_conv_write_common (PurpleConversation *conv,
                                    NULL);
 
       g_free (msg_html);
+    } else if (flags & PURPLE_MESSAGE_SYSTEM) {
+      chatty_msg_list_add_message (chatty_conv->msg_list,
+                                   MSG_IS_SYSTEM,
+                                   message,
+                                   NULL);
     }
 
     chatty_conv_set_unseen (chatty_conv, CHATTY_UNSEEN_NONE);
@@ -1783,6 +1861,16 @@ chatty_conversations_init (void)
   purple_signal_connect (chatty_conversations_get_handle(),
                          "conversation-switched",
                          handle, PURPLE_CALLBACK (cb_conversation_switched), NULL);
+
+  purple_cmd_register ("chatty",
+                       "ww",
+                       PURPLE_CMD_P_DEFAULT,
+                       PURPLE_CMD_FLAG_IM | PURPLE_CMD_FLAG_ALLOW_WRONG_ARGS,
+                       NULL,
+                       cb_chatty_cmd,
+                       "chatty &lt;help&gt;:  "
+                       "For a list of commands use the 'help' argument.",
+                       NULL);
 
   ht_sms_id  = g_hash_table_new_full (g_str_hash,
                                       g_str_equal,

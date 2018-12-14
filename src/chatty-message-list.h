@@ -50,7 +50,8 @@ enum {
 
 enum {
   MSG_IS_OUTGOING,
-  MSG_IS_INCOMING
+  MSG_IS_INCOMING,
+  MSG_IS_SYSTEM
 } e_msg_dir;
 
 

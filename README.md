@@ -47,6 +47,51 @@ meson build
 ninja -C build
 ```
 
+## Commands
+
+In a messaging conversation (except SMS conversations) the following commands can be used:
+
+### Chatty
+
+- '/chatty help': Displays a list with available commands.
+- '/chatty show offline': Show offline contacts in chats list.
+- '/chatty hide offline': Hide offline contacts in chats list.
+- '/chatty full offline': Show regular offline avatars.
+- '/chatty grey offline': Grey out offline avatars.
+- '/chatty show idle': Blur avatar of idle contacts.
+- '/chatty hide idle': Don't blur avatar of idle contacts.
+
+
+### lurch plugin
+
+- '/lurch help': Displays a list with available commands.
+- '/lurch uninstall': Uninstalls this device from OMEMO by removing its device ID from the devicelist.
+- '/lurch blacklist add': Adds conversation partner to blacklist.
+- '/lurch blacklist remove': Removes conversation partner from blacklist.
+- '/lurch show id own': Displays this device's ID.
+- '/lurch show id list': Displays this account's devicelist.
+- '/lurch show fp own': Displays this device's key fingerprint.
+- '/lurch show fp conv': Displays the fingerprints of all participating devices.
+- '/lurch remove id <id>': Removes a device ID from the own devicelist.
+
+
+### purple-mm-sms plugin
+
+- '/mm-sms help': Displays a list with available commands.
+- '/mm-sms status': Show modem status.
+
+
+## XMPP account
+
+If you don't have an XMPP account yet and want to subscribe to a service then please make sure that the server supports the following XEPs:
+
+- XEP-0237: Roster Versioning
+- XEP-0198: Stream Management
+- XEP-0280: Message Carbons
+- XEP-0352: Client State Indication
+- XEP-0313: Message Archive Management
+- XEP-0363: HTTP File Upload
+
 [0]: http://software.pureos.net/search_pkg?term=libhandy-0.0-dev
 [1]: https://packages.debian.org/search?keywords=libhandy-0.0-dev
 [2]: https://source.puri.sm/Librem5/libhandy

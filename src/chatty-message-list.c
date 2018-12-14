@@ -117,6 +117,17 @@ init_css (void)
                                   "   padding-top:     8px;\n"
                                   "   padding-bottom:  8px;\n"
                                   "}\n"
+                                  " .bubble_purple {\n"
+                                  "   font-size: 14px;\n"
+                                  "   color: white;\n"
+                                  "   background-color: #862d86;\n"
+                                  "   box-shadow: 0px 1px 2px 1px rgba(0, 0, 0, 0.3);\n"
+                                  "   border-radius:   6px;\n"
+                                  "   padding-left:   10px;\n"
+                                  "   padding-right:  10px;\n"
+                                  "   padding-top:     8px;\n"
+                                  "   padding-bottom:  8px;\n"
+                                  "}\n"
                                   " .bubble_white {\n"
                                   "   font-size: 17px;\n"
                                   "   color: black;\n"
@@ -622,9 +633,15 @@ chatty_msg_list_add_message (ChattyMsgList *self,
 
   label_msg = GTK_LABEL (gtk_label_new (message));
   gtk_widget_set_name (GTK_WIDGET(label_msg), "label-msg");
-  gtk_label_set_use_markup (GTK_LABEL (label_msg), TRUE);
   gtk_label_set_line_wrap (label_msg, TRUE);
   gtk_label_set_line_wrap_mode (label_msg, PANGO_WRAP_WORD_CHAR);
+
+  // Certain parms in system messages can be
+  // interpreted as markup tags
+  if (message_dir != MSG_IS_SYSTEM) {
+    gtk_label_set_use_markup (GTK_LABEL(label_msg), TRUE);
+  }
+
   // TODO adjust num_chars dynamically to scale labels
   //      according to widget width
   gtk_label_set_max_width_chars (label_msg, 22);
@@ -651,6 +668,9 @@ chatty_msg_list_add_message (ChattyMsgList *self,
   } else if (message_dir == MSG_IS_OUTGOING) {
     gtk_box_pack_end (box, GTK_WIDGET(vbox), FALSE, FALSE, 8);
     style = "bubble_blue";
+  } else if (message_dir == MSG_IS_SYSTEM) {
+    gtk_box_pack_start (box, GTK_WIDGET(vbox), TRUE, TRUE, 8);
+    style = "bubble_purple";
   }
 
   if (message_dir == MSG_IS_OUTGOING && priv->message_type == MSG_TYPE_SMS) {
