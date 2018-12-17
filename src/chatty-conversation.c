@@ -208,6 +208,7 @@ cb_button_send_clicked (GtkButton *sender,
   GtkTextIter          start, end;
   gchar               *message = NULL;
   const gchar         *protocol_id;
+  gchar               *footer_str = NULL;
   gchar                sms_id_str[12];
   guint                sms_id;
 
@@ -239,11 +240,17 @@ cb_button_send_clicked (GtkButton *sender,
                                       &end,
                                       FALSE);
 
+  footer_str = g_strconcat ("<small>",
+                            "<span color='grey'>",
+                            " ✓",
+                            "</span></small>",
+                            NULL);
+
   if (gtk_text_buffer_get_char_count (chatty_conv->msg_buffer)) {
     chatty_msg_list_add_message (chatty_conv->msg_list,
                                  MSG_IS_OUTGOING,
                                  message,
-                                 _("sending..."));
+                                 footer_str);
 
     // provide a msg-id to the sms-plugin for send-receipts
     if (g_strcmp0 (protocol_id, "prpl-mm-sms") == 0) {
@@ -272,6 +279,7 @@ cb_button_send_clicked (GtkButton *sender,
   gtk_text_buffer_delete (chatty_conv->msg_buffer, &start, &end);
 
   g_free (message);
+  g_free (footer_str);
 }
 
 
