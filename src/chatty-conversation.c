@@ -34,6 +34,7 @@ static gboolean chatty_conv_check_for_command (PurpleConversation *conv);
 ChattyConversation * chatty_conv_container_get_active_chatty_conv (GtkNotebook *notebook);
 PurpleConversation * chatty_conv_container_get_active_purple_conv (GtkNotebook *notebook);
 void chatty_conv_switch_active_conversation (PurpleConversation *conv);
+static void chatty_update_typing_status (ChattyConversation *chatty_conv);
 
 
 // *** callbacks
@@ -336,6 +337,10 @@ cb_textview_key_released (GtkWidget   *widget,
     gtk_widget_hide (chatty_conv->button_send);
   }
 
+  if (purple_prefs_get_bool (CHATTY_PREFS_ROOT "/conversations/send_typing")) {
+    chatty_update_typing_status (chatty_conv);
+  }
+
   return TRUE;
 }
 
@@ -465,6 +470,62 @@ cb_msg_input_vadjust (GObject     *sender,
 // *** end callbacks
 
 
+static void
+chatty_update_typing_status (ChattyConversation *chatty_conv)
+{
+  PurpleConversation *conv;
+  PurpleConvIm       *im;
+  GtkTextIter         start, end;
+  char               *text;
+  gboolean            empty;
+
+  conv = chatty_conv->active_conv;
+
+  if (conv->type != PURPLE_CONV_TYPE_IM) {
+    return;
+  }
+
+  gtk_text_buffer_get_bounds (chatty_conv->msg_buffer,
+                              &start,
+                              &end);
+
+  text = gtk_text_buffer_get_text (chatty_conv->msg_buffer,
+                                   &start, &end,
+                                   FALSE);
+
+  empty = (!text || !*text || (*text == '/'));
+
+  im = PURPLE_CONV_IM(conv);
+
+  if (!empty) {
+    gboolean send = (purple_conv_im_get_send_typed_timeout (im) == 0);
+
+    purple_conv_im_stop_send_typed_timeout (im);
+    purple_conv_im_start_send_typed_timeout (im);
+
+    if (send || (purple_conv_im_get_type_again (im) != 0 &&
+        time(NULL) > purple_conv_im_get_type_again (im))) {
+
+      unsigned int timeout;
+
+      timeout = serv_send_typing (purple_conversation_get_gc (conv),
+                                  purple_conversation_get_name (conv),
+                                  PURPLE_TYPING);
+
+      purple_conv_im_set_type_again (im, timeout);
+    }
+  } else {
+    purple_conv_im_stop_send_typed_timeout (im);
+
+    serv_send_typing (purple_conversation_get_gc (conv),
+                      purple_conversation_get_name (conv),
+                      PURPLE_NOT_TYPING);
+  }
+
+  g_free (text);
+}
+
+
 static gchar *
 chatty_conv_check_for_links (const gchar *message)
 {
@@ -501,14 +562,19 @@ cb_chatty_cmd (PurpleConversation  *conv,
                     " - '/chatty full offline': Show regular offline avatars.\n"
                     " - '/chatty grey offline': Grey out offline avatars.\n"
                     " - '/chatty show idle': Blur avatar of idle contacts.\n"
-                    " - '/chatty hide idle': Don't blur avatar of idle contacts.\n");
+                    " - '/chatty hide idle': Don't blur avatar of idle contacts.\n"
+                    " - '/chatty show typing': Send typing messages.\n"
+                    " - '/chatty hide typing': Do not send typing messages.\n");
   } else if (!g_strcmp0 (args[0], "show")) {
     if (!g_strcmp0 (args[1], "offline")) {
       purple_prefs_set_bool (CHATTY_PREFS_ROOT "/blist/show_offline_buddies", TRUE);
-      msg = g_strdup("Offline contacts will be shown.");
+      msg = g_strdup ("Offline contacts will be shown.");
     } else if (!g_strcmp0 (args[1], "idle")) {
       purple_prefs_set_bool (CHATTY_PREFS_ROOT "/blist/blur_idle_buddies", TRUE);
       msg = g_strdup("Offline user avatars will be blurred.");
+    } else if (!g_strcmp0 (args[1], "typing")) {
+      purple_prefs_set_bool (CHATTY_PREFS_ROOT "/conversations/send_typing", TRUE);
+      msg = g_strdup ("Typing messages will be sent.");
     }
   } else if (!g_strcmp0 (args[0], "hide")) {
     if (!g_strcmp0 (args[1], "offline")) {
@@ -516,17 +582,20 @@ cb_chatty_cmd (PurpleConversation  *conv,
       msg = g_strdup("Offline contacts will be hidden.");
     } else if (!g_strcmp0 (args[1], "idle")) {
       purple_prefs_set_bool (CHATTY_PREFS_ROOT "/blist/blur_idle_buddies", FALSE);
-      msg = g_strdup("Offline user avatars will not be blurred.");
+      msg = g_strdup ("Offline user avatars will not be blurred.");
+    } else if (!g_strcmp0 (args[1], "typing")) {
+      purple_prefs_set_bool (CHATTY_PREFS_ROOT "/conversations/send_typing", FALSE);
+      msg = g_strdup ("Typing messages will be hidden.");
     }
   } else if (!g_strcmp0 (args[0], "grey")) {
     if (!g_strcmp0 (args[1], "offline")) {
       purple_prefs_set_bool (CHATTY_PREFS_ROOT "/blist/greyout_offline_buddies", TRUE);
-      msg = g_strdup("Offline user avatars will be greyed out.");
+      msg = g_strdup ("Offline user avatars will be greyed out.");
     }
   } if (!g_strcmp0 (args[0], "full")) {
     if (!g_strcmp0 (args[1], "offline")) {
       purple_prefs_set_bool (CHATTY_PREFS_ROOT "/blist/greyout_offline_buddies", FALSE);
-      msg = g_strdup("Offline user avatars will not be greyed out.");
+      msg = g_strdup ("Offline user avatars will not be greyed out.");
     }
   }
 
@@ -1816,6 +1885,7 @@ chatty_conversations_init (void)
   purple_prefs_add_bool (CHATTY_PREFS_ROOT "/conversations/im/show_buddy_icons", TRUE);
   purple_prefs_add_bool (CHATTY_PREFS_ROOT "/conversations/show_timestamps", TRUE);
   purple_prefs_add_bool (CHATTY_PREFS_ROOT "/conversations/show_tabs", FALSE);
+  purple_prefs_add_bool (CHATTY_PREFS_ROOT "/conversations/send_typing", TRUE);
 
   purple_prefs_add_bool ("/purple/logging/log_system", FALSE);
   purple_prefs_set_bool ("/purple/logging/log_system", FALSE);
