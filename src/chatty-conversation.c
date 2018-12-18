@@ -19,6 +19,7 @@
 #define MAX_MSGS 50
 
 static GHashTable *ht_sms_id = NULL;
+static GHashTable *ht_emoticon = NULL;
 
 static void
 chatty_conv_write_conversation (PurpleConversation *conv,
@@ -35,6 +36,7 @@ ChattyConversation * chatty_conv_container_get_active_chatty_conv (GtkNotebook *
 PurpleConversation * chatty_conv_container_get_active_purple_conv (GtkNotebook *notebook);
 void chatty_conv_switch_active_conversation (PurpleConversation *conv);
 static void chatty_update_typing_status (ChattyConversation *chatty_conv);
+static void chatty_check_for_emoticon (ChattyConversation *chatty_conv);
 
 
 // *** callbacks
@@ -349,6 +351,10 @@ cb_textview_key_released (GtkWidget   *widget,
     chatty_update_typing_status (chatty_conv);
   }
 
+  if (purple_prefs_get_bool (CHATTY_PREFS_ROOT "/conversations/convert_emoticons")) {
+    chatty_check_for_emoticon (chatty_conv);
+  }
+
   return TRUE;
 }
 
@@ -479,6 +485,63 @@ cb_msg_input_vadjust (GObject     *sender,
 
 
 static void
+chatty_conv_init_emoticon_translations (void)
+{
+  ht_emoticon = g_hash_table_new_full (g_str_hash,
+                                       g_str_equal,
+                                       g_free,
+                                       g_free);
+
+  g_hash_table_insert (ht_emoticon, ":)", "🙂");
+  g_hash_table_insert (ht_emoticon, ";)", "😉");
+  g_hash_table_insert (ht_emoticon, ":(", "🙁");
+  g_hash_table_insert (ht_emoticon, ":'(", "😢");
+  g_hash_table_insert (ht_emoticon, ":/", "😕");
+  g_hash_table_insert (ht_emoticon, ":D", "😀");
+  g_hash_table_insert (ht_emoticon, ":'D", "😂");
+  g_hash_table_insert (ht_emoticon, ";P", "😜");
+  g_hash_table_insert (ht_emoticon, ":P", "😛");
+  g_hash_table_insert (ht_emoticon, ":o", "😮");
+  g_hash_table_insert (ht_emoticon, "B)", "😎 ");
+  g_hash_table_insert (ht_emoticon, "SANTA", "🎅");
+  g_hash_table_insert (ht_emoticon, "FROSTY", "⛄");
+}
+
+
+static void
+chatty_check_for_emoticon (ChattyConversation *chatty_conv)
+{
+  GtkTextIter         start, end, position;
+  GHashTableIter      iter;
+  gpointer            key, value;
+  char               *text;
+
+  gtk_text_buffer_get_bounds (chatty_conv->msg_buffer,
+                              &start,
+                              &end);
+
+  text = gtk_text_buffer_get_text (chatty_conv->msg_buffer,
+                                   &start, &end,
+                                   FALSE);
+
+  g_hash_table_iter_init (&iter, ht_emoticon);
+
+  while (g_hash_table_iter_next (&iter, &key, &value)) {
+    if (g_str_has_suffix (text, (char*)key)) {
+      position = end;
+
+      gtk_text_iter_backward_chars (&position, strlen ((char*)key));
+      gtk_text_buffer_delete (chatty_conv->msg_buffer, &position, &end);
+      gtk_text_buffer_insert (chatty_conv->msg_buffer, &position, (char*)value, -1);
+    }
+
+  }
+
+  g_free (text);
+}
+
+
+static void
 chatty_update_typing_status (ChattyConversation *chatty_conv)
 {
   PurpleConversation *conv;
@@ -572,7 +635,9 @@ cb_chatty_cmd (PurpleConversation  *conv,
                     " - '/chatty show idle': Blur avatar of idle contacts.\n"
                     " - '/chatty hide idle': Don't blur avatar of idle contacts.\n"
                     " - '/chatty show typing': Send typing messages.\n"
-                    " - '/chatty hide typing': Do not send typing messages.\n");
+                    " - '/chatty hide typing': Do not send typing messages.\n"
+                    " - '/chatty show emoticons': Convert emoticons.\n"
+                    " - '/chatty hide emoticons': Do not convert emoticons.\n");
   } else if (!g_strcmp0 (args[0], "show")) {
     if (!g_strcmp0 (args[1], "offline")) {
       purple_prefs_set_bool (CHATTY_PREFS_ROOT "/blist/show_offline_buddies", TRUE);
@@ -583,6 +648,9 @@ cb_chatty_cmd (PurpleConversation  *conv,
     } else if (!g_strcmp0 (args[1], "typing")) {
       purple_prefs_set_bool (CHATTY_PREFS_ROOT "/conversations/send_typing", TRUE);
       msg = g_strdup ("Typing messages will be sent.");
+    } else if (!g_strcmp0 (args[1], "emoticons")) {
+      purple_prefs_set_bool (CHATTY_PREFS_ROOT "/conversations/convert_emoticons", TRUE);
+      msg = g_strdup ("Emoticons will be converted.");
     }
   } else if (!g_strcmp0 (args[0], "hide")) {
     if (!g_strcmp0 (args[1], "offline")) {
@@ -594,6 +662,9 @@ cb_chatty_cmd (PurpleConversation  *conv,
     } else if (!g_strcmp0 (args[1], "typing")) {
       purple_prefs_set_bool (CHATTY_PREFS_ROOT "/conversations/send_typing", FALSE);
       msg = g_strdup ("Typing messages will be hidden.");
+    } else if (!g_strcmp0 (args[1], "emoticons")) {
+      purple_prefs_set_bool (CHATTY_PREFS_ROOT "/conversations/convert_emoticons", FALSE);
+      msg = g_strdup ("emoticons will not be converted.");
     }
   } else if (!g_strcmp0 (args[0], "grey")) {
     if (!g_strcmp0 (args[1], "offline")) {
@@ -1894,6 +1965,7 @@ chatty_conversations_init (void)
   purple_prefs_add_bool (CHATTY_PREFS_ROOT "/conversations/show_timestamps", TRUE);
   purple_prefs_add_bool (CHATTY_PREFS_ROOT "/conversations/show_tabs", FALSE);
   purple_prefs_add_bool (CHATTY_PREFS_ROOT "/conversations/send_typing", TRUE);
+  purple_prefs_add_bool (CHATTY_PREFS_ROOT "/conversations/convert_emoticons", TRUE);
 
   purple_prefs_add_bool ("/purple/logging/log_system", FALSE);
   purple_prefs_set_bool ("/purple/logging/log_system", FALSE);
@@ -1954,12 +2026,15 @@ chatty_conversations_init (void)
                                       g_str_equal,
                                       g_free,
                                       NULL);
+
+  chatty_conv_init_emoticon_translations ();
 }
 
 
 void
 chatty_conversations_uninit (void)
 {
+  g_hash_table_destroy (ht_emoticon);
   purple_prefs_disconnect_by_handle (chatty_conversations_get_handle());
   purple_signals_disconnect_by_handle (chatty_conversations_get_handle());
   purple_signals_unregister_by_instance (chatty_conversations_get_handle());
