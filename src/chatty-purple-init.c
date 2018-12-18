@@ -234,7 +234,7 @@ static gboolean
 chatty_purple_load_plugin (const char *name)
 {
   GList    *iter;
-  gboolean  result;
+  gboolean  result = FALSE;
 
   iter = purple_plugins_get_all ();
 
