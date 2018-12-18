@@ -7,7 +7,7 @@ Build-Depends:
  debhelper (>= 11),
  desktop-file-utils,
  libgtk-3-dev,
- libhandy-0.0-dev (>= 0.0.4),
+ libhandy-0.0-dev (>= 0.0.6),
  libpurple-dev,
  meson,
 Standards-Version: 4.2.1
