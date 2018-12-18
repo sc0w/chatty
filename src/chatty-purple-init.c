@@ -234,7 +234,7 @@ static gboolean
 chatty_purple_load_plugin (const char *name)
 {
   GList    *iter;
-  gboolean  result;
+  gboolean  result = FALSE;
 
   iter = purple_plugins_get_all ();
 
@@ -305,9 +305,8 @@ init_libpurple (void)
     if (account == NULL) {
       chatty_account_add_sms_account ();
     }
+    purple_account_set_enabled (account, CHATTY_UI, TRUE);
   }
-
-  purple_account_set_enabled (account, CHATTY_UI, TRUE);
 
   purple_savedstatus_activate (purple_savedstatus_get_startup());
   purple_accounts_restore_current_statuses ();
