@@ -415,7 +415,7 @@ cb_stack_cont_before_switch_conv (GtkNotebook *notebook,
 
   conv = chatty_conv_container_get_active_purple_conv (notebook);
 
-  g_return_if_fail(conv != NULL);
+  g_return_if_fail (conv != NULL);
 
   if (purple_conversation_get_type(conv) != PURPLE_CONV_TYPE_IM) {
     return;
@@ -544,15 +544,18 @@ chatty_check_for_emoticon (ChattyConversation *chatty_conv)
 static void
 chatty_update_typing_status (ChattyConversation *chatty_conv)
 {
-  PurpleConversation *conv;
-  PurpleConvIm       *im;
-  GtkTextIter         start, end;
-  char               *text;
-  gboolean            empty;
+  PurpleConversation     *conv;
+  PurpleConversationType  type;
+  PurpleConvIm           *im;
+  GtkTextIter             start, end;
+  char                   *text;
+  gboolean                empty;
 
   conv = chatty_conv->active_conv;
 
-  if (conv->type != PURPLE_CONV_TYPE_IM) {
+  type = purple_conversation_get_type (conv);
+
+  if (type != PURPLE_CONV_TYPE_IM) {
     return;
   }
 
@@ -1524,7 +1527,6 @@ chatty_conv_switch_active_conversation (PurpleConversation *conv)
 }
 
 
-
 /**
  * chatty_conv_switch_conv:
  * @chatty_conv: a ChattyConversation
@@ -1539,7 +1541,10 @@ chatty_conv_switch_conv (ChattyConversation *chatty_conv)
   chatty_data_t *chatty = chatty_get_data();
 
   gtk_notebook_set_current_page (GTK_NOTEBOOK(chatty->pane_view_message_list),
-                                 gtk_notebook_page_num (GTK_NOTEBOOK(chatty->pane_view_message_list), chatty_conv->tab_cont));
+                                 gtk_notebook_page_num (GTK_NOTEBOOK(chatty->pane_view_message_list),
+                                 chatty_conv->tab_cont));
+
+  gtk_widget_grab_focus (GTK_WIDGET(chatty_conv->msg_entry));
 }
 
 
@@ -1556,7 +1561,8 @@ chatty_conv_remove_conv (ChattyConversation *chatty_conv)
   chatty_data_t *chatty = chatty_get_data();
 
   gtk_notebook_remove_page (GTK_NOTEBOOK(chatty->pane_view_message_list),
-                            gtk_notebook_page_num (GTK_NOTEBOOK(chatty->pane_view_message_list), chatty_conv->tab_cont));
+                            gtk_notebook_page_num (GTK_NOTEBOOK(chatty->pane_view_message_list),
+                            chatty_conv->tab_cont));
 }
 
 
@@ -1935,11 +1941,13 @@ chatty_conv_container_init (void)
 {
   chatty_data_t *chatty = chatty_get_data();
 
-  g_signal_connect (G_OBJECT(chatty->pane_view_message_list), "switch_page",
+  g_signal_connect (G_OBJECT(chatty->pane_view_message_list),
+                    "switch_page",
                     G_CALLBACK(cb_stack_cont_before_switch_conv), 0);
-  g_signal_connect_after (G_OBJECT(chatty->pane_view_message_list), "switch_page",
-                          G_CALLBACK(cb_stack_cont_switch_conv), 0);
 
+  g_signal_connect_after (G_OBJECT(chatty->pane_view_message_list),
+                          "switch_page",
+                          G_CALLBACK(cb_stack_cont_switch_conv), 0);
 
   gtk_notebook_set_show_tabs (GTK_NOTEBOOK(chatty->pane_view_message_list), FALSE);
 }

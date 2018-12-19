@@ -295,7 +295,6 @@ init_libpurple (void)
   purple_plugins_init ();
   purple_network_force_online();
   purple_pounces_load ();
-  purple_blist_show ();
 
   chatty_xeps_init ();
 
@@ -310,6 +309,8 @@ init_libpurple (void)
 
   purple_savedstatus_activate (purple_savedstatus_get_startup());
   purple_accounts_restore_current_statuses ();
+
+  purple_blist_show ();
 }
 
 
