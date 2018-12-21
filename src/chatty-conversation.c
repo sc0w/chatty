@@ -360,26 +360,6 @@ cb_textview_key_released (GtkWidget   *widget,
 
 
 static void
-cb_received_im_msg (PurpleAccount       *account,
-                    const char          *sender,
-                    const char          *message,
-                    PurpleConversation  *conv,
-                    PurpleMessageFlags   flags)
-{
-  guint timer;
-
-  if (conv) {
-    timer = GPOINTER_TO_INT(purple_conversation_get_data (conv, "close-timer"));
-
-    if (timer) {
-      purple_timeout_remove (timer);
-      purple_conversation_set_data (conv, "close-timer", GINT_TO_POINTER(0));
-    }
-  }
-}
-
-
-static void
 cb_conversation_switched (PurpleConversation *conv)
 {
   // update conversation headerbar
@@ -2011,10 +1991,6 @@ chatty_conversations_init (void)
   purple_signal_connect (purple_conversations_get_handle (),
                          "buddy-typing-stopped", &handle,
                          PURPLE_CALLBACK (cb_buddy_typing_stopped), NULL);
-
-  purple_signal_connect (purple_conversations_get_handle (),
-                         "received-im-msg",
-                         &handle, PURPLE_CALLBACK (cb_received_im_msg), NULL);
 
   purple_signal_connect (chatty_conversations_get_handle(),
                          "conversation-switched",
