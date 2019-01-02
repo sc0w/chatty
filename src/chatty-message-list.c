@@ -581,7 +581,7 @@ chatty_msg_list_clear (ChattyMsgList *self)
   children = gtk_container_get_children (GTK_CONTAINER(priv->list));
 
   for (iter = children; iter != NULL; iter = g_list_next (iter)) {
-    gtk_widget_destroy (GTK_WIDGET(iter->data));
+    gtk_container_remove (GTK_CONTAINER(priv->list), GTK_WIDGET(iter->data));
   }
 
   g_list_free (children);

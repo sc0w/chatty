@@ -16,7 +16,7 @@ view_chat_list_cmd_accounts (GSimpleAction *action,
                              GVariant      *parameter,
                              gpointer       user_data)
 {
-  chatty_window_change_view (CHATTY_VIEW_MANAGE_ACCOUNT);
+  chatty_window_change_view (CHATTY_VIEW_SETTINGS);
 }
 
 
@@ -39,7 +39,7 @@ view_msg_list_cmd_delete (GSimpleAction *action,
 
 static const GActionEntry view_chat_list_entries [] =
 {
-  { "account-settings", view_chat_list_cmd_accounts },
+  { "settings", view_chat_list_cmd_accounts },
 };
 
 

@@ -1087,7 +1087,6 @@ chatty_blist_create_chat_list (PurpleBuddyList *list)
   GtkWidget         *vbox;
   HdyColumn         *hdy_column;
   GtkWidget         *search_entry;
-  GtkScrolledWindow *scroll;
   GtkStyleContext   *sc;
   chatty_data_t     *chatty = chatty_get_data ();
 
@@ -1121,9 +1120,6 @@ chatty_blist_create_chat_list (PurpleBuddyList *list)
   gtk_box_pack_start (GTK_BOX (vbox),
                       GTK_WIDGET (chatty->search_bar),
                       FALSE, FALSE, 0);
-
-  scroll = GTK_SCROLLED_WINDOW (gtk_scrolled_window_new ( NULL, NULL));
-  gtk_widget_show (GTK_WIDGET(scroll));
 
   _chatty_blist->treemodel_chats = gtk_list_store_new (NUM_COLUMNS,
                                                        G_TYPE_POINTER,
@@ -1165,14 +1161,13 @@ chatty_blist_create_chat_list (PurpleBuddyList *list)
   gtk_widget_set_name (GTK_WIDGET(_chatty_blist->treeview_chats),
                        "chatty_blist_treeview");
 
-  gtk_container_add (GTK_CONTAINER(scroll),
-                     GTK_WIDGET(_chatty_blist->treeview_chats));
-
   chatty_blist_chat_list_add_columns (GTK_TREE_VIEW (treeview));
 
   gtk_tree_view_columns_autosize (GTK_TREE_VIEW (treeview));
 
-  gtk_box_pack_start (GTK_BOX (vbox), GTK_WIDGET (scroll), TRUE, TRUE, 0);
+  gtk_box_pack_start (GTK_BOX (vbox),
+                      GTK_WIDGET(_chatty_blist->treeview_chats),
+                      TRUE, TRUE, 0);
 
   gtk_box_pack_start (GTK_BOX (chatty->pane_view_chat_list),
                       GTK_WIDGET (vbox),
@@ -1199,7 +1194,6 @@ chatty_blist_create_contact_list (PurpleBuddyList *list)
   HdyColumn         *hdy_column;
   GtkWidget         *search_bar;
   GtkWidget         *search_entry;
-  GtkScrolledWindow *scroll;
   GtkStyleContext   *sc;
   chatty_data_t     *chatty = chatty_get_data ();
 
@@ -1235,9 +1229,6 @@ chatty_blist_create_contact_list (PurpleBuddyList *list)
   gtk_box_pack_start (GTK_BOX (vbox),
                       GTK_WIDGET (search_bar),
                       FALSE, FALSE, 0);
-
-  scroll = GTK_SCROLLED_WINDOW (gtk_scrolled_window_new ( NULL, NULL));
-  gtk_widget_show (GTK_WIDGET (scroll));
 
   _chatty_blist->treemodel_contacts = gtk_list_store_new (NUM_COLUMNS,
                                                           G_TYPE_POINTER,
@@ -1275,14 +1266,13 @@ chatty_blist_create_contact_list (PurpleBuddyList *list)
   gtk_widget_set_name (GTK_WIDGET(_chatty_blist->treeview_contacts),
                        "chatty_blist_treeview");
 
-  gtk_container_add (GTK_CONTAINER(scroll),
-                     GTK_WIDGET(_chatty_blist->treeview_contacts));
-
   chatty_blist_contact_list_add_columns (GTK_TREE_VIEW (treeview));
 
   gtk_tree_view_columns_autosize (GTK_TREE_VIEW (treeview));
 
-  gtk_box_pack_start (GTK_BOX (vbox), GTK_WIDGET (scroll), TRUE, TRUE, 0);
+  gtk_box_pack_start (GTK_BOX (vbox),
+                      GTK_WIDGET(_chatty_blist->treeview_contacts),
+                      TRUE, TRUE, 0);
 
   gtk_box_pack_start (GTK_BOX (chatty->pane_view_new_chat),
                       GTK_WIDGET (vbox),
