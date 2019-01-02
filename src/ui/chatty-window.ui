@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.22.1 -->
 <interface>
-  <requires lib="gtk+" version="3.20"/>
+  <requires lib="gtk+" version="3.16"/>
   <requires lib="libhandy" version="0.0"/>
   <object class="GtkPopoverMenu" id="header_view_chat_list_popover">
     <property name="can_focus">False</property>
@@ -16,8 +15,8 @@
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">False</property>
-            <property name="action_name">chat_list.account-settings</property>
-            <property name="text" translatable="yes">Account Settings</property>
+            <property name="action_name">chat_list.settings</property>
+            <property name="text" translatable="yes">Settings</property>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -370,7 +369,7 @@
             <child>
               <object class="GtkHeaderBar" id="header_view_manage_account">
                 <property name="can_focus">False</property>
-                <property name="title" translatable="yes">Account Settings</property>
+                <property name="title" translatable="yes">Settings</property>
                 <child>
                   <object class="GtkButton">
                     <property name="can_focus">False</property>
@@ -387,14 +386,14 @@
                 </child>
               </object>
               <packing>
-                <property name="name">view-manage-account</property>
+                <property name="name">view-settings</property>
                 <property name="position">2</property>
               </packing>
             </child>
             <child>
               <object class="GtkHeaderBar" id="header_view_select_account">
                 <property name="can_focus">False</property>
-                <property name="title" translatable="yes">Chat Account</property>
+                <property name="title" translatable="yes">New Contact</property>
                 <child>
                   <object class="GtkButton">
                     <property name="can_focus">False</property>
@@ -433,15 +432,15 @@
                   </object>
                 </child>
                 <child>
-                  <object class="GtkMenuButton">
+                  <object class="GtkButton">
                     <property name="can_focus">False</property>
                     <property name="receives_default">False</property>
-                    <property name="popover">header_view_new_chat_popover</property>
+                    <property name="action_name">win.add-contact</property>
                     <child>
                       <object class="GtkImage">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="icon_name">view-more-symbolic</property>
+                        <property name="icon_name">list-add-symbolic</property>
                       </object>
                     </child>
                   </object>
@@ -496,24 +495,6 @@
                     </child>
                   </object>
                 </child>
-                <child>
-                  <object class="GtkMenuButton">
-                    <property name="can_focus">False</property>
-                    <property name="receives_default">False</property>
-                    <property name="popover">header_view_new_account_popover</property>
-                    <child>
-                      <object class="GtkImage">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="icon_name">open-menu-symbolic</property>
-                      </object>
-                    </child>
-                  </object>
-                  <packing>
-                    <property name="pack_type">end</property>
-                    <property name="position">1</property>
-                  </packing>
-                </child>
               </object>
               <packing>
                 <property name="name">view-new-account</property>
@@ -524,71 +505,371 @@
       </object>
     </child>
     <child>
-      <object class="GtkStack" id="panes_stack">
-        <property name="can_focus">False</property>
-        <property name="transition_type">slide-left-right</property>
-        <child>
-          <object class="GtkBox" id="pane_view_chat_list">
-            <property name="can_focus">False</property>
-          </object>
-          <packing>
-            <property name="name">view-chat-list</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkBox" id="pane_view_new_contact">
-            <property name="can_focus">False</property>
-          </object>
-          <packing>
-            <property name="name">view-new-contact</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkNotebook" id="pane_view_message_list">
-            <property name="can_focus">False</property>
-          </object>
-          <packing>
-            <property name="name">view-message-list</property>
-            <property name="position">1</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkBox" id="pane_view_manage_account">
-            <property name="can_focus">False</property>
-          </object>
-          <packing>
-            <property name="name">view-manage-account</property>
-            <property name="position">2</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkBox" id="pane_view_select_account">
-            <property name="can_focus">False</property>
-          </object>
-          <packing>
-            <property name="name">view-select-account</property>
-            <property name="position">3</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkBox" id="pane_view_new_chat">
-            <property name="can_focus">False</property>
-          </object>
-          <packing>
-            <property name="name">view-new-chat</property>
-            <property name="position">4</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkBox" id="pane_view_new_account">
-            <property name="can_focus">False</property>
-          </object>
-          <packing>
-            <property name="name">view-new-account</property>
-            <property name="position">5</property>
-          </packing>
-        </child>
-      </object>
-    </child>
+      <object class="GtkScrolledWindow" id="scrolled_window">
+        <property name="hscrollbar_policy">never</property>
+        <property name="visible">True</property>
+          <child>
+            <object class="GtkStack" id="panes_stack">
+              <property name="visible">True</property>
+              <property name="can_focus">False</property>
+              <property name="vhomogeneous">False</property>
+              <property name="transition_type">slide-left-right</property>
+              <child>
+                <object class="GtkBox" id="pane_view_chat_list">
+                  <property name="can_focus">False</property>
+                </object>
+                <packing>
+                  <property name="name">view-chat-list</property>
+                </packing>
+              </child>
+              <child>
+                <object class="GtkBox" id="pane_view_new_contact">
+                  <property name="can_focus">False</property>
+                </object>
+                <packing>
+                  <property name="name">view-new-contact</property>
+                </packing>
+              </child>
+              <child>
+                <object class="GtkNotebook" id="pane_view_message_list">
+                  <property name="can_focus">False</property>
+                </object>
+                <packing>
+                  <property name="name">view-message-list</property>
+                  <property name="position">1</property>
+                </packing>
+              </child>
+              <child>
+                <object class="HdyColumn">
+                  <property name="visible">False</property>
+                  <property name="can_focus">False</property>
+                  <property name="halign">fill</property>
+                  <property name="valign">fill</property>
+                  <property name="margin-bottom">32</property>
+                  <property name="margin-start">12</property>
+                  <property name="margin-end">12</property>
+                  <property name="margin-top">32</property>
+                  <property name="expand">True</property>
+                  <property name="maximum-width">600</property>
+                  <child>
+                    <object class="GtkBox">
+                      <property name="visible">True</property>
+                      <property name="orientation">vertical</property>
+                      <property name="can_focus">False</property>
+                      <property name="valign">start</property>
+                      <property name="expand">True</property>
+                      <child>
+                        <object class="GtkLabel">
+                          <property name="visible">True</property>
+                          <property name="can_focus">False</property>
+                          <property name="expand">True</property>
+                          <property name="label" translatable="yes">Accounts</property>
+                          <property name="justify">left</property>
+                          <property name="halign">start</property>
+                          <property name="margin-bottom">12</property>
+                          <attributes>
+                            <attribute name="weight" value="bold"/>
+                          </attributes>
+                        </object>
+                      </child>
+                      <child>
+                        <object class="GtkFrame">
+                          <property name="visible">True</property>
+                          <property name="can_focus">False</property>
+                          <property name="expand">True</property>
+                          <property name="margin-bottom">32</property>
+                          <child>
+                            <object class="GtkListBox" id="manage_account_listbox">
+                              <property name="visible">True</property>
+                              <property name="can_focus">False</property>
+                              <property name="expand">True</property>
+                              <property name="selection-mode">none</property>
+                            </object>
+                          </child>
+                        </object>
+                      </child>
+                      <child>
+                        <object class="GtkLabel">
+                          <property name="visible">True</property>
+                          <property name="can_focus">False</property>
+                          <property name="expand">True</property>
+                          <property name="label" translatable="yes">Privacy</property>
+                          <property name="justify">left</property>
+                          <property name="halign">start</property>
+                          <property name="margin-bottom">12</property>
+                          <attributes>
+                            <attribute name="weight" value="bold"/>
+                          </attributes>
+                        </object>
+                      </child>
+                       <child>
+                         <object class="GtkFrame">
+                           <property name="visible">True</property>
+                           <property name="can_focus">False</property>
+                           <property name="expand">True</property>
+                           <property name="margin-bottom">32</property>
+                           <child>
+                             <object class="GtkListBox" id="privacy_prefs_listbox">
+                               <property name="visible">True</property>
+                               <property name="can_focus">False</property>
+                               <property name="expand">True</property>
+                               <property name="selection-mode">none</property>
+                               <child>
+                                 <object class="HdyActionRow">
+                                   <property name="title" translatable="yes">Send receipts</property>
+                                   <property name="subtitle" translatable="yes">Confirm received messages</property>
+                                   <property name="visible">True</property>
+                                   <child type="action">
+                                     <object class="GtkSwitch" id="pref_send_receipts">
+                                       <property name="can_focus">True</property>
+                                       <property name="halign">end</property>
+                                       <property name="valign">center</property>
+                                       <property name="visible">True</property>
+                                     </object>
+                                   </child>
+                                 </object>
+                               </child>
+                               <child>
+                                 <object class="HdyActionRow">
+                                   <property name="title" translatable="yes">Carbon copy</property>
+                                   <property name="subtitle" translatable="yes">Share chat history among devices</property>
+                                   <property name="visible">True</property>
+                                   <child type="action">
+                                     <object class="GtkSwitch" id="pref_carbon_copy">
+                                       <property name="can_focus">True</property>
+                                       <property name="halign">end</property>
+                                       <property name="valign">center</property>
+                                       <property name="visible">True</property>
+                                     </object>
+                                   </child>
+                                 </object>
+                               </child>
+                               <child>
+                                 <object class="HdyActionRow">
+                                   <property name="title" translatable="yes">Typing notification</property>
+                                   <property name="subtitle" translatable="yes">Send typing messages</property>
+                                   <property name="visible">True</property>
+                                   <child type="action">
+                                     <object class="GtkSwitch" id="pref_typing_notification">
+                                       <property name="can_focus">True</property>
+                                       <property name="halign">end</property>
+                                       <property name="valign">center</property>
+                                       <property name="visible">True</property>
+                                     </object>
+                                   </child>
+                                 </object>
+                               </child>
+                            </object>
+                          </child>
+                        </object>
+                      </child>
+                      <child>
+                        <object class="GtkLabel">
+                          <property name="visible">True</property>
+                          <property name="can_focus">False</property>
+                          <property name="expand">True</property>
+                          <property name="label" translatable="yes">Chats List</property>
+                          <property name="justify">left</property>
+                          <property name="halign">start</property>
+                          <property name="margin-bottom">12</property>
+                          <attributes>
+                            <attribute name="weight" value="bold"/>
+                          </attributes>
+                        </object>
+                      </child>
+                       <child>
+                         <object class="GtkFrame">
+                           <property name="visible">True</property>
+                           <property name="can_focus">False</property>
+                           <property name="expand">True</property>
+                           <property name="margin-bottom">32</property>
+                           <child>
+                             <object class="GtkListBox" id="xmpp_prefs_listbox">
+                               <property name="visible">True</property>
+                               <property name="can_focus">False</property>
+                               <property name="expand">True</property>
+                               <property name="selection-mode">none</property>
+                               <child>
+                                 <object class="HdyActionRow">
+                                   <property name="title" translatable="yes">Show offline contacts</property>
+                                   <property name="subtitle" translatable="yes">Show contacts in the chats list</property>
+                                   <property name="visible">True</property>
+                                   <child type="action">
+                                     <object class="GtkSwitch" id="pref_show_offline">
+                                       <property name="can_focus">True</property>
+                                       <property name="halign">end</property>
+                                       <property name="valign">center</property>
+                                       <property name="visible">True</property>
+                                     </object>
+                                   </child>
+                                 </object>
+                               </child>
+                               <child>
+                                 <object class="HdyActionRow">
+                                   <property name="title" translatable="yes">Indicate offline contacts</property>
+                                   <property name="subtitle" translatable="yes">Grey out avatars from offline contacts</property>
+                                   <property name="visible">True</property>
+                                   <child type="action">
+                                     <object class="GtkSwitch" id="pref_indicate_offline">
+                                       <property name="can_focus">True</property>
+                                       <property name="halign">end</property>
+                                       <property name="valign">center</property>
+                                       <property name="visible">True</property>
+                                     </object>
+                                   </child>
+                                 </object>
+                               </child>
+                               <child>
+                                 <object class="HdyActionRow">
+                                   <property name="title" translatable="yes">Indicate idle contacts</property>
+                                   <property name="subtitle" translatable="yes">Blur avatars from offline contacts</property>
+                                   <property name="visible">True</property>
+                                   <child type="action">
+                                     <object class="GtkSwitch" id="pref_indicate_idle">
+                                       <property name="can_focus">True</property>
+                                       <property name="halign">end</property>
+                                       <property name="valign">center</property>
+                                       <property name="visible">True</property>
+                                     </object>
+                                   </child>
+                                 </object>
+                               </child>
+                            </object>
+                          </child>
+                        </object>
+                      </child>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="expand">True</property>
+                        <property name="label" translatable="yes">General</property>
+                        <property name="justify">left</property>
+                        <property name="halign">start</property>
+                        <property name="margin-bottom">12</property>
+                        <attributes>
+                          <attribute name="weight" value="bold"/>
+                        </attributes>
+                      </object>
+                    </child>
+                     <child>
+                       <object class="GtkFrame">
+                         <property name="visible">True</property>
+                         <property name="can_focus">False</property>
+                         <property name="expand">True</property>
+                         <property name="margin-bottom">32</property>
+                         <child>
+                           <object class="GtkListBox" id="general_prefs_listbox">
+                             <property name="visible">True</property>
+                             <property name="can_focus">False</property>
+                             <property name="expand">True</property>
+                             <property name="selection-mode">none</property>
+                             <child>
+                               <object class="HdyActionRow">
+                                 <property name="title" translatable="yes">Convert smileys</property>
+                                 <property name="subtitle" translatable="yes">Convert ASCII smileys</property>
+                                 <property name="visible">True</property>
+                                 <child type="action">
+                                   <object class="GtkSwitch" id="pref_convert_smileys">
+                                     <property name="can_focus">True</property>
+                                     <property name="halign">end</property>
+                                     <property name="valign">center</property>
+                                     <property name="visible">True</property>
+                                   </object>
+                                 </child>
+                               </object>
+                             </child>
+                             <child>
+                               <object class="HdyActionRow">
+                                 <property name="title" translatable="yes">Return = send message</property>
+                                 <property name="subtitle" translatable="yes">Send message with return key</property>
+                                 <property name="visible">True</property>
+                                 <child type="action">
+                                   <object class="GtkSwitch" id="pref_return_sends">
+                                     <property name="can_focus">True</property>
+                                     <property name="halign">end</property>
+                                     <property name="valign">center</property>
+                                     <property name="visible">True</property>
+                                   </object>
+                                 </child>
+                               </object>
+                             </child>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                    </object>
+                  </child>
+                </object>
+                <packing>
+                  <property name="name">view-settings</property>
+                  <property name="position">2</property>
+                </packing>
+              </child>
+              <child>
+                <object class="HdyColumn">
+                  <property name="visible">False</property>
+                  <property name="can_focus">False</property>
+                  <property name="halign">fill</property>
+                  <property name="valign">fill</property>
+                  <property name="margin-bottom">32</property>
+                  <property name="margin-start">12</property>
+                  <property name="margin-end">12</property>
+                  <property name="margin-top">32</property>
+                  <property name="expand">True</property>
+                  <property name="maximum-width">600</property>
+                  <child>
+                    <object class="GtkBox">
+                      <property name="visible">True</property>
+                      <property name="orientation">vertical</property>
+                      <property name="can_focus">False</property>
+                      <property name="valign">start</property>
+                      <property name="expand">True</property>
+                      <child>
+                        <object class="GtkFrame">
+                          <property name="visible">True</property>
+                          <property name="can_focus">False</property>
+                          <property name="expand">True</property>
+                          <property name="margin-bottom">32</property>
+                          <child>
+                            <object class="GtkListBox" id="select_account_listbox">
+                              <property name="visible">True</property>
+                              <property name="can_focus">False</property>
+                              <property name="expand">True</property>
+                              <property name="selection-mode">none</property>
+                            </object>
+                          </child>
+                        </object>
+                      </child>
+                    </object>
+                  </child>
+                </object>
+                <packing>
+                  <property name="name">view-select-account</property>
+                  <property name="position">3</property>
+                </packing>
+              </child>
+              <child>
+                <object class="GtkBox" id="pane_view_new_chat">
+                  <property name="can_focus">False</property>
+                </object>
+                <packing>
+                  <property name="name">view-new-chat</property>
+                  <property name="position">4</property>
+                </packing>
+              </child>
+              <child>
+                <object class="GtkBox" id="pane_view_new_account">
+                  <property name="can_focus">False</property>
+                </object>
+                <packing>
+                  <property name="name">view-new-account</property>
+                  <property name="position">5</property>
+                </packing>
+              </child>
+            </object>
+          </child>
+       </object>
+      </child>
   </object>
 </interface>

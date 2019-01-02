@@ -19,13 +19,25 @@ typedef struct {
   GtkBox            *pane_view_new_contact;
   GtkBox            *pane_view_select_account;
   GtkWidget         *pane_view_message_list;
-  GtkBox            *pane_view_manage_account;
   GtkBox            *pane_view_new_chat;
   GtkBox            *pane_view_new_account;
   GtkHeaderBar      *header_view_message_list;
   GtkWidget         *header_icon;
   GtkWidget         *header_spinner;
   GtkWidget         *search_bar;
+  GtkListBox        *account_list_manage;
+  GtkListBox        *account_list_select;
+  GtkListBox        *list_privacy_prefs;
+  GtkListBox        *list_xmpp_prefs;
+  GtkListBox        *list_general_prefs;
+  GtkSwitch         *prefs_switch_send_receipts;
+  GtkSwitch         *prefs_switch_carbon_copy;
+  GtkSwitch         *prefs_switch_typing_notification;
+  GtkSwitch         *prefs_switch_show_offline;
+  GtkSwitch         *prefs_switch_indicate_offline;
+  GtkSwitch         *prefs_switch_indicate_idle;
+  GtkSwitch         *prefs_switch_convert_smileys;
+  GtkSwitch         *prefs_switch_return_sends;
   GtkWidget         *button_add_buddy;
   GtkEntry          *entry_buddy_name;
   GtkEntry          *entry_buddy_nick;
@@ -37,15 +49,28 @@ typedef struct {
 
 chatty_data_t *chatty_get_data(void);
 
+enum {
+  CHATTY_PREF_SEND_RECEIPTS,
+  CHATTY_PREF_CARBON_COPY,
+  CHATTY_PREF_TYPING_NOTIFICATION,
+  CHATTY_PREF_SHOW_OFFLINE,
+  CHATTY_PREF_INDICATE_OFFLINE,
+  CHATTY_PREF_INDICATE_IDLE,
+  CHATTY_PREF_CONVERT_SMILEY,
+  CHATTY_PREF_RETURN_SENDS
+} ChattyPreferences;
+
+
 typedef enum {
   CHATTY_VIEW_NEW_CHAT,
   CHATTY_VIEW_SELECT_ACCOUNT,
   CHATTY_VIEW_NEW_ACCOUNT,
   CHATTY_VIEW_MESSAGE_LIST,
-  CHATTY_VIEW_MANAGE_ACCOUNT,
+  CHATTY_VIEW_SETTINGS,
   CHATTY_VIEW_CHAT_LIST,
   CHATTY_VIEW_ADD_CONTACT
 } ChattyWindowState;
+
 
 typedef enum {
   CHATTY_MESSAGE_MODE_XMPP,

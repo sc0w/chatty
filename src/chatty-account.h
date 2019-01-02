@@ -12,12 +12,12 @@
 
 typedef struct
 {
-  GtkWidget *list_manage;
-  GtkWidget *list_select;
-  GtkWidget *button_add_account;
-  GtkWidget *button_delete_account;
-  GtkEntry  *entry_account_name;
-  GtkEntry  *entry_account_pwd;
+
+  GtkListBox *list_select;
+  GtkWidget  *button_add_account;
+  GtkWidget  *button_delete_account;
+  GtkEntry   *entry_account_name;
+  GtkEntry   *entry_account_pwd;
 } chatty_account_data_t;
 
 
