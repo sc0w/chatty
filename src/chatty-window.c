@@ -14,8 +14,6 @@
 #include "chatty-purple-init.h"
 #include "chatty-icons.h"
 #include "chatty-popover-actions.h"
-#define HANDY_USE_UNSTABLE_API
-#include <handy.h>
 
 static chatty_data_t chatty_data;
 
@@ -54,10 +52,17 @@ cb_switch_on_off_state_changed (GtkSwitch *widget,
 {
   switch (GPOINTER_TO_INT(data)) {
     case CHATTY_PREF_SEND_RECEIPTS:
-      purple_prefs_set_bool (CHATTY_PREFS_ROOT "/blist/show_offline_buddies", state);
+      purple_prefs_set_bool (CHATTY_PREFS_ROOT "/blist/send_receipts", state);
       break;
-    case CHATTY_PREF_CARBON_COPY:
-      purple_prefs_set_bool (CHATTY_PREFS_ROOT "/blist/show_offline_buddies", state);
+    case CHATTY_PREF_MESSAGE_CARBONS:
+      if (state) {
+        chatty_purple_load_plugin ("core-riba-carbons");
+        purple_prefs_set_bool (CHATTY_PREFS_ROOT "/plugins/message_carbons", TRUE);
+      } else {
+        chatty_purple_unload_plugin ("core-riba-carbons");
+        purple_prefs_set_bool (CHATTY_PREFS_ROOT "/plugins/message_carbons", FALSE);
+      }
+
       break;
     case CHATTY_PREF_TYPING_NOTIFICATION:
       purple_prefs_set_bool (CHATTY_PREFS_ROOT "/conversations/send_typing", state);
@@ -216,10 +221,16 @@ chatty_window_init_data (void)
 {
   chatty_data_t *chatty = chatty_get_data ();
 
+  chatty_purple_data_t *chatty_purple = chatty_get_purple_data ();
+
   chatty_window_change_view (CHATTY_VIEW_CHAT_LIST);
 
   libpurple_start ();
 
+  gtk_switch_set_state (chatty->prefs_switch_message_carbons,
+                        chatty_purple->plugin_carbons_loaded);
+  gtk_switch_set_state (chatty->prefs_switch_send_receipts,
+                        purple_prefs_get_bool (CHATTY_PREFS_ROOT "/conversations/send_receipts"));
   gtk_switch_set_state (chatty->prefs_switch_typing_notification,
                         purple_prefs_get_bool (CHATTY_PREFS_ROOT "/conversations/send_typing"));
   gtk_switch_set_state (chatty->prefs_switch_show_offline,
@@ -231,6 +242,20 @@ chatty_window_init_data (void)
   gtk_switch_set_state (chatty->prefs_switch_convert_smileys,
                         purple_prefs_get_bool (CHATTY_PREFS_ROOT "/conversations/convert_emoticons"));
 
+  if (chatty_purple->plugin_carbons_available) {
+    gtk_widget_show (GTK_WIDGET(chatty->row_pref_message_carbons));
+  } else {
+    gtk_widget_hide (GTK_WIDGET(chatty->row_pref_message_carbons));
+  }
+
+  g_signal_connect (chatty->prefs_switch_send_receipts,
+                    "state-set",
+                    G_CALLBACK(cb_switch_on_off_state_changed),
+                    (gpointer)CHATTY_PREF_SEND_RECEIPTS);
+  g_signal_connect (chatty->prefs_switch_message_carbons,
+                    "state-set",
+                    G_CALLBACK(cb_switch_on_off_state_changed),
+                    (gpointer)CHATTY_PREF_MESSAGE_CARBONS);
   g_signal_connect (chatty->prefs_switch_typing_notification,
                     "state-set",
                     G_CALLBACK(cb_switch_on_off_state_changed),
@@ -291,13 +316,15 @@ chatty_window_activate (GtkApplication *app,
                                              GTK_STYLE_PROVIDER_PRIORITY_USER);
 
   chatty->prefs_switch_send_receipts = GTK_SWITCH (gtk_builder_get_object (builder, "pref_send_receipts"));
-  chatty->prefs_switch_carbon_copy = GTK_SWITCH (gtk_builder_get_object (builder, "pref_carbon_copy"));
+  chatty->prefs_switch_message_carbons = GTK_SWITCH (gtk_builder_get_object (builder, "pref_message_carbons"));
   chatty->prefs_switch_typing_notification = GTK_SWITCH (gtk_builder_get_object (builder, "pref_typing_notification"));
   chatty->prefs_switch_show_offline = GTK_SWITCH (gtk_builder_get_object (builder, "pref_show_offline"));
   chatty->prefs_switch_indicate_offline = GTK_SWITCH (gtk_builder_get_object (builder, "pref_indicate_offline"));
   chatty->prefs_switch_indicate_idle = GTK_SWITCH (gtk_builder_get_object (builder, "pref_indicate_idle"));
   chatty->prefs_switch_convert_smileys = GTK_SWITCH (gtk_builder_get_object (builder, "pref_convert_smileys"));
   chatty->prefs_switch_return_sends = GTK_SWITCH (gtk_builder_get_object (builder, "pref_return_sends"));
+
+  chatty->row_pref_message_carbons = HDY_ACTION_ROW (gtk_builder_get_object (builder, "row_pref_message_carbons"));
 
   chatty->header_view_message_list = GTK_HEADER_BAR (gtk_builder_get_object (builder, "header_view_message_list"));
   chatty->header_icon = GTK_WIDGET (gtk_builder_get_object (builder, "header_icon"));
@@ -315,13 +342,13 @@ chatty_window_activate (GtkApplication *app,
   chatty->account_list_select = GTK_LIST_BOX (gtk_builder_get_object (builder, "select_account_listbox"));
   chatty->list_privacy_prefs = GTK_LIST_BOX (gtk_builder_get_object (builder, "privacy_prefs_listbox"));
   chatty->list_xmpp_prefs = GTK_LIST_BOX (gtk_builder_get_object (builder, "xmpp_prefs_listbox"));
-  chatty->list_general_prefs = GTK_LIST_BOX (gtk_builder_get_object (builder, "general_prefs_listbox"));
+  chatty->list_editor_prefs = GTK_LIST_BOX (gtk_builder_get_object (builder, "editor_prefs_listbox"));
 
   gtk_list_box_set_header_func (chatty->account_list_manage, hdy_list_box_separator_header, NULL, NULL);
   gtk_list_box_set_header_func (chatty->account_list_select, hdy_list_box_separator_header, NULL, NULL);
   gtk_list_box_set_header_func (chatty->list_privacy_prefs, hdy_list_box_separator_header, NULL, NULL);
   gtk_list_box_set_header_func (chatty->list_xmpp_prefs, hdy_list_box_separator_header, NULL, NULL);
-  gtk_list_box_set_header_func (chatty->list_general_prefs, hdy_list_box_separator_header, NULL, NULL);
+  gtk_list_box_set_header_func (chatty->list_editor_prefs, hdy_list_box_separator_header, NULL, NULL);
 
   g_object_unref (builder);
   gtk_widget_show_all (GTK_WIDGET (window));

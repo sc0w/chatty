@@ -1954,6 +1954,7 @@ chatty_conversations_init (void)
   purple_prefs_add_bool (CHATTY_PREFS_ROOT "/conversations/show_tabs", FALSE);
   purple_prefs_add_bool (CHATTY_PREFS_ROOT "/conversations/send_typing", TRUE);
   purple_prefs_add_bool (CHATTY_PREFS_ROOT "/conversations/convert_emoticons", TRUE);
+  purple_prefs_add_bool (CHATTY_PREFS_ROOT "/conversations/send_receipts", TRUE);
 
   purple_prefs_add_bool ("/purple/logging/log_system", FALSE);
   purple_prefs_set_bool ("/purple/logging/log_system", FALSE);

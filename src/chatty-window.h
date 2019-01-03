@@ -11,6 +11,8 @@
 #include <gtk/gtk.h>
 #include <purple.h>
 #include "chatty-message-list.h"
+#define HANDY_USE_UNSTABLE_API
+#include <handy.h>
 
 typedef struct {
   GtkWindow         *main_window;
@@ -29,15 +31,16 @@ typedef struct {
   GtkListBox        *account_list_select;
   GtkListBox        *list_privacy_prefs;
   GtkListBox        *list_xmpp_prefs;
-  GtkListBox        *list_general_prefs;
+  GtkListBox        *list_editor_prefs;
   GtkSwitch         *prefs_switch_send_receipts;
-  GtkSwitch         *prefs_switch_carbon_copy;
+  GtkSwitch         *prefs_switch_message_carbons;
   GtkSwitch         *prefs_switch_typing_notification;
   GtkSwitch         *prefs_switch_show_offline;
   GtkSwitch         *prefs_switch_indicate_offline;
   GtkSwitch         *prefs_switch_indicate_idle;
   GtkSwitch         *prefs_switch_convert_smileys;
   GtkSwitch         *prefs_switch_return_sends;
+  HdyActionRow      *row_pref_message_carbons;
   GtkWidget         *button_add_buddy;
   GtkEntry          *entry_buddy_name;
   GtkEntry          *entry_buddy_nick;
@@ -51,13 +54,14 @@ chatty_data_t *chatty_get_data(void);
 
 enum {
   CHATTY_PREF_SEND_RECEIPTS,
-  CHATTY_PREF_CARBON_COPY,
+  CHATTY_PREF_MESSAGE_CARBONS,
   CHATTY_PREF_TYPING_NOTIFICATION,
   CHATTY_PREF_SHOW_OFFLINE,
   CHATTY_PREF_INDICATE_OFFLINE,
   CHATTY_PREF_INDICATE_IDLE,
   CHATTY_PREF_CONVERT_SMILEY,
-  CHATTY_PREF_RETURN_SENDS
+  CHATTY_PREF_RETURN_SENDS,
+  CHATTY_PREF_LAST
 } ChattyPreferences;
 
 

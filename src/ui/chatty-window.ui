@@ -42,22 +42,8 @@
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">False</property>
-            <property name="action_name">chat_list.help</property>
-            <property name="text" translatable="yes">Help</property>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">3</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkModelButton">
-            <property name="visible">True</property>
-            <property name="can_focus">True</property>
-            <property name="receives_default">False</property>
             <property name="action_name">chat_list.about</property>
-            <property name="text" translatable="yes">About Chats</property>
+            <property name="text" translatable="yes">About Chatty</property>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -550,7 +536,8 @@
                   <property name="margin-end">12</property>
                   <property name="margin-top">32</property>
                   <property name="expand">True</property>
-                  <property name="maximum-width">600</property>
+                  <property name="maximum-width" bind-source="column_width_adjustment" bind-property="value" bind-flags="sync-create"/>
+                  <property name="linear-growth-width" bind-source="column_linear_width_adjustment" bind-property="value" bind-flags="sync-create"/>
                   <child>
                     <object class="GtkBox">
                       <property name="visible">True</property>
@@ -630,12 +617,12 @@
                                  </object>
                                </child>
                                <child>
-                                 <object class="HdyActionRow">
-                                   <property name="title" translatable="yes">Carbon copy</property>
+                                 <object class="HdyActionRow" id="row_pref_message_carbons">
+                                   <property name="title" translatable="yes">Message carbons</property>
                                    <property name="subtitle" translatable="yes">Share chat history among devices</property>
                                    <property name="visible">True</property>
                                    <child type="action">
-                                     <object class="GtkSwitch" id="pref_carbon_copy">
+                                     <object class="GtkSwitch" id="pref_message_carbons">
                                        <property name="can_focus">True</property>
                                        <property name="halign">end</property>
                                        <property name="valign">center</property>
@@ -738,28 +725,28 @@
                           </child>
                         </object>
                       </child>
-                    <child>
-                      <object class="GtkLabel">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="expand">True</property>
-                        <property name="label" translatable="yes">General</property>
-                        <property name="justify">left</property>
-                        <property name="halign">start</property>
-                        <property name="margin-bottom">12</property>
-                        <attributes>
-                          <attribute name="weight" value="bold"/>
-                        </attributes>
-                      </object>
-                    </child>
-                     <child>
+                      <child>
+                        <object class="GtkLabel">
+                          <property name="visible">True</property>
+                          <property name="can_focus">False</property>
+                          <property name="expand">True</property>
+                          <property name="label" translatable="yes">Editor</property>
+                          <property name="justify">left</property>
+                          <property name="halign">start</property>
+                          <property name="margin-bottom">12</property>
+                          <attributes>
+                            <attribute name="weight" value="bold"/>
+                          </attributes>
+                        </object>
+                      </child>
+                      <child>
                        <object class="GtkFrame">
                          <property name="visible">True</property>
                          <property name="can_focus">False</property>
                          <property name="expand">True</property>
                          <property name="margin-bottom">32</property>
                          <child>
-                           <object class="GtkListBox" id="general_prefs_listbox">
+                           <object class="GtkListBox" id="editor_prefs_listbox">
                              <property name="visible">True</property>
                              <property name="can_focus">False</property>
                              <property name="expand">True</property>
@@ -806,6 +793,7 @@
                   <property name="position">2</property>
                 </packing>
               </child>
+
               <child>
                 <object class="HdyColumn">
                   <property name="visible">False</property>
@@ -871,5 +859,19 @@
           </child>
        </object>
       </child>
+  </object>
+  <object class="GtkAdjustment" id="column_width_adjustment">
+    <property name="lower">0</property>
+    <property name="upper">10000</property>
+    <property name="value">600</property>
+    <property name="page-increment">100</property>
+    <property name="step-increment">10</property>
+  </object>
+  <object class="GtkAdjustment" id="column_linear_width_adjustment">
+    <property name="lower">0</property>
+    <property name="upper">10000</property>
+    <property name="value">500</property>
+    <property name="page-increment">100</property>
+    <property name="step-increment">10</property>
   </object>
 </interface>

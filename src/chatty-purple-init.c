@@ -180,6 +180,7 @@ chatty_purple_prefs_init (void)
   purple_prefs_add_none ("/plugins/chatty");
 
   purple_prefs_add_none (CHATTY_PREFS_ROOT "/plugins");
+  purple_prefs_add_bool (CHATTY_PREFS_ROOT "/plugins/message_carbons", TRUE);
   purple_prefs_add_path_list (CHATTY_PREFS_ROOT "/plugins/loaded", NULL);
 
   purple_prefs_add_none (CHATTY_PREFS_ROOT "/debug");
@@ -230,7 +231,7 @@ chatty_core_get_ui_ops (void)
 }
 
 
-static gboolean
+gboolean
 chatty_purple_load_plugin (const char *name)
 {
   GList    *iter;
@@ -258,12 +259,44 @@ chatty_purple_load_plugin (const char *name)
 }
 
 
+gboolean
+chatty_purple_unload_plugin (const char *name)
+{
+  PurplePlugin  *plugin;
+  gboolean       result = FALSE;
+
+  plugin = purple_plugins_find_with_id (name);
+
+  if (plugin != NULL) {
+    result = purple_plugin_unload (plugin);
+
+    purple_plugin_disable (plugin);
+
+    purple_plugins_save_loaded (CHATTY_PREFS_ROOT "/plugins/loaded");
+  } else {
+    g_debug ("Plugin %s couldn't be unloaded, it wasn't found", name);
+    return FALSE;
+  }
+
+  if (result) {
+    g_debug ("Unloaded plugin %s", name);
+  } else {
+    g_debug ("Plugin %s couldn't be unloaded now, "
+             "it will be unloaded after a restart", name);
+  }
+
+  return result;
+}
+
+
 static void
 init_libpurple (void)
 {
   PurpleAccount *account;
   gchar         *search_path;
   gboolean       debug;
+
+  chatty_purple_data_t *chatty_purple = chatty_get_purple_data ();
 
   debug = purple_prefs_get_bool (CHATTY_PREFS_ROOT "/debug/enabled");
   purple_debug_set_enabled (debug);
@@ -289,8 +322,13 @@ init_libpurple (void)
 
   purple_plugins_probe (G_MODULE_SUFFIX);
 
-  chatty_purple_load_plugin ("core-riba-lurch");
-  chatty_purple_load_plugin ("core-riba-carbons");
+  chatty_purple->plugin_carbons_available = purple_plugins_find_with_id ("core-riba-carbons");
+
+  if (purple_prefs_get_bool (CHATTY_PREFS_ROOT "/plugins/message_carbons")) {
+    chatty_purple->plugin_carbons_loaded = chatty_purple_load_plugin ("core-riba-carbons");
+  }
+
+  chatty_purple->plugin_lurch_loaded = chatty_purple_load_plugin ("core-riba-lurch");
 
   purple_plugins_init ();
   purple_network_force_online();

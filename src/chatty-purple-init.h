@@ -20,12 +20,16 @@
 #define PURPLE_GLIB_WRITE_COND (G_IO_OUT | G_IO_HUP | G_IO_ERR | G_IO_NVAL)
 
 typedef struct {
-  PurpleConversation *conv;
-  PurpleAccount      *account;
+  gboolean plugin_carbons_loaded;
+  gboolean plugin_carbons_available;
+  gboolean plugin_lurch_loaded;
+  gboolean plugin_mm_sms_loaded;
 } chatty_purple_data_t;
 
 chatty_purple_data_t *chatty_get_purple_data(void);
 
 void libpurple_start (void);
+gboolean chatty_purple_unload_plugin (const char *name);
+gboolean chatty_purple_load_plugin (const char *name);
 
 #endif
