@@ -322,6 +322,10 @@ cb_textview_key_pressed (GtkWidget   *widget,
                          GdkEventKey *key_event,
                          gpointer     data)
 {
+  if (!purple_prefs_get_bool (CHATTY_PREFS_ROOT "/conversations/return_sends")) {
+    return FALSE;
+  }
+
   if (!key_event->state & GDK_SHIFT_MASK && key_event->keyval == GDK_KEY_Return) {
     cb_button_send_clicked (NULL, data);
 
@@ -1955,6 +1959,7 @@ chatty_conversations_init (void)
   purple_prefs_add_bool (CHATTY_PREFS_ROOT "/conversations/send_typing", TRUE);
   purple_prefs_add_bool (CHATTY_PREFS_ROOT "/conversations/convert_emoticons", TRUE);
   purple_prefs_add_bool (CHATTY_PREFS_ROOT "/conversations/send_receipts", TRUE);
+  purple_prefs_add_bool (CHATTY_PREFS_ROOT "/conversations/return_sends", TRUE);
 
   purple_prefs_add_bool ("/purple/logging/log_system", FALSE);
   purple_prefs_set_bool ("/purple/logging/log_system", FALSE);

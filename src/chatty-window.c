@@ -62,7 +62,6 @@ cb_switch_on_off_state_changed (GtkSwitch *widget,
         chatty_purple_unload_plugin ("core-riba-carbons");
         purple_prefs_set_bool (CHATTY_PREFS_ROOT "/plugins/message_carbons", FALSE);
       }
-
       break;
     case CHATTY_PREF_TYPING_NOTIFICATION:
       purple_prefs_set_bool (CHATTY_PREFS_ROOT "/conversations/send_typing", state);
@@ -80,7 +79,7 @@ cb_switch_on_off_state_changed (GtkSwitch *widget,
       purple_prefs_set_bool (CHATTY_PREFS_ROOT "/conversations/convert_emoticons", state);
       break;
     case CHATTY_PREF_RETURN_SENDS:
-      purple_prefs_set_bool (CHATTY_PREFS_ROOT "/blist/show_offline_buddies", state);
+      purple_prefs_set_bool (CHATTY_PREFS_ROOT "/conversations/return_sends", state);
       break;
     default:
       break;
@@ -241,6 +240,8 @@ chatty_window_init_data (void)
                         purple_prefs_get_bool (CHATTY_PREFS_ROOT "/blist/blur_idle_buddies"));
   gtk_switch_set_state (chatty->prefs_switch_convert_smileys,
                         purple_prefs_get_bool (CHATTY_PREFS_ROOT "/conversations/convert_emoticons"));
+  gtk_switch_set_state (chatty->prefs_switch_return_sends,
+                        purple_prefs_get_bool (CHATTY_PREFS_ROOT "/conversations/return_sends"));
 
   if (chatty_purple->plugin_carbons_available) {
     gtk_widget_show (GTK_WIDGET(chatty->row_pref_message_carbons));
@@ -269,12 +270,17 @@ chatty_window_init_data (void)
                     G_CALLBACK(cb_switch_on_off_state_changed),
                     (gpointer)CHATTY_PREF_INDICATE_OFFLINE);
   g_signal_connect (chatty->prefs_switch_indicate_idle,
-                    "state-set", G_CALLBACK(cb_switch_on_off_state_changed),
+                    "state-set",
+                    G_CALLBACK(cb_switch_on_off_state_changed),
                     (gpointer)CHATTY_PREF_INDICATE_IDLE);
   g_signal_connect (chatty->prefs_switch_convert_smileys,
                     "state-set",
                     G_CALLBACK(cb_switch_on_off_state_changed),
                     (gpointer)CHATTY_PREF_CONVERT_SMILEY);
+  g_signal_connect (chatty->prefs_switch_return_sends,
+                    "state-set",
+                    G_CALLBACK(cb_switch_on_off_state_changed),
+                    (gpointer)CHATTY_PREF_RETURN_SENDS);
 }
 
 
