@@ -25,7 +25,7 @@ view_new_chat_cmd_add_by_id (GSimpleAction *action,
                              GVariant      *parameter,
                              gpointer       user_data)
 {
-  chatty_window_change_view (CHATTY_VIEW_SELECT_ACCOUNT);
+  chatty_window_change_view (CHATTY_VIEW_NEW_CONTACT);
 }
 
 static void

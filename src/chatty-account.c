@@ -156,13 +156,18 @@ cb_list_account_select_row_activated (GtkListBox    *box,
   PurplePlugin             *prpl = NULL;
   PurplePluginProtocolInfo *prpl_info = NULL;
   const gchar              *protocol_id;
+  GtkWidget                *prefix_radio;
 
   chatty_data_t *chatty = chatty_get_data ();
 
   account = g_object_get_data (G_OBJECT (row), "row-account");
+  prefix_radio = g_object_get_data (G_OBJECT(row), "row-prefix");
+
+  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(prefix_radio), TRUE);
 
   if (account) {
     pc = purple_account_get_connection (account);
+    chatty->contact_selected_account = account;
   }
 
   if (pc) {
@@ -179,15 +184,11 @@ cb_list_account_select_row_activated (GtkListBox    *box,
 
   protocol_id = purple_account_get_protocol_id (account);
 
-  chatty_blist_create_add_buddy_view (account);
-
   if (g_strcmp0 (protocol_id, "prpl-mm-sms") == 0) {
-    gtk_label_set_text (GTK_LABEL(chatty->label_buddy_id), _("Number"));
+    gtk_label_set_text (GTK_LABEL(chatty->label_contact_id), _("SMS Number"));
   } else {
-    gtk_label_set_text (GTK_LABEL(chatty->label_buddy_id), _("XMPP ID"));
+    gtk_label_set_text (GTK_LABEL(chatty->label_contact_id), _("Jabber ID"));
   }
-
-  chatty_window_change_view (CHATTY_VIEW_ADD_CONTACT);
 }
 
 
@@ -266,12 +267,10 @@ chatty_account_add_to_accounts_list (PurpleAccount *account,
 {
   HdyActionRow   *row;
   GtkWidget      *switch_account_enabled;
-  GtkWidget      *prefix_radio;
   const gchar    *protocol_id;
+  GtkWidget      *prefix_radio_button;
 
   chatty_data_t *chatty = chatty_get_data ();
-
-  chatty_account_data_t *chatty_account = chatty_get_account_data ();
 
   row = hdy_action_row_new ();
   g_object_set_data (G_OBJECT(row),
@@ -285,6 +284,7 @@ chatty_account_add_to_accounts_list (PurpleAccount *account,
       (g_strcmp0 (protocol_id, "prpl-mm-sms")) != 0) {
     return;
   }
+
 
   if (list_type == LIST_ACCOUNT_MANAGE) {
     switch_account_enabled = gtk_switch_new ();
@@ -306,16 +306,16 @@ chatty_account_add_to_accounts_list (PurpleAccount *account,
     hdy_action_row_set_title (row, purple_account_get_username (account));
     hdy_action_row_set_subtitle (row, purple_account_get_protocol_name (account));
     hdy_action_row_add_action (row, GTK_WIDGET(switch_account_enabled));
-
   } else {
-    prefix_radio = gtk_radio_button_new (NULL);
+    prefix_radio_button = gtk_radio_button_new_from_widget (GTK_RADIO_BUTTON(chatty->dummy_prefix_radio));
 
-    hdy_action_row_add_prefix (row, GTK_WIDGET(prefix_radio));
+    g_object_set_data (G_OBJECT(row),
+                       "row-prefix",
+                       (gpointer)prefix_radio_button);
 
+    hdy_action_row_add_prefix (row, GTK_WIDGET(prefix_radio_button ));
     hdy_action_row_set_title (row, purple_account_get_username (account));
-    hdy_action_row_set_subtitle (row, NULL); // TODO title still doesn't center vertically
   }
-
 
   if (list_type == LIST_ACCOUNT_MANAGE) {
     gtk_container_add (GTK_CONTAINER(chatty->account_list_manage),
@@ -365,8 +365,6 @@ chatty_account_populate_account_list (GtkListBox *list, guint type)
                        "row-new-account",
                        (gpointer)TRUE);
 
-    //hdy_action_row_set_icon_name (row, "document-new-symbolic");
-
     hdy_action_row_set_title (row, _("Add new account..."));
 
     gtk_container_add (GTK_CONTAINER(chatty->account_list_manage),
@@ -405,7 +403,9 @@ chatty_account_notify_added (PurpleAccount *account,
   gtk_dialog_set_default_response (GTK_DIALOG(dialog), GTK_RESPONSE_CANCEL);
   gtk_window_set_position (GTK_WINDOW(dialog), GTK_WIN_POS_CENTER_ON_PARENT);
 
-  gtk_widget_show_all (GTK_WIDGET(dialog));
+  gtk_dialog_run (GTK_DIALOG(dialog));
+
+  gtk_widget_destroy (dialog);
 }
 
 
@@ -632,6 +632,10 @@ chatty_account_init (void)
                     G_CALLBACK(cb_list_account_manage_row_activated),
                     NULL);
 
+  g_signal_connect (G_OBJECT(chatty->account_list_select),
+                    "row-activated",
+                    G_CALLBACK(cb_list_account_select_row_activated),
+                    NULL);
 
   chatty_account_populate_account_list (chatty->account_list_manage,
                                         LIST_ACCOUNT_MANAGE);

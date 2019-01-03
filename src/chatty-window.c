@@ -17,6 +17,7 @@
 
 static chatty_data_t chatty_data;
 
+static void chatty_reset_new_contact_view (void);
 
 static void chatty_back_action (GSimpleAction *action,
                                 GVariant      *parameter,
@@ -42,6 +43,58 @@ static const GActionEntry window_action_entries [] = {
 chatty_data_t *chatty_get_data (void)
 {
   return &chatty_data;
+}
+
+
+static void
+cb_contact_name_insert_text (GtkEntry    *entry,
+                             const gchar *text,
+                             gint         length,
+                             gint        *position,
+                             gpointer     data)
+{
+  chatty_data_t *chatty = chatty_get_data ();
+
+  // TODO validate input
+  if (length) {
+    gtk_widget_set_sensitive (chatty->button_add_contact, TRUE);
+  } else {
+    gtk_widget_set_sensitive (chatty->button_add_contact, FALSE);
+  }
+}
+
+
+static void
+cb_button_new_contact_clicked (GtkButton *sender,
+                               gpointer   data)
+{
+  GtkWidget *dialog;
+
+  chatty_data_t *chatty = chatty_get_data ();
+
+  if (chatty->contact_selected_account == NULL) {
+    dialog = gtk_message_dialog_new (chatty->main_window,
+                                     GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+                                     GTK_MESSAGE_INFO,
+                                     GTK_BUTTONS_OK,
+                                     _("No account selected"));
+
+    gtk_message_dialog_format_secondary_text (GTK_MESSAGE_DIALOG(dialog),
+                                              _("Please select a chat account for contact %s"),
+                                              gtk_entry_get_text (chatty->entry_contact_name));
+
+    gtk_dialog_set_default_response (GTK_DIALOG(dialog), GTK_RESPONSE_CANCEL);
+    gtk_window_set_position (GTK_WINDOW(dialog), GTK_WIN_POS_CENTER_ON_PARENT);
+
+    gtk_dialog_run (GTK_DIALOG(dialog));
+    gtk_widget_destroy (dialog);
+
+    return;
+  }
+
+  chatty_blist_add_buddy ();
+  chatty_window_change_view (CHATTY_VIEW_CHAT_LIST);
+  chatty_reset_new_contact_view ();
 }
 
 
@@ -92,6 +145,21 @@ cb_switch_on_off_state_changed (GtkSwitch *widget,
 
 
 static void
+chatty_reset_new_contact_view (void)
+{
+  chatty_data_t *chatty = chatty_get_data ();
+
+  gtk_label_set_text (GTK_LABEL(chatty->label_contact_id), "Contact ID");
+  gtk_entry_set_text (chatty->entry_contact_name, "");
+  gtk_entry_set_text (chatty->entry_contact_nick, "");
+
+  chatty->contact_selected_account = NULL;
+  gtk_widget_set_sensitive (chatty->button_add_contact, FALSE);
+  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(chatty->dummy_prefix_radio), TRUE);
+}
+
+
+static void
 chatty_empty_container (GtkContainer *container) {
   gtk_container_foreach (container, (GtkCallback)gtk_widget_destroy, NULL);
 }
@@ -119,7 +187,7 @@ chatty_add_contact_action (GSimpleAction *action,
                            GVariant      *parameter,
                            gpointer       user_data)
 {
-  chatty_window_change_view (CHATTY_VIEW_SELECT_ACCOUNT);
+  chatty_window_change_view (CHATTY_VIEW_NEW_CONTACT);
 }
 
 
@@ -143,14 +211,13 @@ chatty_back_action (GSimpleAction *action,
     case CHATTY_VIEW_NEW_ACCOUNT:
       chatty_empty_container (GTK_CONTAINER(chatty->pane_view_new_account));
       break;
-    case CHATTY_VIEW_ADD_CONTACT:
-      chatty_empty_container (GTK_CONTAINER(chatty->pane_view_new_contact));
+    case CHATTY_VIEW_NEW_CONTACT:
+      chatty_reset_new_contact_view ();
       break;
     case CHATTY_VIEW_MESSAGE_LIST:
       chatty_blist_returned_from_chat ();
       break;
     case CHATTY_VIEW_NEW_CHAT:
-    case CHATTY_VIEW_SELECT_ACCOUNT:
     case CHATTY_VIEW_CHAT_LIST:
     default:
       break;
@@ -163,7 +230,7 @@ chatty_back_action (GSimpleAction *action,
 void
 chatty_window_change_view (ChattyWindowState view)
 {
-  gchar         *stack_id;
+  gchar *stack_id;
 
   chatty_data_t *chatty = chatty_get_data ();
 
@@ -180,8 +247,8 @@ chatty_window_change_view (ChattyWindowState view)
       stack_id = "view-new-chat";
       chatty->view_state_next = CHATTY_VIEW_CHAT_LIST;
       break;
-    case CHATTY_VIEW_SELECT_ACCOUNT:
-      stack_id = "view-select-account";
+    case CHATTY_VIEW_NEW_CONTACT:
+      stack_id = "view-new-contact";
       chatty->view_state_next = CHATTY_VIEW_CHAT_LIST;
       break;
     case CHATTY_VIEW_MESSAGE_LIST:
@@ -190,10 +257,6 @@ chatty_window_change_view (ChattyWindowState view)
       break;
     case CHATTY_VIEW_CHAT_LIST:
       stack_id = "view-chat-list";
-      chatty->view_state_next = CHATTY_VIEW_NEW_CHAT;
-      break;
-    case CHATTY_VIEW_ADD_CONTACT:
-      stack_id = "view-new-contact";
       chatty->view_state_next = CHATTY_VIEW_NEW_CHAT;
       break;
     default:
@@ -222,9 +285,13 @@ chatty_window_init_data (void)
 
   chatty_purple_data_t *chatty_purple = chatty_get_purple_data ();
 
+  chatty->dummy_prefix_radio = gtk_radio_button_new_from_widget (GTK_RADIO_BUTTON (NULL));
+
   chatty_window_change_view (CHATTY_VIEW_CHAT_LIST);
 
   libpurple_start ();
+
+  chatty_reset_new_contact_view ();
 
   gtk_switch_set_state (chatty->prefs_switch_message_carbons,
                         chatty_purple->plugin_carbons_loaded);
@@ -281,6 +348,16 @@ chatty_window_init_data (void)
                     "state-set",
                     G_CALLBACK(cb_switch_on_off_state_changed),
                     (gpointer)CHATTY_PREF_RETURN_SENDS);
+
+  g_signal_connect (G_OBJECT(chatty->entry_contact_name),
+                    "insert_text",
+                    G_CALLBACK(cb_contact_name_insert_text),
+                    NULL);
+
+  g_signal_connect (chatty->button_add_contact,
+                    "clicked",
+                    G_CALLBACK (cb_button_new_contact_clicked),
+                    NULL);
 }
 
 
@@ -315,8 +392,7 @@ chatty_window_activate (GtkApplication *app,
 
   chatty->main_window = window;
 
-  gtk_css_provider_load_from_resource (cssProvider,
-                                       "/sm/puri/chatty/css/style.css");
+  gtk_css_provider_load_from_resource (cssProvider, "/sm/puri/chatty/css/style.css");
   gtk_style_context_add_provider_for_screen (gdk_screen_get_default(),
                                              GTK_STYLE_PROVIDER (cssProvider),
                                              GTK_STYLE_PROVIDER_PRIORITY_USER);
@@ -338,9 +414,13 @@ chatty_window_activate (GtkApplication *app,
   chatty->panes_stack = GTK_STACK (gtk_builder_get_object (builder, "panes_stack"));
   chatty->pane_view_message_list = GTK_WIDGET (gtk_builder_get_object (builder, "pane_view_message_list"));
 
+  chatty->label_contact_id = GTK_WIDGET (gtk_builder_get_object (builder, "label_contact_id"));
+  chatty->entry_contact_name = GTK_ENTRY (gtk_builder_get_object (builder, "entry_contact_name"));
+  chatty->entry_contact_nick = GTK_ENTRY (gtk_builder_get_object (builder, "entry_contact_alias"));
+  chatty->button_add_contact = GTK_WIDGET (gtk_builder_get_object (builder, "button_add_contact"));
+
   chatty->pane_view_new_account = GTK_BOX (gtk_builder_get_object (builder, "pane_view_new_account"));
   chatty->pane_view_new_chat = GTK_BOX (gtk_builder_get_object (builder, "pane_view_new_chat"));
-  chatty->pane_view_select_account = GTK_BOX (gtk_builder_get_object (builder, "pane_view_select_account"));
   chatty->pane_view_new_contact = GTK_BOX (gtk_builder_get_object (builder, "pane_view_new_contact"));
   chatty->pane_view_chat_list = GTK_BOX (gtk_builder_get_object (builder, "pane_view_chat_list"));
 

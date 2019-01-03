@@ -41,11 +41,14 @@ typedef struct {
   GtkSwitch         *prefs_switch_convert_smileys;
   GtkSwitch         *prefs_switch_return_sends;
   HdyActionRow      *row_pref_message_carbons;
-  GtkWidget         *button_add_buddy;
-  GtkEntry          *entry_buddy_name;
-  GtkEntry          *entry_buddy_nick;
+  GtkWidget         *button_add_contact;
+  PurpleAccount     *contact_selected_account;
+  GtkEntry          *entry_contact_name;
+  GtkEntry          *entry_contact_nick;
   GtkEntry          *entry_invite_msg;
-  GtkWidget         *label_buddy_id;
+  GSList            *radio_button_list;
+  GtkWidget         *dummy_prefix_radio;
+  GtkWidget         *label_contact_id;
   gint               view_state_last;
   gint               view_state_next;
 } chatty_data_t;
@@ -67,12 +70,11 @@ enum {
 
 typedef enum {
   CHATTY_VIEW_NEW_CHAT,
-  CHATTY_VIEW_SELECT_ACCOUNT,
+  CHATTY_VIEW_NEW_CONTACT,
   CHATTY_VIEW_NEW_ACCOUNT,
-  CHATTY_VIEW_MESSAGE_LIST,
-  CHATTY_VIEW_SETTINGS,
   CHATTY_VIEW_CHAT_LIST,
-  CHATTY_VIEW_ADD_CONTACT
+  CHATTY_VIEW_MESSAGE_LIST,
+  CHATTY_VIEW_SETTINGS
 } ChattyWindowState;
 
 

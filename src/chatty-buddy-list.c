@@ -121,38 +121,6 @@ cb_search_entry_changed (GtkSearchEntry     *entry,
 
 
 static void
-cb_button_new_conversation_clicked (GtkButton *sender,
-                                    gpointer   account)
-{
-  chatty_data_t *chatty = chatty_get_data ();
-
-  chatty_blist_add_buddy (account);
-  chatty_window_change_view (CHATTY_VIEW_CHAT_LIST);
-
-  gtk_container_foreach (GTK_CONTAINER(chatty->pane_view_new_contact),
-                         (GtkCallback)gtk_widget_destroy, NULL);
-}
-
-
-static void
-cb_buddy_name_insert_text (GtkEntry    *entry,
-                           const gchar *text,
-                           gint         length,
-                           gint        *position,
-                           gpointer     data)
-{
-  chatty_data_t *chatty = chatty_get_data ();
-
-  // TODO validate input
-  if (length) {
-    gtk_widget_set_sensitive (chatty->button_add_buddy, TRUE);
-  } else {
-    gtk_widget_set_sensitive (chatty->button_add_buddy, FALSE);
-  }
-}
-
-
-static void
 cb_buddy_away (PurpleBuddy  *buddy,
                PurpleStatus *old_status,
                PurpleStatus *status)
@@ -642,7 +610,7 @@ chatty_blist_chat_list_remove_buddy (void)
  *
  */
 void
-chatty_blist_add_buddy (PurpleAccount *account)
+chatty_blist_add_buddy (void)
 {
   const gchar        *who, *whoalias;
   PurpleBuddy        *buddy;
@@ -651,24 +619,28 @@ chatty_blist_add_buddy (PurpleAccount *account)
 
   chatty_data_t *chatty = chatty_get_data ();
 
-  who = gtk_entry_get_text (GTK_ENTRY(chatty->entry_buddy_name));
-  whoalias = gtk_entry_get_text (GTK_ENTRY(chatty->entry_buddy_nick));
+  if (chatty->contact_selected_account == NULL) {
+    return;
+  }
+
+  who = gtk_entry_get_text (GTK_ENTRY(chatty->entry_contact_name));
+  whoalias = gtk_entry_get_text (GTK_ENTRY(chatty->entry_contact_nick));
 
   if (*whoalias == '\0') {
     whoalias = NULL;
   }
 
-  buddy = purple_buddy_new (account, who, whoalias);
+  buddy = purple_buddy_new (chatty->contact_selected_account, who, whoalias);
 
   purple_blist_add_buddy (buddy, NULL, NULL, NULL);
 
   g_debug ("chatty_blist_add_buddy: %s ", purple_buddy_get_name (buddy));
 
-  purple_account_add_buddy_with_invite (account, buddy, NULL);
+  purple_account_add_buddy_with_invite (chatty->contact_selected_account, buddy, NULL);
 
   conv = purple_find_conversation_with_account (PURPLE_CONV_TYPE_IM,
                                                 who,
-                                                account);
+                                                chatty->contact_selected_account);
 
   if (conv != NULL) {
     icon = purple_conv_im_get_icon (PURPLE_CONV_IM(conv));
@@ -694,86 +666,6 @@ void
 chatty_blist_returned_from_chat (void)
 {
    _chatty_blist->selected_node = NULL;
-}
-
-
-/**
- * chatty_blist_create_add_buddy_view:
- *
- * Creates a view to add a new contact by its ID
- *
- * Called from cb_list_account_select_row_activated in
- * chatty-account.c
- */
-void
-chatty_blist_create_add_buddy_view (PurpleAccount *account)
-{
-// TODO create this view in a *.ui file for interface builder
-  GtkWidget   *grid;
-  GtkWidget   *label;
-  GtkWidget   *button_avatar;
-
-  chatty_data_t *chatty = chatty_get_data ();
-
-  grid = gtk_grid_new ();
-  gtk_grid_set_row_spacing (GTK_GRID (grid), 30);
-  gtk_grid_set_column_spacing (GTK_GRID (grid), 10);
-
-  button_avatar = chatty_icon_get_avatar_button (80);
-
-  gtk_grid_attach (GTK_GRID (grid),
-                   GTK_WIDGET (button_avatar),
-                   0, 0, 2, 1);
-
-  chatty->label_buddy_id = gtk_label_new (NULL);
-
-  gtk_grid_attach (GTK_GRID (grid),
-                   GTK_WIDGET (chatty->label_buddy_id),
-                   0, 1, 1, 1);
-
-  chatty->entry_buddy_name = GTK_ENTRY (gtk_entry_new ());
-
-  g_signal_connect (G_OBJECT(chatty->entry_buddy_name),
-                    "insert_text",
-                    G_CALLBACK(cb_buddy_name_insert_text),
-                    NULL);
-
-  gtk_grid_attach (GTK_GRID (grid),
-                   GTK_WIDGET (chatty->entry_buddy_name),
-                   1, 1, 1, 1);
-
-  label = gtk_label_new ("Name");
-
-  gtk_grid_attach (GTK_GRID (grid),
-                   GTK_WIDGET (label),
-                   0, 2, 1, 1);
-
-  chatty->entry_buddy_nick = GTK_ENTRY (gtk_entry_new ());
-  gtk_grid_attach (GTK_GRID (grid),
-                   GTK_WIDGET (chatty->entry_buddy_nick),
-                   1, 2, 1, 1);
-
-  chatty->button_add_buddy = gtk_button_new_with_label ("Add");
-  gtk_grid_attach (GTK_GRID (grid),
-                   GTK_WIDGET (chatty->button_add_buddy),
-                   1, 3, 1, 1);
-
-  gtk_widget_set_sensitive (GTK_WIDGET (chatty->button_add_buddy), FALSE);
-  g_signal_connect (chatty->button_add_buddy,
-                    "clicked",
-                    G_CALLBACK (cb_button_new_conversation_clicked),
-                    (gpointer) account);
-
-  gtk_widget_set_halign (GTK_WIDGET (grid), GTK_ALIGN_CENTER);
-  gtk_widget_set_valign (GTK_WIDGET (grid), GTK_ALIGN_CENTER);
-
-  gtk_widget_show_all (grid);
-
-  gtk_widget_set_can_focus (GTK_WIDGET(chatty->entry_buddy_name), TRUE);
-  gtk_widget_grab_focus (GTK_WIDGET(chatty->entry_buddy_name));
-
-  gtk_box_pack_start (GTK_BOX (chatty->pane_view_new_contact),
-                      grid, TRUE, TRUE, 0);
 }
 
 
