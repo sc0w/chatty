@@ -41,7 +41,7 @@ struct auth_request
   PurpleAccountRequestAuthorizationCb  deny_cb;
 };
 
-static void chatty_account_create_add_account_view (void);
+static void chatty_account_show_add_account_dialog (void);
 static void chatty_account_add_account (const char *name, const char *pwd);
 static gboolean chatty_account_populate_account_list (GtkListBox *list, guint type);
 static void chatty_account_add_to_accounts_list (PurpleAccount *account,
@@ -118,30 +118,7 @@ cb_list_account_manage_row_activated (GtkListBox    *box,
     return;
   }
 
-  chatty_account_create_add_account_view ();
-  chatty_window_change_view (CHATTY_VIEW_NEW_ACCOUNT);
-}
-
-
-static void
-cb_button_add_account_clicked (GtkButton *sender,
-                               gpointer   data)
-{
-  const gchar *name, *pwd;
-
-  chatty_data_t *chatty = chatty_get_data ();
-
-  chatty_account_data_t *chatty_account = chatty_get_account_data ();
-
-  name = gtk_entry_get_text (GTK_ENTRY(chatty_account->entry_account_name));
-  pwd  = gtk_entry_get_text (GTK_ENTRY(chatty_account->entry_account_pwd));
-
-  chatty_account_add_account (name, pwd);
-
-  gtk_container_foreach (GTK_CONTAINER(chatty->pane_view_new_account),
-                         (GtkCallback)gtk_widget_destroy, NULL);
-
-  chatty_window_change_view (CHATTY_VIEW_SETTINGS);
+  chatty_account_show_add_account_dialog ();
 }
 
 
@@ -193,55 +170,48 @@ cb_list_account_select_row_activated (GtkListBox    *box,
 
 
 static void
-chatty_account_create_add_account_view (void)
+chatty_account_show_add_account_dialog (void)
 {
-  // TODO create this view in a *.ui file for interface builder
-  GtkWidget *grid;
-  GtkWidget *button_avatar;
-
-  chatty_data_t *chatty = chatty_get_data ();
+  GtkBuilder *builder;
+  GtkWidget  *dialog;
+  int         response;
 
   chatty_account_data_t *chatty_account = chatty_get_account_data ();
 
-  grid = gtk_grid_new ();
-  gtk_grid_set_row_spacing (GTK_GRID (grid), 20);
+  builder = gtk_builder_new_from_resource ("/sm/puri/chatty/ui/chatty-add-account-dialog.ui");
 
-  button_avatar = chatty_icon_get_avatar_button (80);
+  chatty_account->button_add_account = GTK_WIDGET (gtk_builder_get_object (builder,
+                                                   "ok_button"));
 
-  gtk_grid_attach (GTK_GRID (grid), button_avatar, 1, 1, 1, 1);
+  chatty_account->entry_account_name = GTK_ENTRY (gtk_builder_get_object (builder,
+                                                   "entry_account_id"));
 
-  chatty_account->entry_account_name = GTK_ENTRY (gtk_entry_new ());
-  gtk_entry_set_placeholder_text (GTK_ENTRY (chatty_account->entry_account_name), _("id@any-server"));
-  gtk_grid_attach (GTK_GRID (grid), GTK_WIDGET (chatty_account->entry_account_name), 1, 2, 1, 1);
+  chatty_account->entry_account_pwd = GTK_ENTRY (gtk_builder_get_object (builder,
+                                                  "entry_account_pwd"));
 
   g_signal_connect (G_OBJECT(chatty_account->entry_account_name),
-                    "insert_text",
-                    G_CALLBACK(cb_account_name_insert_text),
-                    NULL);
+                   "insert_text",
+                   G_CALLBACK(cb_account_name_insert_text),
+                   NULL);
 
-  chatty_account->entry_account_pwd = GTK_ENTRY (gtk_entry_new ());
-  gtk_entry_set_placeholder_text (GTK_ENTRY (chatty_account->entry_account_pwd), _("Password"));
-  gtk_entry_set_visibility (GTK_ENTRY (chatty_account->entry_account_pwd), 0);
-  gtk_grid_attach (GTK_GRID (grid), GTK_WIDGET (chatty_account->entry_account_pwd), 1, 3, 1, 1);
+  dialog = GTK_WIDGET (gtk_builder_get_object (builder, "dialog"));
 
-  chatty_account->button_add_account = gtk_button_new_with_label (_("Add account"));
-  gtk_widget_set_sensitive (chatty_account->button_add_account, FALSE);
-  gtk_grid_attach (GTK_GRID (grid), chatty_account->button_add_account, 1, 4, 1, 1);
+  gtk_window_set_position (GTK_WINDOW(dialog), GTK_WIN_POS_CENTER_ON_PARENT);
 
-  g_signal_connect_object (chatty_account->button_add_account, "clicked",
-                           G_CALLBACK (cb_button_add_account_clicked),
-                           NULL, 0);
+  response = gtk_dialog_run (GTK_DIALOG(dialog));
 
-  gtk_widget_set_halign (GTK_WIDGET (grid), GTK_ALIGN_CENTER);
-  gtk_widget_set_valign (GTK_WIDGET (grid), GTK_ALIGN_CENTER);
+  if (response == GTK_RESPONSE_OK) {
+    const gchar *name, *pwd;
 
-  gtk_widget_show_all (grid);
+    name = gtk_entry_get_text (GTK_ENTRY(chatty_account->entry_account_name));
+    pwd  = gtk_entry_get_text (GTK_ENTRY(chatty_account->entry_account_pwd));
 
-  gtk_widget_set_can_focus (GTK_WIDGET(chatty_account->entry_account_name), TRUE);
-  gtk_widget_grab_focus (GTK_WIDGET(chatty_account->entry_account_name));
+    chatty_account_add_account (name, pwd);
+  }
 
-  gtk_box_pack_start (GTK_BOX(chatty->pane_view_new_account),
-                      grid, TRUE, TRUE, 0);
+  gtk_widget_destroy (dialog);
+
+  g_object_unref (builder);
 }
 
 

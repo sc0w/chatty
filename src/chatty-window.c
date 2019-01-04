@@ -80,7 +80,7 @@ cb_button_new_contact_clicked (GtkButton *sender,
                                      _("No account selected"));
 
     gtk_message_dialog_format_secondary_text (GTK_MESSAGE_DIALOG(dialog),
-                                              _("Please select a chat account for contact %s"),
+                                              _("Please select a chat account for\ncontact %s"),
                                               gtk_entry_get_text (chatty->entry_contact_name));
 
     gtk_dialog_set_default_response (GTK_DIALOG(dialog), GTK_RESPONSE_CANCEL);
@@ -160,12 +160,6 @@ chatty_reset_new_contact_view (void)
 
 
 static void
-chatty_empty_container (GtkContainer *container) {
-  gtk_container_foreach (container, (GtkCallback)gtk_widget_destroy, NULL);
-}
-
-
-static void
 chatty_search_action (GSimpleAction *action,
                       GVariant      *state,
                       gpointer       user_data)
@@ -208,9 +202,6 @@ chatty_back_action (GSimpleAction *action,
     case CHATTY_VIEW_SETTINGS:
       chatty_blist_refresh (purple_get_blist(), FALSE);
       break;
-    case CHATTY_VIEW_NEW_ACCOUNT:
-      chatty_empty_container (GTK_CONTAINER(chatty->pane_view_new_account));
-      break;
     case CHATTY_VIEW_NEW_CONTACT:
       chatty_reset_new_contact_view ();
       break;
@@ -238,10 +229,6 @@ chatty_window_change_view (ChattyWindowState view)
     case CHATTY_VIEW_SETTINGS:
       stack_id = "view-settings";
       chatty->view_state_next = CHATTY_VIEW_CHAT_LIST;
-      break;
-    case CHATTY_VIEW_NEW_ACCOUNT:
-      stack_id = "view-new-account";
-      chatty->view_state_next = CHATTY_VIEW_SETTINGS;
       break;
     case CHATTY_VIEW_NEW_CHAT:
       stack_id = "view-new-chat";
@@ -419,7 +406,6 @@ chatty_window_activate (GtkApplication *app,
   chatty->entry_contact_nick = GTK_ENTRY (gtk_builder_get_object (builder, "entry_contact_alias"));
   chatty->button_add_contact = GTK_WIDGET (gtk_builder_get_object (builder, "button_add_contact"));
 
-  chatty->pane_view_new_account = GTK_BOX (gtk_builder_get_object (builder, "pane_view_new_account"));
   chatty->pane_view_new_chat = GTK_BOX (gtk_builder_get_object (builder, "pane_view_new_chat"));
   chatty->pane_view_new_contact = GTK_BOX (gtk_builder_get_object (builder, "pane_view_new_contact"));
   chatty->pane_view_chat_list = GTK_BOX (gtk_builder_get_object (builder, "pane_view_chat_list"));
