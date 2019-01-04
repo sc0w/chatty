@@ -322,7 +322,11 @@ init_libpurple (void)
 
   purple_plugins_probe (G_MODULE_SUFFIX);
 
-  chatty_purple->plugin_carbons_available = purple_plugins_find_with_id ("core-riba-carbons");
+  if (purple_plugins_find_with_id ("core-riba-carbons") != NULL) {
+    chatty_purple->plugin_carbons_available = TRUE;
+  } else {
+    chatty_purple->plugin_carbons_available = FALSE;
+  }
 
   if (purple_prefs_get_bool (CHATTY_PREFS_ROOT "/plugins/message_carbons")) {
     chatty_purple->plugin_carbons_loaded = chatty_purple_load_plugin ("core-riba-carbons");
