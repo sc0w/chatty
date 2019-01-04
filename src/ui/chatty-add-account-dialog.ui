@@ -40,9 +40,9 @@
         <child>
           <object class="GtkGrid">
             <property name="orientation">vertical</property>
-            <property name="margin">20</property>
-            <property name="row-spacing">7</property>
-            <property name="column-spacing">10</property>
+            <property name="margin">12</property>
+            <property name="row-spacing">12</property>
+            <property name="column-spacing">12</property>
             <property name="visible">True</property>
             <child>
               <object class="GtkLabel" id="label_account_id">

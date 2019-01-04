@@ -5,6 +5,7 @@
     <file>ui/chatty-message-list-popover.ui</file>
     <file>ui/chatty-avatar-select-popover.ui</file>
     <file>ui/chatty-add-account-dialog.ui</file>
+    <file>ui/chatty-edit-account-dialog.ui</file>
     <file>ui/chatty-pane-msg-view.ui</file>
     <file>ui/chatty-window.ui</file>
     <file>icons/ui/send-symbolic.svg</file>

@@ -13,8 +13,9 @@
 typedef struct
 {
   GtkListBox    *list_select;
+  GtkWidget     *dialog_edit_account;
   GtkWidget     *button_add_account;
-  GtkWidget     *button_delete_account;
+  GtkWidget     *button_set_account;
   GtkEntry      *entry_account_name;
   GtkEntry      *entry_account_pwd;
 } chatty_account_data_t;
