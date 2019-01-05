@@ -51,17 +51,6 @@ ninja -C build
 
 In a messaging conversation (except SMS conversations) the following commands can be used:
 
-### Chatty
-
-- '/chatty help': Displays a list with available commands.
-- '/chatty show offline': Show offline contacts in chats list.
-- '/chatty hide offline': Hide offline contacts in chats list.
-- '/chatty full offline': Show regular offline avatars.
-- '/chatty grey offline': Grey out offline avatars.
-- '/chatty show idle': Blur avatar of idle contacts.
-- '/chatty hide idle': Don't blur avatar of idle contacts.
-
-
 ### lurch plugin
 
 - '/lurch help': Displays a list with available commands.
