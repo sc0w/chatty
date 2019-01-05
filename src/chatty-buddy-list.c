@@ -32,9 +32,13 @@ static void chatty_blist_queue_refilter (GtkTreeModelFilter *filter);
 static void chatty_blist_update (PurpleBuddyList *list,
                                  PurpleBlistNode *node);
 
-static void chatty_blist_chats_hide_node (PurpleBuddyList *list,
-                                    PurpleBlistNode *node,
-                                    gboolean         update);
+static void chatty_blist_chats_remove_node (PurpleBuddyList *list,
+                                            PurpleBlistNode *node,
+                                            gboolean         update);
+
+static void chatty_blist_contacts_remove_node (PurpleBuddyList *list,
+                                               PurpleBlistNode *node,
+                                               gboolean         update);
 
 static void chatty_blist_update_buddy (PurpleBuddyList *list,
                                        PurpleBlistNode *node);
@@ -206,7 +210,7 @@ cb_buddy_signed_on_off (PurpleBuddy *buddy)
 static gboolean
 cb_chatty_blist_refresh_timer (PurpleBuddyList *list)
 {
-  chatty_blist_refresh (purple_get_blist(), FALSE);
+  chatty_blist_refresh (purple_get_blist());
 
   return TRUE;
 }
@@ -382,7 +386,7 @@ cb_chatty_prefs_change_update_list (const char     *name,
                                     gconstpointer   val,
                                     gpointer        data)
 {
-  chatty_blist_refresh (purple_get_blist (), FALSE);
+  chatty_blist_refresh (purple_get_blist ());
 }
 
 
@@ -677,17 +681,13 @@ chatty_blist_returned_from_chat (void)
  *
  */
 void
-chatty_blist_refresh (PurpleBuddyList *list,
-                      gboolean         remove)
+chatty_blist_refresh (PurpleBuddyList *list)
 {
   PurpleBlistNode *node;
 
   _chatty_blist = CHATTY_BLIST(list);
 
-  if (!_chatty_blist                 ||
-      !_chatty_blist->treeview_chats ||
-      !_chatty_blist->treeview_chats) {
-
+  if (!_chatty_blist || !_chatty_blist->treeview_chats) {
     return;
   }
 
@@ -695,14 +695,8 @@ chatty_blist_refresh (PurpleBuddyList *list,
 
   while (node)
   {
-    if (remove && !PURPLE_BLIST_NODE_IS_GROUP(node)) {
-      chatty_blist_chats_hide_node (list, node, FALSE);
-    }
-
     if (PURPLE_BLIST_NODE_IS_BUDDY (node)) {
       chatty_blist_update_buddy (list, node);
-    } else if (PURPLE_BLIST_NODE_IS_GROUP (node)) {
-      chatty_blist_update (list, node);
     }
 
     node = purple_blist_node_next (node, FALSE);
@@ -711,18 +705,69 @@ chatty_blist_refresh (PurpleBuddyList *list,
 
 
 /**
- * chatty_blist_chats_hide_node:
+ * chatty_blist_contacts_remove_node:
  * @list:   a PurpleBuddyList
  * @node:   a PurpleBlistNode
  * @update: a gboolean
  *
- * Hides a node in the blist
+ * Removes a node in the contacts list
  *
  */
 static void
-chatty_blist_chats_hide_node (PurpleBuddyList *list,
-                              PurpleBlistNode *node,
-                              gboolean         update)
+chatty_blist_contacts_remove_node (PurpleBuddyList *list,
+                                   PurpleBlistNode *node,
+                                   gboolean         update)
+{
+  GtkTreeIter iter;
+  GtkTreePath *path;
+
+  ChattyBlistNode *chatty_node = node->ui_data;
+
+  if (!chatty_node || !chatty_node->row_contact || !_chatty_blist) {
+    return;
+  }
+
+  if (_chatty_blist->selected_node == node) {
+    _chatty_blist->selected_node = NULL;
+  }
+
+  path = gtk_tree_row_reference_get_path (chatty_node->row_contact);
+
+  if (path == NULL) {
+    return;
+  }
+
+  if (!gtk_tree_model_get_iter (GTK_TREE_MODEL(_chatty_blist->treemodel_contacts), &iter, path)) {
+    gtk_tree_path_free (path);
+    return;
+  }
+
+  gtk_list_store_remove (_chatty_blist->treemodel_contacts, &iter);
+
+  gtk_tree_path_free (path);
+
+  if (update && PURPLE_BLIST_NODE_IS_BUDDY(node)) {
+    chatty_blist_update (list, node);
+  }
+
+  gtk_tree_row_reference_free (chatty_node->row_contact);
+  chatty_node->row_contact = NULL;
+}
+
+
+/**
+ * chatty_blist_chats_remove_node:
+ * @list:   a PurpleBuddyList
+ * @node:   a PurpleBlistNode
+ * @update: a gboolean
+ *
+ * Removes a node in the chats list
+ *
+ */
+static void
+chatty_blist_chats_remove_node (PurpleBuddyList *list,
+                                PurpleBlistNode *node,
+                                gboolean         update)
 {
   GtkTreeIter iter;
   GtkTreePath *path;
@@ -752,7 +797,7 @@ chatty_blist_chats_hide_node (PurpleBuddyList *list,
 
   gtk_tree_path_free (path);
 
-  if(update && PURPLE_BLIST_NODE_IS_BUDDY(node)) {
+  if (update && PURPLE_BLIST_NODE_IS_BUDDY(node)) {
     chatty_blist_update (list, node);
   }
 
@@ -1192,7 +1237,7 @@ chatty_blist_show (PurpleBuddyList *list)
 
   chatty_blist_create_chat_list (list);
   chatty_blist_create_contact_list (list);
-  chatty_blist_refresh (list, FALSE);
+  chatty_blist_refresh (list);
 
   purple_blist_set_visible (TRUE);
 
@@ -1243,7 +1288,8 @@ chatty_blist_remove (PurpleBuddyList *list,
 
   purple_request_close_with_handle (node);
 
-  chatty_blist_chats_hide_node (list, node, TRUE);
+  chatty_blist_chats_remove_node (list, node, TRUE);
+  chatty_blist_contacts_remove_node (list, node, TRUE);
 
   if (chatty_node) {
     if (chatty_node->recent_signonoff_timer > 0) {
@@ -1635,7 +1681,7 @@ chatty_blist_update_buddy (PurpleBuddyList *list,
 
     chatty_blist_chats_update_node (buddy, node);
   } else {
-    chatty_blist_chats_hide_node (list, node, TRUE);
+    chatty_blist_chats_remove_node (list, node, TRUE);
   }
 
   chatty_blist_contacts_update_node (buddy, node);

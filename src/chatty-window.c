@@ -200,7 +200,7 @@ chatty_back_action (GSimpleAction *action,
 
   switch (state_last) {
     case CHATTY_VIEW_SETTINGS:
-      chatty_blist_refresh (purple_get_blist(), FALSE);
+      chatty_blist_refresh (purple_get_blist());
       break;
     case CHATTY_VIEW_NEW_CONTACT:
       chatty_reset_new_contact_view ();
