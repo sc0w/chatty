@@ -46,6 +46,8 @@ typedef struct {
   GtkEntry          *entry_contact_name;
   GtkEntry          *entry_contact_nick;
   GtkEntry          *entry_invite_msg;
+  GtkWidget         *search_entry_chats;
+  GtkWidget         *search_entry_contacts;
   GSList            *radio_button_list;
   GtkWidget         *dummy_prefix_radio;
   GtkWidget         *label_contact_id;

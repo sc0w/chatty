@@ -1021,43 +1021,11 @@ chatty_blist_create_chat_list (PurpleBuddyList *list)
 {
   GtkTreeView       *treeview;
   GtkTreeModel      *filter;
-  GtkWidget         *vbox;
-  HdyColumn         *hdy_column;
-  GtkWidget         *search_entry;
   GtkStyleContext   *sc;
   chatty_data_t     *chatty = chatty_get_data ();
 
   _chatty_blist = CHATTY_BLIST(list);
   _chatty_blist->filter_timeout = 0;
-
-  vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
-
-  chatty->search_bar = hdy_search_bar_new ();
-  g_object_set  (G_OBJECT(chatty->search_bar),
-                 "hexpand", TRUE,
-                 "halign",  GTK_ALIGN_FILL,
-                 NULL);
-
-  search_entry = gtk_search_entry_new ();
-  g_object_set  (G_OBJECT(search_entry),
-                 "hexpand", TRUE,
-                 NULL);
-  hdy_search_bar_set_show_close_button (HDY_SEARCH_BAR (chatty->search_bar), FALSE);
-  hdy_search_bar_connect_entry (HDY_SEARCH_BAR (chatty->search_bar),
-                                GTK_ENTRY (search_entry));
-
-  hdy_column = hdy_column_new ();
-  g_object_set (G_OBJECT(hdy_column),
-                "maximum-width", 600,
-                "hexpand", TRUE,
-                NULL);
-
-  gtk_container_add (GTK_CONTAINER(hdy_column), GTK_WIDGET(search_entry));
-  gtk_container_add (GTK_CONTAINER (chatty->search_bar), GTK_WIDGET(hdy_column));
-  gtk_box_pack_start (GTK_BOX (vbox),
-                      GTK_WIDGET (chatty->search_bar),
-                      FALSE, FALSE, 0);
-
   _chatty_blist->treemodel_chats = gtk_list_store_new (NUM_COLUMNS,
                                                        G_TYPE_POINTER,
                                                        G_TYPE_OBJECT,
@@ -1066,14 +1034,14 @@ chatty_blist_create_chat_list (PurpleBuddyList *list)
 
   filter = gtk_tree_model_filter_new (GTK_TREE_MODEL(_chatty_blist->treemodel_chats), NULL);
 
-  g_signal_connect (search_entry,
+  g_signal_connect (chatty->search_entry_chats,
                     "search-changed",
                     G_CALLBACK (cb_search_entry_changed),
                     GTK_TREE_MODEL_FILTER(filter));
 
   gtk_tree_model_filter_set_visible_func (GTK_TREE_MODEL_FILTER(filter),
                                           (GtkTreeModelFilterVisibleFunc)chatty_blist_entry_visible_func,
-                                          GTK_ENTRY(search_entry),
+                                          GTK_ENTRY(chatty->search_entry_chats),
                                           NULL);
 
   treeview = GTK_TREE_VIEW(gtk_tree_view_new_with_model (filter));
@@ -1102,12 +1070,8 @@ chatty_blist_create_chat_list (PurpleBuddyList *list)
 
   gtk_tree_view_columns_autosize (GTK_TREE_VIEW (treeview));
 
-  gtk_box_pack_start (GTK_BOX (vbox),
-                      GTK_WIDGET(_chatty_blist->treeview_chats),
-                      TRUE, TRUE, 0);
-
   gtk_box_pack_start (GTK_BOX (chatty->pane_view_chat_list),
-                      GTK_WIDGET (vbox),
+                      GTK_WIDGET (_chatty_blist->treeview_chats),
                       TRUE, TRUE, 0);
 
   gtk_widget_show_all (GTK_WIDGET(chatty->pane_view_chat_list));
@@ -1127,46 +1091,11 @@ chatty_blist_create_contact_list (PurpleBuddyList *list)
 {
   GtkTreeView       *treeview;
   GtkTreeModel      *filter;
-  GtkWidget         *vbox;
-  HdyColumn         *hdy_column;
-  GtkWidget         *search_bar;
-  GtkWidget         *search_entry;
   GtkStyleContext   *sc;
   chatty_data_t     *chatty = chatty_get_data ();
 
   _chatty_blist = CHATTY_BLIST(list);
-
   _chatty_blist->filter_timeout = 0;
-
-  vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
-
-  search_bar = hdy_search_bar_new ();
-  g_object_set  (G_OBJECT(search_bar),
-                 "hexpand", TRUE,
-                 "halign",  GTK_ALIGN_FILL,
-                 NULL);
-
-  search_entry = gtk_search_entry_new ();
-  g_object_set  (G_OBJECT(search_entry),
-                 "hexpand", TRUE,
-                 NULL);
-  hdy_search_bar_set_show_close_button (HDY_SEARCH_BAR (search_bar), FALSE);
-  hdy_search_bar_set_search_mode (HDY_SEARCH_BAR (search_bar), TRUE);
-  hdy_search_bar_connect_entry (HDY_SEARCH_BAR (search_bar),
-                                GTK_ENTRY (search_entry));
-
-  hdy_column = hdy_column_new ();
-  g_object_set (G_OBJECT(hdy_column),
-                "maximum-width", 600,
-                "hexpand", TRUE,
-                NULL);
-
-  gtk_container_add (GTK_CONTAINER(hdy_column), GTK_WIDGET(search_entry));
-  gtk_container_add (GTK_CONTAINER(search_bar), GTK_WIDGET(hdy_column));
-  gtk_box_pack_start (GTK_BOX (vbox),
-                      GTK_WIDGET (search_bar),
-                      FALSE, FALSE, 0);
-
   _chatty_blist->treemodel_contacts = gtk_list_store_new (NUM_COLUMNS,
                                                           G_TYPE_POINTER,
                                                           G_TYPE_OBJECT,
@@ -1175,14 +1104,14 @@ chatty_blist_create_contact_list (PurpleBuddyList *list)
 
   filter = gtk_tree_model_filter_new (GTK_TREE_MODEL(_chatty_blist->treemodel_contacts), NULL);
 
-  g_signal_connect (search_entry,
+  g_signal_connect (chatty->search_entry_contacts,
                     "search-changed",
                     G_CALLBACK (cb_search_entry_changed),
                     GTK_TREE_MODEL_FILTER(filter));
 
   gtk_tree_model_filter_set_visible_func (GTK_TREE_MODEL_FILTER(filter),
                                           (GtkTreeModelFilterVisibleFunc)chatty_blist_entry_visible_func,
-                                          GTK_ENTRY(search_entry),
+                                          GTK_ENTRY(chatty->search_entry_contacts),
                                           NULL);
 
   treeview = GTK_TREE_VIEW(gtk_tree_view_new_with_model (filter));
@@ -1207,14 +1136,11 @@ chatty_blist_create_contact_list (PurpleBuddyList *list)
 
   gtk_tree_view_columns_autosize (GTK_TREE_VIEW (treeview));
 
-  gtk_box_pack_start (GTK_BOX (vbox),
-                      GTK_WIDGET(_chatty_blist->treeview_contacts),
-                      TRUE, TRUE, 0);
-
   gtk_box_pack_start (GTK_BOX (chatty->pane_view_new_chat),
-                      GTK_WIDGET (vbox),
+                      GTK_WIDGET (_chatty_blist->treeview_contacts),
                       TRUE, TRUE, 0);
 
+  gtk_widget_grab_focus (GTK_WIDGET(_chatty_blist->treeview_contacts));
   gtk_widget_show_all (GTK_WIDGET(chatty->pane_view_new_chat));
 }
 

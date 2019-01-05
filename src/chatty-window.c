@@ -27,15 +27,9 @@ static void chatty_add_contact_action (GSimpleAction *action,
                                        GVariant      *parameter,
                                        gpointer       user_data);
 
-static void chatty_search_action (GSimpleAction *action,
-                                  GVariant      *state,
-                                  gpointer       user_data);
-
-
 static const GActionEntry window_action_entries [] = {
   { "add", chatty_back_action },
   { "add-contact", chatty_add_contact_action },
-  { "search", NULL, NULL, "false", chatty_search_action },
   { "back", chatty_back_action },
 };
 
@@ -160,23 +154,6 @@ chatty_reset_new_contact_view (void)
 
 
 static void
-chatty_search_action (GSimpleAction *action,
-                      GVariant      *state,
-                      gpointer       user_data)
-{
-  gboolean active;
-
-  chatty_data_t *chatty = chatty_get_data ();
-
-  active = g_variant_get_boolean (state);
-
-  hdy_search_bar_set_search_mode (HDY_SEARCH_BAR (chatty->search_bar), active);
-
-  g_simple_action_set_state (action, g_variant_new_boolean (active));
-}
-
-
-static void
 chatty_add_contact_action (GSimpleAction *action,
                            GVariant      *parameter,
                            gpointer       user_data)
@@ -235,6 +212,7 @@ chatty_window_change_view (ChattyWindowState view)
       chatty->view_state_next = CHATTY_VIEW_CHAT_LIST;
       break;
     case CHATTY_VIEW_NEW_CONTACT:
+      //gtk_widget_grab_focus (GTK_WIDGET(chatty->scrolled_window
       stack_id = "view-new-contact";
       chatty->view_state_next = CHATTY_VIEW_CHAT_LIST;
       break;
@@ -398,20 +376,23 @@ chatty_window_activate (GtkApplication *app,
   chatty->header_view_message_list = GTK_HEADER_BAR (gtk_builder_get_object (builder, "header_view_message_list"));
   chatty->header_icon = GTK_WIDGET (gtk_builder_get_object (builder, "header_icon"));
   chatty->header_spinner = GTK_WIDGET (gtk_builder_get_object (builder, "header_spinner"));
+
   chatty->panes_stack = GTK_STACK (gtk_builder_get_object (builder, "panes_stack"));
   chatty->pane_view_message_list = GTK_WIDGET (gtk_builder_get_object (builder, "pane_view_message_list"));
+  chatty->pane_view_new_chat = GTK_BOX (gtk_builder_get_object (builder, "pane_view_new_chat"));
+  chatty->pane_view_new_contact = GTK_BOX (gtk_builder_get_object (builder, "pane_view_new_contact"));
+  chatty->pane_view_chat_list = GTK_BOX (gtk_builder_get_object (builder, "pane_view_chat_list"));
 
   chatty->label_contact_id = GTK_WIDGET (gtk_builder_get_object (builder, "label_contact_id"));
   chatty->entry_contact_name = GTK_ENTRY (gtk_builder_get_object (builder, "entry_contact_name"));
   chatty->entry_contact_nick = GTK_ENTRY (gtk_builder_get_object (builder, "entry_contact_alias"));
   chatty->button_add_contact = GTK_WIDGET (gtk_builder_get_object (builder, "button_add_contact"));
-
-  chatty->pane_view_new_chat = GTK_BOX (gtk_builder_get_object (builder, "pane_view_new_chat"));
-  chatty->pane_view_new_contact = GTK_BOX (gtk_builder_get_object (builder, "pane_view_new_contact"));
-  chatty->pane_view_chat_list = GTK_BOX (gtk_builder_get_object (builder, "pane_view_chat_list"));
+  chatty->search_entry_chats = GTK_WIDGET (gtk_builder_get_object (builder, "search_entry_chats"));
+  chatty->search_entry_contacts = GTK_WIDGET (gtk_builder_get_object (builder, "search_entry_contacts"));
 
   chatty->account_list_manage = GTK_LIST_BOX (gtk_builder_get_object (builder, "manage_account_listbox"));
   chatty->account_list_select = GTK_LIST_BOX (gtk_builder_get_object (builder, "select_account_listbox"));
+
   chatty->list_privacy_prefs = GTK_LIST_BOX (gtk_builder_get_object (builder, "privacy_prefs_listbox"));
   chatty->list_xmpp_prefs = GTK_LIST_BOX (gtk_builder_get_object (builder, "xmpp_prefs_listbox"));
   chatty->list_editor_prefs = GTK_LIST_BOX (gtk_builder_get_object (builder, "editor_prefs_listbox"));
