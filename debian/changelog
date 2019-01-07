@@ -1,3 +1,18 @@
+chatty (0.0.3) purple; urgency=medium
+	
+  * Fixed issues #73 #75 #77 
+  * Added contacts list refresh handling
+  * Added 'edit account' dialog
+  * Replaced 'add account' view with dialog
+  * Reworked 'add contact' view
+  * Added setting for return=send message
+  * Added setting for enabling/disabling message carbons
+  * Added settings view
+  * Added emoticon translation
+  * Added support for sending typing messages
+
+ -- Andrea Schaefer <andrea@localhost.localdomain>  Mon, 07 Jan 2019 14:20:14 +0100
+
 chatty (0.0.2) purple; urgency=medium
 
   * Added app icon
