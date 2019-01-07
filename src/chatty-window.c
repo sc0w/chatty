@@ -404,6 +404,6 @@ chatty_window_activate (GtkApplication *app,
   gtk_list_box_set_header_func (chatty->list_editor_prefs, hdy_list_box_separator_header, NULL, NULL);
 
   g_object_unref (builder);
-  gtk_widget_show_all (GTK_WIDGET (window));
+  gtk_widget_show (GTK_WIDGET (window));
   chatty_window_init_data ();
 }

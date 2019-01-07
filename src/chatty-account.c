@@ -432,6 +432,7 @@ chatty_account_add_to_accounts_list (PurpleAccount *account,
     hdy_action_row_add_action (row, GTK_WIDGET(switch_account_enabled));
   } else {
     prefix_radio_button = gtk_radio_button_new_from_widget (GTK_RADIO_BUTTON(chatty->dummy_prefix_radio));
+    gtk_widget_show (GTK_WIDGET(prefix_radio_button));
 
     gtk_widget_set_sensitive (prefix_radio_button, FALSE);
 
@@ -451,7 +452,7 @@ chatty_account_add_to_accounts_list (PurpleAccount *account,
                        GTK_WIDGET(row));
   }
 
-  gtk_widget_show_all (GTK_WIDGET(row));
+  gtk_widget_show (GTK_WIDGET(row));
 }
 
 

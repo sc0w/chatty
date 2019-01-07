@@ -110,18 +110,22 @@
     <property name="can_focus">False</property>
     <child type="titlebar">
       <object class="HdyTitleBar">
+        <property name="visible">True</property>
         <property name="can_focus">False</property>
         <child>
           <object class="GtkStack" id="header_stack">
+            <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="transition_type">slide-left-right</property>
             <property name="visible-child-name" bind-source="panes_stack" bind-property="visible-child-name" bind-flags="bidirectional|sync-create"/>
             <child>
               <object class="GtkHeaderBar" id="header_view_chat_list">
+                <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="title" translatable="yes">Chats</property>
                 <child>
                   <object class="GtkButton">
+                    <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="receives_default">False</property>
                     <property name="action_name">win.add</property>
@@ -136,6 +140,7 @@
                 </child>
                 <child>
                   <object class="GtkMenuButton">
+                    <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="receives_default">False</property>
                     <property name="popover">header_view_chat_list_popover</property>
@@ -153,6 +158,7 @@
                 </child>
                 <child>
                   <object class="GtkToggleButton">
+                    <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="receives_default">False</property>
                     <property name="active" bind-source="search_bar_chats" bind-property="search-mode-enabled" bind-flags="sync-create|bidirectional"/>
@@ -184,10 +190,12 @@
             </child>
             <child>
               <object class="GtkHeaderBar" id="header_view_message_list">
+                <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="spacing">24</property>
                 <child>
                   <object class="GtkButton">
+                    <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="receives_default">False</property>
                     <property name="action_name">win.back</property>
@@ -210,6 +218,7 @@
                 </child>
                 <child>
                   <object class="GtkMenuButton">
+                    <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="receives_default">False</property>
                     <property name="popover">header_view_message_list_popover</property>
@@ -233,10 +242,12 @@
             </child>
             <child>
               <object class="GtkHeaderBar" id="header_view_manage_account">
+                <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="title" translatable="yes">Settings</property>
                 <child>
                   <object class="GtkButton">
+                    <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="receives_default">False</property>
                     <property name="action_name">win.back</property>
@@ -257,10 +268,12 @@
             </child>
             <child>
               <object class="GtkHeaderBar" id="header_view_select_account">
+                <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="title" translatable="yes">New Contact</property>
                 <child>
                   <object class="GtkButton">
+                    <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="receives_default">False</property>
                     <property name="action_name">win.back</property>
@@ -280,10 +293,12 @@
             </child>
             <child>
               <object class="GtkHeaderBar" id="header_view_new_chat">
+                <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="title" translatable="yes">New Chat</property>
                 <child>
                   <object class="GtkButton">
+                    <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="receives_default">False</property>
                     <property name="action_name">win.back</property>
@@ -298,6 +313,7 @@
                 </child>
                 <child>
                   <object class="GtkButton">
+                    <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="receives_default">False</property>
                     <property name="action_name">win.add-contact</property>
@@ -321,10 +337,12 @@
             </child>
             <child>
               <object class="GtkHeaderBar" id="header_view_new_contact">
+                <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="title" translatable="yes">New contact</property>
                 <child>
                   <object class="GtkButton">
+                    <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="receives_default">False</property>
                     <property name="action_name">win.back</property>
@@ -370,7 +388,7 @@
                     <property name="halign">fill</property>
                     <property name="valign">start</property>
                     <property name="hexpand">True</property>
-                    <property name="show-close-button">True</property>
+                    <property name="show-close-button">False</property>
                     <property name="search-mode-enabled">False</property>
                     <child>
                       <object class="HdyColumn">
@@ -389,6 +407,7 @@
                 </child>
                 <child>
                   <object class="GtkBox" id="pane_view_chat_list">
+                    <property name="visible">True</property>
                     <property name="can_focus">False</property>
                   </object>
                   <packing>
@@ -403,6 +422,7 @@
             </child>
             <child>
               <object class="GtkNotebook" id="pane_view_message_list">
+                <property name="visible">True</property>
                 <property name="can_focus">False</property>
               </object>
               <packing>
@@ -411,7 +431,7 @@
             </child>
             <child>
               <object class="HdyColumn">
-                <property name="visible">False</property>
+                <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="halign">fill</property>
                 <property name="valign">fill</property>
@@ -685,7 +705,7 @@
             </child>
             <child>
               <object class="HdyColumn">
-                <property name="visible">False</property>
+                <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="halign">fill</property>
                 <property name="valign">fill</property>
