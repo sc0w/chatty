@@ -87,7 +87,7 @@ cb_button_new_contact_clicked (GtkButton *sender,
   }
 
   chatty_blist_add_buddy ();
-  chatty_window_change_view (CHATTY_VIEW_CHAT_LIST);
+  chatty_window_change_view (CHATTY_VIEW_NEW_CHAT);
   chatty_reset_new_contact_view ();
 }
 
@@ -214,7 +214,7 @@ chatty_window_change_view (ChattyWindowState view)
     case CHATTY_VIEW_NEW_CONTACT:
       //gtk_widget_grab_focus (GTK_WIDGET(chatty->scrolled_window
       stack_id = "view-new-contact";
-      chatty->view_state_next = CHATTY_VIEW_CHAT_LIST;
+      chatty->view_state_next = CHATTY_VIEW_NEW_CHAT;
       break;
     case CHATTY_VIEW_MESSAGE_LIST:
       stack_id = "view-message-list";
