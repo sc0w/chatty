@@ -18,11 +18,8 @@ typedef struct {
   GtkWindow         *main_window;
   GtkStack          *panes_stack;
   GtkBox            *pane_view_chat_list;
-  GtkBox            *pane_view_new_contact;
-  GtkBox            *pane_view_select_account;
   GtkWidget         *pane_view_message_list;
   GtkBox            *pane_view_new_chat;
-  GtkBox            *pane_view_new_account;
   GtkHeaderBar      *header_view_message_list;
   GtkWidget         *header_icon;
   GtkWidget         *header_spinner;
@@ -41,11 +38,14 @@ typedef struct {
   GtkSwitch         *prefs_switch_convert_smileys;
   GtkSwitch         *prefs_switch_return_sends;
   HdyActionRow      *row_pref_message_carbons;
-  GtkWidget         *button_add_contact;
   PurpleAccount     *contact_selected_account;
   GtkEntry          *entry_contact_name;
   GtkEntry          *entry_contact_nick;
   GtkEntry          *entry_invite_msg;
+  GtkWidget         *button_add_contact;
+  GtkEntry          *entry_group_chat_id;
+  GtkEntry          *entry_group_chat_pw;
+  GtkWidget         *button_join_chat;
   GtkWidget         *search_entry_chats;
   GtkWidget         *search_entry_contacts;
   GSList            *radio_button_list;
@@ -74,6 +74,7 @@ typedef enum {
   CHATTY_VIEW_NEW_CHAT,
   CHATTY_VIEW_NEW_CONTACT,
   CHATTY_VIEW_CHAT_LIST,
+  CHATTY_VIEW_JOIN_CHAT,
   CHATTY_VIEW_MESSAGE_LIST,
   CHATTY_VIEW_SETTINGS
 } ChattyWindowState;

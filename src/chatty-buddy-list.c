@@ -79,7 +79,7 @@ cb_tree_view_row_activated (GtkTreeView       *treeview,
                       &node,
                       -1);
 
-  if (PURPLE_BLIST_NODE_IS_BUDDY(node)) {
+  if (PURPLE_BLIST_NODE_IS_BUDDY(node) || PURPLE_BLIST_NODE_IS_CHAT (node)) {
     PurpleBuddy *buddy;
 
     buddy = (PurpleBuddy*)node;
@@ -695,7 +695,7 @@ chatty_blist_refresh (PurpleBuddyList *list)
 
   while (node)
   {
-    if (PURPLE_BLIST_NODE_IS_BUDDY (node)) {
+    if (PURPLE_BLIST_NODE_IS_BUDDY (node) || PURPLE_BLIST_NODE_IS_CHAT (node)) {
       chatty_blist_update_buddy (list, node);
     }
 
@@ -1008,6 +1008,44 @@ chatty_blist_entry_visible_func (GtkTreeModel *model,
 }
 
 
+void
+chatty_blist_add_group_chat (PurpleAccount *account,
+                             const char    *group_chat_id,
+                             const char    *alias,
+                             const char    *pwd)
+{
+  PurpleChat               *chat;
+  PurpleConversation       *conv;
+  PurpleConnection         *gc;
+	PurplePluginProtocolInfo *info;
+	GHashTable               *hash = NULL;
+
+  if (!purple_account_is_connected (account) || !group_chat_id) {
+		return;
+  }
+
+	gc = purple_account_get_connection (account);
+
+	info = PURPLE_PLUGIN_PROTOCOL_INFO(purple_connection_get_prpl (gc));
+
+	if (info->chat_info_defaults != NULL) {
+		hash = info->chat_info_defaults(gc, group_chat_id);
+  }
+
+	chat = purple_chat_new (account, group_chat_id, hash);
+
+  if (chat != NULL) {
+		purple_blist_add_chat (chat, NULL, NULL);
+		purple_blist_alias_chat (chat, alias);
+
+		//chatty_join_chat (chat);
+	}
+
+}
+
+
+
+
 /**
  * chatty_blist_create_chat_list:
  * @list:  a PurpleBuddyList
@@ -1255,7 +1293,7 @@ chatty_blist_chats_sort (PurpleBlistNode *node,
     return;
   }
 
-  if (PURPLE_BLIST_NODE_IS_BUDDY(node)) {
+  if (PURPLE_BLIST_NODE_IS_BUDDY(node) || PURPLE_BLIST_NODE_IS_CHAT (node)) {
     PurpleBuddy *buddy;
 
     buddy = (PurpleBuddy*)node;
@@ -1354,9 +1392,9 @@ chatty_blist_contacts_update_node (PurpleBuddy     *buddy,
   ChattyBlistNode *chatty_node = node->ui_data;
 
   account = purple_buddy_get_account (buddy);
-  account_name = purple_account_get_username (account);
+  account_name = "etet";//purple_account_get_username (account);
 
-  if (!PURPLE_BLIST_NODE_IS_BUDDY (node)) {
+  if (!PURPLE_BLIST_NODE_IS_BUDDY (node) || !PURPLE_BLIST_NODE_IS_CHAT (node)) {
     return;
   }
 
@@ -1463,7 +1501,7 @@ chatty_blist_chats_update_node (PurpleBuddy     *buddy,
 
   account = purple_buddy_get_account (buddy);
 
-  if (!PURPLE_BLIST_NODE_IS_BUDDY (node)) {
+  if (!PURPLE_BLIST_NODE_IS_BUDDY (node) || !PURPLE_BLIST_NODE_IS_CHAT (node)) {
     return;
   }
 
@@ -1593,7 +1631,7 @@ chatty_blist_update_buddy (PurpleBuddyList *list,
   ChattyLog       *log_data = NULL;
   ChattyBlistNode *ui;
 
-  g_return_if_fail (PURPLE_BLIST_NODE_IS_BUDDY(node));
+  g_return_if_fail (PURPLE_BLIST_NODE_IS_BUDDY(node) || PURPLE_BLIST_NODE_IS_CHAT (node));
 
   buddy = (PurpleBuddy*)node;
 

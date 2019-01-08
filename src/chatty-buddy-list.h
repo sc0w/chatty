@@ -95,5 +95,9 @@ void chatty_blist_add_buddy (void);
 void chatty_blist_refresh (PurpleBuddyList *list);
 void chatty_blist_create_add_buddy_view (PurpleAccount *account);
 void chatty_blist_chat_list_remove_buddy (void);
+void chatty_blist_add_group_chat (PurpleAccount *account,
+                                  const char    *group_chat_id,
+                                  const char    *alias,
+                                  const char    *pwd);
 
 #endif

@@ -12,7 +12,15 @@
 #include "chatty-buddy-list.h"
 
 static void
-view_chat_list_cmd_accounts (GSimpleAction *action,
+view_chat_list_cmd_join_chat (GSimpleAction *action,
+                              GVariant      *parameter,
+                              gpointer       user_data)
+{
+  chatty_window_change_view (CHATTY_VIEW_JOIN_CHAT);
+}
+
+static void
+view_chat_list_cmd_settings (GSimpleAction *action,
                              GVariant      *parameter,
                              gpointer       user_data)
 {
@@ -39,7 +47,8 @@ view_msg_list_cmd_delete (GSimpleAction *action,
 
 static const GActionEntry view_chat_list_entries [] =
 {
-  { "settings", view_chat_list_cmd_accounts },
+  { "join-chat", view_chat_list_cmd_join_chat },
+  { "settings", view_chat_list_cmd_settings },
 };
 
 

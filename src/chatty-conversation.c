@@ -976,6 +976,8 @@ chatty_conv_message_get_last_msg (PurpleBuddy *buddy)
   const gchar   *b_name;
   int            num_logs;
 
+  return NULL;
+
   account = purple_buddy_get_account (buddy);
   b_name = purple_buddy_get_name (buddy);
   history = purple_log_get_logs (PURPLE_LOG_IM, b_name, account);
@@ -1318,6 +1320,27 @@ chatty_conv_find_conv (PurpleConversation * conv)
   }
 
   return NULL;
+}
+
+/**
+ * chatty_conv_write_chat:
+ * @conv:     a PurpleConversation
+ * @who:      the buddy name
+ * @message:  the message text
+ * @flags:    PurpleMessageFlags
+ * @mtime:    mtime
+ *
+ * Send an instant message
+ *
+ */
+static void
+chatty_conv_write_chat (PurpleConversation *conv,
+                        const char         *who,
+                        const char         *message,
+                        PurpleMessageFlags  flags,
+                        time_t              mtime)
+{
+  purple_conversation_write (conv, who, message, flags, mtime);
 }
 
 
@@ -1906,7 +1929,7 @@ static PurpleConversationUiOps conversation_ui_ops =
 {
   chatty_conv_new,
   chatty_conv_destroy,
-  NULL,
+  chatty_conv_write_chat,
   chatty_conv_write_im,
   chatty_conv_write_conversation,
   NULL,
