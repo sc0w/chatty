@@ -412,6 +412,7 @@ chatty_account_add_to_accounts_list (PurpleAccount *account,
 
   if (list_type == LIST_ACCOUNT_MANAGE) {
     switch_account_enabled = gtk_switch_new ();
+    gtk_widget_show (GTK_WIDGET(switch_account_enabled));
 
     g_object_set  (G_OBJECT(switch_account_enabled),
                    "valign", GTK_ALIGN_CENTER,

@@ -288,7 +288,6 @@
               </object>
               <packing>
                 <property name="name">view-settings</property>
-                <property name="position">2</property>
               </packing>
             </child>
             <child>
@@ -352,7 +351,6 @@
                   </object>
                   <packing>
                     <property name="pack_type">end</property>
-                    <property name="position">3</property>
                   </packing>
                 </child>
               </object>
