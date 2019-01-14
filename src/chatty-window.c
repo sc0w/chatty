@@ -105,9 +105,10 @@ cb_row_join_chat_selected (GtkListBox    *box,
   chatty_data_t *chatty = chatty_get_data ();
 
   PurpleAccount *account;
-  account = purple_accounts_find ("haeckse@5222.de", "prpl-jabber");
 
-  if (chatty->selected_muc_account == NULL) {
+  account = chatty->selected_muc_account;
+
+  if (account == NULL) {
     dialog = gtk_message_dialog_new (chatty->main_window,
                                      GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
                                      GTK_MESSAGE_INFO,
