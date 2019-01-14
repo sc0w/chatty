@@ -27,9 +27,7 @@ static void chatty_back_action (GSimpleAction *action,
 static void chatty_add_contact_action (GSimpleAction *action,
                                        GVariant      *parameter,
                                        gpointer       user_data);
-static void chatty_add_contact_action (GSimpleAction *action,
-                                       GVariant      *parameter,
-                                       gpointer       user_data);
+
 
 static const GActionEntry window_action_entries [] = {
   { "add", chatty_back_action },
@@ -70,7 +68,7 @@ cb_button_new_contact_clicked (GtkButton *sender,
 
   chatty_data_t *chatty = chatty_get_data ();
 
-  if (chatty->contact_selected_account == NULL) {
+  if (chatty->selected_contact_account == NULL) {
     dialog = gtk_message_dialog_new (chatty->main_window,
                                      GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
                                      GTK_MESSAGE_INFO,
@@ -97,21 +95,19 @@ cb_button_new_contact_clicked (GtkButton *sender,
 
 
 static void
-cb_button_join_chat_clicked (GtkButton *sender,
-                             gpointer   data)
+cb_row_join_chat_selected (GtkListBox    *box,
+                           GtkListBoxRow *row,
+                           gpointer       user_data)
 {
   GtkWidget *dialog;
+  gboolean   autojoin;
 
   chatty_data_t *chatty = chatty_get_data ();
 
   PurpleAccount *account;
   account = purple_accounts_find ("haeckse@5222.de", "prpl-jabber");
 
-  chatty_blist_add_group_chat (account, gtk_entry_get_text (chatty->entry_group_chat_id), NULL, NULL);
-
-/*
-
-  if (chatty->contact_selected_account == NULL) {
+  if (chatty->selected_muc_account == NULL) {
     dialog = gtk_message_dialog_new (chatty->main_window,
                                      GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
                                      GTK_MESSAGE_INFO,
@@ -130,11 +126,17 @@ cb_button_join_chat_clicked (GtkButton *sender,
 
     return;
   }
-*/
 
+  autojoin = gtk_switch_get_state (chatty->prefs_switch_chat_autojoin);
+
+  chatty_blist_join_group_chat (account,
+                                gtk_entry_get_text (chatty->entry_group_chat_id),
+                                NULL,
+                                NULL,
+                                autojoin);
 
   chatty_window_change_view (CHATTY_VIEW_CHAT_LIST);
-  //chatty_reset_join_chat_view ();
+  chatty_reset_join_chat_view ();
 }
 
 
@@ -189,7 +191,10 @@ chatty_reset_join_chat_view (void)
 {
   chatty_data_t *chatty = chatty_get_data ();
 
-
+  chatty->selected_muc_account = NULL;
+  gtk_switch_set_state (chatty->prefs_switch_chat_autojoin, FALSE);
+  gtk_entry_set_text (chatty->entry_group_chat_id, "");
+  gtk_entry_set_text (chatty->entry_group_chat_pw, "");
 }
 
 
@@ -201,8 +206,7 @@ chatty_reset_new_contact_view (void)
   gtk_label_set_text (GTK_LABEL(chatty->label_contact_id), "Contact ID");
   gtk_entry_set_text (chatty->entry_contact_name, "");
   gtk_entry_set_text (chatty->entry_contact_nick, "");
-
-  chatty->contact_selected_account = NULL;
+  chatty->selected_contact_account = NULL;
   gtk_widget_set_sensitive (chatty->button_add_contact, FALSE);
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(chatty->dummy_prefix_radio), TRUE);
 }
@@ -274,7 +278,6 @@ chatty_window_change_view (ChattyWindowState view)
       chatty->view_state_next = CHATTY_VIEW_CHAT_LIST;
       break;
     case CHATTY_VIEW_NEW_CONTACT:
-      //gtk_widget_grab_focus (GTK_WIDGET(chatty->scrolled_window
       stack_id = "view-new-contact";
       chatty->view_state_next = CHATTY_VIEW_NEW_CHAT;
       break;
@@ -386,9 +389,9 @@ chatty_window_init_data (void)
                     G_CALLBACK (cb_button_new_contact_clicked),
                     NULL);
 
-  g_signal_connect (chatty->button_join_chat,
-                    "clicked",
-                    G_CALLBACK (cb_button_join_chat_clicked),
+  g_signal_connect (chatty->list_join_chat,
+                    "row-activated",
+                    G_CALLBACK (cb_row_join_chat_selected),
                     NULL);
 }
 
@@ -441,21 +444,22 @@ chatty_window_activate (GtkApplication *app,
   chatty->pane_view_new_chat = GTK_BOX (gtk_builder_get_object (builder, "pane_view_new_chat"));
   chatty->pane_view_chat_list = GTK_BOX (gtk_builder_get_object (builder, "pane_view_chat_list"));
 
-  chatty->account_list_manage = GTK_LIST_BOX (gtk_builder_get_object (builder, "manage_account_listbox"));
-  chatty->account_list_select = GTK_LIST_BOX (gtk_builder_get_object (builder, "select_account_listbox"));
-
   // add contact view
+  chatty->list_select_chat_account = GTK_LIST_BOX (gtk_builder_get_object (builder, "list_select_chat_account"));
   chatty->label_contact_id = GTK_WIDGET (gtk_builder_get_object (builder, "label_contact_id"));
   chatty->entry_contact_name = GTK_ENTRY (gtk_builder_get_object (builder, "entry_contact_name"));
   chatty->entry_contact_nick = GTK_ENTRY (gtk_builder_get_object (builder, "entry_contact_alias"));
   chatty->button_add_contact = GTK_WIDGET (gtk_builder_get_object (builder, "button_add_contact"));
 
-  // join chat view
+  // join group chat view
+  chatty->list_select_muc_account = GTK_LIST_BOX (gtk_builder_get_object (builder, "list_select_muc_account"));
   chatty->entry_group_chat_id = GTK_ENTRY (gtk_builder_get_object (builder, "entry_group_chat_id"));
   chatty->entry_group_chat_pw = GTK_ENTRY (gtk_builder_get_object (builder, "entry_group_chat_pw"));
-  chatty->button_join_chat = GTK_WIDGET (gtk_builder_get_object (builder, "button_join_chat"));
+  chatty->list_join_chat = GTK_LIST_BOX (gtk_builder_get_object (builder, "listbox_join_chat"));
+  chatty->prefs_switch_chat_autojoin = GTK_SWITCH (gtk_builder_get_object (builder, "prefs_switch_chat_autojoin"));
 
   // settings view
+  chatty->list_manage_account = GTK_LIST_BOX (gtk_builder_get_object (builder, "list_manage_account"));
   chatty->list_privacy_prefs = GTK_LIST_BOX (gtk_builder_get_object (builder, "privacy_prefs_listbox"));
   chatty->prefs_switch_send_receipts = GTK_SWITCH (gtk_builder_get_object (builder, "pref_send_receipts"));
   chatty->prefs_switch_message_carbons = GTK_SWITCH (gtk_builder_get_object (builder, "pref_message_carbons"));
@@ -471,8 +475,9 @@ chatty_window_activate (GtkApplication *app,
   chatty->prefs_switch_convert_smileys = GTK_SWITCH (gtk_builder_get_object (builder, "pref_convert_smileys"));
   chatty->prefs_switch_return_sends = GTK_SWITCH (gtk_builder_get_object (builder, "pref_return_sends"));
 
-  gtk_list_box_set_header_func (chatty->account_list_manage, hdy_list_box_separator_header, NULL, NULL);
-  gtk_list_box_set_header_func (chatty->account_list_select, hdy_list_box_separator_header, NULL, NULL);
+  gtk_list_box_set_header_func (chatty->list_manage_account, hdy_list_box_separator_header, NULL, NULL);
+  gtk_list_box_set_header_func (chatty->list_select_chat_account, hdy_list_box_separator_header, NULL, NULL);
+  gtk_list_box_set_header_func (chatty->list_select_muc_account, hdy_list_box_separator_header, NULL, NULL);
   gtk_list_box_set_header_func (chatty->list_privacy_prefs, hdy_list_box_separator_header, NULL, NULL);
   gtk_list_box_set_header_func (chatty->list_xmpp_prefs, hdy_list_box_separator_header, NULL, NULL);
   gtk_list_box_set_header_func (chatty->list_editor_prefs, hdy_list_box_separator_header, NULL, NULL);

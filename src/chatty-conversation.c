@@ -11,6 +11,7 @@
 #include <glib.h>
 #include <glib/gi18n.h>
 #include "chatty-window.h"
+#include "chatty-icons.h"
 #include "chatty-purple-init.h"
 #include "chatty-message-list.h"
 #include "chatty-conversation.h"
@@ -252,7 +253,8 @@ cb_button_send_clicked (GtkButton *sender,
     chatty_msg_list_add_message (chatty_conv->msg_list,
                                  MSG_IS_OUTGOING,
                                  message,
-                                 footer_str);
+                                 footer_str,
+                                 NULL);
 
     // provide a msg-id to the sms-plugin for send-receipts
     if (g_strcmp0 (protocol_id, "prpl-mm-sms") == 0) {
@@ -273,7 +275,11 @@ cb_button_send_clicked (GtkButton *sender,
                                       PURPLE_MESSAGE_INVISIBLE);
     }
 
-    purple_conv_im_send (PURPLE_CONV_IM (conv), message);
+    if (purple_conversation_get_type (conv) == PURPLE_CONV_TYPE_IM) {
+      purple_conv_im_send (PURPLE_CONV_IM(conv), message);
+    } else if (purple_conversation_get_type (conv) == PURPLE_CONV_TYPE_CHAT) {
+      purple_conv_chat_send(PURPLE_CONV_CHAT(conv), message);
+    }
 
     gtk_widget_hide (chatty_conv->button_send);
   }
@@ -976,8 +982,6 @@ chatty_conv_message_get_last_msg (PurpleBuddy *buddy)
   const gchar   *b_name;
   int            num_logs;
 
-  return NULL;
-
   account = purple_buddy_get_account (buddy);
   b_name = purple_buddy_get_name (buddy);
   history = purple_log_get_logs (PURPLE_LOG_IM, b_name, account);
@@ -1051,8 +1055,6 @@ chatty_conv_delete_message_history (PurpleBuddy *buddy)
 static gboolean
 chatty_conv_add_message_history_to_conv (gpointer data)
 {
-  ChattyConversation *chatty_conv = data;
-
   // TODO
   // this parser for the purple log files is
   // just a tentative solution.
@@ -1062,44 +1064,30 @@ chatty_conv_add_message_history_to_conv (gpointer data)
   // and for just pulling particular data, the logging
   // should be built around a sqlLite database.
 
-  int timer = chatty_conv->attach.timer;
+  GList         *msgs = NULL;
+  ChattyLog     *log_data = NULL;
+  PurpleAccount *account;
+  gchar         *name = NULL;
+  const gchar   *conv_name;
+  const gchar   *b_name;
+  gchar         *time_stamp;
+  gchar         *msg_html;
+  GList         *history = NULL;
+  guint          msg_dir;
+  gboolean       im;
 
-  gboolean im = (chatty_conv->active_conv->type == PURPLE_CONV_TYPE_IM);
+  ChattyConversation *chatty_conv = data;
 
-  chatty_conv->attach.timer = 0;
-  chatty_conv->attach.timer = timer;
-
-  if (chatty_conv->attach.current) {
-    return TRUE;
-  }
+  im = (chatty_conv->active_conv->type == PURPLE_CONV_TYPE_IM);
 
   g_source_remove (chatty_conv->attach.timer);
   chatty_conv->attach.timer = 0;
 
   if (im) {
-    GList         *msgs = NULL;
-    ChattyLog     *log_data = NULL;
-    PurpleAccount *account;
-    PurpleBuddy   *buddy;
-    gchar         *name = NULL;
-    const gchar   *conv_name;
-    const gchar   *b_name;
-    gchar         *time_stamp;
-    gchar         *msg_html;
-    GList         *history;
-    guint          msg_dir;
-
     conv_name = purple_conversation_get_name (chatty_conv->active_conv);
     account = purple_conversation_get_account (chatty_conv->active_conv);
 
-    buddy = purple_find_buddy (account, conv_name);
-
-    if (buddy == NULL) {
-      return FALSE;
-    }
-
-    b_name = purple_buddy_get_name (buddy);
-    history = purple_log_get_logs (PURPLE_LOG_IM, b_name, account);
+    history = purple_log_get_logs (PURPLE_LOG_IM, conv_name, account);
 
     if (history == NULL) {
       g_list_free (history);
@@ -1155,7 +1143,8 @@ chatty_conv_add_message_history_to_conv (gpointer data)
         chatty_msg_list_add_message (chatty_conv->msg_list,
                                      msg_dir,
                                      msg_html,
-                                     time_stamp);
+                                     time_stamp,
+                                     NULL);
       }
 
       g_free (msg_html);
@@ -1164,10 +1153,6 @@ chatty_conv_add_message_history_to_conv (gpointer data)
     g_list_foreach (msgs, (GFunc)g_free, NULL);
     g_list_free (msgs);
     g_free (name);
-
-    g_object_set_data (G_OBJECT (chatty_conv->msg_entry),
-                       "attach-start-time",
-                       NULL);
   }
 
   g_object_set_data (G_OBJECT (chatty_conv->msg_entry),
@@ -1377,73 +1362,6 @@ chatty_conv_write_im (PurpleConversation *conv,
 
 
 /**
- * chatty_conv_write_common:
- * @conv:     a PurpleConversation
- * @who:      the buddy name
- * @message:  the message text
- * @flags:    PurpleMessageFlags
- * @mtime:    mtime
- *
- * Writes a message to the message list
- *
- */
-static void
-chatty_conv_write_common (PurpleConversation *conv,
-                          const char         *who,
-                          const char         *message,
-                          PurpleMessageFlags  flags,
-                          time_t              mtime)
-{
-  ChattyConversation  *chatty_conv;
-  PurpleConnection    *gc;
-  PurpleAccount       *account;
-  gchar               *msg_html;
-
-  chatty_conv = CHATTY_CONVERSATION (conv);
-
-  if (chatty_conv->attach.timer) {
-    /* We are currently in the process of filling up the buffer with the message
-     * history of the conversation. So we do not need to add the message here.
-     * Instead, this message will be added to the message-list, which in turn will
-     * be processed and displayed by the attach-callback.
-     */
-    return;
-  }
-
-  g_return_if_fail (chatty_conv != NULL);
-
-  if ((flags & PURPLE_MESSAGE_SYSTEM) && !(flags & PURPLE_MESSAGE_NOTIFY)) {
-    flags &= ~(PURPLE_MESSAGE_SEND | PURPLE_MESSAGE_RECV);
-  }
-
-  account = purple_conversation_get_account(conv);
-  g_return_if_fail (account != NULL);
-  gc = purple_account_get_connection (account);
-  g_return_if_fail (gc != NULL || !(flags & (PURPLE_MESSAGE_SEND | PURPLE_MESSAGE_RECV)));
-
-  if (*message != '\0') {
-    if (flags & PURPLE_MESSAGE_RECV) {
-      msg_html = chatty_conv_check_for_links (message);
-
-      chatty_msg_list_add_message (chatty_conv->msg_list,
-                                   MSG_IS_INCOMING,
-                                   msg_html,
-                                   NULL);
-
-      g_free (msg_html);
-    } else if (flags & PURPLE_MESSAGE_SYSTEM) {
-      chatty_msg_list_add_message (chatty_conv->msg_list,
-                                   MSG_IS_SYSTEM,
-                                   message,
-                                   NULL);
-    }
-
-    chatty_conv_set_unseen (chatty_conv, CHATTY_UNSEEN_NONE);
-  }
-}
-
-
-/**
  * chatty_conv_write_conversation:
  * @conv:     a PurpleConversation
  * @who:      the buddy name
@@ -1465,18 +1383,83 @@ chatty_conv_write_conversation (PurpleConversation *conv,
                                 PurpleMessageFlags  flags,
                                 time_t              mtime)
 {
-  const gchar *name;
+  ChattyConversation       *chatty_conv;
+  PurpleConversationType    type;
+  PurpleConnection         *gc;
+  PurplePluginProtocolInfo *prpl_info = NULL;
+  PurpleAccount            *account;
+  PurpleBuddy              *buddy;
+  gchar                    *real_who = NULL;
+  gchar                    *msg_html;
+  gboolean                  group_chat;
+  GdkPixbuf                *avatar;
+  GtkWidget                *icon = NULL;
+  int                       chat_id;
 
-  if (alias && *alias) {
-    name = alias;
-  } else if (who && *who) {
-    name = who;
-  } else {
-    name = NULL;
+  chatty_conv = CHATTY_CONVERSATION (conv);
+
+  g_return_if_fail (chatty_conv != NULL);
+
+  if ((flags & PURPLE_MESSAGE_SYSTEM) && !(flags & PURPLE_MESSAGE_NOTIFY)) {
+    flags &= ~(PURPLE_MESSAGE_SEND | PURPLE_MESSAGE_RECV);
   }
 
-  chatty_conv_write_common (conv, name, message, flags, mtime);
+  account = purple_conversation_get_account (conv);
+  g_return_if_fail (account != NULL);
+  gc = purple_account_get_connection (account);
+  g_return_if_fail (gc != NULL || !(flags & (PURPLE_MESSAGE_SEND | PURPLE_MESSAGE_RECV)));
+
+  type = purple_conversation_get_type (conv);
+
+  if (type == PURPLE_CONV_TYPE_CHAT)
+  {
+    prpl_info = PURPLE_PLUGIN_PROTOCOL_INFO(gc->prpl);
+
+    if (prpl_info->get_cb_real_name) {
+      chat_id = purple_conv_chat_get_id (PURPLE_CONV_CHAT(conv));
+
+      real_who = prpl_info->get_cb_real_name(gc, chat_id, who);
+    }
+
+    buddy = purple_find_buddy (account, real_who);
+
+    if (buddy != NULL) {
+      avatar = chatty_icon_get_buddy_icon ((PurpleBlistNode*)buddy,
+                                           CHATTY_ICON_SIZE_MEDIUM,
+                                           CHATTY_ICON_COLOR_BLUE,
+                                           FALSE);
+
+      icon = gtk_image_new_from_pixbuf (avatar);
+    }
+
+    g_free (real_who);
+  } else {
+    group_chat = FALSE;
+  }
+
+  if (*message != '\0') {
+    if (flags & PURPLE_MESSAGE_RECV) {
+      msg_html = chatty_conv_check_for_links (message);
+
+      chatty_msg_list_add_message (chatty_conv->msg_list,
+                                   MSG_IS_INCOMING,
+                                   msg_html,
+                                   group_chat ? who : NULL,
+                                   icon ? icon : NULL);
+
+      g_free (msg_html);
+    } else if (flags & PURPLE_MESSAGE_SYSTEM) {
+      chatty_msg_list_add_message (chatty_conv->msg_list,
+                                   MSG_IS_SYSTEM,
+                                   message,
+                                   NULL,
+                                   NULL);
+    }
+
+    chatty_conv_set_unseen (chatty_conv, CHATTY_UNSEEN_NONE);
+  }
 }
+
 
 
 /**
@@ -1638,10 +1621,11 @@ chatty_conv_im_with_buddy (PurpleAccount *account,
                                                 name,
                                                 account);
 
-  if (conv == NULL)
+  if (conv == NULL) {
     conv = purple_conversation_new (PURPLE_CONV_TYPE_IM,
                                     account,
                                     name);
+  }
 
   purple_signal_emit (chatty_conversations_get_handle (),
                       "conversation-displayed",
@@ -1652,6 +1636,66 @@ chatty_conv_im_with_buddy (PurpleAccount *account,
   chatty_conv = CHATTY_CONVERSATION (conv);
 
   chatty_conv_set_unseen (chatty_conv, CHATTY_UNSEEN_NONE);
+}
+
+
+/**
+ * chatty_conv_join_chat:
+ * @chat: a PurpleChat
+ *
+ * Joins a group chat
+ * If there is already an instance of the chat
+ * the GUI presents it to the user.
+ *
+ */
+void
+chatty_conv_join_chat (PurpleChat *chat)
+{
+  PurpleAccount            *account;
+  PurpleConversation       *conv;
+  PurplePluginProtocolInfo *prpl_info;
+  GHashTable               *components;
+  const char               *name;
+  char                     *chat_name;
+
+  ChattyConversation *chatty_conv;
+
+  account = purple_chat_get_account(chat);
+  prpl_info = PURPLE_PLUGIN_PROTOCOL_INFO(purple_find_prpl (purple_account_get_protocol_id (account)));
+
+  components = purple_chat_get_components (chat);
+
+  if (prpl_info && prpl_info->get_chat_name) {
+    chat_name = prpl_info->get_chat_name(components);
+  } else {
+    chat_name = NULL;
+  }
+
+  if (chat_name) {
+    name = chat_name;
+  } else {
+    name = purple_chat_get_name(chat);
+  }
+
+  conv = purple_find_conversation_with_account (PURPLE_CONV_TYPE_CHAT,
+                                                name,
+                                                account);
+
+  if (!conv || purple_conv_chat_has_left (PURPLE_CONV_CHAT(conv))) {
+    serv_join_chat (purple_account_get_connection (account), components);
+  } else if (conv) {
+    purple_conversation_present(conv);
+
+    purple_signal_emit (chatty_conversations_get_handle (),
+                        "conversation-displayed",
+                        CHATTY_CONVERSATION (conv));
+
+    chatty_conv = CHATTY_CONVERSATION (conv);
+
+    chatty_conv_set_unseen (chatty_conv, CHATTY_UNSEEN_NONE);
+  }
+
+  g_free (chat_name);
 }
 
 
@@ -1807,7 +1851,7 @@ chatty_conv_new (PurpleConversation *conv)
   account = purple_conversation_get_account (conv);
   protocol_id = purple_account_get_protocol_id (account);
 
-  if (conv_type == PURPLE_CONV_TYPE_IM) {
+  if (conv_type == PURPLE_CONV_TYPE_IM || conv_type == PURPLE_CONV_TYPE_CHAT) {
     chatty_conv->conv_header = g_malloc0 (sizeof (ChattyConvViewHeader));
   }
 
@@ -1839,7 +1883,7 @@ chatty_conv_new (PurpleConversation *conv)
   gtk_widget_show (chatty_conv->tab_cont);
 
   if (chatty_conv->tab_cont == NULL) {
-    if (conv_type == PURPLE_CONV_TYPE_IM) {
+    if (conv_type == PURPLE_CONV_TYPE_IM || conv_type == PURPLE_CONV_TYPE_CHAT) {
       g_free (chatty_conv->conv_header);
     }
 
@@ -1902,8 +1946,6 @@ chatty_conv_destroy (PurpleConversation *conv)
   g_hash_table_foreach_remove (ht_sms_id,
                                cb_ht_check_items,
                                chatty_conv->msg_bubble_footer);
-
-  g_hash_table_destroy (ht_sms_id);
 
   g_free (chatty_conv);
 }
@@ -2068,6 +2110,7 @@ void
 chatty_conversations_uninit (void)
 {
   g_hash_table_destroy (ht_emoticon);
+  g_hash_table_destroy (ht_sms_id);
   purple_prefs_disconnect_by_handle (chatty_conversations_get_handle());
   purple_signals_disconnect_by_handle (chatty_conversations_get_handle());
   purple_signals_unregister_by_instance (chatty_conversations_get_handle());

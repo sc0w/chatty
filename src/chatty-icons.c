@@ -112,6 +112,8 @@ chatty_icon_get_buddy_icon (PurpleBlistNode *node,
                             guint            color,
                             gboolean         greyed)
 {
+  // TODO needs to be detangled and segregated
+
   gsize                      len;
   PurpleBuddy               *buddy = NULL;
   PurpleGroup               *group = NULL;
@@ -125,6 +127,8 @@ chatty_icon_get_buddy_icon (PurpleBlistNode *node,
   PurpleContact             *contact = NULL;
   PurpleStoredImage         *custom_img;
   PurplePluginProtocolInfo  *prpl_info = NULL;
+  const char                *symbol;
+  const char                *buddy_name = NULL;
   gint                       orig_width,
                              orig_height,
                              scale_width,
@@ -133,21 +137,28 @@ chatty_icon_get_buddy_icon (PurpleBlistNode *node,
 
   if (PURPLE_BLIST_NODE_IS_CONTACT (node)) {
     buddy = purple_contact_get_priority_buddy((PurpleContact*)node);
+    symbol = "avatar-default-symbolic";
     contact = (PurpleContact*)node;
   } else if (PURPLE_BLIST_NODE_IS_BUDDY(node)) {
     buddy = (PurpleBuddy*)node;
+    symbol = "avatar-default-symbolic";
     contact = purple_buddy_get_contact(buddy);
   } else if (PURPLE_BLIST_NODE_IS_GROUP(node)) {
     group = (PurpleGroup*)node;
   } else if (PURPLE_BLIST_NODE_IS_CHAT(node)) {
-    /* We don't need to do anything here. We just need to not fall
-     * into the else block and return. */
+    buddy = (PurpleBuddy*)node;
+    symbol = "system-users-symbolic";
   } else {
     return NULL;
   }
 
   if (buddy) {
-    account = purple_buddy_get_account (buddy);
+    if (PURPLE_BLIST_NODE_IS_BUDDY(node)) {
+      buddy_name = purple_buddy_get_alias (buddy);
+      account = purple_buddy_get_account (buddy);
+    } else {
+      buddy_name = purple_buddy_get_name (buddy);
+    }
   }
 
   if(account && account->gc) {
@@ -165,8 +176,9 @@ chatty_icon_get_buddy_icon (PurpleBlistNode *node,
     len = purple_imgstore_get_size (custom_img);
   }
 
-  if (data == NULL && buddy) {
+  if (data == NULL && buddy && PURPLE_BLIST_NODE_IS_BUDDY(node)) {
     icon = purple_buddy_icons_find (buddy->account, buddy->name);
+
     if (icon) {
       data = purple_buddy_icon_get_data (icon, &len);
     }
@@ -178,13 +190,58 @@ chatty_icon_get_buddy_icon (PurpleBlistNode *node,
     // create a grey background to make buddy icons
     // look nicer that don't have square format
     color = CHATTY_ICON_COLOR_GREY;
+  } else if (buddy_name) {
+    cairo_text_extents_t te;
+    int                  width = 48;
+    int                  height = 48;
+    double               x_pos, y_pos;
+    char                 tmp[2];
+    char                *initial_char;
+
+    g_utf8_strncpy (tmp, buddy_name, 1);
+    initial_char = g_utf8_strup (tmp, 1);
+
+    surface = cairo_image_surface_create (CAIRO_FORMAT_RGB24, width, height);
+    cr = cairo_create (surface);
+
+    color = CHATTY_ICON_COLOR_BLUE;
+    cairo_set_source_rgb (cr, 0.29, 0.56, 0.85);
+    cairo_paint (cr);
+
+    cairo_set_source_rgb (cr, 0.0, 0.0, 0.0);
+    cairo_set_font_size (cr, 24.0);
+    cairo_select_font_face (cr,
+                            "Sans",
+                            CAIRO_FONT_SLANT_NORMAL,
+                            CAIRO_FONT_WEIGHT_NORMAL);
+
+    cairo_text_extents (cr, initial_char, &te);
+    x_pos = width / 2 - (te.width / 2 + te.x_bearing);
+    y_pos = height / 2 - (te.height / 2 + te.y_bearing);
+    cairo_move_to (cr, x_pos, y_pos);
+
+    cairo_show_text (cr, initial_char);
+
+    buf = gdk_pixbuf_get_from_surface (surface,
+                                       0,
+                                       0,
+                                       width,
+                                       height);
+
+    if (!buf) {
+      return NULL;
+    }
+
+    cairo_surface_destroy (surface);
+    cairo_destroy (cr);
+    g_free (initial_char);
   } else {
     GtkIconTheme *icon_theme;
 
     icon_theme = gtk_icon_theme_get_default ();
 
     buf = gtk_icon_theme_load_icon (icon_theme,
-                                    "avatar-default-symbolic",
+                                    symbol,
                                     48,
                                     0,
                                     NULL);
@@ -284,6 +341,9 @@ chatty_icon_get_buddy_icon (PurpleBlistNode *node,
       break;
     case CHATTY_ICON_COLOR_BLUE:
       cairo_set_source_rgb (cr, 0.29, 0.56, 0.85);
+      break;
+    case CHATTY_ICON_COLOR_PURPLE:
+      cairo_set_source_rgb (cr, 0.52, 0.17, 0.52);
       break;
     default:
       cairo_set_source_rgb (cr, 0.7, 0.7, 0.7);

@@ -74,6 +74,7 @@ enum
 PurpleConversationUiOps *chatty_conversations_get_conv_ui_ops(void);
 
 void chatty_conv_im_with_buddy (PurpleAccount *account, const char *username);
+void chatty_conv_join_chat (PurpleChat *chat);
 void *chatty_conversations_get_handle (void);
 void chatty_conversations_init (void);
 void chatty_conversations_uninit (void);

@@ -61,7 +61,8 @@ GtkWidget *chatty_msg_list_new (guint message_type,
 void chatty_msg_list_add_message (ChattyMsgList *self,
                                   guint message_dir,
                                   const gchar *message,
-                                  const gchar *footer);
+                                  const gchar *footer,
+                                  GtkWidget   *icon);
 
 void chatty_msg_list_clear (ChattyMsgList *self);
 void chatty_msg_list_autoscroll (ChattyMsgList *self);

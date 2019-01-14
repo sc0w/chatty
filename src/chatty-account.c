@@ -55,7 +55,7 @@ cb_account_added (PurpleAccount *account,
 {
   chatty_data_t *chatty = chatty_get_data ();
 
-  chatty_account_populate_account_list (chatty->account_list_manage, LIST_ACCOUNT_MANAGE);
+  chatty_account_populate_account_list (chatty->list_manage_account, LIST_MANAGE_ACCOUNT);
 }
 
 
@@ -148,7 +148,13 @@ cb_list_account_select_row_activated (GtkListBox    *box,
 
   if (account) {
     pc = purple_account_get_connection (account);
-    chatty->contact_selected_account = account;
+
+    if (box == chatty->list_select_muc_account) {
+      chatty->selected_muc_account = account;
+      return;
+    }
+
+    chatty->selected_contact_account = account;
   }
 
   if (pc) {
@@ -204,8 +210,8 @@ cb_button_delete_account_clicked (GtkButton *sender,
   if (response == GTK_RESPONSE_OK) {
     purple_accounts_delete (account);
 
-    chatty_account_populate_account_list (chatty->account_list_manage,
-                                          LIST_ACCOUNT_MANAGE);
+    chatty_account_populate_account_list (chatty->list_manage_account,
+                                          LIST_MANAGE_ACCOUNT);
 
     gtk_widget_destroy (chatty_account->dialog_edit_account);
   }
@@ -410,7 +416,7 @@ chatty_account_add_to_accounts_list (PurpleAccount *account,
     return;
   }
 
-  if (list_type == LIST_ACCOUNT_MANAGE) {
+  if (list_type == LIST_MANAGE_ACCOUNT) {
     switch_account_enabled = gtk_switch_new ();
     gtk_widget_show (GTK_WIDGET(switch_account_enabled));
 
@@ -445,11 +451,14 @@ chatty_account_add_to_accounts_list (PurpleAccount *account,
     hdy_action_row_set_title (row, purple_account_get_username (account));
   }
 
-  if (list_type == LIST_ACCOUNT_MANAGE) {
-    gtk_container_add (GTK_CONTAINER(chatty->account_list_manage),
+  if (list_type == LIST_MANAGE_ACCOUNT) {
+    gtk_container_add (GTK_CONTAINER(chatty->list_manage_account),
                        GTK_WIDGET(row));
-  } else {
-    gtk_container_add (GTK_CONTAINER(chatty->account_list_select),
+  } else if (list_type == LIST_SELECT_CHAT_ACCOUNT) {
+    gtk_container_add (GTK_CONTAINER(chatty->list_select_chat_account),
+                       GTK_WIDGET(row));
+  } else if (list_type == LIST_SELECT_MUC_ACCOUNT) {
+    gtk_container_add (GTK_CONTAINER(chatty->list_select_muc_account),
                        GTK_WIDGET(row));
   }
 
@@ -463,6 +472,7 @@ chatty_account_populate_account_list (GtkListBox *list, guint type)
   GList         *l;
   gboolean       ret = FALSE;
   HdyActionRow  *row;
+  const gchar   *protocol_id;
 
   chatty_data_t *chatty = chatty_get_data ();
 
@@ -471,22 +481,31 @@ chatty_account_populate_account_list (GtkListBox *list, guint type)
   for (l = purple_accounts_get_all (); l != NULL; l = l->next) {
     ret = TRUE;
 
-    if (list == chatty->account_list_manage) {
-      const gchar *protocol_id;
+    protocol_id = purple_account_get_protocol_id ((PurpleAccount *)l->data);
 
-      protocol_id = purple_account_get_protocol_id ((PurpleAccount *)l->data);
-
-      if (!(g_strcmp0 (protocol_id, "prpl-mm-sms") == 0)) {
+    switch (type) {
+      case LIST_MANAGE_ACCOUNT:
+        if (!(g_strcmp0 (protocol_id, "prpl-mm-sms") == 0)) {
+          chatty_account_add_to_accounts_list ((PurpleAccount *)l->data,
+                                               LIST_MANAGE_ACCOUNT);
+        }
+        break;
+      case LIST_SELECT_MUC_ACCOUNT:
+        if (!(g_strcmp0 (protocol_id, "prpl-mm-sms") == 0)) {
+          chatty_account_add_to_accounts_list ((PurpleAccount *)l->data,
+                                               LIST_SELECT_MUC_ACCOUNT);
+        }
+        break;
+      case LIST_SELECT_CHAT_ACCOUNT:
         chatty_account_add_to_accounts_list ((PurpleAccount *)l->data,
-                                             LIST_ACCOUNT_MANAGE);
-      }
-    } else {
-      chatty_account_add_to_accounts_list ((PurpleAccount *)l->data,
-                                           LIST_ACCOUNT_SELECT);
-    }
+                                             LIST_SELECT_CHAT_ACCOUNT);
+        break;
+      default:
+        return FALSE;
+     }
   }
 
-  if (type == LIST_ACCOUNT_MANAGE) {
+  if (type == LIST_MANAGE_ACCOUNT) {
     row = hdy_action_row_new ();
 
     g_object_set_data (G_OBJECT(row),
@@ -495,7 +514,7 @@ chatty_account_populate_account_list (GtkListBox *list, guint type)
 
     hdy_action_row_set_title (row, _("Add new account..."));
 
-    gtk_container_add (GTK_CONTAINER(chatty->account_list_manage),
+    gtk_container_add (GTK_CONTAINER(chatty->list_manage_account),
                        GTK_WIDGET(row));
 
     gtk_widget_show (GTK_WIDGET(row));
@@ -755,21 +774,29 @@ chatty_account_init (void)
     purple_savedstatus_activate (purple_savedstatus_get_startup ());
   }
 
-  g_signal_connect (G_OBJECT(chatty->account_list_manage),
+  g_signal_connect (G_OBJECT(chatty->list_manage_account),
                     "row-activated",
                     G_CALLBACK(cb_list_account_manage_row_activated),
                     NULL);
 
-  g_signal_connect (G_OBJECT(chatty->account_list_select),
+  g_signal_connect (G_OBJECT(chatty->list_select_chat_account),
                     "row-activated",
                     G_CALLBACK(cb_list_account_select_row_activated),
                     NULL);
 
-  chatty_account_populate_account_list (chatty->account_list_manage,
-                                        LIST_ACCOUNT_MANAGE);
+  g_signal_connect (G_OBJECT(chatty->list_select_muc_account),
+                    "row-activated",
+                    G_CALLBACK(cb_list_account_select_row_activated),
+                    NULL);
 
-  chatty_account_populate_account_list (chatty->account_list_select,
-                                        LIST_ACCOUNT_SELECT);
+  chatty_account_populate_account_list (chatty->list_manage_account,
+                                        LIST_MANAGE_ACCOUNT);
+
+  chatty_account_populate_account_list (chatty->list_select_chat_account,
+                                        LIST_SELECT_CHAT_ACCOUNT);
+
+  chatty_account_populate_account_list (chatty->list_select_muc_account,
+                                        LIST_SELECT_MUC_ACCOUNT);
 
   if (!purple_prefs_get_bool ("/purple/savedstatus/startup_current_status")) {
     purple_savedstatus_activate (purple_savedstatus_get_startup ());

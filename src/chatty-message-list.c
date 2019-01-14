@@ -593,7 +593,8 @@ void
 chatty_msg_list_add_message (ChattyMsgList *self,
                              guint          message_dir,
                              const gchar   *message,
-                             const gchar   *footer)
+                             const gchar   *footer,
+                             GtkWidget     *icon)
 {
   GtkListBoxRow   *row;
   GtkBox          *box;
@@ -663,6 +664,15 @@ chatty_msg_list_add_message (ChattyMsgList *self,
   gtk_container_add (GTK_CONTAINER(ebox), GTK_WIDGET(label_msg));
 
   if (message_dir == MSG_IS_INCOMING) {
+    if (icon != NULL) {
+      g_object_set (icon,
+                    "valign", GTK_ALIGN_START,
+                    "margin", 4,
+                    NULL);
+
+      gtk_box_pack_start (box, GTK_WIDGET(icon), FALSE, TRUE, 4);
+    }
+
     gtk_box_pack_start (box, GTK_WIDGET(vbox), FALSE, TRUE, 8);
     style = "bubble_white";
   } else if (message_dir == MSG_IS_OUTGOING) {
@@ -687,7 +697,12 @@ chatty_msg_list_add_message (ChattyMsgList *self,
     gtk_widget_set_name (GTK_WIDGET(label_footer), "label-footer");
     str = g_strconcat ("<small>", footer, "</small>", NULL);
 
-    gtk_label_set_xalign (label_footer, 1);
+    if (message_dir == MSG_IS_OUTGOING) {
+      gtk_label_set_xalign (label_footer, 1);
+    } else {
+      gtk_label_set_xalign (label_footer, 0);
+    }
+
     gtk_widget_set_sensitive (GTK_WIDGET(label_footer), FALSE);
     gtk_label_set_markup (label_footer, str);
     gtk_box_pack_start (vbox, GTK_WIDGET(label_footer), FALSE, FALSE, 10);

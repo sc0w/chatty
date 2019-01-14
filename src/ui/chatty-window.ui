@@ -15,8 +15,8 @@
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">False</property>
-            <property name="action_name">chat_list.join-chat</property>
-            <property name="text" translatable="yes">Add Group Chat</property>
+            <property name="action_name">chat_list.group-chat</property>
+            <property name="text" translatable="yes">Group Chat</property>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -235,10 +235,29 @@
                 </child>
                 <child>
                   <object class="GtkImage" id="header_icon">
+                    <property name="visible">True</property>
                     <property name="can_focus">False</property>
                   </object>
                   <packing>
                     <property name="position">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkButton">
+                    <property name="visible">False</property>
+                    <property name="can_focus">False</property>
+                    <property name="receives_default">False</property>
+                    <property name="action_name">win.show-chat-members</property>
+                    <child>
+                      <object class="GtkImage">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="icon_name">system-users-symbolic</property>
+                      </object>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="pack_type">end</property>
                   </packing>
                 </child>
                 <child>
@@ -359,10 +378,10 @@
               </packing>
             </child>
             <child>
-              <object class="GtkHeaderBar" id="header_view_join_chat">
+              <object class="GtkHeaderBar" id="header_view_group_chat">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="title" translatable="yes">Add Group Chat</property>
+                <property name="title" translatable="yes">Group Chat</property>
                 <child>
                   <object class="GtkButton">
                     <property name="visible">True</property>
@@ -517,7 +536,7 @@
                         <property name="expand">True</property>
                         <property name="margin-bottom">32</property>
                         <child>
-                          <object class="GtkListBox" id="manage_account_listbox">
+                          <object class="GtkListBox" id="list_manage_account">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <property name="expand">True</property>
@@ -554,7 +573,7 @@
                             <property name="selection-mode">none</property>
                             <child>
                               <object class="HdyActionRow">
-                                <property name="title" translatable="yes">XEP-0184 Message Receipts</property>
+                                <property name="title" translatable="yes">Message Receipts</property>
                                 <property name="subtitle" translatable="yes">Confirm received messages</property>
                                 <property name="visible">True</property>
                                 <property name="selectable">False</property>
@@ -570,7 +589,7 @@
                             </child>
                             <child>
                               <object class="HdyActionRow" id="row_pref_message_carbons">
-                                <property name="title" translatable="yes">XEP-0280 Message Carbons</property>
+                                <property name="title" translatable="yes">Message Carbons</property>
                                 <property name="subtitle" translatable="yes">Share chat history among devices</property>
                                 <property name="visible">True</property>
                                 <property name="selectable">False</property>
@@ -771,21 +790,6 @@
                     <property name="valign">start</property>
                     <property name="expand">True</property>
                     <child>
-                      <object class="GtkImage">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="valign">center</property>
-                        <property name="pixel_size">72</property>
-                        <property name="icon_name">system-users-symbolic</property>
-                        <property name="icon-size">0</property>
-                        <property name="margin-bottom">32</property>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                      </packing>
-                    </child>
-                    <child>
                       <object class="GtkLabel">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
@@ -799,22 +803,22 @@
                         </attributes>
                       </object>
                     </child>
-                    <child>
-                      <object class="GtkFrame">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="expand">True</property>
-                        <property name="margin-bottom">32</property>
-                        <child>
-                          <object class="GtkListBox" id="select_muc_account_listbox">
-                            <property name="visible">True</property>
-                            <property name="can_focus">False</property>
-                            <property name="expand">True</property>
-                            <property name="selection-mode">none</property>
-                          </object>
-                        </child>
-                      </object>
-                    </child>
+                     <child>
+                       <object class="GtkFrame">
+                         <property name="visible">True</property>
+                         <property name="can_focus">False</property>
+                         <property name="expand">True</property>
+                         <property name="margin-bottom">32</property>
+                         <child>
+                           <object class="GtkListBox" id="list_select_muc_account">
+                             <property name="visible">True</property>
+                             <property name="can_focus">False</property>
+                             <property name="expand">True</property>
+                             <property name="selection-mode">none</property>
+                           </object>
+                         </child>
+                       </object>
+                     </child>
                     <child>
                       <object class="GtkGrid">
                         <property name="visible">True</property>
@@ -828,7 +832,7 @@
                             <property name="visible">True</property>
                             <property name="xalign">1</property>
                             <property name="can_focus">False</property>
-                            <property name="label" translatable="no">Room</property>
+                            <property name="label" translatable="no">Room address</property>
                           </object>
                           <packing>
                             <property name="left_attach">0</property>
@@ -840,7 +844,7 @@
                             <property name="visible">True</property>
                             <property name="xalign">1</property>
                             <property name="can_focus">False</property>
-                            <property name="label" translatable="yes">Password</property>
+                            <property name="label" translatable="yes">Password (optional)</property>
                           </object>
                           <packing>
                             <property name="left_attach">0</property>
@@ -862,23 +866,12 @@
                           <object class="GtkEntry" id="entry_group_chat_pw">
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
+                            <property name="input_purpose">password</property>
+                            <property name="visibility">False</property>
                           </object>
                           <packing>
                             <property name="left_attach">1</property>
                             <property name="top_attach">1</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkButton" id="button_join_chat">
-                            <property name="halign">start</property>
-                            <property name="margin_top">32</property>
-                            <property name="label" translatable="yes">Join group chat</property>
-                            <property name="visible">True</property>
-                            <property name="can_focus">True</property>
-                          </object>
-                          <packing>
-                            <property name="left_attach">1</property>
-                            <property name="top_attach">2</property>
                           </packing>
                         </child>
                       </object>
@@ -886,6 +879,64 @@
                         <property name="expand">False</property>
                         <property name="fill">True</property>
                       </packing>
+                    </child>
+                    <child>
+                      <object class="GtkFrame">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="expand">True</property>
+                        <property name="margin-bottom">32</property>
+                        <property name="margin-top">48</property>
+                        <child>
+                          <object class="GtkListBox">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="expand">True</property>
+                            <property name="selection-mode">none</property>
+                            <child>
+                              <object class="HdyActionRow">
+                                <property name="title" translatable="yes">Autojoin</property>
+                                <property name="subtitle" translatable="yes">Join group chat at startup</property>
+                                <property name="visible">True</property>
+                                <property name="selectable">False</property>
+                                <property name="activatable">False</property>
+                                <child type="action">
+                                  <object class="GtkSwitch" id="prefs_switch_chat_autojoin">
+                                    <property name="can_focus">True</property>
+                                    <property name="valign">center</property>
+                                    <property name="visible">True</property>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkFrame">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="expand">True</property>
+                        <property name="margin-bottom">32</property>
+                        <property name="margin-top">16</property>
+                        <child>
+                          <object class="GtkListBox" id="listbox_join_chat">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="expand">True</property>
+                            <property name="selection-mode">none</property>
+                            <child>
+                              <object class="HdyActionRow" id="row_join_chat">
+                                <property name="title" translatable="yes">Join Group Chat...</property>
+                                <property name="visible">True</property>
+                                <property name="selectable">False</property>
+                                <property name="activatable">True</property>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
+                      </object>
                     </child>
                   </object>
                 </child>
@@ -949,7 +1000,7 @@
                         <property name="expand">True</property>
                         <property name="margin-bottom">32</property>
                         <child>
-                          <object class="GtkListBox" id="select_account_listbox">
+                          <object class="GtkListBox" id="list_select_chat_account">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <property name="expand">True</property>

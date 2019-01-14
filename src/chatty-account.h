@@ -22,8 +22,9 @@ typedef struct
 
 
 enum {
-  LIST_ACCOUNT_MANAGE,
-  LIST_ACCOUNT_SELECT
+  LIST_MANAGE_ACCOUNT,
+  LIST_SELECT_MUC_ACCOUNT,
+  LIST_SELECT_CHAT_ACCOUNT
 } e_account_list_type;
 
 
