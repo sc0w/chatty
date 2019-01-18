@@ -394,6 +394,9 @@ chatty_window_init_data (void)
                     "row-activated",
                     G_CALLBACK (cb_row_join_chat_selected),
                     NULL);
+
+  hdy_search_bar_connect_entry (chatty->search_bar_chats,
+                                chatty->search_entry_chats);
 }
 
 
@@ -437,8 +440,9 @@ chatty_window_activate (GtkApplication *app,
   chatty->header_icon = GTK_WIDGET (gtk_builder_get_object (builder, "header_icon"));
   chatty->header_spinner = GTK_WIDGET (gtk_builder_get_object (builder, "header_spinner"));
 
-  chatty->search_entry_chats = GTK_WIDGET (gtk_builder_get_object (builder, "search_entry_chats"));
-  chatty->search_entry_contacts = GTK_WIDGET (gtk_builder_get_object (builder, "search_entry_contacts"));
+  chatty->search_bar_chats = HDY_SEARCH_BAR (gtk_builder_get_object (builder, "search_bar_chats"));
+  chatty->search_entry_chats = GTK_ENTRY (gtk_builder_get_object (builder, "search_entry_chats"));
+  chatty->search_entry_contacts = GTK_ENTRY (gtk_builder_get_object (builder, "search_entry_contacts"));
 
   chatty->panes_stack = GTK_STACK (gtk_builder_get_object (builder, "panes_stack"));
   chatty->pane_view_message_list = GTK_WIDGET (gtk_builder_get_object (builder, "pane_view_message_list"));
