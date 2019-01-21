@@ -23,7 +23,6 @@ typedef struct {
   GtkHeaderBar      *header_view_message_list;
   GtkWidget         *header_icon;
   GtkWidget         *header_spinner;
-  GtkWidget         *search_bar;
   GtkListBox        *list_manage_account;
   GtkListBox        *list_select_chat_account;
   GtkListBox        *list_select_muc_account;
@@ -49,8 +48,9 @@ typedef struct {
   GtkWidget         *button_add_contact;
   GtkEntry          *entry_group_chat_id;
   GtkEntry          *entry_group_chat_pw;
-  GtkWidget         *search_entry_chats;
-  GtkWidget         *search_entry_contacts;
+  HdySearchBar      *search_bar_chats;
+  GtkEntry          *search_entry_chats;
+  GtkEntry          *search_entry_contacts;
   GSList            *radio_button_list;
   GtkWidget         *dummy_prefix_radio;
   GtkWidget         *label_contact_id;
