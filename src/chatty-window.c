@@ -425,7 +425,7 @@ chatty_window_activate (GtkApplication *app,
                                   "win",
                                   G_ACTION_GROUP (simple_action_group));
 
-  gtk_window_set_default_size (GTK_WINDOW (window), 400, 640);
+  gtk_window_set_default_size (GTK_WINDOW (window), 360, 576);
 
   chatty_popover_actions_init (window);
 

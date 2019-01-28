@@ -854,7 +854,6 @@
                         <child>
                           <object class="GtkEntry" id="entry_group_chat_id">
                             <property name="visible">True</property>
-                            <property name="width_request">250</property>
                             <property name="can_focus">True</property>
                           </object>
                           <packing>
@@ -1044,7 +1043,6 @@
                         <child>
                           <object class="GtkEntry" id="entry_contact_name">
                             <property name="visible">True</property>
-                            <property name="width_request">250</property>
                             <property name="can_focus">True</property>
                           </object>
                           <packing>
