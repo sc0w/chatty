@@ -82,7 +82,7 @@ chatty_popover_actions_init (GtkWindow *window)
   simple_action_group = g_simple_action_group_new ();
   g_action_map_add_action_entries (G_ACTION_MAP (simple_action_group),
                                    view_new_chat_entries,
-                                   G_N_ELEMENTS (view_chat_list_entries),
+                                   G_N_ELEMENTS (view_new_chat_entries),
                                    window);
 
   gtk_widget_insert_action_group (GTK_WIDGET (window),
