@@ -1,5 +1,4 @@
-# Jaroslav Svoboda <multi.flexi@seznam.cz>, 2018. #zanata
-# Jaroslav Svoboda <multi.flexi@seznam.cz>, 2019. #zanata
+# Pan Talianos <talianos.dev@gmail.com>, 2019. #zanata
 msgid ""
 msgstr ""
 "Project-Id-Version: purism-chatty\n"
@@ -8,12 +7,12 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2019-01-11 10:49+0000\n"
-"Last-Translator: Jaroslav Svoboda <multi.flexi@seznam.cz>\n"
-"Language-Team: Czech\n"
-"Language: cs\n"
+"PO-Revision-Date: 2019-01-30 08:52+0000\n"
+"Last-Translator: Pan Talianos <talianos.dev@gmail.com>\n"
+"Language-Team: Greek\n"
+"Language: el\n"
 "X-Generator: Zanata 4.6.2\n"
-"Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2\n"
+"Plural-Forms: nplurals=2; plural=(n != 1)\n"
 
 #: data/sm.puri.Chatty.appdata.xml.in:6 data/sm.puri.Chatty.desktop.in:3
 msgid "Chatty"
@@ -21,15 +20,15 @@ msgstr "Chatty"
 
 #: data/sm.puri.Chatty.appdata.xml.in:7
 msgid "A messaging application"
-msgstr "Komunikační aplikace"
+msgstr "Εφαρμογή μηνυμάτων"
 
 #: data/sm.puri.Chatty.appdata.xml.in:8
 msgid "Chatty is a messaging application supporting XMPP and SMS."
-msgstr "Chatty je komunikační aplikace podporující XMPP a SMS."
+msgstr "Το Chatty είναι μια εφαρμογή μηνυμάτων μέσω XMPP και SMS."
 
 #: data/sm.puri.Chatty.appdata.xml.in:16
 msgid "Chatty's message window"
-msgstr "Okno zprávy Chatty"
+msgstr "Παράθυρο συνομιλιών του Chatty"
 
 #: data/sm.puri.Chatty.desktop.in:5
 msgid "sm.puri.Chatty"
@@ -37,7 +36,7 @@ msgstr "sm.puri.Chatty"
 
 #: data/sm.puri.Chatty.desktop.in:6
 msgid "SMS and XMPP chat application"
-msgstr "SMS a XMPP konverzační aplikace"
+msgstr "Εφαρμογή μυνημάτων SMS και XMPP"
 
 #: data/sm.puri.Chatty.desktop.in:7
 msgid "XMPP;SMS;chat;jabber;messaging;modem"
@@ -45,7 +44,7 @@ msgstr "XMPP;SMS;chat;jabber;messaging;modem"
 
 #: src/chatty-account.c:169
 msgid "SMS Number"
-msgstr "SMS číslo"
+msgstr "Αριθμός SMS"
 
 #: src/chatty-account.c:171
 msgid "Jabber ID"
@@ -53,112 +52,112 @@ msgstr "Jabber ID"
 
 #: src/chatty-account.c:193
 msgid "Delete Account"
-msgstr "Odstranit účet"
+msgstr "Διαγραφή Λογαριασμού"
 
 #: src/chatty-account.c:196
 #, c-format
 msgid "Delete account %s?"
-msgstr "Odstranit účet %s?"
+msgstr "Να διαγραφεί ο λογαριασμός %s?"
 
 #: src/chatty-account.c:281
 msgid "connected"
-msgstr "připojeno"
+msgstr "σύνδεση επιτυχής"
 
 #: src/chatty-account.c:283
 msgid "connecting..."
-msgstr "připojuji..."
+msgstr "σύνδεση σε εξέλιξη..."
 
 #: src/chatty-account.c:285
 msgid "disconnected"
-msgstr "odpojeno"
+msgstr "η σύνδεση διακόπηκε"
 
 #: src/chatty-account.c:496
 msgid "Add new account..."
-msgstr "Přidat nový účet"
+msgstr "Προσθήκη νέου λογαριασμού..."
 
 #: src/chatty-account.c:523
 msgid "Contact added"
-msgstr "Kontakt přidán"
+msgstr "Προσθήκη επαφής επιτυχής"
 
 #: src/chatty-account.c:527
 #, c-format
 msgid "User %s has added %s to the contacts"
-msgstr "Uživatel %s přidal %s do kontaktů"
+msgstr "Ο χρήστης %s πρόσθεσε τον/την %s στις επαφές"
 
 #: src/chatty-account.c:588
 #, c-format
 msgid "Authorize %s?"
-msgstr "Autorizovat %s?"
+msgstr "Εξουσιοδώτηση %s?"
 
 #: src/chatty-account.c:592
 msgid "Reject"
-msgstr "Odmítnout"
+msgstr "Απόρριψη"
 
 #: src/chatty-account.c:594
 msgid "Accept"
-msgstr "Přijmout"
+msgstr "Αποδοχή"
 
 #: src/chatty-account.c:599
 #, c-format
 msgid "Add %s to contact list"
-msgstr "Přidat %s do seznamu kontaktů"
+msgstr "Προσθήκη %s στην λίστα επαφών"
 
 #: src/chatty-buddy-list.c:600
 #, c-format
 msgid "Delete Chat with %s?"
-msgstr "Odstranit konverzaci s %s?"
+msgstr "Να διαγραφεί η συνομιλία με %s?"
 
 #: src/chatty-buddy-list.c:604
 msgid "Cancel"
-msgstr "Zrušit"
+msgstr "Ακύρωση"
 
 #: src/chatty-buddy-list.c:606
 msgid "Delete"
-msgstr "Smazat"
+msgstr "Διαγραφή"
 
 #: src/chatty-buddy-list.c:611
 msgid "This deletes the conversation history"
-msgstr "Toto vymaže historii konverzace"
+msgstr "Αυτή η ενέργεια θα διαγράψει το αρχείο συνομιλιών"
 
 #: src/chatty-buddy-list.c:1563 src/chatty-buddy-list.c:1687
 msgid "Me: "
-msgstr "Já:"
+msgstr "Εγώ:"
 
 #: src/chatty-message-list.c:68 src/chatty-message-list.c:73
 msgid "This is a IM conversation."
-msgstr "Toto je IM konverzace."
+msgstr "Συνομιλία άμεσων μηνυμάτων (IM)."
 
 #: src/chatty-message-list.c:69 src/chatty-message-list.c:79
 msgid "Your messages are not encrypted,"
-msgstr "Vaše zprávy nejsou šifrovány,"
+msgstr "Τα μηνύματά σας δεν τυγχάνουν κρυπτογράφησης,"
 
 #: src/chatty-message-list.c:70
 msgid "ask your counterpart to use E2EE."
-msgstr "požádejte váš protějšek o užití E2EE."
+msgstr "ζητήστε από το συνομιλητή σας να ενεργοποιήσει την κρυπτογράφηση."
 
 #: src/chatty-message-list.c:74
 msgid "Your messages are secured"
-msgstr "Vaše zprávy jsou zabezpečeny"
+msgstr "Τα μηνύματά σας είναι ασφαλισμένα"
 
 #: src/chatty-message-list.c:75
 msgid "by end-to-end encryption."
-msgstr "E2E šifrováním."
+msgstr "με κρυπτογράφηση end-to-end."
 
 #: src/chatty-message-list.c:78
 msgid "This is a SMS conversation."
-msgstr "Toto je SMS konverzace."
+msgstr "Αυτή είναι μια συνομιλία SMS."
 
 #: src/chatty-message-list.c:80
 msgid "and carrier rates may apply."
-msgstr "a může být zpoplatněno operátorem."
+msgstr "και οι συνήθεις χρεώσεις παρόχου πιθανόν να υφίστανται."
 
 #: src/chatty-window.c:78
 msgid "No account selected"
-msgstr "Nebyl vybrán žádný účet"
+msgstr "Δεν επελέγη λογαριασμός συνομιλιών"
 
 #: src/chatty-window.c:81
 #, c-format
 msgid "Please select a chat account for\n"
 "contact %s"
-msgstr "Prosím, vyberte účet pro\n"
-"kontakt %s"
+msgstr "Επιλέξτε λογαριασμό συνομιλιών για\n"
+"την επαφή %s"

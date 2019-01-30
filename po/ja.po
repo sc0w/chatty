@@ -1,91 +1,163 @@
 # Punleuk Oum <sirstrangerthesecond@gmail.com>, 2018. #zanata
+# Scott <xmrscott@protonmail.com>, 2019. #zanata
 msgid ""
 msgstr ""
 "Project-Id-Version: purism-chatty\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-10-24 13:01+0200\n"
+"POT-Creation-Date: 2019-01-09 16:44+0100\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2018-10-26 10:57+0000\n"
-"Last-Translator: Punleuk Oum <sirstrangerthesecond@gmail.com>\n"
+"PO-Revision-Date: 2019-01-18 01:55+0000\n"
+"Last-Translator: Scott <xmrscott@protonmail.com>\n"
 "Language-Team: Japanese\n"
 "Language: ja\n"
 "X-Generator: Zanata 4.6.2\n"
 "Plural-Forms: nplurals=1; plural=0\n"
 
-#: data/sm.puri.Chatty.desktop.in:3
-msgid "purism-chatty"
-msgstr "purism-chatty"
+#: data/sm.puri.Chatty.appdata.xml.in:6 data/sm.puri.Chatty.desktop.in:3
+msgid "Chatty"
+msgstr "Chatty"
 
-#: src/chatty-account.c:234
-msgid "id@any-server"
-msgstr "イド＠何かサーバー"
+#: data/sm.puri.Chatty.appdata.xml.in:7
+msgid "A messaging application"
+msgstr ""
 
-#: src/chatty-account.c:243
-msgid "Password"
-msgstr "パスワード"
+#: data/sm.puri.Chatty.appdata.xml.in:8
+msgid "Chatty is a messaging application supporting XMPP and SMS."
+msgstr ""
 
-#: src/chatty-account.c:247 src/chatty-account.c:768
-msgid "Add account"
-msgstr "アカウントを追加"
+#: data/sm.puri.Chatty.appdata.xml.in:16
+msgid "Chatty's message window"
+msgstr ""
 
-#: src/chatty-buddy-list.c:613
-msgid "Nickname (optional)"
-msgstr "ニックネーム（任意）"
+#: data/sm.puri.Chatty.desktop.in:5
+msgid "sm.puri.Chatty"
+msgstr "sm.puri.Chatty"
 
-#: src/chatty-buddy-list.c:619
-msgid "Invite message"
-msgstr "招待メッセージ"
+#: data/sm.puri.Chatty.desktop.in:6
+msgid "SMS and XMPP chat application"
+msgstr ""
 
-#: src/chatty-conversation.c:337
-msgid "Unknown command."
-msgstr "不明なコマンド。"
+#: data/sm.puri.Chatty.desktop.in:7
+msgid "XMPP;SMS;chat;jabber;messaging;modem"
+msgstr ""
 
-#: src/chatty-conversation.c:348
-msgid "Wrong number of arguments for the command."
-msgstr "無効な引数の番号がコマンドに使用されています。"
+#: src/chatty-account.c:169
+msgid "SMS Number"
+msgstr ""
 
-#: src/chatty-conversation.c:356
-msgid "The command failed."
-msgstr "コマンドが失敗しました。"
+#: src/chatty-account.c:171
+msgid "Jabber ID"
+msgstr ""
 
-#: src/chatty-conversation.c:366
-msgid "That command only works in chats, not IMs."
-msgstr "コマンドはIMではなく、チャットの中にしか使用出来ません。"
+#: src/chatty-account.c:193
+msgid "Delete Account"
+msgstr ""
 
-#: src/chatty-conversation.c:372
-msgid "That command only works in IMs, not chats."
-msgstr "コマンドはチャットでは無く、IMの中にしか使用出来ません。"
+#: src/chatty-account.c:196
+#, c-format
+msgid "Delete account %s?"
+msgstr ""
 
-#: src/chatty-conversation.c:380
-msgid "That command doesn't work on this protocol."
-msgstr "コマンドはこのプロトコルが使用出来ません。"
+#: src/chatty-account.c:281
+msgid "connected"
+msgstr ""
 
-#: src/chatty-message-list.c:60 src/chatty-message-list.c:65
+#: src/chatty-account.c:283
+msgid "connecting..."
+msgstr ""
+
+#: src/chatty-account.c:285
+msgid "disconnected"
+msgstr ""
+
+#: src/chatty-account.c:496
+msgid "Add new account..."
+msgstr ""
+
+#: src/chatty-account.c:523
+msgid "Contact added"
+msgstr ""
+
+#: src/chatty-account.c:527
+#, c-format
+msgid "User %s has added %s to the contacts"
+msgstr ""
+
+#: src/chatty-account.c:588
+#, c-format
+msgid "Authorize %s?"
+msgstr ""
+
+#: src/chatty-account.c:592
+msgid "Reject"
+msgstr ""
+
+#: src/chatty-account.c:594
+msgid "Accept"
+msgstr ""
+
+#: src/chatty-account.c:599
+#, c-format
+msgid "Add %s to contact list"
+msgstr ""
+
+#: src/chatty-buddy-list.c:600
+#, c-format
+msgid "Delete Chat with %s?"
+msgstr ""
+
+#: src/chatty-buddy-list.c:604
+msgid "Cancel"
+msgstr ""
+
+#: src/chatty-buddy-list.c:606
+msgid "Delete"
+msgstr ""
+
+#: src/chatty-buddy-list.c:611
+msgid "This deletes the conversation history"
+msgstr ""
+
+#: src/chatty-buddy-list.c:1563 src/chatty-buddy-list.c:1687
+msgid "Me: "
+msgstr ""
+
+#: src/chatty-message-list.c:68 src/chatty-message-list.c:73
 msgid "This is a IM conversation."
 msgstr "この会話はIMで通信します。"
 
-#: src/chatty-message-list.c:61 src/chatty-message-list.c:71
+#: src/chatty-message-list.c:69 src/chatty-message-list.c:79
 msgid "Your messages are not encrypted,"
 msgstr "メッセージは暗号はしてませんので、"
 
-#: src/chatty-message-list.c:62
+#: src/chatty-message-list.c:70
 msgid "ask your counterpart to use E2EE."
 msgstr "他方の送信者にエンドツーエンド暗号化の使用を依頼して下さい。"
 
-#: src/chatty-message-list.c:66
+#: src/chatty-message-list.c:74
 msgid "Your messages are secured"
 msgstr "メッセージはエンドツーエンド暗号化"
 
-#: src/chatty-message-list.c:67
+#: src/chatty-message-list.c:75
 msgid "by end-to-end encryption."
 msgstr "で安全されます。"
 
-#: src/chatty-message-list.c:70
+#: src/chatty-message-list.c:78
 msgid "This is a SMS conversation."
 msgstr "この会話はSMSで通信します。"
 
-#: src/chatty-message-list.c:72
+#: src/chatty-message-list.c:80
 msgid "and carrier rates may apply."
 msgstr "標準メッセージとデータは使用できます。"
+
+#: src/chatty-window.c:78
+msgid "No account selected"
+msgstr ""
+
+#: src/chatty-window.c:81
+#, c-format
+msgid "Please select a chat account for\n"
+"contact %s"
+msgstr ""

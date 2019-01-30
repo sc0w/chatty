@@ -13,11 +13,21 @@
 
 static void
 view_chat_list_cmd_group_chat (GSimpleAction *action,
-                              GVariant      *parameter,
-                              gpointer       user_data)
+                               GVariant      *parameter,
+                               gpointer       user_data)
 {
   chatty_window_change_view (CHATTY_VIEW_JOIN_CHAT);
 }
+
+
+static void
+view_chat_list_cmd_direct_chat (GSimpleAction *action,
+                                GVariant      *parameter,
+                                gpointer       user_data)
+{
+  chatty_window_change_view (CHATTY_VIEW_NEW_CHAT);
+}
+
 
 static void
 view_chat_list_cmd_settings (GSimpleAction *action,
@@ -27,14 +37,6 @@ view_chat_list_cmd_settings (GSimpleAction *action,
   chatty_window_change_view (CHATTY_VIEW_SETTINGS);
 }
 
-
-static void
-view_new_chat_cmd_add_by_id (GSimpleAction *action,
-                             GVariant      *parameter,
-                             gpointer       user_data)
-{
-  chatty_window_change_view (CHATTY_VIEW_NEW_CONTACT);
-}
 
 static void
 view_msg_list_cmd_delete (GSimpleAction *action,
@@ -48,13 +50,8 @@ view_msg_list_cmd_delete (GSimpleAction *action,
 static const GActionEntry view_chat_list_entries [] =
 {
   { "group-chat", view_chat_list_cmd_group_chat },
-  { "settings", view_chat_list_cmd_settings },
-};
-
-
-static const GActionEntry view_new_chat_entries [] =
-{
-  { "add-contact-by-id", view_new_chat_cmd_add_by_id },
+  { "direct-chat", view_chat_list_cmd_direct_chat },
+  { "settings", view_chat_list_cmd_settings }
 };
 
 
@@ -77,16 +74,6 @@ chatty_popover_actions_init (GtkWindow *window)
 
   gtk_widget_insert_action_group (GTK_WIDGET (window),
                                   "chat_list",
-                                  G_ACTION_GROUP (simple_action_group));
-
-  simple_action_group = g_simple_action_group_new ();
-  g_action_map_add_action_entries (G_ACTION_MAP (simple_action_group),
-                                   view_new_chat_entries,
-                                   G_N_ELEMENTS (view_chat_list_entries),
-                                   window);
-
-  gtk_widget_insert_action_group (GTK_WIDGET (window),
-                                  "new_chat",
                                   G_ACTION_GROUP (simple_action_group));
 
   simple_action_group = g_simple_action_group_new ();

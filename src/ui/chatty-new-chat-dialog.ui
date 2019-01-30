@@ -1,0 +1,298 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <object class="HdyDialog" id="dialog">
+    <property name="valign">center</property>
+    <property name="modal">True</property>
+    <property name="default_height">576</property>
+    <child type="titlebar">
+      <object class="HdyTitleBar">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <child>
+          <object class="GtkStack" id="header_stack">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="transition_type">slide-left-right</property>
+            <property name="visible-child-name" bind-source="stack_panes_new_chat" bind-property="visible-child-name" bind-flags="bidirectional|sync-create"/>
+            <child>
+              <object class="GtkHeaderBar" id="header_view_new_chat">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="show_close_button">True</property>
+                <property name="title" translatable="yes">New Direct Chat</property>
+                <child>
+                  <object class="GtkButton" id="button_show_add_contact">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="receives_default">False</property>
+                    <child>
+                      <object class="GtkImage">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="icon_name">contact-new-symbolic</property>
+                      </object>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="pack_type">end</property>
+                  </packing>
+                </child>
+              </object>
+              <packing>
+                <property name="name">view-new-chat</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkHeaderBar">
+                <property name="title" translatable="yes">New Contact</property>
+                <property name="visible">True</property>
+                <child>
+                  <object class="GtkButton" id="button_back">
+                    <property name="label" translatable="yes">Cancel</property>
+                    <property name="sensitive">True</property>
+                    <property name="visible">True</property>
+                  </object>
+                  <packing>
+                    <property name="pack_type">start</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkButton" id="button_add_contact">
+                    <property name="has_default">True</property>
+                    <property name="can_default">True</property>
+                    <property name="label" translatable="yes">Add Contact</property>
+                    <property name="sensitive">False</property>
+                    <property name="visible">True</property>
+                    <style>
+                      <class name="suggested-action"/>
+                    </style>
+                  </object>
+                  <packing>
+                    <property name="pack_type">end</property>
+                  </packing>
+                </child>
+              </object>
+              <packing>
+                <property name="name">view-new-contact</property>
+              </packing>
+            </child>
+          </object>
+        </child>
+      </object>
+    </child>
+    <child internal-child="vbox">
+      <object class="GtkBox">
+        <property name="expand">True</property>
+        <property name="visible">True</property>
+        <child>
+          <object class="GtkScrolledWindow">
+            <property name="propagate_natural_height">True</property>
+            <property name="hscrollbar_policy">never</property>
+            <property name="expand">True</property>
+            <property name="visible">True</property>
+            <child>
+              <object class="GtkStack" id="stack_panes_new_chat">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="vhomogeneous">False</property>
+                <property name="transition_type">slide-left-right</property>
+                <child>
+                  <object class="GtkBox">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="hexpand">True</property>
+                    <property name="orientation">vertical</property>
+                    <property name="valign">start</property>
+                    <child>
+                      <object class="HdySearchBar" id="search_bar_contacts">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="halign">fill</property>
+                        <property name="valign">start</property>
+                        <property name="hexpand">True</property>
+                        <property name="show-close-button">False</property>
+                        <property name="search-mode-enabled">True</property>
+                        <child>
+                          <object class="HdyColumn">
+                            <property name="visible">True</property>
+                            <property name="hexpand">True</property>
+                            <property name="maximum-width">600</property>
+                            <child>
+                              <object class="GtkSearchEntry" id="search_entry_contacts">
+                                <property name="visible">True</property>
+                                <property name="hexpand">True</property>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkBox" id="pane_view_new_chat">
+                        <property name="visible">True</property>
+                        <property name="orientation">vertical</property>
+                        <property name="can_focus">False</property>
+                        <property name="hexpand">True</property>
+                        <property name="orientation">vertical</property>
+                      </object>
+                      <packing>
+                        <property name="expand">True</property>
+                        <property name="fill">True</property>
+                      </packing>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="name">view-new-chat</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkBox">
+                    <property name="orientation">vertical</property>
+                    <property name="visible">True</property>
+                    <child>
+                      <object class="HdyColumn">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="halign">fill</property>
+                        <property name="valign">fill</property>
+                        <property name="margin-bottom">32</property>
+                        <property name="margin-start">12</property>
+                        <property name="margin-end">12</property>
+                        <property name="margin-top">32</property>
+                        <property name="expand">True</property>
+                        <property name="maximum-width">600</property>
+                        <child>
+                          <object class="GtkBox">
+                            <property name="visible">True</property>
+                            <property name="orientation">vertical</property>
+                            <property name="can_focus">False</property>
+                            <property name="valign">start</property>
+                            <property name="expand">True</property>
+                            <child>
+                              <object class="GtkImage">
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <property name="valign">center</property>
+                                <property name="pixel_size">72</property>
+                                <property name="icon_name">avatar-default-symbolic</property>
+                                <property name="icon-size">0</property>
+                                <property name="margin-bottom">32</property>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">True</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkLabel">
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <property name="expand">True</property>
+                                <property name="label" translatable="yes">Select chat account</property>
+                                <property name="justify">left</property>
+                                <property name="halign">start</property>
+                                <property name="margin-bottom">12</property>
+                                <attributes>
+                                  <attribute name="weight" value="bold"/>
+                                </attributes>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkFrame">
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <property name="expand">True</property>
+                                <property name="margin-bottom">32</property>
+                                <child>
+                                  <object class="GtkListBox" id="list_select_chat_account">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                    <property name="expand">True</property>
+                                    <property name="selection-mode">none</property>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkGrid">
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <property name="halign">center</property>
+                                <property name="margin_top">24</property>
+                                <property name="row_spacing">12</property>
+                                <property name="column_spacing">6</property>
+                                <child>
+                                  <object class="GtkLabel" id="label_contact_id">
+                                    <property name="visible">True</property>
+                                    <property name="xalign">1</property>
+                                    <property name="can_focus">False</property>
+                                    <property name="label" translatable="no">Contact ID</property>
+                                  </object>
+                                  <packing>
+                                    <property name="left_attach">0</property>
+                                    <property name="top_attach">0</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkLabel" id="label_alias">
+                                    <property name="visible">True</property>
+                                    <property name="xalign">1</property>
+                                    <property name="can_focus">False</property>
+                                    <property name="label" translatable="yes">Alias (optional)</property>
+                                  </object>
+                                  <packing>
+                                    <property name="left_attach">0</property>
+                                    <property name="top_attach">1</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkEntry" id="entry_contact_name">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">True</property>
+                                  </object>
+                                  <packing>
+                                    <property name="left_attach">1</property>
+                                    <property name="top_attach">0</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkEntry" id="entry_contact_alias">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">True</property>
+                                  </object>
+                                  <packing>
+                                    <property name="left_attach">1</property>
+                                    <property name="top_attach">1</property>
+                                  </packing>
+                                </child>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">True</property>
+                              </packing>
+                            </child>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="name">view-new-contact</property>
+                  </packing>
+                </child>
+              </object>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">True</property>
+            <property name="fill">True</property>
+          </packing>
+        </child>
+      </object>
+    </child>
+  </object>
+</interface>

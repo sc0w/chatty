@@ -16,44 +16,27 @@
 
 typedef struct {
   GtkWindow         *main_window;
-  GtkStack          *panes_stack;
-  GtkBox            *pane_view_chat_list;
-  GtkWidget         *pane_view_message_list;
-  GtkBox            *pane_view_new_chat;
-  GtkHeaderBar      *header_view_message_list;
-  GtkWidget         *header_icon;
-  GtkWidget         *header_spinner;
-  GtkListBox        *list_manage_account;
-  GtkListBox        *list_select_chat_account;
-  GtkListBox        *list_select_muc_account;
-  GtkListBox        *list_privacy_prefs;
-  GtkListBox        *list_xmpp_prefs;
-  GtkListBox        *list_editor_prefs;
-  GtkListBox        *list_join_chat;
-  GtkSwitch         *prefs_switch_send_receipts;
-  GtkSwitch         *prefs_switch_message_carbons;
-  GtkSwitch         *prefs_switch_typing_notification;
-  GtkSwitch         *prefs_switch_show_offline;
-  GtkSwitch         *prefs_switch_indicate_offline;
-  GtkSwitch         *prefs_switch_indicate_idle;
-  GtkSwitch         *prefs_switch_convert_smileys;
-  GtkSwitch         *prefs_switch_return_sends;
-  GtkSwitch         *prefs_switch_chat_autojoin;
-  HdyActionRow      *row_pref_message_carbons;
-  PurpleAccount     *selected_contact_account;
-  PurpleAccount     *selected_muc_account;
-  GtkEntry          *entry_contact_name;
-  GtkEntry          *entry_contact_nick;
-  GtkEntry          *entry_invite_msg;
-  GtkWidget         *button_add_contact;
-  GtkEntry          *entry_group_chat_id;
-  GtkEntry          *entry_group_chat_pw;
+  HdyLeaflet        *content_box;
+  HdyLeaflet        *header_box;
+  HdyHeaderGroup    *header_group;
+  GtkWidget         *dialog_settings;
+  GtkWidget         *dialog_new_chat;
+  GtkStack          *stack_panes_main;
   HdySearchBar      *search_bar_chats;
   GtkEntry          *search_entry_chats;
   GtkEntry          *search_entry_contacts;
+  PurpleAccount     *selected_account;
+  GtkListBox        *list_manage_account;
+  GtkBox            *pane_view_chat_list;
+  GtkWidget         *pane_view_message_list;
+  GtkBox            *pane_view_new_chat;
+  GtkHeaderBar      *sub_header_bar;
+  GtkWidget         *sub_header_icon;
+  GtkWidget         *sub_header_label;
+  GtkWidget         *label_contact_id;
+  GtkWidget         *header_spinner;
   GSList            *radio_button_list;
   GtkWidget         *dummy_prefix_radio;
-  GtkWidget         *label_contact_id;
   gint               view_state_last;
   gint               view_state_next;
 } chatty_data_t;
@@ -75,7 +58,6 @@ enum {
 
 typedef enum {
   CHATTY_VIEW_NEW_CHAT,
-  CHATTY_VIEW_NEW_CONTACT,
   CHATTY_VIEW_CHAT_LIST,
   CHATTY_VIEW_JOIN_CHAT,
   CHATTY_VIEW_MESSAGE_LIST,
@@ -88,8 +70,8 @@ typedef enum {
   CHATTY_MESSAGE_MODE_SMS
 } ChattyWindowMessageMode;
 
-void chatty_window_activate (GtkApplication* app, gpointer user_data);
 void chatty_window_change_view (guint state);
-void chatty_window_set_header_title (const char *title);
+void chatty_window_activate (GtkApplication* app, gpointer user_data);
+void chatty_window_update_sub_header_titlebar (GdkPixbuf  *icon, const char *title);
 
 #endif

@@ -81,6 +81,11 @@ enum {
   CHATTY_STATUS_ICON_SMALL
 } e_icon_size;
 
+enum {
+  CHATTY_CHAT_LIST_SELECT_ENABLED,
+  CHATTY_CHAT_LIST_SELECT_DISABLED,
+} e_list_mode;
+
 
 #define CHATTY_BLIST(list) ((ChattyBuddyList *)purple_blist_get_ui_data())
 #define CHATTY_IS_CHATTY_BLIST(list) \
@@ -91,8 +96,9 @@ PurpleBlistUiOps *chatty_blist_get_ui_ops (void);
 void chatty_blist_init (void);
 void chatty_blist_uninit (void);
 void chatty_blist_returned_from_chat (void);
-void chatty_blist_add_buddy (void);
+void chatty_blist_add_buddy (const char *who, const char *whoalias);
 void chatty_blist_refresh (PurpleBuddyList *list);
+void chatty_blist_chat_list_selection (gboolean select);
 void chatty_blist_create_add_buddy_view (PurpleAccount *account);
 void chatty_blist_chat_list_remove_buddy (void);
 void chatty_blist_join_group_chat (PurpleAccount *account,

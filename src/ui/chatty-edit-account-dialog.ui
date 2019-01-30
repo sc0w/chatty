@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
-  <object class="GtkDialog" id="dialog">
+  <object class="HdyDialog" id="dialog">
     <property name="valign">center</property>
-    <property name="modal">True</property>
+    <property name="resizable">True</property>
     <child type="titlebar">
       <object class="GtkHeaderBar">
         <property name="title" translatable="yes">Edit Account</property>
@@ -37,6 +37,10 @@
     <child internal-child="vbox">
       <object class="GtkBox">
         <property name="visible">True</property>
+        <property name="halign">center</property>
+        <property name="valign">center</property>
+        <property name="vexpand">True</property>
+        <property name="orientation">vertical</property>
         <child>
           <object class="GtkGrid">
             <property name="orientation">vertical</property>
@@ -60,7 +64,6 @@
             <child>
               <object class="GtkLabel" id="label_account_id">
                 <property name="xalign">0</property>
-                <property name="width_request">200</property>
                 <property name="visible">True</property>
               </object>
               <packing>
@@ -86,7 +89,6 @@
             <child>
               <object class="GtkLabel" id="label_protocol">
                 <property name="xalign">0</property>
-                <property name="width_request">200</property>
                 <property name="visible">True</property>
               </object>
               <packing>
@@ -138,7 +140,6 @@
               <object class="GtkEntry" id="entry_account_pwd">
                 <property name="hexpand">True</property>
                 <property name="input_purpose">password</property>
-                <property name="width_request">140</property>
                 <property name="sensitive">False</property>
                 <property name="visible">True</property>
                 <property name="visibility">False</property>

@@ -105,15 +105,14 @@ cb_tree_view_row_activated (GtkTreeView       *treeview,
     chatty_conv_im_with_buddy (account,
                                purple_buddy_get_name (buddy));
 
-    chatty_window_set_header_title (purple_buddy_get_name (buddy));
-    chatty_window_change_view (CHATTY_VIEW_MESSAGE_LIST);
+    chatty_window_update_sub_header_titlebar (avatar,
+                                              purple_buddy_get_alias (buddy));
 
-    if (avatar != NULL) {
-      gtk_image_set_from_pixbuf (GTK_IMAGE(chatty->header_icon), avatar);
-      g_object_unref (avatar);
-    } else {
-      gtk_image_clear (GTK_IMAGE(chatty->header_icon));
-    }
+    chatty_window_change_view (CHATTY_VIEW_MESSAGE_LIST);
+    gtk_widget_hide (GTK_WIDGET(chatty->dialog_new_chat));
+
+    g_object_unref (avatar);
+
   } else if (PURPLE_BLIST_NODE_IS_CHAT(node)) {
     chat = (PurpleChat*)node;
     chat_name = purple_chat_get_name (chat);
@@ -129,15 +128,11 @@ cb_tree_view_row_activated (GtkTreeView       *treeview,
                                          0,
                                          FALSE);
 
-    if (avatar != NULL) {
-      gtk_image_set_from_pixbuf (GTK_IMAGE(chatty->header_icon), avatar);
-      g_object_unref (avatar);
-    } else {
-      gtk_image_clear (GTK_IMAGE(chatty->header_icon));
-    }
-
-    chatty_window_set_header_title (chat_name);
+    chatty_window_update_sub_header_titlebar (avatar, chat_name);
     chatty_window_change_view (CHATTY_VIEW_MESSAGE_LIST);
+    gtk_widget_hide (GTK_WIDGET(chatty->dialog_new_chat));
+
+    g_object_unref (avatar);
   }
 }
 
@@ -225,8 +220,6 @@ cb_buddy_signed_on_off (PurpleBuddy *buddy)
     purple_timeout_add_seconds (10,
                                 (GSourceFunc)cb_buddy_signonoff_timeout,
                                 buddy);
-
-  // TODO set the status in the message list popover
 
   g_debug ("Buddy \"%s\"\n (%s) signed on/off", purple_buddy_get_name (buddy),
            purple_account_get_protocol_id (purple_buddy_get_account(buddy)));
@@ -649,6 +642,31 @@ chatty_blist_buddy_is_displayable (PurpleBuddy *buddy)
 
 
 /**
+ * chatty_blist_chat_list_selection_mode:
+ *
+ * @select: a gboolean
+ *
+ * Show selected list item when HdyLeaflet
+ * is unfold
+ *
+ */
+void
+chatty_blist_chat_list_selection (gboolean select)
+{
+  GtkStyleContext *sc;
+
+  if (_chatty_blist == NULL) {
+    return;
+  }
+
+  sc = gtk_widget_get_style_context (GTK_WIDGET(_chatty_blist->treeview_chats));
+
+  gtk_style_context_remove_class (sc, select ? "list_no_select" : "list_select");
+  gtk_style_context_add_class (sc, select ? "list_select" : "list_no_select");
+}
+
+
+/**
  * chatty_blist_chat_list_remove_buddy:
  *
  * Remove active chat buddy from chats-list
@@ -715,6 +733,7 @@ chatty_blist_chat_list_remove_buddy (void)
   if (response == GTK_RESPONSE_OK) {
     if (PURPLE_BLIST_NODE_IS_BUDDY(node)) {
       chatty_conv_delete_message_history (buddy);
+      chatty_window_update_sub_header_titlebar (NULL, "");
     } else if (PURPLE_BLIST_NODE_IS_CHAT(node)) {
       purple_blist_node_set_bool (node, "chatty-autojoin", FALSE);
       chatty_blist_chats_remove_node (purple_get_blist(), node, TRUE);
@@ -737,37 +756,34 @@ chatty_blist_chat_list_remove_buddy (void)
  *
  */
 void
-chatty_blist_add_buddy (void)
+chatty_blist_add_buddy (const char *who,
+                        const char *whoalias)
 {
-  const gchar        *who, *whoalias;
   PurpleBuddy        *buddy;
   PurpleConversation *conv;
   PurpleBuddyIcon    *icon;
 
   chatty_data_t *chatty = chatty_get_data ();
 
-  if (chatty->selected_contact_account == NULL) {
+  if (chatty->selected_account == NULL) {
     return;
   }
-
-  who = gtk_entry_get_text (GTK_ENTRY(chatty->entry_contact_name));
-  whoalias = gtk_entry_get_text (GTK_ENTRY(chatty->entry_contact_nick));
 
   if (*whoalias == '\0') {
     whoalias = NULL;
   }
 
-  buddy = purple_buddy_new (chatty->selected_contact_account, who, whoalias);
+  buddy = purple_buddy_new (chatty->selected_account, who, whoalias);
 
   purple_blist_add_buddy (buddy, NULL, NULL, NULL);
 
   g_debug ("chatty_blist_add_buddy: %s ", purple_buddy_get_name (buddy));
 
-  purple_account_add_buddy_with_invite (chatty->selected_contact_account, buddy, NULL);
+  purple_account_add_buddy_with_invite (chatty->selected_account, buddy, NULL);
 
   conv = purple_find_conversation_with_account (PURPLE_CONV_TYPE_IM,
                                                 who,
-                                                chatty->selected_contact_account);
+                                                chatty->selected_account);
 
   if (conv != NULL) {
     icon = purple_conv_im_get_icon (PURPLE_CONV_IM(conv));
@@ -1220,7 +1236,7 @@ chatty_blist_create_chat_list (PurpleBuddyList *list)
   gtk_tree_view_set_grid_lines (treeview, GTK_TREE_VIEW_GRID_LINES_HORIZONTAL);
   gtk_tree_view_set_activate_on_single_click (GTK_TREE_VIEW(treeview), TRUE);
   sc = gtk_widget_get_style_context (GTK_WIDGET(treeview));
-  gtk_style_context_add_class (sc, "buddy_list");
+  gtk_style_context_add_class (sc, "list_no_select");
   g_signal_connect (treeview,
                     "row-activated",
                     G_CALLBACK (cb_tree_view_row_activated),
@@ -1339,6 +1355,8 @@ chatty_blist_show (PurpleBuddyList *list)
 
   purple_blist_set_visible (TRUE);
 
+  // TODO deaktivate the timeout when the Phone is going idle
+  // or when the Chatty UI hides
   _chatty_blist->refresh_timer =
     purple_timeout_add_seconds (30,
                                 (GSourceFunc)cb_chatty_blist_refresh_timer,

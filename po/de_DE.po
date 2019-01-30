@@ -1,91 +1,163 @@
 # kai <kai.klingenhagen@kabelmail.de>, 2018. #zanata
+# Max Schmidt <grell.robin@gmail.com>, 2019. #zanata
 msgid ""
 msgstr ""
 "Project-Id-Version: purism-chatty\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-10-24 13:01+0200\n"
+"POT-Creation-Date: 2019-01-09 16:44+0100\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2018-10-24 07:35+0000\n"
-"Last-Translator: kai <kai.klingenhagen@kabelmail.de>\n"
+"PO-Revision-Date: 2019-01-19 10:36+0000\n"
+"Last-Translator: Max Schmidt <grell.robin@gmail.com>\n"
 "Language-Team: German (Germany)\n"
 "Language: de_DE\n"
 "X-Generator: Zanata 4.6.2\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
 
-#: data/sm.puri.Chatty.desktop.in:3
-msgid "purism-chatty"
-msgstr "purism-chatty"
+#: data/sm.puri.Chatty.appdata.xml.in:6 data/sm.puri.Chatty.desktop.in:3
+msgid "Chatty"
+msgstr "Chatty"
 
-#: src/chatty-account.c:234
-msgid "id@any-server"
-msgstr "id@jeder-server"
+#: data/sm.puri.Chatty.appdata.xml.in:7
+msgid "A messaging application"
+msgstr "Messenger-Dienst"
 
-#: src/chatty-account.c:243
-msgid "Password"
-msgstr "Passwort"
+#: data/sm.puri.Chatty.appdata.xml.in:8
+msgid "Chatty is a messaging application supporting XMPP and SMS."
+msgstr "Chatty ist ein Messenger-Dienst, der XMPP und SMS unterstützt."
 
-#: src/chatty-account.c:247 src/chatty-account.c:768
-msgid "Add account"
-msgstr "Konto hinzufügen"
+#: data/sm.puri.Chatty.appdata.xml.in:16
+msgid "Chatty's message window"
+msgstr "Chatty's Nachrichten Fenster"
 
-#: src/chatty-buddy-list.c:613
-msgid "Nickname (optional)"
-msgstr "Nickname (optional)"
+#: data/sm.puri.Chatty.desktop.in:5
+msgid "sm.puri.Chatty"
+msgstr "sm.puri.Chatty"
 
-#: src/chatty-buddy-list.c:619
-msgid "Invite message"
-msgstr "Einladungsnachricht"
+#: data/sm.puri.Chatty.desktop.in:6
+msgid "SMS and XMPP chat application"
+msgstr "SMS und XMPP Chat Programm"
 
-#: src/chatty-conversation.c:337
-msgid "Unknown command."
-msgstr "Unbekannter Befehl."
+#: data/sm.puri.Chatty.desktop.in:7
+msgid "XMPP;SMS;chat;jabber;messaging;modem"
+msgstr "XMPP;SMS;chat;jabber;messaging;modem;chatten"
 
-#: src/chatty-conversation.c:348
-msgid "Wrong number of arguments for the command."
-msgstr "Falsche Anzahl an Argumenten für den Befehl."
+#: src/chatty-account.c:169
+msgid "SMS Number"
+msgstr "SMS Nummer"
 
-#: src/chatty-conversation.c:356
-msgid "The command failed."
-msgstr "Der Befehl schlug fehl."
+#: src/chatty-account.c:171
+msgid "Jabber ID"
+msgstr "Jabber ID"
 
-#: src/chatty-conversation.c:366
-msgid "That command only works in chats, not IMs."
-msgstr "Der Befehl funktioniert nur in Chats, nicht in IMs."
+#: src/chatty-account.c:193
+msgid "Delete Account"
+msgstr "Account löschen"
 
-#: src/chatty-conversation.c:372
-msgid "That command only works in IMs, not chats."
-msgstr "Der Befehl funktioniert nur in IMs, nicht in Chats."
+#: src/chatty-account.c:196
+#, c-format
+msgid "Delete account %s?"
+msgstr "Lösche Account %s?"
 
-#: src/chatty-conversation.c:380
-msgid "That command doesn't work on this protocol."
-msgstr "Dieser Befehl funktioniert nicht mit diesem Protokoll."
+#: src/chatty-account.c:281
+msgid "connected"
+msgstr "Verbunden"
 
-#: src/chatty-message-list.c:60 src/chatty-message-list.c:65
+#: src/chatty-account.c:283
+msgid "connecting..."
+msgstr "Verbinde..."
+
+#: src/chatty-account.c:285
+msgid "disconnected"
+msgstr "Verbindung getrennt"
+
+#: src/chatty-account.c:496
+msgid "Add new account..."
+msgstr "Account hinzufügen"
+
+#: src/chatty-account.c:523
+msgid "Contact added"
+msgstr "Kontakt hinzugefügt"
+
+#: src/chatty-account.c:527
+#, c-format
+msgid "User %s has added %s to the contacts"
+msgstr "Nutzer %s hat %s den Kontakten hinzugefügt"
+
+#: src/chatty-account.c:588
+#, c-format
+msgid "Authorize %s?"
+msgstr "Autorisiere %s?"
+
+#: src/chatty-account.c:592
+msgid "Reject"
+msgstr "Ablehnen"
+
+#: src/chatty-account.c:594
+msgid "Accept"
+msgstr "Annehmen"
+
+#: src/chatty-account.c:599
+#, c-format
+msgid "Add %s to contact list"
+msgstr "%s den Kontakten hinzufügen"
+
+#: src/chatty-buddy-list.c:600
+#, c-format
+msgid "Delete Chat with %s?"
+msgstr "Lösche Unterhaltung mit %s?"
+
+#: src/chatty-buddy-list.c:604
+msgid "Cancel"
+msgstr "Abbrechen"
+
+#: src/chatty-buddy-list.c:606
+msgid "Delete"
+msgstr "Löschen"
+
+#: src/chatty-buddy-list.c:611
+msgid "This deletes the conversation history"
+msgstr "Vergangene Unterhaltung löschen"
+
+#: src/chatty-buddy-list.c:1563 src/chatty-buddy-list.c:1687
+msgid "Me: "
+msgstr "Ich:"
+
+#: src/chatty-message-list.c:68 src/chatty-message-list.c:73
 msgid "This is a IM conversation."
-msgstr ""
+msgstr "Dies ist eine IM Konversation."
 
-#: src/chatty-message-list.c:61 src/chatty-message-list.c:71
+#: src/chatty-message-list.c:69 src/chatty-message-list.c:79
 msgid "Your messages are not encrypted,"
 msgstr "Deine Nachrichten sind nicht verschlüsselt,"
 
-#: src/chatty-message-list.c:62
+#: src/chatty-message-list.c:70
 msgid "ask your counterpart to use E2EE."
-msgstr ""
+msgstr "Bitten Sie Ihren Gesprächspartner E2EE zu verwenden."
 
-#: src/chatty-message-list.c:66
+#: src/chatty-message-list.c:74
 msgid "Your messages are secured"
 msgstr "Deine Nachrichten sind abgesichert"
 
-#: src/chatty-message-list.c:67
+#: src/chatty-message-list.c:75
 msgid "by end-to-end encryption."
-msgstr "bei End-zu-End-Verschlüsselung."
+msgstr "durch End-zu-End-Verschlüsselung."
 
-#: src/chatty-message-list.c:70
+#: src/chatty-message-list.c:78
 msgid "This is a SMS conversation."
-msgstr ""
+msgstr "Dies ist eine SMS Konversation."
 
-#: src/chatty-message-list.c:72
+#: src/chatty-message-list.c:80
 msgid "and carrier rates may apply."
-msgstr "und es können Kosten entstehen."
+msgstr "und kann Kosten Ihres Mobilfunkanbieters verursachen."
+
+#: src/chatty-window.c:78
+msgid "No account selected"
+msgstr "Kein Account ausgewählt"
+
+#: src/chatty-window.c:81
+#, c-format
+msgid "Please select a chat account for\n"
+"contact %s"
+msgstr "Bitte wählen Sie einen Chat-Account für den Kontakt %s"

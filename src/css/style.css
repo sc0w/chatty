@@ -58,7 +58,10 @@
   color: white;
 }
 
-.buddy_list {
-  color: black;
+.list_no_select:selected {
   background-color: white;
+}
+
+.list_select:selected {
+  background-color: #f5f5f5;
 }
