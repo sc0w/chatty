@@ -1,3 +1,15 @@
+chatty (0.0.4) purple; urgency=medium
+
+  * Wrapped 'Preferences', 'New Direct Chat', 'Edit Account' and 'New Graup Chat' views with HdyDialog
+  * Added new file chatty-dialogs.c that includes the handling for the new HdyDialogs
+  * Introduced HdyLeaflet
+  * Centered avatar-icon and contact name on msg-view header-bar
+  * Added 'X' button to header-bar which is visible when msg-view is unfolded
+  * Indicated selected chat in chats-list when msg-view is unfolded
+  * Introduced XMPP multi user chat
+
+ -- Andrea Schaefer <andrea@localhost.localdomain>  Wed, 30 Jan 2019 19:15:11 +0100
+
 chatty (0.0.3) purple; urgency=medium
 	
   * Fixed issues #73 #75 #77 
