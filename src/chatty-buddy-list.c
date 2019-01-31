@@ -1306,7 +1306,7 @@ chatty_blist_create_contact_list (PurpleBuddyList *list)
   gtk_tree_view_set_grid_lines (treeview, GTK_TREE_VIEW_GRID_LINES_HORIZONTAL);
   gtk_tree_view_set_activate_on_single_click (GTK_TREE_VIEW(treeview), TRUE);
   sc = gtk_widget_get_style_context (GTK_WIDGET(treeview));
-  gtk_style_context_add_class (sc, "buddy_list");
+  gtk_style_context_add_class (sc, "list_no_select");
   g_signal_connect (treeview,
                     "row-activated",
                     G_CALLBACK (cb_tree_view_row_activated),
