@@ -1035,7 +1035,7 @@ chatty_blist_chat_list_add_columns (GtkTreeView *treeview)
 
   g_object_set (renderer,
                 // TODO derive width-chars from screen width
-                "width-chars", 34,
+                "width-chars", 24,
                 "ellipsize", PANGO_ELLIPSIZE_END,
                 NULL);
 
@@ -1783,12 +1783,12 @@ chatty_blist_chats_update_node (PurpleBuddy     *buddy,
   }
 
   last_msg_text = g_strconcat ("<span color='#c0c0c0'>",
-                              tag,
-                              "</span>",
-                              "<span color='#646464'>",
-                              chatty_node->conv.last_message,
-                              "</span>",
-                              NULL);
+                               tag,
+                               "</span>",
+                               "<span color='#646464'>",
+                               chatty_node->conv.last_message,
+                               "</span>",
+                               NULL);
 
   last_msg_ts = g_strconcat ("<span color='#646464'>",
                              "<small>",

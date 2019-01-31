@@ -420,12 +420,13 @@
                         <child>
                           <object class="GtkLabel" id="label_account_id">
                             <property name="xalign">0</property>
+                            <property name="ellipsize">end</property>
                             <property name="visible">True</property>
                           </object>
                           <packing>
                             <property name="left_attach">1</property>
                             <property name="top_attach">0</property>
-                            <property name="width">1</property>
+                            <property name="width">2</property>
                             <property name="height">1</property>
                           </packing>
                         </child>
@@ -445,12 +446,13 @@
                         <child>
                           <object class="GtkLabel" id="label_protocol">
                             <property name="xalign">0</property>
+                            <property name="ellipsize">end</property>
                             <property name="visible">True</property>
                           </object>
                           <packing>
                             <property name="left_attach">1</property>
                             <property name="top_attach">1</property>
-                            <property name="width">1</property>
+                            <property name="width">2</property>
                             <property name="height">1</property>
                           </packing>
                         </child>
@@ -470,12 +472,13 @@
                         <child>
                           <object class="GtkLabel" id="label_status">
                             <property name="xalign">0</property>
+                            <property name="ellipsize">end</property>
                             <property name="visible">True</property>
                           </object>
                           <packing>
                             <property name="left_attach">1</property>
                             <property name="top_attach">2</property>
-                            <property name="width">1</property>
+                            <property name="width">2</property>
                             <property name="height">1</property>
                           </packing>
                         </child>
