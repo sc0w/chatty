@@ -237,17 +237,46 @@ cb_list_account_manage_row_activated (GtkListBox    *box,
 
 
 static void
+chatty_entry_contact_name_check (GtkEntry  *entry,
+                                 GtkWidget *button)
+{
+  PurpleBuddy    *buddy;
+  const char     *name;
+
+  chatty_data_t  *chatty = chatty_get_data ();
+
+  name = gtk_entry_get_text (entry);
+
+  if ((*name != '\0') && chatty->selected_account) {
+    buddy = purple_find_buddy (chatty->selected_account, name);
+  }
+
+  if ((*name != '\0') && !buddy) {
+    gtk_widget_set_sensitive (button, TRUE);
+  } else {
+    gtk_widget_set_sensitive (button, FALSE);
+  }
+}
+
+
+static void
 cb_contact_name_insert_text (GtkEntry    *entry,
                              const gchar *text,
                              gint         length,
                              gint        *position,
                              gpointer     data)
 {
-  if (length) {
-    gtk_widget_set_sensitive (GTK_WIDGET(data), TRUE);
-  } else {
-    gtk_widget_set_sensitive (GTK_WIDGET(data), FALSE);
-  }
+  chatty_entry_contact_name_check (entry, GTK_WIDGET(data));
+}
+
+
+static void
+cb_contact_name_delete_text (GtkEntry    *entry,
+                             gint         start_pos,
+                             gint         end_pos,
+                             gpointer     data)
+{
+  chatty_entry_contact_name_check (entry, GTK_WIDGET(data));
 }
 
 
@@ -260,7 +289,25 @@ cb_account_name_insert_text (GtkEntry    *entry,
 {
   chatty_dialog_data_t *chatty_dialog = chatty_get_dialog_data ();
 
-  if (length) {
+  if (*position) {
+    gtk_widget_set_sensitive (GTK_WIDGET(chatty_dialog->button_add_account), TRUE);
+    gtk_widget_set_sensitive (GTK_WIDGET(chatty_dialog->entry_account_pwd), TRUE);
+  } else {
+    gtk_widget_set_sensitive (GTK_WIDGET(chatty_dialog->button_add_account), FALSE);
+    gtk_widget_set_sensitive (GTK_WIDGET(chatty_dialog->entry_account_pwd), FALSE);
+  }
+}
+
+
+static void
+cb_account_name_delete_text (GtkEntry    *entry,
+                             gint         start_pos,
+                             gint         end_pos,
+                             gpointer     data)
+{
+  chatty_dialog_data_t *chatty_dialog = chatty_get_dialog_data ();
+
+  if (start_pos) {
     gtk_widget_set_sensitive (GTK_WIDGET(chatty_dialog->button_add_account), TRUE);
     gtk_widget_set_sensitive (GTK_WIDGET(chatty_dialog->entry_account_pwd), TRUE);
   } else {
@@ -359,8 +406,7 @@ chatty_dialogs_create_add_account_view (GtkBuilder *builder)
   GtkWidget  *dialog;
   GtkWidget  *button_back;
 
-  chatty_data_t *chatty = chatty_get_data ();
-
+  chatty_data_t        *chatty = chatty_get_data ();
   chatty_dialog_data_t *chatty_dialog = chatty_get_dialog_data ();
 
   chatty_dialog->button_add_account = GTK_WIDGET (gtk_builder_get_object (builder, "button_add_account"));
@@ -372,10 +418,15 @@ chatty_dialogs_create_add_account_view (GtkBuilder *builder)
   chatty_dialog->entry_account_pwd =
     GTK_ENTRY (gtk_builder_get_object (builder, "entry_add_account_pwd"));
 
-  g_signal_connect (G_OBJECT(chatty_dialog->entry_account_name),
-                    "insert_text",
-                    G_CALLBACK(cb_account_name_insert_text),
-                    NULL);
+  g_signal_connect_after (G_OBJECT(chatty_dialog->entry_account_name),
+                          "insert_text",
+                          G_CALLBACK(cb_account_name_insert_text),
+                          NULL);
+
+  g_signal_connect_after (G_OBJECT(chatty_dialog->entry_account_name),
+                          "delete_text",
+                          G_CALLBACK(cb_account_name_delete_text),
+                          NULL);
 
   dialog = GTK_WIDGET (gtk_builder_get_object (builder, "dialog"));
 
@@ -457,10 +508,8 @@ chatty_dialogs_create_dialog_settings (void)
   GtkSwitch     *prefs_switch_return_sends;
   HdyActionRow  *row_pref_message_carbons;
 
-  chatty_data_t *chatty = chatty_get_data ();
-
+  chatty_data_t        *chatty = chatty_get_data ();
   chatty_dialog_data_t *chatty_dialog = chatty_get_dialog_data ();
-
   chatty_purple_data_t *chatty_purple = chatty_get_purple_data ();
 
   builder = gtk_builder_new_from_resource ("/sm/puri/chatty/ui/chatty-settings-dialog.ui");
@@ -579,8 +628,7 @@ chatty_dialogs_create_dialog_new_chat (void)
   GtkWidget  *button_add_contact;
   GtkWidget  *button_show_add_contact;
 
-  chatty_data_t *chatty = chatty_get_data ();
-
+  chatty_data_t        *chatty = chatty_get_data ();
   chatty_dialog_data_t *chatty_dialog = chatty_get_dialog_data ();
 
   builder = gtk_builder_new_from_resource ("/sm/puri/chatty/ui/chatty-new-chat-dialog.ui");
@@ -622,10 +670,15 @@ chatty_dialogs_create_dialog_new_chat (void)
                                 hdy_list_box_separator_header,
                                 NULL, NULL);
 
-  g_signal_connect (G_OBJECT(chatty_dialog->entry_contact_name),
-                    "insert_text",
-                    G_CALLBACK(cb_contact_name_insert_text),
-                    (gpointer)button_add_contact);
+  g_signal_connect_after (G_OBJECT(chatty_dialog->entry_contact_name),
+                          "insert_text",
+                          G_CALLBACK(cb_contact_name_insert_text),
+                          (gpointer)button_add_contact);
+
+  g_signal_connect_after (G_OBJECT(chatty_dialog->entry_contact_name),
+                          "delete_text",
+                          G_CALLBACK(cb_contact_name_delete_text),
+                          (gpointer)button_add_contact);
 
   gtk_window_set_transient_for (GTK_WINDOW(dialog),
                                 GTK_WINDOW(chatty->main_window));
