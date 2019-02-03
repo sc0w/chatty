@@ -345,7 +345,7 @@ cb_button_add_contact_clicked (GtkButton *sender,
   chatty_blist_add_buddy (who, alias);
 
   gtk_stack_set_visible_child_name (chatty_dialog->stack_panes_new_chat,
-                                    "view-new-contact");
+                                    "view-new-chat");
 }
 
 
