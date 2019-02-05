@@ -7,7 +7,7 @@ chatty_sources = [
   'chatty-conversation.c',
   'chatty-connection.c',
   'chatty-buddy-list.c',
-  'chatty-xeps.c',
+  './xeps/chatty-xep-0184.c',
   'chatty-purple-init.c',
   'chatty-icons.c',
   'chatty-popover-actions.c'

@@ -512,7 +512,7 @@ chatty_dialogs_create_dialog_settings (void)
   chatty_dialog_data_t *chatty_dialog = chatty_get_dialog_data ();
   chatty_purple_data_t *chatty_purple = chatty_get_purple_data ();
 
-  builder = gtk_builder_new_from_resource ("/sm/puri/chatty/ui/chatty-settings-dialog.ui");
+  builder = gtk_builder_new_from_resource ("/sm/puri/chatty/ui/chatty-dialog-settings.ui");
 
   dialog = GTK_WIDGET (gtk_builder_get_object (builder, "dialog"));
 
@@ -631,7 +631,7 @@ chatty_dialogs_create_dialog_new_chat (void)
   chatty_data_t        *chatty = chatty_get_data ();
   chatty_dialog_data_t *chatty_dialog = chatty_get_dialog_data ();
 
-  builder = gtk_builder_new_from_resource ("/sm/puri/chatty/ui/chatty-new-chat-dialog.ui");
+  builder = gtk_builder_new_from_resource ("/sm/puri/chatty/ui/chatty-dialog-new-chat.ui");
 
   dialog = GTK_WIDGET (gtk_builder_get_object (builder, "dialog"));
 
@@ -704,7 +704,7 @@ chatty_dialogs_show_dialog_join_muc (void)
 
   chatty_data_t *chatty = chatty_get_data ();
 
-  builder = gtk_builder_new_from_resource ("/sm/puri/chatty/ui/chatty-join-muc-dialog.ui");
+  builder = gtk_builder_new_from_resource ("/sm/puri/chatty/ui/chatty-dialog-join-muc.ui");
 
   dialog = GTK_WIDGET (gtk_builder_get_object (builder, "dialog"));
 

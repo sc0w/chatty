@@ -17,7 +17,7 @@
 #include "chatty-config.h"
 #include "chatty-icons.h"
 #include "chatty-account.h"
-#include "chatty-xeps.h"
+#include "./xeps/chatty-xep-0184.h"
 #include "chatty-message-list.h"
 #include "chatty-buddy-list.h"
 #include "chatty-connection.h"

@@ -3,9 +3,9 @@
   <gresource prefix="/sm/puri/chatty">
     <file>ui/chatty-message-list.ui</file>
     <file>ui/chatty-message-list-popover.ui</file>
-    <file>ui/chatty-settings-dialog.ui</file>
-    <file>ui/chatty-new-chat-dialog.ui</file>
-    <file>ui/chatty-join-muc-dialog.ui</file>
+    <file>ui/chatty-dialog-settings.ui</file>
+    <file>ui/chatty-dialog-new-chat.ui</file>
+    <file>ui/chatty-dialog-join-muc.ui</file>
     <file>ui/chatty-pane-msg-view.ui</file>
     <file>ui/chatty-window.ui</file>
     <file>icons/ui/send-symbolic.svg</file>
