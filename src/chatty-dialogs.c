@@ -365,10 +365,8 @@ cb_button_add_account_clicked (GtkButton *sender,
   account = purple_account_new (name, "prpl-jabber");
 
   purple_account_set_password (account, pwd);
-  // TODO make remember_password choosable when the
-  //      account-settings view is introduced
   purple_account_set_remember_password (account, TRUE);
-
+  purple_account_set_enabled (account, CHATTY_UI, TRUE);
   purple_accounts_add (account);
 
   gtk_stack_set_visible_child_name (chatty_dialog->stack_panes_settings,

@@ -59,7 +59,22 @@ static void
 cb_account_enabled_disabled (PurpleAccount *account,
                              gpointer       user_data)
 {
-  // TODO update account in liststore
+  HdyActionRow *row;
+  GtkWidget    *widget;
+  int           i;
+
+  chatty_data_t *chatty = chatty_get_data ();
+
+  do {
+    row = HDY_ACTION_ROW(gtk_list_box_get_row_at_index (chatty->list_manage_account, i++));
+
+    if (row != 0) {
+      if (g_object_get_data (G_OBJECT(row), "row-account") == account) {
+        widget = hdy_action_row_get_activatable_widget (row);
+        gtk_switch_set_state (GTK_SWITCH(widget), GPOINTER_TO_INT(user_data));
+      }
+    }
+  } while (row != NULL);
 }
 
 
@@ -195,6 +210,7 @@ chatty_account_add_to_accounts_list (PurpleAccount *account,
     hdy_action_row_set_title (row, purple_account_get_username (account));
     hdy_action_row_set_subtitle (row, purple_account_get_protocol_name (account));
     hdy_action_row_add_action (row, GTK_WIDGET(switch_account_enabled));
+    hdy_action_row_set_activatable_widget (row, GTK_WIDGET(switch_account_enabled));
   } else {
     prefix_radio_button = gtk_radio_button_new_from_widget (GTK_RADIO_BUTTON(chatty->dummy_prefix_radio));
     gtk_widget_show (GTK_WIDGET(prefix_radio_button));
