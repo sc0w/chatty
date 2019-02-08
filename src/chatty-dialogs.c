@@ -17,6 +17,7 @@
 
 static void chatty_dialogs_reset_settings_dialog (void);
 static void chatty_dialogs_reset_new_contact_dialog (void);
+static void chatty_dialogs_reset_invite_contact_dialog (void);
 
 static chatty_dialog_data_t chatty_dialog_data;
 
@@ -105,6 +106,19 @@ cb_button_new_chat_back_clicked (GtkButton *sender,
 
   gtk_stack_set_visible_child_name (chatty_dialog->stack_panes_new_chat,
                                     "view-new-chat");
+}
+
+
+static void
+cb_button_muc_info_back_clicked (GtkButton *sender,
+                                 gpointer   data)
+{
+  chatty_dialog_data_t *chatty_dialog = chatty_get_dialog_data ();
+
+  chatty_dialogs_reset_settings_dialog ();
+
+  gtk_stack_set_visible_child_name (chatty_dialog->stack_panes_muc_info,
+                                    "view-muc-info");
 }
 
 
@@ -350,6 +364,38 @@ cb_button_add_contact_clicked (GtkButton *sender,
 
 
 static void
+cb_button_show_invite_contact_clicked (GtkButton *sender,
+                                       gpointer   data)
+{
+  chatty_dialog_data_t *chatty_dialog = chatty_get_dialog_data ();
+
+  chatty_dialogs_reset_invite_contact_dialog ();
+
+  gtk_stack_set_visible_child_name (chatty_dialog->stack_panes_muc_info,
+                                    "view-invite-contact");
+}
+
+
+static void
+cb_button_invite_contact_clicked (GtkButton *sender,
+                                  gpointer   data)
+{
+  const char *who;
+  const char *alias;
+
+  chatty_dialog_data_t *chatty_dialog = chatty_get_dialog_data ();
+
+  who = gtk_entry_get_text (GTK_ENTRY(chatty_dialog->entry_contact_name));
+  alias = gtk_entry_get_text (GTK_ENTRY(chatty_dialog->entry_contact_nick));
+
+  chatty_blist_add_buddy (who, alias);
+
+  gtk_stack_set_visible_child_name (chatty_dialog->stack_panes_muc_info,
+                                    "view-muc-info");
+}
+
+
+static void
 cb_button_add_account_clicked (GtkButton *sender,
                                gpointer   data)
 {
@@ -390,6 +436,16 @@ chatty_dialogs_reset_settings_dialog (void)
 
 static void
 chatty_dialogs_reset_new_contact_dialog (void)
+{
+  chatty_dialog_data_t *chatty_dialog = chatty_get_dialog_data ();
+
+  chatty_account_populate_account_list (chatty_dialog->list_select_account,
+                                        LIST_SELECT_CHAT_ACCOUNT);
+}
+
+
+static void
+chatty_dialogs_reset_invite_contact_dialog (void)
 {
   chatty_dialog_data_t *chatty_dialog = chatty_get_dialog_data ();
 
@@ -687,6 +743,74 @@ chatty_dialogs_create_dialog_new_chat (void)
 }
 
 
+GtkWidget *
+chatty_dialogs_create_dialog_muc_info (void)
+{
+  GtkBuilder *builder;
+  GtkWidget  *dialog;
+  GtkWidget  *button_back;
+  GtkWidget  *button_invite_contact;
+  GtkWidget  *button_show_invite_contact;
+
+  chatty_data_t        *chatty = chatty_get_data ();
+  chatty_dialog_data_t *chatty_dialog = chatty_get_dialog_data ();
+
+  builder = gtk_builder_new_from_resource ("/sm/puri/chatty/ui/chatty-dialog-muc-info.ui");
+
+  dialog = GTK_WIDGET (gtk_builder_get_object (builder, "dialog"));
+
+  chatty->pane_view_muc_info = GTK_BOX (gtk_builder_get_object (builder, "pane_view_muc_info"));
+  chatty->search_entry_members = GTK_ENTRY (gtk_builder_get_object (builder, "search_entry_contacts"));
+  chatty_dialog->stack_panes_muc_info = GTK_STACK (gtk_builder_get_object (builder, "stack_panes_muc_info"));
+  chatty_dialog->entry_contact_name = GTK_ENTRY (gtk_builder_get_object (builder, "entry_contact_name"));
+  chatty_dialog->entry_contact_nick = GTK_ENTRY (gtk_builder_get_object (builder, "entry_contact_alias"));
+  button_back = GTK_WIDGET (gtk_builder_get_object (builder, "button_back"));
+  button_show_invite_contact = GTK_WIDGET (gtk_builder_get_object (builder, "button_show_invite_contact"));
+  button_invite_contact = GTK_WIDGET (gtk_builder_get_object (builder, "button_invite_contact"));
+
+  g_signal_connect (G_OBJECT(dialog),
+                    "delete-event",
+                    G_CALLBACK(cb_dialog_delete),
+                    NULL);
+
+  g_signal_connect (G_OBJECT(button_back),
+                    "clicked",
+                    G_CALLBACK (cb_button_muc_info_back_clicked),
+                    NULL);
+
+  g_signal_connect (G_OBJECT(button_show_invite_contact),
+                    "clicked",
+                    G_CALLBACK (cb_button_show_invite_contact_clicked),
+                    NULL);
+
+  g_signal_connect (G_OBJECT(button_invite_contact),
+                    "clicked",
+                    G_CALLBACK (cb_button_invite_contact_clicked),
+                    NULL);
+
+  gtk_list_box_set_header_func (chatty_dialog->list_select_account,
+                                hdy_list_box_separator_header,
+                                NULL, NULL);
+
+  g_signal_connect_after (G_OBJECT(chatty_dialog->entry_contact_name),
+                          "insert_text",
+                          G_CALLBACK(cb_contact_name_insert_text),
+                          (gpointer)button_invite_contact);
+
+  g_signal_connect_after (G_OBJECT(chatty_dialog->entry_contact_name),
+                          "delete_text",
+                          G_CALLBACK(cb_contact_name_delete_text),
+                          (gpointer)button_invite_contact);
+
+  gtk_window_set_transient_for (GTK_WINDOW(dialog),
+                                GTK_WINDOW(chatty->main_window));
+
+  g_object_unref (builder);
+
+  return dialog;
+}
+
+
 void
 chatty_dialogs_show_dialog_join_muc (void)
 {
@@ -738,6 +862,36 @@ chatty_dialogs_show_dialog_join_muc (void)
                                   gtk_entry_get_text (entry_group_chat_pw),
                                   autojoin);
   }
+
+  gtk_widget_destroy (dialog);
+  g_object_unref (builder);
+}
+
+
+void
+chatty_dialogs_show_dialog_welcome (gboolean show_label_sms)
+{
+  GtkBuilder *builder;
+  GtkWidget  *dialog;
+  GtkWidget  *label_sms;
+
+  chatty_data_t *chatty = chatty_get_data ();
+
+  builder = gtk_builder_new_from_resource ("/sm/puri/chatty/ui/chatty-dialog-welcome.ui");
+
+  label_sms = GTK_WIDGET (gtk_builder_get_object (builder, "label_sms"));
+
+  if (show_label_sms) {
+    gtk_widget_show (label_sms);
+  }
+
+  dialog = GTK_WIDGET (gtk_builder_get_object (builder, "dialog"));
+
+  gtk_window_set_transient_for (GTK_WINDOW(dialog),
+                                GTK_WINDOW(chatty->main_window));
+
+  gtk_dialog_run (GTK_DIALOG(dialog));
+
 
   gtk_widget_destroy (dialog);
   g_object_unref (builder);

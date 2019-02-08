@@ -6,6 +6,8 @@
     <file>ui/chatty-dialog-settings.ui</file>
     <file>ui/chatty-dialog-new-chat.ui</file>
     <file>ui/chatty-dialog-join-muc.ui</file>
+    <file>ui/chatty-dialog-muc-info.ui</file>
+    <file>ui/chatty-dialog-welcome.ui</file>
     <file>ui/chatty-pane-msg-view.ui</file>
     <file>ui/chatty-window.ui</file>
     <file>icons/ui/send-symbolic.svg</file>

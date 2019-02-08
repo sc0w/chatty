@@ -187,6 +187,9 @@ chatty_purple_prefs_init (void)
   purple_prefs_add_bool (CHATTY_PREFS_ROOT "/debug/enabled", FALSE);
   purple_prefs_add_bool (CHATTY_PREFS_ROOT "/debug/verbose", FALSE);
 
+  purple_prefs_add_none (CHATTY_PREFS_ROOT "/status");
+  purple_prefs_add_bool (CHATTY_PREFS_ROOT "/status/first_start", TRUE);
+
   purple_prefs_add_none (CHATTY_PREFS_ROOT "/filelocations");
   purple_prefs_add_path (CHATTY_PREFS_ROOT "/filelocations/last_save_folder", "");
   purple_prefs_add_path (CHATTY_PREFS_ROOT "/filelocations/last_open_folder", "");

@@ -14,6 +14,7 @@
 typedef struct {
   GtkStack          *stack_panes_settings;
   GtkStack          *stack_panes_new_chat;
+  GtkStack          *stack_panes_muc_info;
   GtkLabel          *label_name;
   GtkLabel          *label_protocol;
   GtkLabel          *label_status;
@@ -32,7 +33,9 @@ chatty_dialog_data_t *chatty_get_dialog_data(void);
 
 GtkWidget * chatty_dialogs_create_dialog_settings (void);
 GtkWidget * chatty_dialogs_create_dialog_new_chat (void);
+GtkWidget * chatty_dialogs_create_dialog_muc_info (void);
 void chatty_dialogs_show_dialog_new_contact (void);
 void chatty_dialogs_show_dialog_join_muc (void);
+void chatty_dialogs_show_dialog_welcome (gboolean show_label_sms);
 
 #endif

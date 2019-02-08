@@ -46,6 +46,14 @@ view_msg_list_cmd_delete (GSimpleAction *action,
   chatty_blist_chat_list_remove_buddy ();
 }
 
+static void
+view_msg_list_cmd_chat_info (GSimpleAction *action,
+                             GVariant      *parameter,
+                             gpointer       user_data)
+{
+  chatty_window_change_view (CHATTY_VIEW_CHAT_INFO);
+}
+
 
 static const GActionEntry view_chat_list_entries [] =
 {
@@ -57,7 +65,8 @@ static const GActionEntry view_chat_list_entries [] =
 
 static const GActionEntry view_msg_list_entries [] =
 {
-  { "delete-chat", view_msg_list_cmd_delete }
+  { "delete-chat", view_msg_list_cmd_delete },
+  { "chat-info", view_msg_list_cmd_chat_info }
 };
 
 

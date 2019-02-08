@@ -108,6 +108,9 @@ chatty_window_change_view (ChattyWindowState view)
     case CHATTY_VIEW_NEW_CHAT:
       gtk_widget_show (GTK_WIDGET(chatty->dialog_new_chat));
       break;
+    case CHATTY_VIEW_CHAT_INFO:
+      gtk_widget_show (GTK_WIDGET(chatty->dialog_muc_info));
+      break;
     case CHATTY_VIEW_MESSAGE_LIST:
       hdy_leaflet_set_visible_child_name (chatty->content_box, "content");
       break;
@@ -146,6 +149,7 @@ chatty_window_init_data (void)
   chatty_window_change_view (CHATTY_VIEW_CHAT_LIST);
 
   chatty->dialog_new_chat = chatty_dialogs_create_dialog_new_chat ();
+  chatty->dialog_muc_info = chatty_dialogs_create_dialog_muc_info ();
 
   libpurple_start ();
 
@@ -155,6 +159,17 @@ chatty_window_init_data (void)
 
   hdy_search_bar_connect_entry (chatty->search_bar_chats,
                                 chatty->search_entry_chats);
+
+  if (purple_prefs_get_bool (CHATTY_PREFS_ROOT "/status/first_start")) {
+
+    if (purple_accounts_find ("SMS", "prpl-mm-sms")) {
+      chatty_dialogs_show_dialog_welcome (TRUE);
+    } else {
+      chatty_dialogs_show_dialog_welcome (FALSE);
+    }
+
+    purple_prefs_set_bool (CHATTY_PREFS_ROOT "/status/first_start", FALSE);
+  }
 }
 
 

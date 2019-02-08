@@ -21,15 +21,18 @@ typedef struct {
   HdyHeaderGroup    *header_group;
   GtkWidget         *dialog_settings;
   GtkWidget         *dialog_new_chat;
+  GtkWidget         *dialog_muc_info;
   GtkStack          *stack_panes_main;
   HdySearchBar      *search_bar_chats;
   GtkEntry          *search_entry_chats;
   GtkEntry          *search_entry_contacts;
+  GtkEntry          *search_entry_members;
   PurpleAccount     *selected_account;
   GtkListBox        *list_manage_account;
   GtkBox            *pane_view_chat_list;
   GtkWidget         *pane_view_message_list;
   GtkBox            *pane_view_new_chat;
+  GtkBox            *pane_view_muc_info;
   GtkHeaderBar      *sub_header_bar;
   GtkWidget         *sub_header_icon;
   GtkWidget         *sub_header_label;
@@ -59,6 +62,7 @@ enum {
 typedef enum {
   CHATTY_VIEW_NEW_CHAT,
   CHATTY_VIEW_CHAT_LIST,
+  CHATTY_VIEW_CHAT_INFO,
   CHATTY_VIEW_JOIN_CHAT,
   CHATTY_VIEW_MESSAGE_LIST,
   CHATTY_VIEW_SETTINGS

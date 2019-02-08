@@ -101,12 +101,12 @@
         <property name="border_width">12</property>
         <property name="orientation">vertical</property>
         <child>
-          <object class="GtkModelButton" id="contact-details">
+          <object class="GtkModelButton">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="receives_default">False</property>
-            <property name="action_name">msg_view.details</property>
-            <property name="text" translatable="yes">Contact Details</property>
+            <property name="action_name">msg_view.chat-info</property>
+            <property name="text" translatable="yes">Chat Details</property>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -126,7 +126,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkModelButton" id="delete-chat-button">
+          <object class="GtkModelButton">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="receives_default">False</property>
@@ -262,7 +262,6 @@
                   </object>
                   <packing>
                     <property name="pack_type">start</property>
-                    <property name="position">0</property>
                   </packing>
                 </child>
                 <child type="title">
@@ -296,41 +295,39 @@
                     </child>
                   </object>
                 </child>
+                 <child>
+                   <object class="GtkMenuButton">
+                     <property name="visible">True</property>
+                     <property name="can_focus">False</property>
+                     <property name="receives_default">False</property>
+                     <property name="popover">header_view_message_list_popover</property>
+                     <child>
+                       <object class="GtkImage">
+                         <property name="visible">True</property>
+                         <property name="can_focus">False</property>
+                         <property name="icon_name">view-more-symbolic</property>
+                       </object>
+                     </child>
+                   </object>
+                   <packing>
+                     <property name="pack_type">end</property>
+                   </packing>
+                 </child>
                 <child>
                   <object class="GtkButton">
-                    <property name="visible">False</property>
-                    <property name="can_focus">False</property>
-                    <property name="receives_default">False</property>
-                    <property name="action_name">win.show-chat-members</property>
-                    <child>
-                      <object class="GtkImage">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="icon_name">system-users-symbolic</property>
-                      </object>
-                    </child>
-                  </object>
-                  <packing>
-                    <property name="position">2</property>
-                    <property name="pack_type">end</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkMenuButton">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="receives_default">False</property>
-                    <property name="popover">header_view_message_list_popover</property>
+                    <property name="action_name">msg_view.chat-info</property>
                     <child>
                       <object class="GtkImage">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="icon_name">view-more-symbolic</property>
+                        <property name="icon_name">user-info-symbolic</property>
                       </object>
                     </child>
                   </object>
                   <packing>
-                    <property name="position">3</property>
                     <property name="pack_type">end</property>
                   </packing>
                 </child>
