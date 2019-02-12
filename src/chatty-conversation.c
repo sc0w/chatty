@@ -1067,7 +1067,7 @@ chatty_conv_add_message_history_to_conv (gpointer data)
   GList         *msgs = NULL;
   ChattyLog     *log_data = NULL;
   PurpleAccount *account;
-  gchar         *name = NULL;
+  g_autofree gchar *name = NULL;
   const gchar   *conv_name;
   const gchar   *b_name;
   gchar         *time_stamp;
@@ -1075,7 +1075,7 @@ chatty_conv_add_message_history_to_conv (gpointer data)
   GList         *history = NULL;
   guint          msg_dir;
   gboolean       im;
-
+  g_auto(GStrv) line_split = NULL;
   ChattyConversation *chatty_conv = data;
 
   im = (chatty_conv->active_conv->type == PURPLE_CONV_TYPE_IM);
@@ -1095,11 +1095,12 @@ chatty_conv_add_message_history_to_conv (gpointer data)
     }
 
     b_name = purple_buddy_get_alias (purple_find_buddy (account, conv_name));
+    line_split = g_strsplit (b_name, "/", -1);
+    name = g_strdup (line_split[0]);
 
     // limit the log-list to MAX_MSGS msgs since we currently have no
     // infinite scrolling implemented
     for (int i = 0; history && i < MAX_MSGS; history = history->next) {
-      g_auto(GStrv) line_split = NULL;
       g_auto(GStrv) logs = NULL;
       g_autofree gchar *read_log = purple_log_read ((PurpleLog*)history->data, NULL);
       g_autofree gchar *stripped = purple_markup_strip_html (read_log);
@@ -1114,9 +1115,6 @@ chatty_conv_add_message_history_to_conv (gpointer data)
           msgs = g_list_prepend (msgs, (gpointer)log_data);
         }
       }
-
-      line_split = g_strsplit (b_name, "/", -1);
-      name = g_strdup (line_split[0]);
     }
 
     g_list_foreach (history, (GFunc)purple_log_free, NULL);
@@ -1152,7 +1150,6 @@ chatty_conv_add_message_history_to_conv (gpointer data)
 
     g_list_foreach (msgs, (GFunc)g_free, NULL);
     g_list_free (msgs);
-    g_free (name);
   }
 
   g_object_set_data (G_OBJECT (chatty_conv->msg_entry),
