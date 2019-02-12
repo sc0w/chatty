@@ -1067,6 +1067,7 @@ chatty_conv_add_message_history_to_conv (gpointer data)
   GList         *msgs = NULL;
   ChattyLog     *log_data = NULL;
   PurpleAccount *account;
+  PurpleBuddy *buddy;
   g_autofree gchar *name = NULL;
   const gchar   *conv_name;
   const gchar   *b_name;
@@ -1094,7 +1095,14 @@ chatty_conv_add_message_history_to_conv (gpointer data)
       return FALSE;
     }
 
-    b_name = purple_buddy_get_alias (purple_find_buddy (account, conv_name));
+    buddy = purple_find_buddy (account, conv_name);
+    if (!buddy) {
+      /* Not in buddy list yet */
+      b_name = conv_name;
+    } else {
+      b_name = purple_buddy_get_alias (buddy);
+    }
+
     line_split = g_strsplit (b_name, "/", -1);
     name = g_strdup (line_split[0]);
 
