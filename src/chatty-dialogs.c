@@ -848,6 +848,7 @@ chatty_dialogs_create_dialog_muc_info (void)
   GtkWidget  *button_back;
   GtkWidget  *button_invite_contact;
   GtkWidget  *button_show_invite_contact;
+  GtkListBox *list_muc_settings;
 
   chatty_data_t        *chatty = chatty_get_data ();
   chatty_dialog_data_t *chatty_dialog = chatty_get_dialog_data ();
@@ -873,6 +874,9 @@ chatty_dialogs_create_dialog_muc_info (void)
   button_back = GTK_WIDGET (gtk_builder_get_object (builder, "button_back"));
   button_show_invite_contact = GTK_WIDGET (gtk_builder_get_object (builder, "button_show_invite_contact"));
   button_invite_contact = GTK_WIDGET (gtk_builder_get_object (builder, "button_invite_contact"));
+
+  list_muc_settings = GTK_LIST_BOX (gtk_builder_get_object (builder, "list_muc_settings"));
+  gtk_list_box_set_header_func (list_muc_settings, hdy_list_box_separator_header, NULL, NULL);
 
   chatty->muc.msg_buffer_topic = gtk_text_buffer_new (NULL);
   gtk_text_view_set_buffer (GTK_TEXT_VIEW(chatty_dialog->textview_muc_topic),
