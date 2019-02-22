@@ -11,6 +11,7 @@
 #include "chatty-window.h"
 #include "chatty-account.h"
 #include "chatty-buddy-list.h"
+#include "chatty-conversation.h"
 #include "chatty-purple-init.h"
 #include "chatty-config.h"
 #include "chatty-dialogs.h"
@@ -27,7 +28,7 @@ chatty_dialog_data_t *chatty_get_dialog_data (void)
 }
 
 static gboolean
-cb_prefs_switch_state_changed (GtkSwitch *widget,
+cb_switch_prefs_state_changed (GtkSwitch *widget,
                                gboolean   state,
                                gpointer   data)
 {
@@ -61,6 +62,15 @@ cb_prefs_switch_state_changed (GtkSwitch *widget,
       break;
     case CHATTY_PREF_RETURN_SENDS:
       purple_prefs_set_bool (CHATTY_PREFS_ROOT "/conversations/return_sends", state);
+      break;
+    case CHATTY_PREF_MUC_NOTIFICATIONS:
+      chatty_conv_set_muc_prefs (CHATTY_PREF_MUC_NOTIFICATIONS, state);
+      break;
+    case CHATTY_PREF_MUC_PERSISTANT:
+      chatty_conv_set_muc_prefs (CHATTY_PREF_MUC_PERSISTANT, state);
+      break;
+    case CHATTY_PREF_MUC_AUTOJOIN:
+      chatty_conv_set_muc_prefs (CHATTY_PREF_MUC_AUTOJOIN, state);
       break;
     default:
       break;
@@ -303,13 +313,10 @@ cb_account_name_insert_text (GtkEntry    *entry,
 {
   chatty_dialog_data_t *chatty_dialog = chatty_get_dialog_data ();
 
-  if (*position) {
-    gtk_widget_set_sensitive (GTK_WIDGET(chatty_dialog->button_add_account), TRUE);
-    gtk_widget_set_sensitive (GTK_WIDGET(chatty_dialog->entry_account_pwd), TRUE);
-  } else {
-    gtk_widget_set_sensitive (GTK_WIDGET(chatty_dialog->button_add_account), FALSE);
-    gtk_widget_set_sensitive (GTK_WIDGET(chatty_dialog->entry_account_pwd), FALSE);
-  }
+  gtk_widget_set_sensitive (GTK_WIDGET(chatty_dialog->button_add_account),
+                            *position ? TRUE : FALSE);
+  gtk_widget_set_sensitive (GTK_WIDGET(chatty_dialog->entry_account_pwd),
+                            *position ? TRUE : FALSE);
 }
 
 
@@ -321,13 +328,31 @@ cb_account_name_delete_text (GtkEntry    *entry,
 {
   chatty_dialog_data_t *chatty_dialog = chatty_get_dialog_data ();
 
-  if (start_pos) {
-    gtk_widget_set_sensitive (GTK_WIDGET(chatty_dialog->button_add_account), TRUE);
-    gtk_widget_set_sensitive (GTK_WIDGET(chatty_dialog->entry_account_pwd), TRUE);
-  } else {
-    gtk_widget_set_sensitive (GTK_WIDGET(chatty_dialog->button_add_account), FALSE);
-    gtk_widget_set_sensitive (GTK_WIDGET(chatty_dialog->entry_account_pwd), FALSE);
-  }
+  gtk_widget_set_sensitive (GTK_WIDGET(chatty_dialog->button_add_account),
+                            start_pos ? TRUE : FALSE);
+  gtk_widget_set_sensitive (GTK_WIDGET(chatty_dialog->entry_account_pwd),
+                            start_pos ? TRUE : FALSE);
+}
+
+
+static void
+cb_invite_name_insert_text (GtkEntry    *entry,
+                            const gchar *text,
+                            gint         length,
+                            gint        *position,
+                            gpointer     data)
+{
+  gtk_widget_set_sensitive (GTK_WIDGET(data), *position ? TRUE : FALSE);
+}
+
+
+static void
+cb_invite_name_delete_text (GtkEntry    *entry,
+                            gint         start_pos,
+                            gint         end_pos,
+                            gpointer     data)
+{
+  gtk_widget_set_sensitive (GTK_WIDGET(data), start_pos ? TRUE : FALSE);
 }
 
 
@@ -371,6 +396,8 @@ cb_button_show_invite_contact_clicked (GtkButton *sender,
 
   chatty_dialogs_reset_invite_contact_dialog ();
 
+  gtk_widget_grab_focus (GTK_WIDGET(chatty_dialog->entry_invite_name));
+
   gtk_stack_set_visible_child_name (chatty_dialog->stack_panes_muc_info,
                                     "view-invite-contact");
 }
@@ -380,15 +407,17 @@ static void
 cb_button_invite_contact_clicked (GtkButton *sender,
                                   gpointer   data)
 {
-  const char *who;
-  const char *alias;
+  const char *name;
+  const char *invite_msg;
 
   chatty_dialog_data_t *chatty_dialog = chatty_get_dialog_data ();
 
-  who = gtk_entry_get_text (GTK_ENTRY(chatty_dialog->entry_contact_name));
-  alias = gtk_entry_get_text (GTK_ENTRY(chatty_dialog->entry_contact_nick));
+  name = gtk_entry_get_text (GTK_ENTRY(chatty_dialog->entry_invite_name));
+  invite_msg = gtk_entry_get_text (GTK_ENTRY(chatty_dialog->entry_invite_msg));
 
-  chatty_blist_add_buddy (who, alias);
+  if (name != NULL) {
+    chatty_conv_invite_muc_user (name, invite_msg);
+  }
 
   gtk_stack_set_visible_child_name (chatty_dialog->stack_panes_muc_info,
                                     "view-muc-info");
@@ -417,6 +446,74 @@ cb_button_add_account_clicked (GtkButton *sender,
 
   gtk_stack_set_visible_child_name (chatty_dialog->stack_panes_settings,
                                     "view-settings");
+}
+
+
+static void
+cb_button_edit_topic_clicked (GtkToggleButton *sender,
+                              gpointer         data)
+{
+  GtkStyleContext *sc;
+  GtkTextIter      start, end;
+  gboolean         edit_mode;
+
+  chatty_data_t        *chatty = chatty_get_data ();
+  chatty_dialog_data_t *chatty_dialog = chatty_get_dialog_data ();
+
+  sc = gtk_widget_get_style_context (GTK_WIDGET(chatty_dialog->box_topic_frame));
+
+  gtk_text_buffer_get_bounds (chatty->muc.msg_buffer_topic,
+                              &start,
+                              &end);
+
+  if (gtk_toggle_button_get_active (sender)) {
+    edit_mode = TRUE;
+
+    chatty_dialog->current_topic = gtk_text_buffer_get_text (chatty->muc.msg_buffer_topic,
+                                                             &start, &end,
+                                                             FALSE);
+
+
+    gtk_widget_grab_focus (GTK_WIDGET(chatty_dialog->textview_muc_topic));
+
+    gtk_style_context_remove_class (sc, "topic_no_edit");
+    gtk_style_context_add_class (sc, "topic_edit");
+  } else {
+    edit_mode = FALSE;
+
+    if (g_strcmp0 (chatty_dialog->current_topic, chatty_dialog->new_topic) != 0) {
+      chatty_conv_set_muc_topic (chatty_dialog->new_topic);
+    }
+
+    gtk_style_context_remove_class (sc, "topic_edit");
+    gtk_style_context_add_class (sc, "topic_no_edit");
+  }
+
+  gtk_text_view_set_editable (GTK_TEXT_VIEW(chatty_dialog->textview_muc_topic), edit_mode);
+  gtk_text_view_set_cursor_visible (GTK_TEXT_VIEW(chatty_dialog->textview_muc_topic), edit_mode);
+  gtk_widget_set_can_focus (GTK_WIDGET(chatty_dialog->textview_muc_topic), edit_mode);
+}
+
+
+static gboolean
+cb_textview_key_released (GtkWidget   *widget,
+                          GdkEventKey *key_event,
+                          gpointer     data)
+{
+  GtkTextIter start, end;
+
+  chatty_data_t        *chatty = chatty_get_data ();
+  chatty_dialog_data_t *chatty_dialog = chatty_get_dialog_data ();
+
+  gtk_text_buffer_get_bounds (chatty->muc.msg_buffer_topic,
+                              &start,
+                              &end);
+
+  chatty_dialog->new_topic = gtk_text_buffer_get_text (chatty->muc.msg_buffer_topic,
+                                                       &start, &end,
+                                                       FALSE);
+
+  return TRUE;
 }
 
 
@@ -552,14 +649,14 @@ chatty_dialogs_create_dialog_settings (void)
   GtkListBox    *list_privacy_prefs;
   GtkListBox    *list_xmpp_prefs;
   GtkListBox    *list_editor_prefs;
-  GtkSwitch     *prefs_switch_send_receipts;
-  GtkSwitch     *prefs_switch_message_carbons;
-  GtkSwitch     *prefs_switch_typing_notification;
-  GtkSwitch     *prefs_switch_show_offline;
-  GtkSwitch     *prefs_switch_indicate_offline;
-  GtkSwitch     *prefs_switch_indicate_idle;
-  GtkSwitch     *prefs_switch_convert_smileys;
-  GtkSwitch     *prefs_switch_return_sends;
+  GtkSwitch     *switch_prefs_send_receipts;
+  GtkSwitch     *switch_prefs_message_carbons;
+  GtkSwitch     *switch_prefs_typing_notification;
+  GtkSwitch     *switch_prefs_show_offline;
+  GtkSwitch     *switch_prefs_indicate_offline;
+  GtkSwitch     *switch_prefs_indicate_idle;
+  GtkSwitch     *switch_prefs_convert_smileys;
+  GtkSwitch     *switch_prefs_return_sends;
   HdyActionRow  *row_pref_message_carbons;
 
   chatty_data_t        *chatty = chatty_get_data ();
@@ -573,19 +670,19 @@ chatty_dialogs_create_dialog_settings (void)
   chatty_dialog->stack_panes_settings = GTK_STACK (gtk_builder_get_object (builder, "stack_panes_settings"));
   chatty->list_manage_account = GTK_LIST_BOX (gtk_builder_get_object (builder, "list_manage_account"));
   list_privacy_prefs = GTK_LIST_BOX (gtk_builder_get_object (builder, "privacy_prefs_listbox"));
-  prefs_switch_send_receipts = GTK_SWITCH (gtk_builder_get_object (builder, "pref_send_receipts"));
-  prefs_switch_message_carbons = GTK_SWITCH (gtk_builder_get_object (builder, "pref_message_carbons"));
+  switch_prefs_send_receipts = GTK_SWITCH (gtk_builder_get_object (builder, "pref_send_receipts"));
+  switch_prefs_message_carbons = GTK_SWITCH (gtk_builder_get_object (builder, "pref_message_carbons"));
   row_pref_message_carbons = HDY_ACTION_ROW (gtk_builder_get_object (builder, "row_pref_message_carbons"));
-  prefs_switch_typing_notification = GTK_SWITCH (gtk_builder_get_object (builder, "pref_typing_notification"));
+  switch_prefs_typing_notification = GTK_SWITCH (gtk_builder_get_object (builder, "pref_typing_notification"));
 
   list_xmpp_prefs = GTK_LIST_BOX (gtk_builder_get_object (builder, "xmpp_prefs_listbox"));
-  prefs_switch_show_offline = GTK_SWITCH (gtk_builder_get_object (builder, "pref_show_offline"));
-  prefs_switch_indicate_offline = GTK_SWITCH (gtk_builder_get_object (builder, "pref_indicate_offline"));
-  prefs_switch_indicate_idle = GTK_SWITCH (gtk_builder_get_object (builder, "pref_indicate_idle"));
+  switch_prefs_show_offline = GTK_SWITCH (gtk_builder_get_object (builder, "pref_show_offline"));
+  switch_prefs_indicate_offline = GTK_SWITCH (gtk_builder_get_object (builder, "pref_indicate_offline"));
+  switch_prefs_indicate_idle = GTK_SWITCH (gtk_builder_get_object (builder, "pref_indicate_idle"));
 
   list_editor_prefs = GTK_LIST_BOX (gtk_builder_get_object (builder, "editor_prefs_listbox"));
-  prefs_switch_convert_smileys = GTK_SWITCH (gtk_builder_get_object (builder, "pref_convert_smileys"));
-  prefs_switch_return_sends = GTK_SWITCH (gtk_builder_get_object (builder, "pref_return_sends"));
+  switch_prefs_convert_smileys = GTK_SWITCH (gtk_builder_get_object (builder, "pref_convert_smileys"));
+  switch_prefs_return_sends = GTK_SWITCH (gtk_builder_get_object (builder, "pref_return_sends"));
 
   gtk_list_box_set_header_func (chatty->list_manage_account, hdy_list_box_separator_header, NULL, NULL);
   gtk_list_box_set_header_func (list_privacy_prefs, hdy_list_box_separator_header, NULL, NULL);
@@ -602,21 +699,21 @@ chatty_dialogs_create_dialog_settings (void)
                     G_CALLBACK(cb_list_account_manage_row_activated),
                     NULL);
 
-  gtk_switch_set_state (prefs_switch_message_carbons,
+  gtk_switch_set_state (switch_prefs_message_carbons,
                         chatty_purple->plugin_carbons_loaded);
-  gtk_switch_set_state (prefs_switch_send_receipts,
+  gtk_switch_set_state (switch_prefs_send_receipts,
                         purple_prefs_get_bool (CHATTY_PREFS_ROOT "/conversations/send_receipts"));
-  gtk_switch_set_state (prefs_switch_typing_notification,
+  gtk_switch_set_state (switch_prefs_typing_notification,
                         purple_prefs_get_bool (CHATTY_PREFS_ROOT "/conversations/send_typing"));
-  gtk_switch_set_state (prefs_switch_show_offline,
+  gtk_switch_set_state (switch_prefs_show_offline,
                         purple_prefs_get_bool (CHATTY_PREFS_ROOT "/blist/show_offline_buddies"));
-  gtk_switch_set_state (prefs_switch_indicate_offline,
+  gtk_switch_set_state (switch_prefs_indicate_offline,
                         purple_prefs_get_bool (CHATTY_PREFS_ROOT "/blist/greyout_offline_buddies"));
-  gtk_switch_set_state (prefs_switch_indicate_idle,
+  gtk_switch_set_state (switch_prefs_indicate_idle,
                         purple_prefs_get_bool (CHATTY_PREFS_ROOT "/blist/blur_idle_buddies"));
-  gtk_switch_set_state (prefs_switch_convert_smileys,
+  gtk_switch_set_state (switch_prefs_convert_smileys,
                         purple_prefs_get_bool (CHATTY_PREFS_ROOT "/conversations/convert_emoticons"));
-  gtk_switch_set_state (prefs_switch_return_sends,
+  gtk_switch_set_state (switch_prefs_return_sends,
                         purple_prefs_get_bool (CHATTY_PREFS_ROOT "/conversations/return_sends"));
 
   if (chatty_purple->plugin_carbons_available) {
@@ -625,37 +722,37 @@ chatty_dialogs_create_dialog_settings (void)
     gtk_widget_hide (GTK_WIDGET(row_pref_message_carbons));
   }
 
-  g_signal_connect (prefs_switch_send_receipts,
+  g_signal_connect (switch_prefs_send_receipts,
                     "state-set",
-                    G_CALLBACK(cb_prefs_switch_state_changed),
+                    G_CALLBACK(cb_switch_prefs_state_changed),
                     (gpointer)CHATTY_PREF_SEND_RECEIPTS);
-  g_signal_connect (prefs_switch_message_carbons,
+  g_signal_connect (switch_prefs_message_carbons,
                     "state-set",
-                    G_CALLBACK(cb_prefs_switch_state_changed),
+                    G_CALLBACK(cb_switch_prefs_state_changed),
                     (gpointer)CHATTY_PREF_MESSAGE_CARBONS);
-  g_signal_connect (prefs_switch_typing_notification,
+  g_signal_connect (switch_prefs_typing_notification,
                     "state-set",
-                    G_CALLBACK(cb_prefs_switch_state_changed),
+                    G_CALLBACK(cb_switch_prefs_state_changed),
                     (gpointer)CHATTY_PREF_TYPING_NOTIFICATION);
-  g_signal_connect (prefs_switch_show_offline,
+  g_signal_connect (switch_prefs_show_offline,
                     "state-set",
-                    G_CALLBACK(cb_prefs_switch_state_changed),
+                    G_CALLBACK(cb_switch_prefs_state_changed),
                     (gpointer)CHATTY_PREF_SHOW_OFFLINE);
-  g_signal_connect (prefs_switch_indicate_offline,
+  g_signal_connect (switch_prefs_indicate_offline,
                     "state-set",
-                    G_CALLBACK(cb_prefs_switch_state_changed),
+                    G_CALLBACK(cb_switch_prefs_state_changed),
                     (gpointer)CHATTY_PREF_INDICATE_OFFLINE);
-  g_signal_connect (prefs_switch_indicate_idle,
+  g_signal_connect (switch_prefs_indicate_idle,
                     "state-set",
-                    G_CALLBACK(cb_prefs_switch_state_changed),
+                    G_CALLBACK(cb_switch_prefs_state_changed),
                     (gpointer)CHATTY_PREF_INDICATE_IDLE);
-  g_signal_connect (prefs_switch_convert_smileys,
+  g_signal_connect (switch_prefs_convert_smileys,
                     "state-set",
-                    G_CALLBACK(cb_prefs_switch_state_changed),
+                    G_CALLBACK(cb_switch_prefs_state_changed),
                     (gpointer)CHATTY_PREF_CONVERT_SMILEY);
-  g_signal_connect (prefs_switch_return_sends,
+  g_signal_connect (switch_prefs_return_sends,
                     "state-set",
-                    G_CALLBACK(cb_prefs_switch_state_changed),
+                    G_CALLBACK(cb_switch_prefs_state_changed),
                     (gpointer)CHATTY_PREF_RETURN_SENDS);
 
   chatty_account_populate_account_list (chatty->list_manage_account,
@@ -760,13 +857,51 @@ chatty_dialogs_create_dialog_muc_info (void)
   dialog = GTK_WIDGET (gtk_builder_get_object (builder, "dialog"));
 
   chatty->pane_view_muc_info = GTK_BOX (gtk_builder_get_object (builder, "pane_view_muc_info"));
-  chatty->search_entry_members = GTK_ENTRY (gtk_builder_get_object (builder, "search_entry_contacts"));
+  chatty->muc.label_chat_id = GTK_WIDGET (gtk_builder_get_object (builder, "muc.label_chat_id"));
+  chatty->muc.label_num_user = GTK_WIDGET (gtk_builder_get_object (builder, "muc.label_num_user"));
+  chatty->muc.label_topic = GTK_WIDGET (gtk_builder_get_object (builder, "muc.label_topic"));
+  chatty->muc.button_edit_topic = GTK_WIDGET (gtk_builder_get_object (builder, "muc.button_edit_topic"));
+  chatty->muc.box_topic_editor = GTK_WIDGET (gtk_builder_get_object (builder, "muc.box_topic_editor"));
+  chatty->muc.switch_prefs_notifications = GTK_SWITCH (gtk_builder_get_object (builder, "pref_muc_notifications"));
+  chatty->muc.switch_prefs_persistant = GTK_SWITCH (gtk_builder_get_object (builder, "pref_muc_persistant"));
+  chatty->muc.switch_prefs_autojoin = GTK_SWITCH (gtk_builder_get_object (builder, "pref_muc_autojoin"));
+  chatty_dialog->box_topic_frame = GTK_WIDGET (gtk_builder_get_object (builder, "box_topic_frame"));
+  chatty_dialog->textview_muc_topic = GTK_WIDGET (gtk_builder_get_object (builder, "textview_muc_topic"));
   chatty_dialog->stack_panes_muc_info = GTK_STACK (gtk_builder_get_object (builder, "stack_panes_muc_info"));
-  chatty_dialog->entry_contact_name = GTK_ENTRY (gtk_builder_get_object (builder, "entry_contact_name"));
-  chatty_dialog->entry_contact_nick = GTK_ENTRY (gtk_builder_get_object (builder, "entry_contact_alias"));
+  chatty_dialog->entry_invite_name = GTK_ENTRY (gtk_builder_get_object (builder, "entry_invite_name"));
+  chatty_dialog->entry_invite_msg = GTK_ENTRY (gtk_builder_get_object (builder, "entry_invite_msg"));
   button_back = GTK_WIDGET (gtk_builder_get_object (builder, "button_back"));
   button_show_invite_contact = GTK_WIDGET (gtk_builder_get_object (builder, "button_show_invite_contact"));
   button_invite_contact = GTK_WIDGET (gtk_builder_get_object (builder, "button_invite_contact"));
+
+  chatty->muc.msg_buffer_topic = gtk_text_buffer_new (NULL);
+  gtk_text_view_set_buffer (GTK_TEXT_VIEW(chatty_dialog->textview_muc_topic),
+                            chatty->muc.msg_buffer_topic);
+
+  g_signal_connect_after (G_OBJECT(chatty_dialog->textview_muc_topic),
+                          "key-release-event",
+                          G_CALLBACK(cb_textview_key_released),
+                          NULL);
+
+  g_signal_connect (G_OBJECT(chatty->muc.button_edit_topic),
+                    "clicked",
+                    G_CALLBACK (cb_button_edit_topic_clicked),
+                    NULL);
+
+  g_signal_connect (chatty->muc.switch_prefs_notifications,
+                    "state-set",
+                    G_CALLBACK(cb_switch_prefs_state_changed),
+                    (gpointer)CHATTY_PREF_MUC_NOTIFICATIONS);
+
+  g_signal_connect (chatty->muc.switch_prefs_persistant,
+                    "state-set",
+                    G_CALLBACK(cb_switch_prefs_state_changed),
+                    (gpointer)CHATTY_PREF_MUC_PERSISTANT);
+
+  g_signal_connect (chatty->muc.switch_prefs_autojoin,
+                    "state-set",
+                    G_CALLBACK(cb_switch_prefs_state_changed),
+                    (gpointer)CHATTY_PREF_MUC_AUTOJOIN);
 
   g_signal_connect (G_OBJECT(dialog),
                     "delete-event",
@@ -792,14 +927,14 @@ chatty_dialogs_create_dialog_muc_info (void)
                                 hdy_list_box_separator_header,
                                 NULL, NULL);
 
-  g_signal_connect_after (G_OBJECT(chatty_dialog->entry_contact_name),
+  g_signal_connect_after (G_OBJECT(chatty_dialog->entry_invite_name),
                           "insert_text",
-                          G_CALLBACK(cb_contact_name_insert_text),
+                          G_CALLBACK(cb_invite_name_insert_text),
                           (gpointer)button_invite_contact);
 
-  g_signal_connect_after (G_OBJECT(chatty_dialog->entry_contact_name),
+  g_signal_connect_after (G_OBJECT(chatty_dialog->entry_invite_name),
                           "delete_text",
-                          G_CALLBACK(cb_contact_name_delete_text),
+                          G_CALLBACK(cb_invite_name_delete_text),
                           (gpointer)button_invite_contact);
 
   gtk_window_set_transient_for (GTK_WINDOW(dialog),
@@ -820,7 +955,7 @@ chatty_dialogs_show_dialog_join_muc (void)
   GtkListBox *list_select_muc_account;
   GtkEntry   *entry_group_chat_id;
   GtkEntry   *entry_group_chat_pw;
-  GtkSwitch  *prefs_switch_chat_autojoin;
+  GtkSwitch  *switch_prefs_chat_autojoin;
   gboolean    autojoin;
   int         response;
 
@@ -834,7 +969,7 @@ chatty_dialogs_show_dialog_join_muc (void)
   button_join_chat = GTK_WIDGET (gtk_builder_get_object (builder, "button_join_chat"));
   entry_group_chat_id = GTK_ENTRY (gtk_builder_get_object (builder, "entry_group_chat_id"));
   entry_group_chat_pw = GTK_ENTRY (gtk_builder_get_object (builder, "entry_group_chat_pw"));
-  prefs_switch_chat_autojoin = GTK_SWITCH (gtk_builder_get_object (builder, "prefs_switch_chat_autojoin"));
+  switch_prefs_chat_autojoin = GTK_SWITCH (gtk_builder_get_object (builder, "switch_prefs_chat_autojoin"));
 
   gtk_list_box_set_header_func (list_select_muc_account,
                                 hdy_list_box_separator_header,
@@ -854,7 +989,7 @@ chatty_dialogs_show_dialog_join_muc (void)
   response = gtk_dialog_run (GTK_DIALOG(dialog));
 
   if (response == GTK_RESPONSE_OK) {
-    autojoin = gtk_switch_get_state (prefs_switch_chat_autojoin);
+    autojoin = gtk_switch_get_state (switch_prefs_chat_autojoin);
 
     chatty_blist_join_group_chat (chatty->selected_account,
                                   gtk_entry_get_text (entry_group_chat_id),

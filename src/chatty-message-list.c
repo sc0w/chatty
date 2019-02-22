@@ -636,12 +636,7 @@ chatty_msg_list_add_message (ChattyMsgList *self,
   gtk_widget_set_name (GTK_WIDGET(label_msg), "label-msg");
   gtk_label_set_line_wrap (label_msg, TRUE);
   gtk_label_set_line_wrap_mode (label_msg, PANGO_WRAP_WORD_CHAR);
-
-  // Certain parms in system messages can be
-  // interpreted as markup tags
-  if (message_dir != MSG_IS_SYSTEM) {
-    gtk_label_set_use_markup (GTK_LABEL(label_msg), TRUE);
-  }
+  gtk_label_set_use_markup (GTK_LABEL(label_msg), TRUE);
 
   // TODO adjust num_chars dynamically to scale labels
   //      according to widget width

@@ -31,8 +31,9 @@ chatty_icon_create_prpl_icon (PurpleAccount        *account,
 
 GdkPixbuf *
 chatty_icon_get_buddy_icon (PurpleBlistNode *node,
+                            const char      *name,
                             guint            scale,
-                            guint            color,
+                            const char      *color,
                             gboolean         greyed);
 
 void chatty_icon_do_alphashift (GdkPixbuf *pixbuf, int shift);

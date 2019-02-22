@@ -108,8 +108,9 @@ chatty_icon_get_avatar_button (int size)
 
 GdkPixbuf *
 chatty_icon_get_buddy_icon (PurpleBlistNode *node,
+                            const char      *name,
                             guint            scale,
-                            guint            color,
+                            const char      *color,
                             gboolean         greyed)
 {
   // TODO needs to be detangled and segregated
@@ -128,69 +129,92 @@ chatty_icon_get_buddy_icon (PurpleBlistNode *node,
   PurpleStoredImage         *custom_img;
   PurplePluginProtocolInfo  *prpl_info = NULL;
   const char                *symbol;
-  const char                *buddy_name = NULL;
   gint                       orig_width,
                              orig_height,
                              scale_width,
                              scale_height;
   float                      scale_size;
+  gchar                     *sub_str;
+  gdouble                    color_r;
+  gdouble                    color_g;
+  gdouble                    color_b;
 
-  if (PURPLE_BLIST_NODE_IS_CONTACT (node)) {
-    buddy = purple_contact_get_priority_buddy((PurpleContact*)node);
-    symbol = "avatar-default-symbolic";
-    contact = (PurpleContact*)node;
-  } else if (PURPLE_BLIST_NODE_IS_BUDDY(node)) {
-    buddy = (PurpleBuddy*)node;
-    symbol = "avatar-default-symbolic";
-    contact = purple_buddy_get_contact(buddy);
-  } else if (PURPLE_BLIST_NODE_IS_GROUP(node)) {
-    group = (PurpleGroup*)node;
-  } else if (PURPLE_BLIST_NODE_IS_CHAT(node)) {
-    buddy = (PurpleBuddy*)node;
-    symbol = "system-users-symbolic";
-  } else {
-    return NULL;
+  // convert colors for drawing the cairo background
+  if (color) {
+    sub_str = g_utf8_substring (color, 0, 2);
+    color_r = (gdouble)g_ascii_strtoll (sub_str, NULL, 16) / 255;
+    sub_str = g_utf8_substring (color, 2, 4);
+    color_g = (gdouble)g_ascii_strtoll (sub_str, NULL, 16) / 255;
+    sub_str = g_utf8_substring (color, 4, 6);
+    color_b = (gdouble)g_ascii_strtoll (sub_str, NULL, 16) / 255;
   }
 
-  if (buddy) {
-    if (PURPLE_BLIST_NODE_IS_BUDDY(node)) {
-      buddy_name = purple_buddy_get_alias (buddy);
-      account = purple_buddy_get_account (buddy);
+  // get the buddy and retrieve an icon if available
+  if (node) {
+    if (PURPLE_BLIST_NODE_IS_CONTACT (node)) {
+      buddy = purple_contact_get_priority_buddy ((PurpleContact*)node);
+      symbol = "avatar-default-symbolic";
+      contact = (PurpleContact*)node;
+    } else if (PURPLE_BLIST_NODE_IS_BUDDY(node)) {
+      buddy = (PurpleBuddy*)node;
+      symbol = "avatar-default-symbolic";
+      contact = purple_buddy_get_contact (buddy);
+    } else if (PURPLE_BLIST_NODE_IS_GROUP(node)) {
+      group = (PurpleGroup*)node;
+    } else if (PURPLE_BLIST_NODE_IS_CHAT(node)) {
+      buddy = (PurpleBuddy*)node;
+      symbol = "system-users-symbolic";
     } else {
-      buddy_name = purple_buddy_get_name (buddy);
+      return NULL;
+    }
+
+    if(account && account->gc) {
+      prpl_info = PURPLE_PLUGIN_PROTOCOL_INFO(account->gc->prpl);
+    }
+
+    if (contact) {
+      custom_img = purple_buddy_icons_node_find_custom_icon ((PurpleBlistNode*)contact);
+    } else {
+      custom_img = purple_buddy_icons_node_find_custom_icon (node);
+    }
+
+    if (custom_img) {
+      data = purple_imgstore_get_data (custom_img);
+      len = purple_imgstore_get_size (custom_img);
+    }
+
+    purple_imgstore_unref (custom_img);
+
+    if (data == NULL && buddy && PURPLE_BLIST_NODE_IS_BUDDY(node)) {
+      icon = purple_buddy_icons_find (buddy->account, buddy->name);
+
+      if (icon) {
+        data = purple_buddy_icon_get_data (icon, &len);
+      }
+    }
+
+    if (data != NULL) {
+      buf = chatty_icon_pixbuf_from_data (data, len);
+      purple_buddy_icon_unref (icon);
+      // create a grey background to make buddy icons
+      // look nicer that don't have square format
+      color_r = color_g = color_b = 0.7;
+    } else {
+      GtkIconTheme *icon_theme;
+
+      icon_theme = gtk_icon_theme_get_default ();
+
+      buf = gtk_icon_theme_load_icon (icon_theme,
+                                      symbol,
+                                      48,
+                                      0,
+                                      NULL);
     }
   }
 
-  if(account && account->gc) {
-    prpl_info = PURPLE_PLUGIN_PROTOCOL_INFO(account->gc->prpl);
-  }
-
-  if (contact) {
-    custom_img = purple_buddy_icons_node_find_custom_icon ((PurpleBlistNode*)contact);
-  } else {
-    custom_img = purple_buddy_icons_node_find_custom_icon (node);
-  }
-
-  if (custom_img) {
-    data = purple_imgstore_get_data (custom_img);
-    len = purple_imgstore_get_size (custom_img);
-  }
-
-  if (data == NULL && buddy && PURPLE_BLIST_NODE_IS_BUDDY(node)) {
-    icon = purple_buddy_icons_find (buddy->account, buddy->name);
-
-    if (icon) {
-      data = purple_buddy_icon_get_data (icon, &len);
-    }
-  }
-
-  if (data != NULL) {
-    buf = chatty_icon_pixbuf_from_data (data, len);
-    purple_buddy_icon_unref (icon);
-    // create a grey background to make buddy icons
-    // look nicer that don't have square format
-    color = CHATTY_ICON_COLOR_GREY;
-  } else if (buddy_name) {
+  // create an avatar with the initial of the
+  // buddy name if there is no icon available
+  if (data == NULL && name != NULL) {
     cairo_text_extents_t te;
     int                  width = 48;
     int                  height = 48;
@@ -198,17 +222,16 @@ chatty_icon_get_buddy_icon (PurpleBlistNode *node,
     char                 tmp[2];
     char                *initial_char;
 
-    g_utf8_strncpy (tmp, buddy_name, 1);
+    g_utf8_strncpy (tmp, name, 1);
     initial_char = g_utf8_strup (tmp, 1);
 
     surface = cairo_image_surface_create (CAIRO_FORMAT_RGB24, width, height);
     cr = cairo_create (surface);
 
-    color = CHATTY_ICON_COLOR_BLUE;
-    cairo_set_source_rgb (cr, 0.29, 0.56, 0.85);
+    cairo_set_source_rgb (cr, color_r, color_g, color_b);
     cairo_paint (cr);
 
-    cairo_set_source_rgb (cr, 0.0, 0.0, 0.0);
+    cairo_set_source_rgb (cr, 0.95, 0.95, 0.95);
     cairo_set_font_size (cr, 24.0);
     cairo_select_font_face (cr,
                             "Sans",
@@ -235,23 +258,7 @@ chatty_icon_get_buddy_icon (PurpleBlistNode *node,
     cairo_surface_destroy (surface);
     cairo_destroy (cr);
     g_free (initial_char);
-  } else {
-    GtkIconTheme *icon_theme;
-
-    icon_theme = gtk_icon_theme_get_default ();
-
-    buf = gtk_icon_theme_load_icon (icon_theme,
-                                    symbol,
-                                    48,
-                                    0,
-                                    NULL);
-
-    if (!buf) {
-      return NULL;
-    }
   }
-
-  purple_imgstore_unref (custom_img);
 
   if (greyed) {
     gboolean offline = FALSE, idle = FALSE;
@@ -332,23 +339,9 @@ chatty_icon_get_buddy_icon (PurpleBlistNode *node,
   g_assert (surface != NULL);
   cr = cairo_create (surface);
 
-  switch (color) {
-    case CHATTY_ICON_COLOR_GREY:
-      cairo_set_source_rgb (cr, 0.7, 0.7, 0.7);
-      break;
-    case CHATTY_ICON_COLOR_GREEN:
-      cairo_set_source_rgb (cr, 0.42, 0.73, 0.24);
-      break;
-    case CHATTY_ICON_COLOR_BLUE:
-      cairo_set_source_rgb (cr, 0.29, 0.56, 0.85);
-      break;
-    case CHATTY_ICON_COLOR_PURPLE:
-      cairo_set_source_rgb (cr, 0.52, 0.17, 0.52);
-      break;
-    default:
-      cairo_set_source_rgb (cr, 0.7, 0.7, 0.7);
-  }
+  cairo_set_source_rgb (cr, color_r, color_g, color_b);
 
+  // we want a round avatar
   cairo_arc (cr,
              scale_size / 2,
              scale_size / 2,

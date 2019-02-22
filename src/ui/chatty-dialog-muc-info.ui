@@ -90,6 +90,7 @@
             <property name="hscrollbar_policy">never</property>
             <property name="expand">True</property>
             <property name="visible">True</property>
+            <property name="kinetic-scrolling">True</property>
             <child>
               <object class="GtkStack" id="stack_panes_muc_info">
                 <property name="visible">True</property>
@@ -97,52 +98,228 @@
                 <property name="vhomogeneous">False</property>
                 <property name="transition_type">slide-left-right</property>
                 <child>
-                  <object class="GtkBox">
+                  <object class="HdyColumn">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="hexpand">True</property>
-                    <property name="orientation">vertical</property>
-                    <property name="valign">start</property>
+                    <property name="halign">fill</property>
+                    <property name="valign">fill</property>
+                    <property name="margin-bottom">32</property>
+                    <property name="margin-start">12</property>
+                    <property name="margin-end">12</property>
+                    <property name="margin-top">12</property>
+                    <property name="expand">True</property>
+                    <property name="maximum-width">600</property>
                     <child>
-                      <object class="HdySearchBar" id="search_bar_members">
+                      <object class="GtkBox">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="halign">fill</property>
-                        <property name="valign">start</property>
                         <property name="hexpand">True</property>
-                        <property name="show-close-button">False</property>
-                        <property name="search-mode-enabled">True</property>
+                        <property name="orientation">vertical</property>
+                        <property name="valign">start</property>
                         <child>
-                          <object class="HdyColumn">
+                          <object class="GtkLabel" id="muc.label_chat_id">
                             <property name="visible">True</property>
-                            <property name="hexpand">True</property>
-                            <property name="maximum-width">600</property>
+                            <property name="can_focus">False</property>
+                            <property name="label" translatable="no">MUC</property>
+                            <property name="halign">center</property>
+                            <property name="xalign">0</property>
+                            <property name="margin-top">12</property>
+                            <property name="margin-bottom">24</property>
+                            <property name="ellipsize">end</property>
+                            <attributes>
+                              <attribute name="scale" value="2"/>
+                            </attributes>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkLabel" id="muc.label_topic">
+                            <property name="visible">True</property>
+                            <property name="opacity">0.5</property>
+                            <property name="can_focus">False</property>
+                            <property name="label" translatable="no">&lt;b&gt;Topic:&lt;/b&gt; none</property>
+                            <property name="justify">center</property>
+                            <property name="use_markup">true</property>
+                            <property name="wrap">True</property>
+                            <property name="margin-bottom">24</property>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkBox" id="muc.box_topic_editor">
+                            <property name="orientation">horizontal</property>
+                            <property name="visible">False</property>
+                            <property name="margin-bottom">36</property>
+                            <property name="spacing">12</property>
                             <child>
-                              <object class="GtkSearchEntry" id="search_entry_members">
+                              <object class="GtkBox" id="box_topic_frame">
+                                <property name="orientation">horizontal</property>
+                                <property name="margin">0</property>
                                 <property name="visible">True</property>
+                                <style>
+                                  <class name="topic_no_edit"/>
+                                </style>
+                                <child>
+                                  <object class="GtkTextView" id="textview_muc_topic">
+                                    <property name="can_focus">False</property>
+                                    <property name="editable">False</property>
+                                    <property name="hexpand">True</property>
+                                    <property name="margin">10</property>
+                                    <property name="wrap-mode">GTK_WRAP_WORD_CHAR</property>
+                                    <property name="valign">center</property>
+                                    <property name="visible">True</property>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkToggleButton" id="muc.button_edit_topic">
+                                <property name="can-focus">False</property>
+                                <property name="valign">center</property>
+                                <property name="visible">True</property>
+                                <child>
+                                  <object class="GtkImage">
+                                    <property name="icon-name">document-edit-symbolic</property>
+                                    <property name="icon-size">1</property>
+                                    <property name="visible">True</property>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkLabel">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="expand">True</property>
+                            <property name="label" translatable="yes">Room settings</property>
+                            <property name="justify">left</property>
+                            <property name="halign">start</property>
+                            <property name="margin-bottom">12</property>
+                            <attributes>
+                              <attribute name="weight" value="bold"/>
+                            </attributes>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkFrame">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="expand">True</property>
+                            <property name="margin-bottom">32</property>
+                            <child>
+                              <object class="GtkListBox" id="list_muc_settings">
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <property name="expand">True</property>
+                                <property name="selection-mode">none</property>
+                                <child>
+                                  <object class="HdyActionRow">
+                                    <property name="title" translatable="yes">Notifications</property>
+                                    <property name="subtitle" translatable="yes">Show notification badge</property>
+                                    <property name="visible">True</property>
+                                    <property name="selectable">False</property>
+                                    <property name="activatable">False</property>
+                                    <child type="action">
+                                      <object class="GtkSwitch" id="pref_muc_notifications">
+                                        <property name="can_focus">True</property>
+                                        <property name="valign">center</property>
+                                        <property name="visible">True</property>
+                                      </object>
+                                    </child>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="HdyActionRow" id="row_settings_change_subject">
+                                    <property name="title" translatable="yes">Edit topic</property>
+                                    <property name="subtitle" translatable="yes">Users may change the topic</property>
+                                    <property name="visible">False</property>
+                                    <property name="selectable">False</property>
+                                    <property name="activatable">False</property>
+                                    <child type="action">
+                                      <object class="GtkSwitch" id="pref_muc_change_topic">
+                                        <property name="can_focus">True</property>
+                                        <property name="valign">center</property>
+                                        <property name="visible">True</property>
+                                      </object>
+                                    </child>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="HdyActionRow">
+                                    <property name="title" translatable="yes">Persistent</property>
+                                    <property name="subtitle" translatable="yes">Room persists after the last user left</property>
+                                    <property name="visible">True</property>
+                                    <property name="selectable">False</property>
+                                    <property name="activatable">False</property>
+                                    <child type="action">
+                                      <object class="GtkSwitch" id="pref_muc_persistant">
+                                        <property name="can_focus">True</property>
+                                        <property name="valign">center</property>
+                                        <property name="visible">True</property>
+                                      </object>
+                                    </child>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="HdyActionRow">
+                                    <property name="title" translatable="yes">Auto-join</property>
+                                    <property name="subtitle" translatable="yes">Join chat at startup</property>
+                                    <property name="visible">True</property>
+                                    <property name="selectable">False</property>
+                                    <property name="activatable">False</property>
+                                    <child type="action">
+                                      <object class="GtkSwitch" id="pref_muc_autojoin">
+                                        <property name="can_focus">True</property>
+                                        <property name="valign">center</property>
+                                        <property name="visible">True</property>
+                                      </object>
+                                    </child>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkLabel" id="muc.label_num_user">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="expand">True</property>
+                            <property name="label" translatable="yes">0 members</property>
+                            <property name="justify">center</property>
+                            <property name="halign">start</property>
+                            <property name="margin-bottom">12</property>
+                            <attributes>
+                              <attribute name="weight" value="bold"/>
+                            </attributes>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkFrame">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="margin-bottom">24</property>
+                            <property name="expand">True</property>
+                            <child>
+                              <object class="GtkBox" id="pane_view_muc_info">
+                                <property name="visible">True</property>
+                                <property name="orientation">vertical</property>
+                                <property name="can_focus">False</property>
                                 <property name="hexpand">True</property>
+                                <property name="orientation">vertical</property>
                               </object>
                             </child>
                           </object>
                         </child>
                       </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkBox" id="pane_view_muc_info">
-                        <property name="visible">True</property>
-                        <property name="orientation">vertical</property>
-                        <property name="can_focus">False</property>
-                        <property name="hexpand">True</property>
-                        <property name="orientation">vertical</property>
-                      </object>
-                      <packing>
-                        <property name="expand">True</property>
-                        <property name="fill">True</property>
-                      </packing>
                     </child>
                   </object>
                   <packing>
@@ -208,11 +385,11 @@
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkLabel" id="label_alias">
+                                  <object class="GtkLabel" id="label_invite_msg">
                                     <property name="visible">True</property>
                                     <property name="xalign">1</property>
                                     <property name="can_focus">False</property>
-                                    <property name="label" translatable="yes">Alias (optional)</property>
+                                    <property name="label" translatable="yes">Invite Message</property>
                                   </object>
                                   <packing>
                                     <property name="left_attach">0</property>
@@ -220,7 +397,7 @@
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkEntry" id="entry_contact_name">
+                                  <object class="GtkEntry" id="entry_invite_name">
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
                                   </object>
@@ -230,7 +407,7 @@
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkEntry" id="entry_contact_alias">
+                                  <object class="GtkEntry" id="entry_invite_msg">
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
                                   </object>

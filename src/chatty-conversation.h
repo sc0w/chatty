@@ -45,6 +45,14 @@ struct chatty_conversation {
   GtkWidget           *icon;
   guint                unseen_count;
   guint                unseen_state;
+  gboolean             notifications;
+
+  struct {
+    GtkWidget    *list;
+    GtkTreeView  *treeview;
+    guint         user_count;
+    gboolean      notifications;
+  } muc;
 
   struct {
     int    timer;
@@ -71,13 +79,28 @@ enum
 } e_sms_receipt_states;
 
 
+enum
+{
+  MUC_COLUMN_AVATAR,
+  MUC_COLUMN_NAME,
+  MUC_COLUMN_ALIAS_KEY,
+  MUC_COLUMN_LAST,
+  MUC_COLUMN_FLAGS,
+  MUC_NUM_COLUMNS
+};
+
+
 PurpleConversationUiOps *chatty_conversations_get_conv_ui_ops(void);
 
 void chatty_conv_im_with_buddy (PurpleAccount *account, const char *username);
 void chatty_conv_join_chat (PurpleChat *chat);
+void chatty_conv_set_muc_topic (const char *topic_text);
+void chatty_conv_set_muc_prefs (gint pref, gboolean value);
+void chatty_conv_invite_muc_user (const char *user_name, const char *invite_msg);
 void *chatty_conversations_get_handle (void);
 void chatty_conversations_init (void);
 void chatty_conversations_uninit (void);
+PurpleConversation * chatty_conv_container_get_active_purple_conv (GtkNotebook *notebook);
 ChattyLog* chatty_conv_message_get_last_msg (PurpleBuddy *buddy);
 gboolean chatty_conv_delete_message_history (PurpleBuddy *buddy);
 GList *chatty_conv_find_unseen (ChattyUnseenState  state);

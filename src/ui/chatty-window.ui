@@ -101,8 +101,9 @@
         <property name="border_width">12</property>
         <property name="orientation">vertical</property>
         <child>
-          <object class="GtkModelButton">
+          <object class="GtkModelButton" id="button_chat_info_popup">
             <property name="visible">True</property>
+            <property name="active">False</property>
             <property name="can_focus">False</property>
             <property name="receives_default">False</property>
             <property name="action_name">msg_view.chat-info</property>
@@ -114,7 +115,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkSeparator">
+          <object class="GtkSeparator" id="separator_chat_info">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="margin_top">6</property>
@@ -314,8 +315,8 @@
                    </packing>
                  </child>
                 <child>
-                  <object class="GtkButton">
-                    <property name="visible">True</property>
+                  <object class="GtkButton" id="button_chat_info_header">
+                    <property name="visible">False</property>
                     <property name="can_focus">False</property>
                     <property name="receives_default">False</property>
                     <property name="action_name">msg_view.chat-info</property>

@@ -53,7 +53,7 @@
                 <property name="opacity">0.5</property>
                 <property name="halign">center</property>
                 <property name="margin_bottom">12</property>
-                <property name="label" translatable="yes">Start chatting...</property>
+                <property name="label" translatable="yes">Start chatting</property>
                 <property name="justify">center</property>
                 <property name="wrap">True</property>
                 <attributes>
@@ -73,7 +73,7 @@
                 <property name="can_focus">False</property>
                 <property name="opacity">0.5</property>
                 <property name="margin_top">24</property>
-                <property name="label" translatable="yes">The &lt;b&gt;SMS Chat&lt;/b&gt; is already set up by default. Just click the "+" button in the titlebar of the contacts list to start an SMS chat.</property>
+                <property name="label" translatable="yes">&lt;b&gt;SMS Chat&lt;/b&gt; is set up by default. Start a chat with the "+" button in the titlebar.</property>
                 <property name="xalign">0</property>
                 <property name="justify">left</property>
                 <property name="wrap">True</property>
@@ -92,7 +92,7 @@
                 <property name="opacity">0.5</property>
                 <property name="margin_top">24</property>
                 <property name="margin_bottom">64</property>
-                <property name="label" translatable="yes">For adding an &lt;b&gt;XMPP Chat&lt;/b&gt; account, select  &lt;i&gt;Preferences->Add new account&lt;/i&gt;  from the menu.</property>
+                <property name="label" translatable="yes">Add &lt;b&gt;Instant Messaging&lt;/b&gt; by selecting &lt;i&gt;"Add new account"&lt;/i&gt; in the preferences.</property>
                 <property name="xalign">0</property>
                 <property name="justify">left</property>
                 <property name="wrap">True</property>

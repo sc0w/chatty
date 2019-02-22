@@ -59,6 +59,13 @@ typedef struct {
 } ChattyBlistAddBuddyData;
 
 
+enum {
+  CHATTY_MSG_MODE_XMPP,
+  CHATTY_MSG_MODE_OMEMO,
+  CHATTY_MSG_MODE_SMS
+} e_messaging_modes;
+
+
 enum
 {
   COLUMN_NODE,
@@ -70,16 +77,10 @@ enum
 
 
 enum {
-  CHATTY_MSG_MODE_XMPP,
-  CHATTY_MSG_MODE_OMEMO,
-  CHATTY_MSG_MODE_SMS
-} e_messaging_modes;
-
-
-enum {
   CHATTY_STATUS_ICON_LARGE,
   CHATTY_STATUS_ICON_SMALL
 } e_icon_size;
+
 
 enum {
   CHATTY_CHAT_LIST_SELECT_ENABLED,

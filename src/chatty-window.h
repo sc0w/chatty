@@ -26,25 +26,43 @@ typedef struct {
   HdySearchBar      *search_bar_chats;
   GtkEntry          *search_entry_chats;
   GtkEntry          *search_entry_contacts;
-  GtkEntry          *search_entry_members;
   PurpleAccount     *selected_account;
   GtkListBox        *list_manage_account;
   GtkBox            *pane_view_chat_list;
+  GtkBox            *pane_view_muc_info;
   GtkWidget         *pane_view_message_list;
   GtkBox            *pane_view_new_chat;
-  GtkBox            *pane_view_muc_info;
   GtkHeaderBar      *sub_header_bar;
   GtkWidget         *sub_header_icon;
   GtkWidget         *sub_header_label;
-  GtkWidget         *label_contact_id;
   GtkWidget         *header_spinner;
   GSList            *radio_button_list;
   GtkWidget         *dummy_prefix_radio;
-  gint               view_state_last;
-  gint               view_state_next;
+  GtkWidget         *label_contact_id;
+  GtkWidget         *button_chat_info_popup;
+  GtkWidget         *button_chat_info_header;
+  GtkWidget         *separator_chat_info;
+
+  struct {
+    GtkWidget     *label_chat_id;
+    GtkWidget     *label_topic;
+    GtkWidget     *label_num_user;
+    GtkWidget     *button_edit_topic;
+    GtkWidget     *box_topic_editor;
+    GtkTextBuffer *msg_buffer_topic;
+    GtkSwitch     *switch_prefs_notifications;
+    GtkSwitch     *switch_prefs_persistant;
+    GtkSwitch     *switch_prefs_autojoin;
+  } muc;
+
 } chatty_data_t;
 
 chatty_data_t *chatty_get_data(void);
+
+#define CHATTY_COLOR_GREEN  "6BBA3D"
+#define CHATTY_COLOR_BLUE   "4A8FD9"
+#define CHATTY_COLOR_PURPLE "842B84"
+#define CHATTY_COLOR_GREY   "B2B2B2"
 
 enum {
   CHATTY_PREF_SEND_RECEIPTS,
@@ -55,6 +73,9 @@ enum {
   CHATTY_PREF_INDICATE_IDLE,
   CHATTY_PREF_CONVERT_SMILEY,
   CHATTY_PREF_RETURN_SENDS,
+  CHATTY_PREF_MUC_NOTIFICATIONS,
+  CHATTY_PREF_MUC_AUTOJOIN,
+  CHATTY_PREF_MUC_PERSISTANT,
   CHATTY_PREF_LAST
 } ChattyPreferences;
 

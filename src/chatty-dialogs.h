@@ -19,14 +19,19 @@ typedef struct {
   GtkLabel          *label_protocol;
   GtkLabel          *label_status;
   GtkListBox        *list_select_account;
-  GtkEntry          *entry_invite_msg;
   GtkWidget         *dialog_edit_account;
   GtkWidget         *button_add_account;
   GtkWidget         *button_save_account;
+  GtkWidget         *box_topic_frame;
+  GtkWidget         *textview_muc_topic;
+  const char        *current_topic;
+  const char        *new_topic;
   GtkEntry          *entry_account_name;
   GtkEntry          *entry_account_pwd;
   GtkEntry          *entry_contact_name;
   GtkEntry          *entry_contact_nick;
+  GtkEntry          *entry_invite_name;
+  GtkEntry          *entry_invite_msg;
 } chatty_dialog_data_t;
 
 chatty_dialog_data_t *chatty_get_dialog_data(void);

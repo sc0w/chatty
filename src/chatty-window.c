@@ -148,6 +148,7 @@ chatty_window_init_data (void)
 
   chatty_window_change_view (CHATTY_VIEW_CHAT_LIST);
 
+  // These dialogs need to be created before libpurple_start
   chatty->dialog_new_chat = chatty_dialogs_create_dialog_new_chat ();
   chatty->dialog_muc_info = chatty_dialogs_create_dialog_muc_info ();
 
@@ -211,6 +212,9 @@ chatty_window_activate (GtkApplication *app,
   chatty->sub_header_bar = GTK_HEADER_BAR (gtk_builder_get_object (builder, "sub_header_bar"));
   chatty->sub_header_label = GTK_WIDGET (gtk_builder_get_object (builder, "sub_header_label"));
   chatty->sub_header_icon = GTK_WIDGET (gtk_builder_get_object (builder, "sub_header_icon"));
+  chatty->button_chat_info_popup = GTK_WIDGET (gtk_builder_get_object (builder, "button_chat_info_popup"));
+  chatty->button_chat_info_header = GTK_WIDGET (gtk_builder_get_object (builder, "button_chat_info_header"));
+  chatty->separator_chat_info = GTK_WIDGET (gtk_builder_get_object (builder, "separator_chat_info"));
 
   chatty->search_bar_chats = HDY_SEARCH_BAR (gtk_builder_get_object (builder, "search_bar_chats"));
   chatty->search_entry_chats = GTK_ENTRY (gtk_builder_get_object (builder, "search_entry_chats"));

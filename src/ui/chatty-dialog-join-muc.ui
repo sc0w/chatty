@@ -179,7 +179,7 @@
                                     <property name="selectable">False</property>
                                     <property name="activatable">False</property>
                                     <child type="action">
-                                      <object class="GtkSwitch" id="prefs_switch_chat_autojoin">
+                                      <object class="GtkSwitch" id="switch_prefs_chat_autojoin">
                                         <property name="can_focus">True</property>
                                         <property name="valign">center</property>
                                         <property name="visible">True</property>

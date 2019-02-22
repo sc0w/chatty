@@ -63,9 +63,10 @@ cb_tree_view_row_activated (GtkTreeView       *treeview,
   const gchar     *protocol_id;
   GtkTreeModel    *treemodel;
   const char      *chat_name;
+  const char      *buddy_alias;
   GtkTreeIter      iter;
   GdkPixbuf       *avatar;
-  guint            color;
+  const char      *color;
 
   chatty_data_t *chatty = chatty_get_data ();
 
@@ -85,19 +86,25 @@ cb_tree_view_row_activated (GtkTreeView       *treeview,
     PurpleBuddy *buddy;
 
     buddy = (PurpleBuddy*)node;
+    buddy_alias = purple_buddy_get_alias (buddy);
     account = purple_buddy_get_account (buddy);
 
     _chatty_blist->selected_node = node;
 
     protocol_id = purple_account_get_protocol_id (account);
 
+    gtk_widget_hide (chatty->button_chat_info_popup);
+    gtk_widget_hide (chatty->button_chat_info_header);
+    gtk_widget_hide (chatty->separator_chat_info);
+
     if (g_strcmp0 (protocol_id, "prpl-mm-sms") == 0) {
-      color = CHATTY_ICON_COLOR_GREEN;
+      color = CHATTY_COLOR_GREEN;
     } else {
-      color = CHATTY_ICON_COLOR_BLUE;
+      color = CHATTY_COLOR_BLUE;
     }
 
     avatar = chatty_icon_get_buddy_icon (node,
+                                         buddy_alias,
                                          CHATTY_ICON_SIZE_MEDIUM,
                                          color,
                                          FALSE);
@@ -106,7 +113,7 @@ cb_tree_view_row_activated (GtkTreeView       *treeview,
                                purple_buddy_get_name (buddy));
 
     chatty_window_update_sub_header_titlebar (avatar,
-                                              purple_buddy_get_alias (buddy));
+                                              buddy_alias);
 
     chatty_window_change_view (CHATTY_VIEW_MESSAGE_LIST);
     gtk_widget_hide (GTK_WIDGET(chatty->dialog_new_chat));
@@ -119,13 +126,18 @@ cb_tree_view_row_activated (GtkTreeView       *treeview,
 
     _chatty_blist->selected_node = node;
 
+    gtk_widget_show (chatty->button_chat_info_popup);
+    gtk_widget_show (chatty->button_chat_info_header);
+    gtk_widget_show (chatty->separator_chat_info);
+
     chatty_conv_join_chat (chat);
 
     purple_blist_node_set_bool (node, "chatty-autojoin", TRUE);
 
     avatar = chatty_icon_get_buddy_icon (node,
+                                         NULL,
                                          CHATTY_ICON_SIZE_MEDIUM,
-                                         0,
+                                         CHATTY_COLOR_GREY,
                                          FALSE);
 
     chatty_window_update_sub_header_titlebar (avatar, chat_name);
@@ -462,6 +474,7 @@ cb_notification_draw_badge (GtkWidget *widget,
   GtkTreePath     *path;
   GdkRectangle     rect;
   ChattyBlistNode *chatty_node;
+  gboolean         notify;
 
   if (!gtk_tree_model_iter_children (GTK_TREE_MODEL(_chatty_blist->treemodel_chats),
                                      &iter,
@@ -486,7 +499,9 @@ cb_notification_draw_badge (GtkWidget *widget,
                                  NULL,
                                  &rect);
 
-    if (chatty_node->conv.pending_messages) {
+    notify = purple_blist_node_get_bool (node, "chatty-notifications");
+
+    if (chatty_node->conv.pending_messages && notify) {
       chatty_blist_draw_notification_badge (cr,
                                             rect.y,
                                             rect.height,
@@ -514,10 +529,11 @@ cb_auto_join_chats (gpointer data)
       PurpleChat *chat = (PurpleChat*)node;
 
       if (purple_chat_get_account (chat) == account &&
-          purple_blist_node_get_bool(node, "chatty-autojoin"))
+          purple_blist_node_get_bool(node, "chatty-autojoin")) {
 
         serv_join_chat (purple_account_get_connection (account),
                         purple_chat_get_components (chat));
+      }
     }
   }
 
@@ -734,12 +750,17 @@ chatty_blist_chat_list_remove_buddy (void)
     if (PURPLE_BLIST_NODE_IS_BUDDY(node)) {
       chatty_conv_delete_message_history (buddy);
       chatty_window_update_sub_header_titlebar (NULL, "");
+      purple_conversation_destroy (ui->conv.conv);
     } else if (PURPLE_BLIST_NODE_IS_CHAT(node)) {
       purple_blist_node_set_bool (node, "chatty-autojoin", FALSE);
       chatty_blist_chats_remove_node (purple_get_blist(), node, TRUE);
+
+      if (!purple_blist_node_get_bool (node, "chatty-persistent")) {
+        // TODO this segfaults in muc list update
+        //purple_conversation_destroy (ui->conv.conv);
+      }
     }
 
-    purple_conversation_destroy (ui->conv.conv);
     chatty_window_change_view (CHATTY_VIEW_CHAT_LIST);
   }
 
@@ -1541,7 +1562,7 @@ chatty_blist_contacts_update_node (PurpleBuddy     *buddy,
   const gchar   *account_name;
   const gchar   *protocol_id;
   PurpleAccount *account;
-  guint          color;
+  const char    *color;
   gboolean       blur;
 
   PurplePresence *presence = purple_buddy_get_presence (buddy);
@@ -1557,10 +1578,12 @@ chatty_blist_contacts_update_node (PurpleBuddy     *buddy,
 
   protocol_id = purple_account_get_protocol_id (account);
 
+  alias = purple_buddy_get_alias (buddy);
+
   if (g_strcmp0 (protocol_id, "prpl-mm-sms") == 0) {
-    color = CHATTY_ICON_COLOR_GREEN;
+    color = CHATTY_COLOR_GREEN;
   } else {
-    color = CHATTY_ICON_COLOR_BLUE;
+    color = CHATTY_COLOR_BLUE;
   }
 
   if (purple_prefs_get_bool (CHATTY_PREFS_ROOT "/blist/greyout_offline_buddies") &&
@@ -1572,6 +1595,7 @@ chatty_blist_contacts_update_node (PurpleBuddy     *buddy,
   }
 
   avatar = chatty_icon_get_buddy_icon ((PurpleBlistNode *)buddy,
+                                       alias,
                                        CHATTY_ICON_SIZE_LARGE,
                                        color,
                                        blur);
@@ -1581,8 +1605,6 @@ chatty_blist_contacts_update_node (PurpleBuddy     *buddy,
 
     chatty_icon_do_alphashift (avatar, 77);
   }
-
-  alias = purple_buddy_get_alias (buddy);
 
   name = g_strconcat ("<span color='#646464'>",
                       alias,
@@ -1657,8 +1679,9 @@ chatty_blist_contacts_update_group_chat (PurpleBlistNode *node)
   }
 
   avatar = chatty_icon_get_buddy_icon (node,
+                                       NULL,
                                        CHATTY_ICON_SIZE_LARGE,
-                                       CHATTY_ICON_COLOR_BLUE,
+                                       CHATTY_COLOR_BLUE,
                                        FALSE);
 
   account_name = purple_account_get_username (chat->account);
@@ -1729,7 +1752,7 @@ chatty_blist_chats_update_node (PurpleBuddy     *buddy,
   gchar         *last_msg_text = NULL;
   gchar         *last_msg_ts = NULL;
   PurpleAccount *account;
-  guint          color;
+  const char    *color;
   gboolean       blur;
 
   PurplePresence *presence = purple_buddy_get_presence (buddy);
@@ -1744,10 +1767,13 @@ chatty_blist_chats_update_node (PurpleBuddy     *buddy,
 
   protocol_id = purple_account_get_protocol_id (account);
 
+  b_name = purple_buddy_get_name (buddy);
+  alias = purple_buddy_get_alias (buddy);
+
   if (g_strcmp0 (protocol_id, "prpl-mm-sms") == 0) {
-    color = CHATTY_ICON_COLOR_GREEN;
+    color = CHATTY_COLOR_GREEN;
   } else {
-    color = CHATTY_ICON_COLOR_BLUE;
+    color = CHATTY_COLOR_BLUE;
   }
 
   if (purple_prefs_get_bool (CHATTY_PREFS_ROOT "/blist/greyout_offline_buddies") &&
@@ -1759,6 +1785,7 @@ chatty_blist_chats_update_node (PurpleBuddy     *buddy,
   }
 
   avatar = chatty_icon_get_buddy_icon (node,
+                                       alias,
                                        CHATTY_ICON_SIZE_LARGE,
                                        color,
                                        blur);
@@ -1768,9 +1795,6 @@ chatty_blist_chats_update_node (PurpleBuddy     *buddy,
 
     chatty_icon_do_alphashift (avatar, 77);
   }
-
-  b_name = purple_buddy_get_name (buddy);
-  alias = purple_buddy_get_alias (buddy);
 
   if ((g_strcmp0 (chatty_node->conv.last_message_name, b_name)) == 0) {
     tag = "";
@@ -1867,7 +1891,7 @@ chatty_blist_chats_update_group_chat (PurpleBlistNode *node)
   GtkTreeIter    iter;
   GtkTreeIter    cur_iter;
   PurpleChat    *chat;
-  GdkPixbuf     *avatar;
+  GdkPixbuf     *avatar = NULL;
   GtkTreePath   *path;
   gchar         *name = NULL;
   const gchar   *chat_name;
@@ -1887,8 +1911,9 @@ chatty_blist_chats_update_group_chat (PurpleBlistNode *node)
   }
 
   avatar = chatty_icon_get_buddy_icon (node,
+                                       NULL,
                                        CHATTY_ICON_SIZE_LARGE,
-                                       CHATTY_ICON_COLOR_BLUE,
+                                       CHATTY_COLOR_BLUE,
                                        FALSE);
 
   chat_name = purple_chat_get_name (chat);
