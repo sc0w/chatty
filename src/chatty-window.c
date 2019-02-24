@@ -54,13 +54,7 @@ cb_leaflet_notify_fold (GObject       *sender,
 
   HdyFold fold = hdy_leaflet_get_fold (chatty->header_box);
 
-  if (fold == HDY_FOLD_FOLDED) {
-    chatty_blist_chat_list_selection (FALSE);
-    gtk_header_bar_set_show_close_button (chatty->sub_header_bar, FALSE);
-  } else {
-    chatty_blist_chat_list_selection (TRUE);
-    gtk_header_bar_set_show_close_button (chatty->sub_header_bar, TRUE);
-  }
+  chatty_blist_chat_list_selection (fold != HDY_FOLD_FOLDED);
 }
 
 
