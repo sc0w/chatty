@@ -3,8 +3,8 @@
   <object class="GtkDialog" id="dialog">
     <property name="valign">center</property>
     <property name="modal">True</property>
-    <property name="default_height">576</property>
     <property name="default_width">360</property>
+    <property name="default_height">576</property>
     <child type="titlebar">
       <object class="GtkHeaderBar">
         <property name="title" translatable="yes">New Group Chat</property>
