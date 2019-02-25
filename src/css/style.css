@@ -1,6 +1,6 @@
 .msg_entry_defocused {
   border-style: solid;
-  border-width: 2px;
+  border-width: 1px;
   border-radius: 3px;
   transition: border-color 0.25s linear;
   transition: border-width 0.25s linear;
