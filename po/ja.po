@@ -1,5 +1,6 @@
 # Punleuk Oum <sirstrangerthesecond@gmail.com>, 2018. #zanata
 # Scott <xmrscott@protonmail.com>, 2019. #zanata
+# Scott Anecito <scott.anecito@linux.com>, 2019. #zanata
 msgid ""
 msgstr ""
 "Project-Id-Version: purism-chatty\n"
@@ -8,8 +9,8 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2019-01-18 01:55+0000\n"
-"Last-Translator: Scott <xmrscott@protonmail.com>\n"
+"PO-Revision-Date: 2019-02-16 08:15+0000\n"
+"Last-Translator: Scott Anecito <scott.anecito@linux.com>\n"
 "Language-Team: Japanese\n"
 "Language: ja\n"
 "X-Generator: Zanata 4.6.2\n"
@@ -21,7 +22,7 @@ msgstr "Chatty"
 
 #: data/sm.puri.Chatty.appdata.xml.in:7
 msgid "A messaging application"
-msgstr ""
+msgstr "メッセージングアプリ"
 
 #: data/sm.puri.Chatty.appdata.xml.in:8
 msgid "Chatty is a messaging application supporting XMPP and SMS."
@@ -29,7 +30,7 @@ msgstr ""
 
 #: data/sm.puri.Chatty.appdata.xml.in:16
 msgid "Chatty's message window"
-msgstr ""
+msgstr "Chattyのメッセージウィンドウ"
 
 #: data/sm.puri.Chatty.desktop.in:5
 msgid "sm.puri.Chatty"
@@ -45,11 +46,11 @@ msgstr ""
 
 #: src/chatty-account.c:169
 msgid "SMS Number"
-msgstr ""
+msgstr "携帯番号"
 
 #: src/chatty-account.c:171
 msgid "Jabber ID"
-msgstr ""
+msgstr "Jabber ID"
 
 #: src/chatty-account.c:193
 msgid "Delete Account"
@@ -66,11 +67,11 @@ msgstr ""
 
 #: src/chatty-account.c:283
 msgid "connecting..."
-msgstr ""
+msgstr "接続中..."
 
 #: src/chatty-account.c:285
 msgid "disconnected"
-msgstr ""
+msgstr "切断されました"
 
 #: src/chatty-account.c:496
 msgid "Add new account..."
@@ -96,7 +97,7 @@ msgstr ""
 
 #: src/chatty-account.c:594
 msgid "Accept"
-msgstr ""
+msgstr "承諾"
 
 #: src/chatty-account.c:599
 #, c-format
@@ -110,7 +111,7 @@ msgstr ""
 
 #: src/chatty-buddy-list.c:604
 msgid "Cancel"
-msgstr ""
+msgstr "キャンセル"
 
 #: src/chatty-buddy-list.c:606
 msgid "Delete"
@@ -122,7 +123,7 @@ msgstr ""
 
 #: src/chatty-buddy-list.c:1563 src/chatty-buddy-list.c:1687
 msgid "Me: "
-msgstr ""
+msgstr "私："
 
 #: src/chatty-message-list.c:68 src/chatty-message-list.c:73
 msgid "This is a IM conversation."
