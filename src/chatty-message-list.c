@@ -634,6 +634,7 @@ chatty_msg_list_add_message (ChattyMsgList *self,
 
   label_msg = GTK_LABEL (gtk_label_new (message));
   gtk_widget_set_name (GTK_WIDGET(label_msg), "label-msg");
+  gtk_label_set_xalign (label_msg, 0);
   gtk_label_set_line_wrap (label_msg, TRUE);
   gtk_label_set_line_wrap_mode (label_msg, PANGO_WRAP_WORD_CHAR);
   gtk_label_set_use_markup (GTK_LABEL(label_msg), TRUE);
