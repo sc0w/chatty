@@ -758,11 +758,12 @@ chatty_dialogs_create_dialog_settings (void)
   chatty_account_populate_account_list (chatty->list_manage_account,
                                         LIST_MANAGE_ACCOUNT);
 
-  gtk_window_set_transient_for (GTK_WINDOW(dialog),
-                                GTK_WINDOW(chatty->main_window));
 
   chatty_dialogs_create_edit_account_view (builder);
   chatty_dialogs_create_add_account_view (builder);
+
+  gtk_window_set_transient_for (GTK_WINDOW(dialog),
+                                GTK_WINDOW(chatty->main_window));
 
   g_object_unref (builder);
 

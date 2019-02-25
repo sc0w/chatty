@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
-  <object class="HdyDialog" id="dialog">
+  <object class="GtkDialog" id="dialog">
     <property name="valign">center</property>
     <property name="modal">True</property>
     <property name="default_height">576</property>
