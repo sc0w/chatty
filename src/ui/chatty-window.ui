@@ -101,7 +101,7 @@
         <property name="border_width">12</property>
         <property name="orientation">vertical</property>
         <child>
-          <object class="GtkModelButton" id="button_chat_info_popup">
+          <object class="GtkModelButton" id="button_menu_chat_info">
             <property name="visible">True</property>
             <property name="active">False</property>
             <property name="can_focus">False</property>
@@ -115,7 +115,21 @@
           </packing>
         </child>
         <child>
-          <object class="GtkSeparator" id="separator_chat_info">
+          <object class="GtkModelButton" id="button_menu_add_contact">
+            <property name="visible">False</property>
+            <property name="active">False</property>
+            <property name="can_focus">False</property>
+            <property name="receives_default">False</property>
+            <property name="action_name">msg_view.add-contact</property>
+            <property name="text" translatable="yes">Add Contact</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkSeparator" id="separator_menu_msg_view">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="margin_top">6</property>
@@ -285,6 +299,7 @@
                         <property name="can_focus">False</property>
                         <property name="margin-start">6</property>
                         <property name="halign">center</property>
+                        <property name="ellipsize">end</property>
                         <attributes>
                           <attribute name="weight" value="bold"/>
                         </attributes>
@@ -315,7 +330,7 @@
                    </packing>
                  </child>
                 <child>
-                  <object class="GtkButton" id="button_chat_info_header">
+                  <object class="GtkButton" id="button_header_chat_info">
                     <property name="visible">False</property>
                     <property name="can_focus">False</property>
                     <property name="receives_default">False</property>

@@ -57,6 +57,9 @@ cb_switch_prefs_state_changed (GtkSwitch *widget,
     case CHATTY_PREF_INDICATE_IDLE:
       purple_prefs_set_bool (CHATTY_PREFS_ROOT "/blist/blur_idle_buddies", state);
       break;
+    case CHATTY_PREF_INDICATE_UNKNOWN:
+      purple_prefs_set_bool (CHATTY_PREFS_ROOT "/blist/indicate_unknown_contacts", state);
+      break;
     case CHATTY_PREF_CONVERT_SMILEY:
       purple_prefs_set_bool (CHATTY_PREFS_ROOT "/conversations/convert_emoticons", state);
       break;
@@ -655,6 +658,7 @@ chatty_dialogs_create_dialog_settings (void)
   GtkSwitch     *switch_prefs_show_offline;
   GtkSwitch     *switch_prefs_indicate_offline;
   GtkSwitch     *switch_prefs_indicate_idle;
+  GtkSwitch     *switch_prefs_indicate_unknown;
   GtkSwitch     *switch_prefs_convert_smileys;
   GtkSwitch     *switch_prefs_return_sends;
   HdyActionRow  *row_pref_message_carbons;
@@ -679,6 +683,7 @@ chatty_dialogs_create_dialog_settings (void)
   switch_prefs_show_offline = GTK_SWITCH (gtk_builder_get_object (builder, "pref_show_offline"));
   switch_prefs_indicate_offline = GTK_SWITCH (gtk_builder_get_object (builder, "pref_indicate_offline"));
   switch_prefs_indicate_idle = GTK_SWITCH (gtk_builder_get_object (builder, "pref_indicate_idle"));
+  switch_prefs_indicate_unknown = GTK_SWITCH (gtk_builder_get_object (builder, "pref_indicate_unknown"));
 
   list_editor_prefs = GTK_LIST_BOX (gtk_builder_get_object (builder, "editor_prefs_listbox"));
   switch_prefs_convert_smileys = GTK_SWITCH (gtk_builder_get_object (builder, "pref_convert_smileys"));
@@ -711,6 +716,8 @@ chatty_dialogs_create_dialog_settings (void)
                         purple_prefs_get_bool (CHATTY_PREFS_ROOT "/blist/greyout_offline_buddies"));
   gtk_switch_set_state (switch_prefs_indicate_idle,
                         purple_prefs_get_bool (CHATTY_PREFS_ROOT "/blist/blur_idle_buddies"));
+  gtk_switch_set_state (switch_prefs_indicate_unknown,
+                        purple_prefs_get_bool (CHATTY_PREFS_ROOT "/blist/indicate_unknown_contacts"));
   gtk_switch_set_state (switch_prefs_convert_smileys,
                         purple_prefs_get_bool (CHATTY_PREFS_ROOT "/conversations/convert_emoticons"));
   gtk_switch_set_state (switch_prefs_return_sends,
@@ -746,6 +753,10 @@ chatty_dialogs_create_dialog_settings (void)
                     "state-set",
                     G_CALLBACK(cb_switch_prefs_state_changed),
                     (gpointer)CHATTY_PREF_INDICATE_IDLE);
+  g_signal_connect (switch_prefs_indicate_unknown,
+                    "state-set",
+                    G_CALLBACK(cb_switch_prefs_state_changed),
+                    (gpointer)CHATTY_PREF_INDICATE_UNKNOWN);
   g_signal_connect (switch_prefs_convert_smileys,
                     "state-set",
                     G_CALLBACK(cb_switch_prefs_state_changed),

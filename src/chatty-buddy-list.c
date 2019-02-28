@@ -93,9 +93,22 @@ cb_tree_view_row_activated (GtkTreeView       *treeview,
 
     protocol_id = purple_account_get_protocol_id (account);
 
-    gtk_widget_hide (chatty->button_chat_info_popup);
-    gtk_widget_hide (chatty->button_chat_info_header);
-    gtk_widget_hide (chatty->separator_chat_info);
+    gtk_widget_hide (chatty->button_menu_chat_info);
+    gtk_widget_hide (chatty->button_header_chat_info);
+
+
+
+    if (purple_blist_node_get_bool (PURPLE_BLIST_NODE(buddy),
+                                    "chatty-unknown-contact")) {
+
+      gtk_widget_show (chatty->button_menu_add_contact);
+      gtk_widget_show (chatty->separator_menu_msg_view);
+    } else {
+      gtk_widget_hide (chatty->button_menu_add_contact);
+      gtk_widget_hide (chatty->separator_menu_msg_view);
+    }
+
+
 
     if (g_strcmp0 (protocol_id, "prpl-mm-sms") == 0) {
       color = CHATTY_COLOR_GREEN;
@@ -126,9 +139,10 @@ cb_tree_view_row_activated (GtkTreeView       *treeview,
 
     _chatty_blist->selected_node = node;
 
-    gtk_widget_show (chatty->button_chat_info_popup);
-    gtk_widget_show (chatty->button_chat_info_header);
-    gtk_widget_show (chatty->separator_chat_info);
+    gtk_widget_show (chatty->button_menu_chat_info);
+    gtk_widget_show (chatty->button_header_chat_info);
+    gtk_widget_show (chatty->separator_menu_msg_view);
+    gtk_widget_hide (chatty->button_menu_add_contact);
 
     chatty_conv_join_chat (chat);
 
@@ -355,7 +369,7 @@ cb_displayed_msg_update_ui (ChattyConversation *chatty_conv,
 {
   ChattyBlistNode *ui = node->ui_data;
 
-  if (ui->conv.conv != chatty_conv->active_conv) {
+  if (ui->conv.conv != chatty_conv->conv) {
     return;
   }
 
@@ -679,6 +693,38 @@ chatty_blist_chat_list_selection (gboolean select)
 
   gtk_style_context_remove_class (sc, select ? "list_no_select" : "list_select");
   gtk_style_context_add_class (sc, select ? "list_select" : "list_no_select");
+}
+
+
+/**
+ * chatty_blist_contact_list_add_buddy:
+ *
+ * Add active chat buddy to contacts-list
+ *
+ * called from view_msg_list_cmd_add_contact
+ * in chatty-popover-actions.c
+ *
+ */
+void
+chatty_blist_contact_list_add_buddy (void)
+{
+  PurpleAccount      *account;
+  PurpleConversation *conv;
+  PurpleBlistNode    *node;
+  PurpleBuddy        *buddy;
+
+  chatty_data_t *chatty = chatty_get_data ();
+
+  node = _chatty_blist->selected_node;
+  buddy = (PurpleBuddy*)node;
+
+  conv = chatty_conv_container_get_active_purple_conv (GTK_NOTEBOOK(chatty->pane_view_message_list));
+
+  if (buddy) {
+    account = purple_conversation_get_account (conv);
+    purple_account_add_buddy (account, buddy);
+    purple_blist_node_remove_setting (PURPLE_BLIST_NODE(buddy), "chatty-unknown-contact");
+  }
 }
 
 
@@ -1576,6 +1622,12 @@ chatty_blist_contacts_update_node (PurpleBuddy     *buddy,
     return;
   }
 
+  // Do not add unknown contacts to the list
+  if (purple_blist_node_get_bool (PURPLE_BLIST_NODE(buddy),
+                                  "chatty-unknown-contact")) {
+    return;
+  }
+
   protocol_id = purple_account_get_protocol_id (account);
 
   alias = purple_buddy_get_alias (buddy);
@@ -1753,6 +1805,7 @@ chatty_blist_chats_update_node (PurpleBuddy     *buddy,
   gchar         *last_msg_ts = NULL;
   PurpleAccount *account;
   const char    *color;
+  const char    *color_tag;
   gboolean       blur;
 
   PurplePresence *presence = purple_buddy_get_presence (buddy);
@@ -1821,8 +1874,16 @@ chatty_blist_chats_update_node (PurpleBuddy     *buddy,
                              "</span>",
                              NULL);
 
+  if (purple_blist_node_get_bool (PURPLE_BLIST_NODE(buddy), "chatty-unknown-contact") &&
+      purple_prefs_get_bool (CHATTY_PREFS_ROOT "/blist/indicate_unknown_contacts")) {
+
+    color_tag = "<span color='#FF3333'>";
+  } else {
+    color_tag = "<span color='#646464'>";
+  }
+
   if (chatty_node->conv.flags & CHATTY_BLIST_NODE_HAS_PENDING_MESSAGE) {
-    name = g_strconcat ("<span color='#646464'>",
+    name = g_strconcat (color_tag,
                         alias,
                         "</span>",
                         "\n",
@@ -1831,7 +1892,7 @@ chatty_blist_chats_update_node (PurpleBuddy     *buddy,
                         "</small>",
                         NULL);
   } else {
-    name = g_strconcat ("<span color='#646464'>",
+    name = g_strconcat (color_tag,
                         alias,
                         "\n",
                         "<small>",
@@ -2235,6 +2296,7 @@ void chatty_blist_init (void)
   purple_prefs_add_bool (CHATTY_PREFS_ROOT "/blist/show_offline_buddies", TRUE);
   purple_prefs_add_bool (CHATTY_PREFS_ROOT "/blist/greyout_offline_buddies", FALSE);
   purple_prefs_add_bool (CHATTY_PREFS_ROOT "/blist/blur_idle_buddies", FALSE);
+  purple_prefs_add_bool (CHATTY_PREFS_ROOT "/blist/indicate_unknown_contacts", TRUE);
   purple_prefs_add_bool (CHATTY_PREFS_ROOT "/blist/show_protocol_icons", FALSE);
 
   purple_prefs_connect_callback (&handle,
@@ -2247,6 +2309,10 @@ void chatty_blist_init (void)
                                  NULL);
   purple_prefs_connect_callback (&handle,
                                  CHATTY_PREFS_ROOT "/blist/show_offline_buddies",
+                                 cb_chatty_prefs_change_update_list,
+                                 NULL);
+  purple_prefs_connect_callback (&handle,
+                                 CHATTY_PREFS_ROOT "/blist/indicate_unknown_contacts",
                                  cb_chatty_prefs_change_update_list,
                                  NULL);
   purple_prefs_connect_callback (&handle,

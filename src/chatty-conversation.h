@@ -33,7 +33,7 @@ struct chatty_log {
 };
 
 struct chatty_conversation {
-  PurpleConversation  *active_conv;
+  PurpleConversation  *conv;
   ChattyMsgList       *msg_list;
   GtkWidget           *msg_entry;
   GtkWidget           *msg_bubble_footer;
@@ -82,6 +82,7 @@ enum
 enum
 {
   MUC_COLUMN_AVATAR,
+  MUC_COLUMN_ENTRY,
   MUC_COLUMN_NAME,
   MUC_COLUMN_ALIAS_KEY,
   MUC_COLUMN_LAST,

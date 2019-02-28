@@ -321,7 +321,7 @@ chatty_msg_list_add_header (ChattyMsgList *self)
 
   gtk_container_add (GTK_CONTAINER (priv->list), row);
 
-  if (priv->disclaimer_enable && priv->message_type < MSG_TYPE_LAST) {
+  if (priv->disclaimer_enable && priv->message_type < CHATTY_MSG_TYPE_LAST) {
     priv->disclaimer = GTK_BOX (gtk_box_new (GTK_ORIENTATION_VERTICAL, 0));
 
     label = gtk_label_new (_(header_strings[priv->message_type].str_0));
@@ -679,7 +679,7 @@ chatty_msg_list_add_message (ChattyMsgList *self,
     style = "bubble_purple";
   }
 
-  if (message_dir == MSG_IS_OUTGOING && priv->message_type == MSG_TYPE_SMS) {
+  if (message_dir == MSG_IS_OUTGOING && priv->message_type == CHATTY_MSG_TYPE_SMS) {
     style = "bubble_green";
   }
 
@@ -781,7 +781,7 @@ chatty_msg_list_class_init (ChattyMsgListClass *klass)
     g_param_spec_int ("message_type",
                       "Message Type",
                       "Select the message type",
-                      MSG_TYPE_IM, MSG_TYPE_LAST, MSG_TYPE_IM,
+                      CHATTY_MSG_TYPE_IM, CHATTY_MSG_TYPE_LAST, CHATTY_MSG_TYPE_IM,
                       G_PARAM_READWRITE | G_PARAM_EXPLICIT_NOTIFY);
 
   props[PROP_DISCLAIMER] =
@@ -844,7 +844,7 @@ chatty_msg_list_get_msg_type (ChattyMsgList *self)
 {
   ChattyMsgListPrivate *priv = chatty_msg_list_get_instance_private (self);
 
-  g_return_val_if_fail (CHATTY_IS_MSG_LIST (self), MSG_TYPE_UNKNOWN);
+  g_return_val_if_fail (CHATTY_IS_MSG_LIST (self), CHATTY_MSG_TYPE_UNKNOWN);
 
   return priv->message_type;
 }

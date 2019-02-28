@@ -39,7 +39,6 @@ chatty_conv_write_conversation (PurpleConversation *conv,
 void chatty_conv_new (PurpleConversation *conv);
 static gboolean chatty_conv_check_for_command (PurpleConversation *conv);
 ChattyConversation * chatty_conv_container_get_active_chatty_conv (GtkNotebook *notebook);
-void chatty_conv_switch_active_conversation (PurpleConversation *conv);
 static void chatty_update_typing_status (ChattyConversation *chatty_conv);
 static void chatty_check_for_emoticon (ChattyConversation *chatty_conv);
 
@@ -62,7 +61,7 @@ cb_buddy_typing (PurpleAccount *account,
 
   chatty_conv = CHATTY_CONVERSATION(conv);
 
-  if (chatty_conv && chatty_conv->active_conv == conv) {
+  if (chatty_conv && chatty_conv->conv == conv) {
     chatty_msg_list_show_typing_indicator (chatty_conv->msg_list);
   }
 }
@@ -84,7 +83,7 @@ cb_buddy_typed (PurpleAccount *account,
 
   chatty_conv = CHATTY_CONVERSATION(conv);
 
-  if (chatty_conv && chatty_conv->active_conv == conv) {
+  if (chatty_conv && chatty_conv->conv == conv) {
     chatty_msg_list_hide_typing_indicator (chatty_conv->msg_list);
   }
 }
@@ -107,7 +106,7 @@ cb_buddy_typing_stopped (PurpleAccount *account,
 
   chatty_conv = CHATTY_CONVERSATION(conv);
 
-  if (chatty_conv && chatty_conv->active_conv == conv) {
+  if (chatty_conv && chatty_conv->conv == conv) {
     chatty_msg_list_hide_typing_indicator (chatty_conv->msg_list);
   }
 }
@@ -220,7 +219,7 @@ cb_button_send_clicked (GtkButton *sender,
   guint                sms_id;
 
   chatty_conv  = (ChattyConversation *)data;
-  conv = chatty_conv->active_conv;
+  conv = chatty_conv->conv;
 
   account = purple_conversation_get_account (conv);
 
@@ -428,13 +427,12 @@ cb_stack_cont_switch_conv (GtkNotebook *notebook,
 
   chatty_conv = chatty_conv_get_conv_at_index (GTK_NOTEBOOK(notebook), page_num);
 
-  conv = chatty_conv->active_conv;
+  conv = chatty_conv->conv;
 
   g_return_if_fail (conv != NULL);
 
-  chatty_conv_switch_active_conversation (conv);
-
-  chatty_conv = CHATTY_CONVERSATION(conv);
+  g_debug ("cb_stack_cont_switch_conv conv: chatty_conv->conv: %s",
+           purple_conversation_get_name (conv));
 
   chatty_conv_set_unseen (chatty_conv, CHATTY_UNSEEN_NONE);
 }
@@ -551,7 +549,7 @@ chatty_update_typing_status (ChattyConversation *chatty_conv)
   char                   *text;
   gboolean                empty;
 
-  conv = chatty_conv->active_conv;
+  conv = chatty_conv->conv;
 
   type = purple_conversation_get_type (conv);
 
@@ -878,13 +876,13 @@ chatty_conv_set_unseen (ChattyConversation *chatty_conv,
       chatty_conv->unseen_state = state;
   }
 
-  purple_conversation_set_data (chatty_conv->active_conv, "unseen-count",
+  purple_conversation_set_data (chatty_conv->conv, "unseen-count",
                                 GINT_TO_POINTER(chatty_conv->unseen_count));
 
-  purple_conversation_set_data (chatty_conv->active_conv, "unseen-state",
+  purple_conversation_set_data (chatty_conv->conv, "unseen-state",
                                 GINT_TO_POINTER(chatty_conv->unseen_state));
 
-  purple_conversation_update (chatty_conv->active_conv, PURPLE_CONV_UPDATE_UNSEEN);
+  purple_conversation_update (chatty_conv->conv, PURPLE_CONV_UPDATE_UNSEEN);
 }
 
 
@@ -910,7 +908,7 @@ chatty_conv_find_unseen (ChattyUnseenState  state)
     PurpleConversation *conv = (PurpleConversation*)l->data;
     ChattyConversation *chatty_conv = CHATTY_CONVERSATION(conv);
 
-    if(chatty_conv == NULL || chatty_conv->active_conv != conv) {
+    if(chatty_conv == NULL || chatty_conv->conv != conv) {
       continue;
     }
 
@@ -1090,14 +1088,14 @@ chatty_conv_add_message_history_to_conv (gpointer data)
   g_auto(GStrv) line_split = NULL;
   ChattyConversation *chatty_conv = data;
 
-  im = (chatty_conv->active_conv->type == PURPLE_CONV_TYPE_IM);
+  im = (chatty_conv->conv->type == PURPLE_CONV_TYPE_IM);
 
   g_source_remove (chatty_conv->attach.timer);
   chatty_conv->attach.timer = 0;
 
   if (im) {
-    conv_name = purple_conversation_get_name (chatty_conv->active_conv);
-    account = purple_conversation_get_account (chatty_conv->active_conv);
+    conv_name = purple_conversation_get_name (chatty_conv->conv);
+    account = purple_conversation_get_account (chatty_conv->conv);
 
     history = purple_log_get_logs (PURPLE_LOG_IM, conv_name, account);
 
@@ -1228,7 +1226,7 @@ chatty_conv_container_get_active_purple_conv (GtkNotebook *notebook)
 
   chatty_conv = chatty_conv_container_get_active_chatty_conv (notebook);
 
-  return chatty_conv ? chatty_conv->active_conv : NULL;
+  return chatty_conv ? chatty_conv->conv : NULL;
 }
 
 
@@ -1280,11 +1278,11 @@ chatty_conv_muc_list_add_columns (GtkTreeView *treeview)
   column = gtk_tree_view_column_new_with_attributes ("Name",
                                                      renderer,
                                                      "text",
-                                                     MUC_COLUMN_NAME,
+                                                     MUC_COLUMN_ENTRY,
                                                      NULL);
 
   gtk_tree_view_column_set_attributes (column, renderer,
-                                       "markup", MUC_COLUMN_NAME,
+                                       "markup", MUC_COLUMN_ENTRY,
                                        NULL);
 
   g_object_set (renderer,
@@ -1389,6 +1387,7 @@ chatty_conv_create_muc_list (ChattyConversation *chatty_conv)
 
   treemodel = gtk_list_store_new (MUC_NUM_COLUMNS,
                                   G_TYPE_OBJECT,
+                                  G_TYPE_STRING,
                                   G_TYPE_STRING,
                                   G_TYPE_STRING,
                                   G_TYPE_STRING,
@@ -1509,6 +1508,9 @@ chatty_conv_muc_add_user (PurpleConversation  *conv,
     return;
   }
 
+  g_debug ("chatty_conv_muc_add_user conv: %s user_name: %s",
+           purple_conversation_get_name (conv), name);
+
   treemodel = gtk_tree_view_get_model (GTK_TREE_VIEW(chatty_conv->muc.treeview));
   liststore = GTK_LIST_STORE(treemodel);
 
@@ -1516,7 +1518,7 @@ chatty_conv_muc_add_user (PurpleConversation  *conv,
 
   prpl_info = PURPLE_PLUGIN_PROTOCOL_INFO(gc->prpl);
 
-  if (prpl_info->get_cb_real_name) {
+  if (prpl_info && prpl_info->get_cb_real_name) {
     chat_id = purple_conv_chat_get_id (PURPLE_CONV_CHAT(conv));
 
     real_who = prpl_info->get_cb_real_name (gc, chat_id, name);
@@ -1550,7 +1552,8 @@ chatty_conv_muc_add_user (PurpleConversation  *conv,
   gtk_list_store_insert_with_values (liststore, &iter,
                                      -1,
                                      MUC_COLUMN_AVATAR, avatar,
-                                     MUC_COLUMN_NAME, text,
+                                     MUC_COLUMN_ENTRY, text,
+                                     MUC_COLUMN_NAME, name,
                                      MUC_COLUMN_ALIAS_KEY, alias_key,
                                      MUC_COLUMN_LAST, NULL,
                                      MUC_COLUMN_FLAGS, flags,
@@ -1571,7 +1574,6 @@ chatty_conv_muc_add_user (PurpleConversation  *conv,
 
   g_free (alias_key);
   g_free (real_who);
-  g_free (name);
   g_free (status);
 }
 
@@ -1646,6 +1648,10 @@ chatty_conv_muc_list_remove_users (PurpleConversation *conv,
   chatty_conv = CHATTY_CONVERSATION(conv);
 
   chatty_conv->muc.user_count = g_list_length (purple_conv_chat_get_users (chat));
+
+  g_debug ("chatty_conv_muc_list_remove_users conv: %s user_count: %i",
+           purple_conversation_get_name (conv),
+           chatty_conv->muc.user_count);
 
   for (l = users; l != NULL; l = l->next) {
     model = gtk_tree_view_get_model (GTK_TREE_VIEW(chatty_conv->muc.treeview));
@@ -1752,6 +1758,9 @@ chatty_conv_muc_list_update_user (PurpleConversation *conv,
   if (!cbuddy) {
     return;
   }
+
+  g_debug ("chatty_conv_muc_list_update_user conv: %s user_name: %s",
+           purple_conversation_get_name (conv), user);
 
   chatty_conv->muc.user_count = g_list_length (purple_conv_chat_get_users (chat));
 
@@ -1986,7 +1995,7 @@ chatty_conv_invite_muc_user (const char *user_name,
 static void
 chatty_conv_stack_add_conv (ChattyConversation *chatty_conv)
 {
-  PurpleConversation      *conv = chatty_conv->active_conv;
+  PurpleConversation      *conv = chatty_conv->conv;
   const gchar             *tab_txt;
   gchar                   *text;
   gchar                   **name_split;
@@ -2110,7 +2119,7 @@ chatty_conv_write_im (PurpleConversation *conv,
 
   chatty_conv = CHATTY_CONVERSATION (conv);
 
-  if (conv != chatty_conv->active_conv &&
+  if (conv != chatty_conv->conv &&
       flags & PURPLE_MESSAGE_ACTIVE_ONLY)
   {
     return;
@@ -2265,44 +2274,6 @@ chatty_get_conv_blist_node (PurpleConversation *conv)
 
 
 /**
- * chatty_conv_switch_active_conversation:
- * @conv: a PurpleConversation
- *
- * Makes the PurpleConversation #conv the active
- * #chatty_conv conversation and sets the GUI
- * accordingly.
- *
- */
-void
-chatty_conv_switch_active_conversation (PurpleConversation *conv)
-{
-  ChattyConversation *chatty_conv;
-  PurpleConversation *old_conv;
-
-  g_return_if_fail (conv != NULL);
-
-  chatty_conv = CHATTY_CONVERSATION (conv);
-  old_conv = chatty_conv->active_conv;
-
-  if (old_conv == conv) {
-    return;
-  }
-
-  purple_conversation_close_logs (old_conv);
-
-  chatty_conv->active_conv = conv;
-
-  purple_conversation_set_logging (conv, TRUE);
-
-  purple_signal_emit (chatty_conversations_get_handle (),
-                      "conversation-switched",
-                      conv);
-
- // TODO set headerbar  (same with icons for online stat/avatar)
-}
-
-
-/**
  * chatty_conv_switch_conv:
  * @chatty_conv: a ChattyConversation
  *
@@ -2313,11 +2284,18 @@ chatty_conv_switch_active_conversation (PurpleConversation *conv)
 static void
 chatty_conv_switch_conv (ChattyConversation *chatty_conv)
 {
+  gint page_num;
+
   chatty_data_t *chatty = chatty_get_data();
 
+  page_num = gtk_notebook_page_num (GTK_NOTEBOOK(chatty->pane_view_message_list),
+                                    chatty_conv->tab_cont);
+
   gtk_notebook_set_current_page (GTK_NOTEBOOK(chatty->pane_view_message_list),
-                                 gtk_notebook_page_num (GTK_NOTEBOOK(chatty->pane_view_message_list),
-                                 chatty_conv->tab_cont));
+                                 page_num);
+
+  g_debug ("chatty_conv_switch_conv active_conv: %s   page_num %i",
+           purple_conversation_get_name (chatty_conv->conv), page_num);
 
   gtk_widget_grab_focus (GTK_WIDGET(chatty_conv->msg_entry));
 }
@@ -2356,7 +2334,7 @@ chatty_conv_present_conversation (PurpleConversation *conv)
 
   chatty_conv = CHATTY_CONVERSATION (conv);
 
-  chatty_conv_switch_active_conversation (conv);
+  g_debug ("chatty_conv_present_conversation conv: %s", purple_conversation_get_name (conv));
 
   chatty_conv_switch_conv (chatty_conv);
 }
@@ -2543,14 +2521,14 @@ chatty_conv_setup_pane (ChattyConversation *chatty_conv,
   sc = gtk_widget_get_style_context (chatty_conv->button_send);
 
   switch (msg_type) {
-    case MSG_TYPE_SMS:
+    case CHATTY_MSG_TYPE_SMS:
       gtk_style_context_add_class (sc, "button_send_green");
       break;
-    case MSG_TYPE_IM:
-    case MSG_TYPE_IM_E2EE:
+    case CHATTY_MSG_TYPE_IM:
+    case CHATTY_MSG_TYPE_IM_E2EE:
       gtk_style_context_add_class (sc, "button_send_blue");
       break;
-    case MSG_TYPE_UNKNOWN:
+    case CHATTY_MSG_TYPE_UNKNOWN:
       break;
     default:
       break;
@@ -2606,14 +2584,12 @@ chatty_conv_new (PurpleConversation *conv)
   if (conv_type == PURPLE_CONV_TYPE_IM && (chatty_conv = chatty_conv_find_conv (conv))) {
     conv->ui_data = chatty_conv;
 
-    chatty_conv_switch_active_conversation (conv);
-
     return;
   }
 
   chatty_conv = g_new0 (ChattyConversation, 1);
   conv->ui_data = chatty_conv;
-  chatty_conv->active_conv = conv;
+  chatty_conv->conv = conv;
 
   account = purple_conversation_get_account (conv);
   protocol_id = purple_account_get_protocol_id (account);
@@ -2624,25 +2600,29 @@ chatty_conv_new (PurpleConversation *conv)
 
   if (conv_type == PURPLE_CONV_TYPE_CHAT) {
     chatty_conv_create_muc_list (chatty_conv);
-  }
 
-  // A new SMS contact must be added directly to the
-  // roster, without buddy-request confirmation
-  if (g_strcmp0 (protocol_id, "prpl-mm-sms") == 0) {
-    msg_type = MSG_TYPE_SMS;
-
+    msg_type = CHATTY_MSG_TYPE_MUC;
+  } else if (conv_type == PURPLE_CONV_TYPE_IM) {
+    // Add SMS and IMs from unknown contacts to the chats-list,
+    // but do not add them to the contacts-list and in case of
+    // instant messages do not sync contacts with the server
     conv_name = purple_conversation_get_name (conv);
-
     buddy = purple_find_buddy (account, conv_name);
 
     if (buddy == NULL) {
       buddy = purple_buddy_new (account, conv_name, NULL);
       purple_blist_add_buddy (buddy, NULL, NULL, NULL);
+      // flag the node in the blist so it can be set off in the chats-list
+      purple_blist_node_set_bool (PURPLE_BLIST_NODE(buddy), "chatty-unknown-contact", TRUE);
 
-      g_debug ("Buddy SMS: %s added to roster", purple_buddy_get_name (buddy));
+      g_debug ("Unknown contact %s added to blist", purple_buddy_get_name (buddy));
     }
-  } else {
-    msg_type = MSG_TYPE_IM;
+
+    if (g_strcmp0 (protocol_id, "prpl-mm-sms") == 0) {
+      msg_type = CHATTY_MSG_TYPE_SMS;
+    } else {
+      msg_type = CHATTY_MSG_TYPE_IM;
+    }
   }
 
   chatty_conv->tab_cont = chatty_conv_setup_pane (chatty_conv, msg_type);

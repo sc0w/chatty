@@ -39,9 +39,10 @@ typedef struct {
   GSList            *radio_button_list;
   GtkWidget         *dummy_prefix_radio;
   GtkWidget         *label_contact_id;
-  GtkWidget         *button_chat_info_popup;
-  GtkWidget         *button_chat_info_header;
-  GtkWidget         *separator_chat_info;
+  GtkWidget         *button_menu_chat_info;
+  GtkWidget         *button_menu_add_contact;
+  GtkWidget         *button_header_chat_info;
+  GtkWidget         *separator_menu_msg_view;
 
   struct {
     GtkWidget     *label_chat_id;
@@ -71,6 +72,7 @@ enum {
   CHATTY_PREF_SHOW_OFFLINE,
   CHATTY_PREF_INDICATE_OFFLINE,
   CHATTY_PREF_INDICATE_IDLE,
+  CHATTY_PREF_INDICATE_UNKNOWN,
   CHATTY_PREF_CONVERT_SMILEY,
   CHATTY_PREF_RETURN_SENDS,
   CHATTY_PREF_MUC_NOTIFICATIONS,
