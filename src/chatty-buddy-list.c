@@ -741,11 +741,15 @@ void
 chatty_blist_chat_list_leave_chat (void)
 {
   PurpleBlistNode *node;
+  ChattyBlistNode *ui;
 
   node = _chatty_blist->selected_node;
 
   if (node) {
+    ui = node->ui_data;
+
     purple_blist_node_set_bool (node, "chatty-autojoin", FALSE);
+    purple_conversation_destroy (ui->conv.conv);
   }
 
   if (PURPLE_BLIST_NODE_IS_CHAT(node)) {

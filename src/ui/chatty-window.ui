@@ -25,7 +25,7 @@
         </child>
         <child>
           <object class="GtkModelButton">
-            <property name="visible">True</property>
+            <property name="visible">False</property>
             <property name="can_focus">True</property>
             <property name="receives_default">False</property>
             <property name="action_name">chat_list.direct-chat</property>
