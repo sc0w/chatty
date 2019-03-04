@@ -1,3 +1,16 @@
+chatty (0.0.5) purple; urgency=medium
+
+  * Added "Leave Chat" menu entry
+  * Added handling and settings for messages from unknown users
+  * Added group chat dialog
+  * Fixed crash on conversation with not yet buddies
+  * Added 'Welcome' dialog
+  * Fixed issue #87 'Duplicated Jabber-IDs'
+  * Fixed issue #54 'New accounts should be enabled'
+  * Added bugfix: return to contacts list after new contact has been added 
+
+ -- Andrea Schaefer <andrea@localhost.localdomain>  Mon, 04 Mar 2019 16:13:51 +0100
+
 chatty (0.0.4) purple; urgency=medium
 
   * Wrapped 'Preferences', 'New Direct Chat', 'Edit Account' and 'New Graup Chat' views with HdyDialog
