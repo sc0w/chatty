@@ -108,13 +108,13 @@ cb_tree_view_row_activated (GtkTreeView       *treeview,
       gtk_widget_hide (chatty->separator_menu_msg_view);
     }
 
-
-
     if (g_strcmp0 (protocol_id, "prpl-mm-sms") == 0) {
       color = CHATTY_COLOR_GREEN;
     } else {
       color = CHATTY_COLOR_BLUE;
     }
+
+    purple_blist_node_set_bool (node, "chatty-autojoin", TRUE);
 
     avatar = chatty_icon_get_buddy_icon (node,
                                          buddy_alias,
@@ -543,7 +543,7 @@ cb_auto_join_chats (gpointer data)
       PurpleChat *chat = (PurpleChat*)node;
 
       if (purple_chat_get_account (chat) == account &&
-          purple_blist_node_get_bool(node, "chatty-autojoin")) {
+          purple_blist_node_get_bool (node, "chatty-autojoin")) {
 
         serv_join_chat (purple_account_get_connection (account),
                         purple_chat_get_components (chat));
@@ -729,6 +729,32 @@ chatty_blist_contact_list_add_buddy (void)
 
 
 /**
+ * chatty_blist_chat_list_leave_chat:
+ *
+ * Remove active chat buddy from chats-list
+ *
+ * called from view_msg_list_cmd_leave in
+ * chatty-popover-actions.c
+ *
+ */
+void
+chatty_blist_chat_list_leave_chat (void)
+{
+  PurpleBlistNode *node;
+
+  node = _chatty_blist->selected_node;
+
+  if (node) {
+    purple_blist_node_set_bool (node, "chatty-autojoin", FALSE);
+  }
+
+  if (PURPLE_BLIST_NODE_IS_CHAT(node)) {
+    chatty_blist_chats_remove_node (purple_get_blist(), node, TRUE);
+  }
+}
+
+
+/**
  * chatty_blist_chat_list_remove_buddy:
  *
  * Remove active chat buddy from chats-list
@@ -758,7 +784,6 @@ chatty_blist_chat_list_remove_buddy (void)
 
   if (PURPLE_BLIST_NODE_IS_CHAT(node)) {
     chat = (PurpleChat*)node;
-    //ui = chat->node.ui_data;
     name = purple_chat_get_name (chat);
     text = _("Disconnect group chat");
     sub_text = _("This removes chat from chats list");
@@ -795,16 +820,14 @@ chatty_blist_chat_list_remove_buddy (void)
   if (response == GTK_RESPONSE_OK) {
     if (PURPLE_BLIST_NODE_IS_BUDDY(node)) {
       chatty_conv_delete_message_history (buddy);
-      chatty_window_update_sub_header_titlebar (NULL, "");
-      purple_conversation_destroy (ui->conv.conv);
-    } else if (PURPLE_BLIST_NODE_IS_CHAT(node)) {
-      purple_blist_node_set_bool (node, "chatty-autojoin", FALSE);
-      chatty_blist_chats_remove_node (purple_get_blist(), node, TRUE);
 
-      if (!purple_blist_node_get_bool (node, "chatty-persistent")) {
-        // TODO this segfaults in muc list update
-        //purple_conversation_destroy (ui->conv.conv);
-      }
+      purple_account_remove_buddy (buddy->account, buddy, NULL);
+      purple_blist_remove_buddy (buddy);
+      purple_conversation_destroy (ui->conv.conv);
+
+      chatty_window_update_sub_header_titlebar (NULL, "");
+    } else if (PURPLE_BLIST_NODE_IS_CHAT(node)) {
+      purple_blist_remove_chat (chat);
     }
 
     chatty_window_change_view (CHATTY_VIEW_CHAT_LIST);
@@ -2076,7 +2099,10 @@ chatty_blist_update_buddy (PurpleBuddyList *list,
 
   log_data = chatty_conv_message_get_last_msg (buddy);
 
-  if (log_data != NULL && chatty_blist_buddy_is_displayable (buddy)) {
+  if (purple_blist_node_get_bool (node, "chatty-autojoin") &&
+      chatty_blist_buddy_is_displayable (buddy) &&
+      log_data != NULL) {
+
     ui = node->ui_data;
     ui->conv.last_message = log_data->msg;
     ui->conv.last_message_name = log_data->name;

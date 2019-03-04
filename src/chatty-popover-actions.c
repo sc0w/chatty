@@ -46,6 +46,15 @@ view_msg_list_cmd_delete (GSimpleAction *action,
   chatty_blist_chat_list_remove_buddy ();
 }
 
+
+static void
+view_msg_list_cmd_leave (GSimpleAction *action,
+                          GVariant      *parameter,
+                          gpointer       user_data)
+{
+  chatty_blist_chat_list_leave_chat ();
+}
+
 static void
 view_msg_list_cmd_add_contact (GSimpleAction *action,
                                GVariant      *parameter,
@@ -74,6 +83,7 @@ static const GActionEntry view_chat_list_entries [] =
 static const GActionEntry view_msg_list_entries [] =
 {
   { "add-contact", view_msg_list_cmd_add_contact },
+  { "leave-chat", view_msg_list_cmd_leave },
   { "delete-chat", view_msg_list_cmd_delete },
   { "chat-info", view_msg_list_cmd_chat_info }
 };

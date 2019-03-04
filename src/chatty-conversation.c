@@ -1522,17 +1522,18 @@ chatty_conv_muc_add_user (PurpleConversation  *conv,
     chat_id = purple_conv_chat_get_id (PURPLE_CONV_CHAT(conv));
 
     real_who = prpl_info->get_cb_real_name (gc, chat_id, name);
+
+    if (real_who) {
+      buddy = purple_find_buddy (account, real_who);
+      color = chatty_conv_muc_get_avatar_color (real_who);
+
+      avatar = chatty_icon_get_buddy_icon ((PurpleBlistNode*)buddy,
+                                           alias,
+                                           CHATTY_ICON_SIZE_LARGE,
+                                           color,
+                                           FALSE);
+    }
   }
-
-  buddy = purple_find_buddy (account, real_who);
-
-  color = chatty_conv_muc_get_avatar_color (real_who);
-
-  avatar = chatty_icon_get_buddy_icon ((PurpleBlistNode*)buddy,
-                                       alias,
-                                       CHATTY_ICON_SIZE_LARGE,
-                                       color,
-                                       FALSE);
 
   status = chatty_conv_muc_get_user_status (chat, name, flags);
 
@@ -2161,7 +2162,7 @@ chatty_conv_write_conversation (PurpleConversation *conv,
   gchar                    *msg_html;
   const char               *color;
   gboolean                  group_chat;
-  GdkPixbuf                *avatar;
+  GdkPixbuf                *avatar = NULL;
   GtkWidget                *icon = NULL;
   int                       chat_id;
 
@@ -2184,25 +2185,26 @@ chatty_conv_write_conversation (PurpleConversation *conv,
   {
     prpl_info = PURPLE_PLUGIN_PROTOCOL_INFO(gc->prpl);
 
-    if (prpl_info->get_cb_real_name) {
+    if (prpl_info && prpl_info->get_cb_real_name) {
       chat_id = purple_conv_chat_get_id (PURPLE_CONV_CHAT(conv));
 
       real_who = prpl_info->get_cb_real_name(gc, chat_id, who);
+
+      if (real_who) {
+        buddy = purple_find_buddy (account, real_who);
+        color = chatty_conv_muc_get_avatar_color (real_who);
+
+        avatar = chatty_icon_get_buddy_icon ((PurpleBlistNode*)buddy,
+                                             alias,
+                                             CHATTY_ICON_SIZE_MEDIUM,
+                                             color,
+                                             FALSE);
+
+        icon = gtk_image_new_from_pixbuf (avatar);
+      }
+
+      g_free (real_who);
     }
-
-    buddy = purple_find_buddy (account, real_who);
-
-    color = chatty_conv_muc_get_avatar_color (real_who);
-
-    avatar = chatty_icon_get_buddy_icon ((PurpleBlistNode*)buddy,
-                                         alias,
-                                         CHATTY_ICON_SIZE_MEDIUM,
-                                         color,
-                                         FALSE);
-
-    icon = gtk_image_new_from_pixbuf (avatar);
-
-    g_free (real_who);
   } else {
     group_chat = FALSE;
   }
@@ -2219,15 +2221,11 @@ chatty_conv_write_conversation (PurpleConversation *conv,
 
       g_free (msg_html);
     } else if (flags & PURPLE_MESSAGE_SYSTEM) {
-      msg_html = chatty_conv_check_for_links (message);
-
       chatty_msg_list_add_message (chatty_conv->msg_list,
                                    MSG_IS_SYSTEM,
-                                   msg_html,
+                                   message,
                                    NULL,
                                    NULL);
-
-      g_free (msg_html);
     }
 
     chatty_conv_set_unseen (chatty_conv, CHATTY_UNSEEN_NONE);
