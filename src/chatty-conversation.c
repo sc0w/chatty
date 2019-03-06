@@ -303,7 +303,6 @@ cb_textview_focus_in (GtkWidget *widget,
 
   sc = gtk_widget_get_style_context (GTK_WIDGET(user_data));
 
-  gtk_style_context_remove_class (sc, "msg_entry_defocused");
   gtk_style_context_add_class (sc, "msg_entry_focused");
 
   return FALSE;
@@ -320,7 +319,6 @@ cb_textview_focus_out (GtkWidget *widget,
   sc = gtk_widget_get_style_context (GTK_WIDGET(user_data));
 
   gtk_style_context_remove_class (sc, "msg_entry_focused");
-  gtk_style_context_add_class (sc, "msg_entry_defocused");
 
   return FALSE;
 }
@@ -2524,13 +2522,17 @@ chatty_conv_setup_pane (ChattyConversation *chatty_conv,
       break;
     case CHATTY_MSG_TYPE_IM:
     case CHATTY_MSG_TYPE_IM_E2EE:
-      gtk_style_context_add_class (sc, "button_send_blue");
+      gtk_style_context_add_class (sc, "suggested-action");
       break;
     case CHATTY_MSG_TYPE_UNKNOWN:
       break;
     default:
       break;
   }
+
+  sc = gtk_widget_get_style_context (frame);
+
+  gtk_style_context_add_class (sc, "msg_entry_defocused");
 
   g_signal_connect (chatty_conv->button_send,
                     "clicked",

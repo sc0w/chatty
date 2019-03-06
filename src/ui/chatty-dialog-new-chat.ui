@@ -85,6 +85,7 @@
       <object class="GtkBox">
         <property name="expand">True</property>
         <property name="visible">True</property>
+        <property name="border_width">0</property>
         <child>
           <object class="GtkScrolledWindow">
             <property name="propagate_natural_height">True</property>
