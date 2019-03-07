@@ -1,3 +1,14 @@
+chatty (0.0.6) purple; urgency=medium
+
+  * Set the spinner-widget for account-connection status active again
+  * The first 'Chats' list entry will be selected after leaving/deleting a chat and at application start 
+  * Added HdyLeaflet notification handler for headerbar update
+  * Fixed issue #97 'Unsolicited chats get ignored'
+  * Improved css styling of message panel
+  * Shows 'close' button when leaflet is foldet
+
+ -- Andrea Schaefer <andrea@localhost.localdomain>  Thu, 07 Mar 2019 19:05:43 +0100
+
 chatty (0.0.5) purple; urgency=medium
 
   * Added "Leave Chat" menu entry
