@@ -19,6 +19,8 @@
 
 static chatty_data_t chatty_data;
 
+static void chatty_update_header (void);
+
 static void chatty_back_action (GSimpleAction *action,
                                 GVariant      *parameter,
                                 gpointer       user_data);
@@ -46,6 +48,14 @@ chatty_data_t *chatty_get_data (void)
 
 
 static void
+cb_leaflet_visible_child (GObject       *sender,
+                          GParamSpec    *pspec,
+                          gpointer      *data)
+{
+  chatty_update_header ();
+}
+
+static void
 cb_leaflet_notify_fold (GObject       *sender,
                         GParamSpec    *pspec,
                         gpointer      *data)
@@ -55,6 +65,22 @@ cb_leaflet_notify_fold (GObject       *sender,
   HdyFold fold = hdy_leaflet_get_fold (chatty->header_box);
 
   chatty_blist_chat_list_selection (fold != HDY_FOLD_FOLDED);
+
+  chatty_update_header ();
+}
+
+
+static void
+chatty_update_header (void)
+{
+  chatty_data_t *chatty = chatty_get_data ();
+
+  GtkWidget *header_child = hdy_leaflet_get_visible_child (chatty->header_box);
+  HdyFold fold = hdy_leaflet_get_fold (chatty->header_box);
+
+  g_assert (header_child == NULL || GTK_IS_HEADER_BAR (header_child));
+
+  hdy_header_group_set_focus (chatty->header_group, fold == HDY_FOLD_FOLDED ? GTK_HEADER_BAR (header_child) : NULL);
 }
 
 
@@ -224,6 +250,9 @@ chatty_window_activate (GtkApplication *app,
   gtk_builder_add_callback_symbol (builder,
                                    "cb_leaflet_notify_fold",
                                    G_CALLBACK(cb_leaflet_notify_fold));
+  gtk_builder_add_callback_symbol (builder,
+                                   "cb_leaflet_visible_child",
+                                   G_CALLBACK(cb_leaflet_visible_child));
 
   gtk_builder_connect_signals (builder, NULL);
 
