@@ -48,14 +48,6 @@ cb_account_added (PurpleAccount *account,
 
 
 static void
-cb_account_removed (PurpleAccount *account,
-                    gpointer       user_data)
-{
-  // TODO remove account from liststore
-}
-
-
-static void
 cb_account_enabled_disabled (PurpleAccount *account,
                              gpointer       user_data)
 {
@@ -513,12 +505,6 @@ chatty_account_init (void)
                          NULL);
 
   purple_signal_connect (purple_accounts_get_handle(),
-                         "account-removed",
-                         chatty_account_get_handle(),
-                         PURPLE_CALLBACK (cb_account_removed),
-                         NULL);
-
-  purple_signal_connect (purple_accounts_get_handle(),
                          "account-disabled",
                          chatty_account_get_handle(),
                          PURPLE_CALLBACK(cb_account_enabled_disabled),
@@ -533,7 +519,6 @@ chatty_account_init (void)
   if (!purple_prefs_get_bool ("/purple/savedstatus/startup_current_status")) {
     purple_savedstatus_activate (purple_savedstatus_get_startup ());
   }
-
 
   if (!purple_prefs_get_bool ("/purple/savedstatus/startup_current_status")) {
     purple_savedstatus_activate (purple_savedstatus_get_startup ());

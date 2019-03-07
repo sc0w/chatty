@@ -235,6 +235,7 @@
                 </child>
                 <child>
                   <object class="GtkSpinner" id="header_spinner">
+                    <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="receives_default">False</property>
                   </object>

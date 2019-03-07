@@ -55,6 +55,7 @@ cb_leaflet_visible_child (GObject       *sender,
   chatty_update_header ();
 }
 
+
 static void
 cb_leaflet_notify_fold (GObject       *sender,
                         GParamSpec    *pspec,
