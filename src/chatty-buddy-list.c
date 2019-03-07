@@ -672,6 +672,30 @@ chatty_blist_buddy_is_displayable (PurpleBuddy *buddy)
 
 
 /**
+ * chatty_blist_chat_list_set_row:
+ *
+ * Activate the first entry in the chats list
+ *
+ */
+static void
+chatty_blist_chat_list_set_row (void)
+{
+  GtkTreeIter  iter;
+  GtkTreePath *path;
+  gboolean     result;
+
+  result = gtk_tree_model_get_iter_first (GTK_TREE_MODEL(_chatty_blist->treemodel_chats), &iter);
+
+  if (result) {
+    path = gtk_tree_model_get_path (GTK_TREE_MODEL(_chatty_blist->treemodel_chats), &iter);
+
+    gtk_tree_view_row_activated (_chatty_blist->treeview_chats, path, NULL);
+    gtk_tree_view_set_cursor (_chatty_blist->treeview_chats, path, NULL, FALSE);
+  }
+}
+
+
+/**
  * chatty_blist_chat_list_selection_mode:
  *
  * @select: a gboolean
@@ -687,6 +711,10 @@ chatty_blist_chat_list_selection (gboolean select)
 
   if (_chatty_blist == NULL) {
     return;
+  }
+
+  if (select && _chatty_blist->selected_node == NULL) {
+    chatty_blist_chat_list_set_row ();
   }
 
   sc = gtk_widget_get_style_context (GTK_WIDGET(_chatty_blist->treeview_chats));
@@ -755,6 +783,8 @@ chatty_blist_chat_list_leave_chat (void)
   if (PURPLE_BLIST_NODE_IS_CHAT(node)) {
     chatty_blist_chats_remove_node (purple_get_blist(), node, TRUE);
   }
+
+  chatty_blist_chat_list_set_row ();
 }
 
 
@@ -833,6 +863,8 @@ chatty_blist_chat_list_remove_buddy (void)
     } else if (PURPLE_BLIST_NODE_IS_CHAT(node)) {
       purple_blist_remove_chat (chat);
     }
+
+    chatty_blist_chat_list_set_row ();
 
     chatty_window_change_view (CHATTY_VIEW_CHAT_LIST);
   }
@@ -1307,6 +1339,7 @@ chatty_blist_create_chat_list (PurpleBuddyList *list)
   chatty_data_t     *chatty = chatty_get_data ();
 
   _chatty_blist = CHATTY_BLIST(list);
+  _chatty_blist->selected_node = NULL;
   _chatty_blist->filter_timeout = 0;
   _chatty_blist->treemodel_chats = gtk_list_store_new (NUM_COLUMNS,
                                                        G_TYPE_POINTER,
