@@ -2156,6 +2156,7 @@ chatty_conv_write_conversation (PurpleConversation *conv,
   PurplePluginProtocolInfo *prpl_info = NULL;
   PurpleAccount            *account;
   PurpleBuddy              *buddy;
+  PurpleBlistNode          *node;
   gchar                    *real_who = NULL;
   gchar                    *msg_html;
   const char               *color;
@@ -2204,6 +2205,11 @@ chatty_conv_write_conversation (PurpleConversation *conv,
       g_free (real_who);
     }
   } else {
+    buddy = purple_find_buddy (account, who);
+    node = (PurpleBlistNode*)buddy;
+
+    purple_blist_node_set_bool (node, "chatty-autojoin", TRUE);
+
     group_chat = FALSE;
   }
 
