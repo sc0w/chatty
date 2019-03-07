@@ -519,10 +519,6 @@ chatty_account_init (void)
   if (!purple_prefs_get_bool ("/purple/savedstatus/startup_current_status")) {
     purple_savedstatus_activate (purple_savedstatus_get_startup ());
   }
-
-  if (!purple_prefs_get_bool ("/purple/savedstatus/startup_current_status")) {
-    purple_savedstatus_activate (purple_savedstatus_get_startup ());
-  }
 }
 
 
