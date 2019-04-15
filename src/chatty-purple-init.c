@@ -316,7 +316,16 @@ init_libpurple (void)
 
   if (!purple_core_init (CHATTY_UI)) {
     g_error ("libpurple initialization failed");
+
+    chatty_purple_quit ();
   }
+
+  if (!purple_core_ensure_single_instance ()) {
+		purple_core_quit ();
+		g_error ("Another libpurple client is already running");
+
+    chatty_purple_quit ();
+	}
 
   purple_set_blist (purple_blist_new ());
   purple_prefs_load ();
