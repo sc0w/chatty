@@ -42,5 +42,6 @@ GtkWidget * chatty_dialogs_create_dialog_muc_info (void);
 void chatty_dialogs_show_dialog_new_contact (void);
 void chatty_dialogs_show_dialog_join_muc (void);
 void chatty_dialogs_show_dialog_welcome (gboolean show_label_sms);
+void chatty_dialogs_show_dialog_about_chatty (const char *version);
 
 #endif

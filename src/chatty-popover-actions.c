@@ -39,6 +39,15 @@ view_chat_list_cmd_settings (GSimpleAction *action,
 
 
 static void
+view_chat_list_cmd_about (GSimpleAction *action,
+                          GVariant      *parameter,
+                          gpointer       user_data)
+{
+  chatty_window_change_view (CHATTY_VIEW_ABOUT_CHATTY);
+}
+
+
+static void
 view_msg_list_cmd_delete (GSimpleAction *action,
                           GVariant      *parameter,
                           gpointer       user_data)
@@ -76,7 +85,8 @@ static const GActionEntry view_chat_list_entries [] =
 {
   { "group-chat", view_chat_list_cmd_group_chat },
   { "direct-chat", view_chat_list_cmd_direct_chat },
-  { "settings", view_chat_list_cmd_settings }
+  { "settings", view_chat_list_cmd_settings },
+  { "about", view_chat_list_cmd_about }
 };
 
 

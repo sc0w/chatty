@@ -321,11 +321,11 @@ init_libpurple (void)
   }
 
   if (!purple_core_ensure_single_instance ()) {
-		purple_core_quit ();
-		g_error ("Another libpurple client is already running");
+    purple_core_quit ();
+    g_error ("Another libpurple client is already running");
 
     chatty_purple_quit ();
-	}
+  }
 
   purple_set_blist (purple_blist_new ());
   purple_prefs_load ();
