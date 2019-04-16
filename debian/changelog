@@ -1,3 +1,12 @@
+chatty (0.0.7) purple; urgency=medium
+
+  * Added an application info dialog
+  * Fixed a core dump issue which was caused by invoking another instance of Chatty
+  * Chatty won't start anymore if another libpurple client, like Pidgin, 
+is running already
+
+ -- Andrea Schaefer <andrea@localhost.localdomain>  Tue, 16 Apr 2019 10:12:34 +0200
+
 chatty (0.0.6) purple; urgency=medium
 
   * Set the spinner-widget for account-connection status active again
