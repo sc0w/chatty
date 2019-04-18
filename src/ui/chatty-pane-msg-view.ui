@@ -1,33 +1,33 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
   <requires lib="gtk+" version="3.16"/>
-    <object class="GtkPopoverMenu" id="menu_encryption">
-      <property name="can_focus">False</property>
-      <child>
-        <object class="GtkBox" id="encryption_box">
-          <property name="visible">True</property>
-          <property name="can_focus">False</property>
-          <property name="orientation">vertical</property>
-          <property name="margin">10</property>
-          <child>
-            <object class="GtkRadioButton" id="button_unencrypted">
-              <property name="label" translatable="yes">Unencrypted</property>
-              <property name="visible">True</property>
-              <property name="can_focus">True</property>
-              <property name="receives_default">False</property>
-              <property name="active">True</property>
-              <property name="draw_indicator">True</property>
-            </object>
-            <packing>
-              <property name="expand">False</property>
-              <property name="fill">True</property>
-              <property name="position">0</property>
-            </packing>
-          </child>
-        </object>
-      </child>
-    </object>
-    <object class="GtkBox" id="msg_input_box">
+  <object class="GtkPopoverMenu" id="menu_encryption">
+    <property name="can_focus">False</property>
+    <child>
+      <object class="GtkBox" id="encryption_box">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="orientation">vertical</property>
+        <property name="margin">10</property>
+        <child>
+          <object class="GtkRadioButton" id="button_unencrypted">
+            <property name="label" translatable="yes">Unencrypted</property>
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="receives_default">False</property>
+            <property name="active">True</property>
+            <property name="draw_indicator">True</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+      </object>
+    </child>
+  </object>
+  <object class="GtkBox" id="msg_input_box">
     <property name="orientation">horizontal</property>
     <property name="visible">True</property>
     <property name="margin">6</property>
@@ -60,10 +60,10 @@
             <property name="can_focus">False</property>
             <property name="receives_default">False</property>
             <property name="popover">menu_encryption</property>
-             <style>
-               <class name="button_encrypt"/>
-               <class name="flat"/>
-             </style>
+            <style>
+              <class name="button_encrypt"/>
+              <class name="flat"/>
+            </style>
             <child>
               <object class="GtkImage">
                 <property name="can_focus">False</property>
@@ -75,19 +75,19 @@
         </child>
       </object>
     </child>
-     <child>
-       <object class="GtkButton" id="button_send">
-         <property name="can-focus">False</property>
-         <property name="valign">center</property>
-         <property name="visible">False</property>
-         <child>
-           <object class="GtkImage">
-             <property name="icon-name">mail-send-symbolic</property>
-             <property name="icon-size">1</property>
-             <property name="visible">True</property>
-           </object>
-         </child>
-       </object>
-     </child>
+    <child>
+      <object class="GtkButton" id="button_send">
+        <property name="can-focus">False</property>
+        <property name="valign">center</property>
+        <property name="visible">False</property>
+        <child>
+          <object class="GtkImage">
+            <property name="icon-name">mail-send-symbolic</property>
+            <property name="icon-size">1</property>
+            <property name="visible">True</property>
+          </object>
+        </child>
+      </object>
+    </child>
   </object>
 </interface>
