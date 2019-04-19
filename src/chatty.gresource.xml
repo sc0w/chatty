@@ -12,6 +12,8 @@
     <file>ui/chatty-pane-msg-view.ui</file>
     <file>ui/chatty-window.ui</file>
     <file>icons/ui/send-symbolic.svg</file>
+    <file>icons/ui/xmpp-logo.svg</file>
+    <file>icons/ui/matrix-logo.svg</file>
     <file>css/style.css</file>
   </gresource>
 </gresources>

@@ -559,9 +559,13 @@ chatty_dialogs_create_add_account_view (GtkBuilder *builder)
 {
   GtkWidget  *dialog;
   GtkWidget  *button_back;
+  GtkListBox *list_protocol_sel;
 
   chatty_data_t        *chatty = chatty_get_data ();
   chatty_dialog_data_t *chatty_dialog = chatty_get_dialog_data ();
+
+  list_protocol_sel = GTK_LIST_BOX (gtk_builder_get_object (builder, "list_protocol_sel"));
+  gtk_list_box_set_header_func (list_protocol_sel, hdy_list_box_separator_header, NULL, NULL);
 
   chatty_dialog->button_add_account = GTK_WIDGET (gtk_builder_get_object (builder, "button_add_account"));
   button_back = GTK_WIDGET (gtk_builder_get_object (builder, "button_add_account_back"));
