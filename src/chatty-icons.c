@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+#define G_LOG_DOMAIN "chatty-icons"
 
 #include <glib.h>
 #include <gtk/gtk.h>
@@ -139,6 +140,8 @@ chatty_icon_get_buddy_icon (PurpleBlistNode *node,
   gdouble                    color_g;
   gdouble                    color_b;
 
+  g_debug ("chatty_icon_get_buddy_icon name: %s", name);
+
   // convert colors for drawing the cairo background
   if (color) {
     sub_str = g_utf8_substring (color, 0, 2);
@@ -147,6 +150,8 @@ chatty_icon_get_buddy_icon (PurpleBlistNode *node,
     color_g = (gdouble)g_ascii_strtoll (sub_str, NULL, 16) / 255;
     sub_str = g_utf8_substring (color, 4, 6);
     color_b = (gdouble)g_ascii_strtoll (sub_str, NULL, 16) / 255;
+
+    g_free (sub_str);
   }
 
   // get the buddy and retrieve an icon if available
@@ -251,13 +256,13 @@ chatty_icon_get_buddy_icon (PurpleBlistNode *node,
                                        width,
                                        height);
 
-    if (!buf) {
-      return NULL;
-    }
-
     cairo_surface_destroy (surface);
     cairo_destroy (cr);
     g_free (initial_char);
+  }
+
+  if (!buf) {
+    return NULL;
   }
 
   if (greyed) {
@@ -372,7 +377,7 @@ chatty_icon_get_buddy_icon (PurpleBlistNode *node,
   cairo_surface_destroy (surface);
   cairo_destroy (cr);
 
-  g_object_unref(G_OBJECT(buf));
+  g_object_unref (G_OBJECT(buf));
 
   return ret;
 }

@@ -1452,7 +1452,8 @@ chatty_conv_muc_get_user_status (PurpleConvChat          *chat,
     status = _("Member");
     color_tag = "<span color='#c0c0c0'>";
   } else {
-    return NULL;
+    color_tag = "<span color='#000000'>";
+    status = "";
   }
 
   text = g_strconcat (color_tag, status, "</span>", NULL);
@@ -2198,8 +2199,10 @@ chatty_conv_write_conversation (PurpleConversation *conv,
                                              CHATTY_ICON_SIZE_MEDIUM,
                                              color,
                                              FALSE);
-
-        icon = gtk_image_new_from_pixbuf (avatar);
+        if (avatar) {
+          icon = gtk_image_new_from_pixbuf (avatar);
+          g_object_unref (avatar);
+        }
       }
 
       g_free (real_who);
