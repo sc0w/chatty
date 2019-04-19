@@ -2313,11 +2313,18 @@ chatty_conv_switch_conv (ChattyConversation *chatty_conv)
 static void
 chatty_conv_remove_conv (ChattyConversation *chatty_conv)
 {
+  guint index;
+
   chatty_data_t *chatty = chatty_get_data();
 
-  gtk_notebook_remove_page (GTK_NOTEBOOK(chatty->pane_view_message_list),
-                            gtk_notebook_page_num (GTK_NOTEBOOK(chatty->pane_view_message_list),
-                            chatty_conv->tab_cont));
+  index = gtk_notebook_page_num (GTK_NOTEBOOK(chatty->pane_view_message_list),
+                                 chatty_conv->tab_cont);
+
+  gtk_widget_destroy (GTK_WIDGET(chatty_conv->tab_cont));
+
+  gtk_notebook_remove_page (GTK_NOTEBOOK(chatty->pane_view_message_list), index);
+
+  g_debug ("chatty_conv_remove_conv conv");
 }
 
 
@@ -2703,6 +2710,8 @@ chatty_conv_destroy (PurpleConversation *conv)
   g_hash_table_foreach_remove (ht_sms_id,
                                cb_ht_check_items,
                                chatty_conv->msg_bubble_footer);
+
+  g_debug ("chatty_conv_destroy conv");
 
   g_free (chatty_conv);
 }
