@@ -617,10 +617,10 @@
                                   </object>
                                 </child>
                                 <child>
-                                  <object class="HdyActionRow">
+                                  <object class="HdyActionRow" id="action_row_matrix">
                                     <property name="activatable_widget">radio_button_matrix</property>
                                     <property name="title" translatable="yes">Matrix</property>
-                                    <property name="visible">True</property>
+                                    <property name="visible">False</property>
                                     <child type="prefix">
                                       <object class="GtkRadioButton" id="radio_button_matrix">
                                         <property name="can_focus">True</property>
@@ -697,7 +697,7 @@
                                   <object class="GtkLabel" id="label_server_url">
                                     <property name="label" translatable="yes">Server</property>
                                     <property name="xalign">1</property>
-                                    <property name="visible">False</property>
+                                    <property name="visible" bind-source="radio_button_matrix" bind-property="active" bind-flags="sync-create"/>
                                   </object>
                                   <packing>
                                     <property name="left_attach">0</property>
@@ -709,8 +709,8 @@
                                 <child>
                                   <object class="GtkEntry" id="entry_add_server_url">
                                     <property name="hexpand">True</property>
-                                    <property name="visible">False</property>
-                                    <property name="visibility">False</property>
+                                    <property name="text">https://talk.puri.sm</property>
+                                    <property name="visible" bind-source="radio_button_matrix" bind-property="active" bind-flags="sync-create"/>
                                   </object>
                                   <packing>
                                     <property name="left_attach">1</property>

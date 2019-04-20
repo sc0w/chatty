@@ -24,10 +24,13 @@ typedef struct {
   GtkWidget         *button_save_account;
   GtkWidget         *box_topic_frame;
   GtkWidget         *textview_muc_topic;
+  GtkWidget         *radio_button_xmpp;
+  GtkWidget         *radio_button_matrix;
   const char        *current_topic;
   const char        *new_topic;
   GtkEntry          *entry_account_name;
   GtkEntry          *entry_account_pwd;
+  GtkEntry          *entry_account_server;
   GtkEntry          *entry_contact_name;
   GtkEntry          *entry_contact_nick;
   GtkEntry          *entry_invite_name;

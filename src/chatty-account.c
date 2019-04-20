@@ -177,6 +177,7 @@ chatty_account_add_to_accounts_list (PurpleAccount *account,
 
   // TODO list only SMS and XMPP accounts for the time being
   if ((g_strcmp0 (protocol_id, "prpl-jabber")) != 0 &&
+      (g_strcmp0 (protocol_id, "prpl-matrix")) != 0 &&
       (g_strcmp0 (protocol_id, "prpl-mm-sms")) != 0) {
     return;
   }

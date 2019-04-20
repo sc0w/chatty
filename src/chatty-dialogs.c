@@ -267,10 +267,10 @@ static void
 chatty_entry_contact_name_check (GtkEntry  *entry,
                                  GtkWidget *button)
 {
-  PurpleBuddy    *buddy;
-  const char     *name;
+  PurpleBuddy *buddy;
+  const char  *name;
 
-  chatty_data_t  *chatty = chatty_get_data ();
+  chatty_data_t *chatty = chatty_get_data ();
 
   name = gtk_entry_get_text (entry);
 
@@ -431,21 +431,46 @@ static void
 cb_button_add_account_clicked (GtkButton *sender,
                                gpointer   data)
 {
-  PurpleAccount *account;
-  const gchar   *name;
-  const gchar   *pwd;
+  PurpleAccount   *account;
+  GtkToggleButton *button_xmpp;
+  GtkToggleButton *button_matrix;
+  const gchar     *protocol;
+  const gchar     *name;
+  const gchar     *pwd;
+  const gchar     *server;
+  const gchar     *setting = NULL;
+  const gchar     *value;
 
   chatty_dialog_data_t *chatty_dialog = chatty_get_dialog_data ();
 
   name = gtk_entry_get_text (GTK_ENTRY(chatty_dialog->entry_account_name));
   pwd  = gtk_entry_get_text (GTK_ENTRY(chatty_dialog->entry_account_pwd));
+  server = gtk_entry_get_text (GTK_ENTRY(chatty_dialog->entry_account_server));
 
-  account = purple_account_new (name, "prpl-jabber");
+  button_xmpp = GTK_TOGGLE_BUTTON(chatty_dialog->radio_button_xmpp);
+  button_matrix = GTK_TOGGLE_BUTTON(chatty_dialog->radio_button_matrix);
+
+  if (gtk_toggle_button_get_active (button_xmpp) == TRUE) {
+    protocol = "prpl-jabber";
+  } else if (gtk_toggle_button_get_active (button_matrix) == TRUE) {
+    protocol = "prpl-matrix";
+    setting = "home_server";
+    value = server;
+  }
+
+  account = purple_account_new (name, protocol);
 
   purple_account_set_password (account, pwd);
   purple_account_set_remember_password (account, TRUE);
   purple_account_set_enabled (account, CHATTY_UI, TRUE);
+
+  if (setting) {
+    purple_account_set_string (account, setting, value);
+  }
+
   purple_accounts_add (account);
+
+  chatty_dialogs_reset_settings_dialog ();
 
   gtk_stack_set_visible_child_name (chatty_dialog->stack_panes_settings,
                                     "view-settings");
@@ -475,7 +500,6 @@ cb_button_edit_topic_clicked (GtkToggleButton *sender,
     chatty_dialog->current_topic = gtk_text_buffer_get_text (chatty->muc.msg_buffer_topic,
                                                              &start, &end,
                                                              FALSE);
-
 
     gtk_widget_grab_focus (GTK_WIDGET(chatty_dialog->textview_muc_topic));
 
@@ -557,24 +581,32 @@ chatty_dialogs_reset_invite_contact_dialog (void)
 static void
 chatty_dialogs_create_add_account_view (GtkBuilder *builder)
 {
-  GtkWidget  *dialog;
-  GtkWidget  *button_back;
-  GtkListBox *list_protocol_sel;
+  PurplePlugin *protocol;
+  GtkWidget    *dialog;
+  GtkWidget    *button_back;
+  GtkListBox   *list_protocol_sel;
+  HdyActionRow *action_row_matrix;
 
   chatty_data_t        *chatty = chatty_get_data ();
   chatty_dialog_data_t *chatty_dialog = chatty_get_dialog_data ();
 
-  list_protocol_sel = GTK_LIST_BOX (gtk_builder_get_object (builder, "list_protocol_sel"));
-  gtk_list_box_set_header_func (list_protocol_sel, hdy_list_box_separator_header, NULL, NULL);
-
-  chatty_dialog->button_add_account = GTK_WIDGET (gtk_builder_get_object (builder, "button_add_account"));
   button_back = GTK_WIDGET (gtk_builder_get_object (builder, "button_add_account_back"));
+  list_protocol_sel = GTK_LIST_BOX (gtk_builder_get_object (builder, "list_protocol_sel"));
+  action_row_matrix = HDY_ACTION_ROW (gtk_builder_get_object (builder, "action_row_matrix"));
+  chatty_dialog->button_add_account = GTK_WIDGET (gtk_builder_get_object (builder, "button_add_account"));
+  chatty_dialog->radio_button_xmpp = GTK_WIDGET (gtk_builder_get_object (builder, "radio_button_xmpp"));
+  chatty_dialog->radio_button_matrix = GTK_WIDGET (gtk_builder_get_object (builder, "radio_button_matrix"));
+  chatty_dialog->entry_account_name = GTK_ENTRY (gtk_builder_get_object (builder, "entry_add_account_id"));
+  chatty_dialog->entry_account_pwd = GTK_ENTRY (gtk_builder_get_object (builder, "entry_add_account_pwd"));
+  chatty_dialog->entry_account_server = GTK_ENTRY (gtk_builder_get_object (builder, "entry_add_server_url"));
 
-  chatty_dialog->entry_account_name =
-    GTK_ENTRY (gtk_builder_get_object (builder, "entry_add_account_id"));
+  protocol = purple_find_prpl ("prpl-matrix");
 
-  chatty_dialog->entry_account_pwd =
-    GTK_ENTRY (gtk_builder_get_object (builder, "entry_add_account_pwd"));
+  if (protocol) {
+    gtk_widget_show (GTK_WIDGET(action_row_matrix));
+  }
+
+  gtk_list_box_set_header_func (list_protocol_sel, hdy_list_box_separator_header, NULL, NULL);
 
   g_signal_connect_after (G_OBJECT(chatty_dialog->entry_account_name),
                           "insert_text",
