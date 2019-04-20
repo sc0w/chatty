@@ -1,6 +1,6 @@
 # Chatty
 
-XMPP and SMS messaging via libpurple and Modemmanager
+XMPP, Matrix and SMS messaging via libpurple and Modemmanager
 
 
 ## Build and install
@@ -40,6 +40,14 @@ Please go to the git page where you'll find all the information on how to build 
 [lurch OMEMO plugin](https://github.com/gkdr/lurch)
 
 This can be skipped if encrypted messaging is not needed.
+
+
+### Build and install the 'purple-matrix' plugin
+Please go to the git page where you'll find the necessary information on how to build and install the
+[matrix messenger plugin](https://github.com/matrix-org/purple-matrix)
+
+This can be skipped if matrix messaging is not needed.
+
 
 ### Build Chatty
 ``` bash
