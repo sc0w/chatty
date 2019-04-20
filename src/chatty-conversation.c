@@ -1467,7 +1467,7 @@ chatty_conv_muc_get_user_status (PurpleConvChat          *chat,
  * @conv:     a ChattyConversation
  * @cb:       a PurpleConvChatBuddy
  *
- * Add a users to the muc list
+ * Add a user to the muc list
  *
  * called from chatty_conv_muc_list_add_users
  *
@@ -1490,7 +1490,8 @@ chatty_conv_muc_add_user (PurpleConversation  *conv,
   gchar                    *status;
   const gchar              *text;
   const gchar              *color;
-  gchar                    *tmp, *alias_key, *name, *alias;
+  const gchar              *name, *alias;
+  gchar                    *tmp, *alias_key;
   gchar                    *real_who = NULL;
   PurpleConvChatBuddyFlags  flags;
   int                       chat_id;

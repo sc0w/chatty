@@ -56,7 +56,7 @@ test_c_args = [
   '-Wunused-function',
 ]
 if get_option('buildtype') != 'plain'
-  test_c_args += '-fstack-protector-strong'
+  test_c_args += '-fstack-protector'
 endif
 
 foreach arg: test_c_args

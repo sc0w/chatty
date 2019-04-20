@@ -120,7 +120,7 @@ chatty_icon_get_buddy_icon (PurpleBlistNode *node,
   PurpleBuddy               *buddy = NULL;
   PurpleGroup               *group = NULL;
   const guchar              *data = NULL;
-  GdkPixbuf                 *buf, *ret = NULL;
+  GdkPixbuf                 *buf = NULL, *ret = NULL;
   cairo_format_t             format;
   cairo_surface_t           *surface;
   cairo_t                   *cr;
