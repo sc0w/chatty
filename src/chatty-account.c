@@ -175,9 +175,12 @@ chatty_account_add_to_accounts_list (PurpleAccount *account,
 
   protocol_id = purple_account_get_protocol_id (account);
 
-  // TODO list only SMS and XMPP accounts for the time being
+  // TODO list supported protocols here
   if ((g_strcmp0 (protocol_id, "prpl-jabber")) != 0 &&
       (g_strcmp0 (protocol_id, "prpl-matrix")) != 0 &&
+      (g_strcmp0 (protocol_id, "prpl-telegram")) != 0 &&
+      (g_strcmp0 (protocol_id, "prpl-delta")) != 0 &&
+      (g_strcmp0 (protocol_id, "prpl-threepl")) != 0 &&
       (g_strcmp0 (protocol_id, "prpl-mm-sms")) != 0) {
     return;
   }
