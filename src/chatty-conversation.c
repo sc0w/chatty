@@ -2095,6 +2095,8 @@ chatty_conv_write_chat (PurpleConversation *conv,
                         time_t              mtime)
 {
   purple_conversation_write (conv, who, message, flags, mtime);
+
+  g_debug ("chatty_conv_write_chat who: %s   msg: %s", who, message);
 }
 
 
@@ -2228,6 +2230,16 @@ chatty_conv_write_conversation (PurpleConversation *conv,
                                    icon ? icon : NULL);
 
       g_free (msg_html);
+    } else if (flags & PURPLE_MESSAGE_SEND) {
+      msg_html = chatty_conv_check_for_links (message);
+
+      chatty_msg_list_add_message (chatty_conv->msg_list,
+                                   MSG_IS_OUTGOING,
+                                   msg_html,
+                                   group_chat ? who : NULL,
+                                   NULL);
+
+      g_free (msg_html);
     } else if (flags & PURPLE_MESSAGE_SYSTEM) {
       chatty_msg_list_add_message (chatty_conv->msg_list,
                                    MSG_IS_SYSTEM,
@@ -2239,7 +2251,6 @@ chatty_conv_write_conversation (PurpleConversation *conv,
     chatty_conv_set_unseen (chatty_conv, CHATTY_UNSEEN_NONE);
   }
 }
-
 
 
 /**
