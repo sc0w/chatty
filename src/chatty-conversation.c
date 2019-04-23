@@ -2774,8 +2774,10 @@ chatty_conversations_get_conv_ui_ops (void)
  * Sets the notebook container for the
  * conversation panes
  *
+ * called from chatty_window_init_data()
+ *
  */
-static void
+void
 chatty_conv_container_init (void)
 {
   chatty_data_t *chatty = chatty_get_data();
@@ -2804,8 +2806,6 @@ chatty_conversations_init (void)
 {
   void *handle = chatty_conversations_get_handle ();
   void *blist_handle = purple_blist_get_handle ();
-
-  chatty_conv_container_init ();
 
   purple_prefs_add_none (CHATTY_PREFS_ROOT "/conversations");
   purple_prefs_add_bool (CHATTY_PREFS_ROOT "/conversations/im/show_buddy_icons", TRUE);

@@ -39,6 +39,10 @@ main (int   argc,
     return 0;
   }
 
+  if (!libpurple_init ()) {
+    return 0;
+  }
+
   g_signal_connect (app, "activate", G_CALLBACK (chatty_window_activate), NULL);
   status = g_application_run (G_APPLICATION (app), argc, argv);
   g_object_unref (app);

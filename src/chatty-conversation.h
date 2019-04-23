@@ -99,6 +99,7 @@ void chatty_conv_set_muc_topic (const char *topic_text);
 void chatty_conv_set_muc_prefs (gint pref, gboolean value);
 void chatty_conv_invite_muc_user (const char *user_name, const char *invite_msg);
 void *chatty_conversations_get_handle (void);
+void chatty_conv_container_init (void);
 void chatty_conversations_init (void);
 void chatty_conversations_uninit (void);
 PurpleConversation * chatty_conv_container_get_active_purple_conv (GtkNotebook *notebook);

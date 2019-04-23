@@ -292,14 +292,16 @@ chatty_purple_unload_plugin (const char *name)
 }
 
 
-static void
-init_libpurple (void)
+gint
+libpurple_init (void)
 {
   PurpleAccount *account;
   gchar         *search_path;
   gboolean       debug;
 
   chatty_purple_data_t *chatty_purple = chatty_get_purple_data ();
+
+  signal (SIGCHLD, SIG_IGN);
 
   debug = purple_prefs_get_bool (CHATTY_PREFS_ROOT "/debug/enabled");
   purple_debug_set_enabled (debug);
@@ -315,16 +317,13 @@ init_libpurple (void)
   g_free (search_path);
 
   if (!purple_core_init (CHATTY_UI)) {
-    g_error ("libpurple initialization failed");
-
-    chatty_purple_quit ();
+    g_printerr ("libpurple initialization failed\n");
+    return 0;
   }
 
   if (!purple_core_ensure_single_instance ()) {
-    purple_core_quit ();
-    g_error ("Another libpurple client is already running");
-
-    chatty_purple_quit ();
+    g_printerr ("Another libpurple client is already running\n");
+    return 0;
   }
 
   purple_set_blist (purple_blist_new ());
@@ -364,16 +363,8 @@ init_libpurple (void)
   purple_savedstatus_activate (purple_savedstatus_get_startup());
   purple_accounts_restore_current_statuses ();
 
-  purple_blist_show ();
-}
-
-
-void
-libpurple_start (void) {
-  signal (SIGCHLD, SIG_IGN);
-
-  init_libpurple ();
-
   g_debug ("libpurple initialized. Running version %s.",
            purple_core_get_version ());
+
+  return 1;
 }

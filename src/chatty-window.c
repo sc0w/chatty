@@ -12,6 +12,7 @@
 #include "chatty-window.h"
 #include "chatty-message-list.h"
 #include "chatty-buddy-list.h"
+#include "chatty-conversation.h"
 #include "chatty-account.h"
 #include "chatty-purple-init.h"
 #include "chatty-icons.h"
@@ -172,11 +173,12 @@ chatty_window_init_data (void)
 
   chatty_window_change_view (CHATTY_VIEW_CHAT_LIST);
 
-  // These dialogs need to be created before libpurple_start
+  // These dialogs need to be created before purple_blist_show()
   chatty->dialog_new_chat = chatty_dialogs_create_dialog_new_chat ();
   chatty->dialog_muc_info = chatty_dialogs_create_dialog_muc_info ();
 
-  libpurple_start ();
+  chatty_conv_container_init ();
+  purple_blist_show ();
 
   chatty->dialog_settings = chatty_dialogs_create_dialog_settings ();
 
