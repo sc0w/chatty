@@ -224,7 +224,7 @@ chatty_icon_get_buddy_icon (PurpleBlistNode *node,
     int                  width = 48;
     int                  height = 48;
     double               x_pos, y_pos;
-    char                 tmp[2];
+    char                 tmp[4];
     char                *initial_char;
 
     g_utf8_strncpy (tmp, name, 1);
