@@ -26,6 +26,7 @@ typedef struct {
   GtkWidget         *textview_muc_topic;
   GtkWidget         *radio_button_xmpp;
   GtkWidget         *radio_button_matrix;
+  GtkWidget         *radio_button_telegram;
   const char        *current_topic;
   const char        *new_topic;
   GtkEntry          *entry_account_name;
