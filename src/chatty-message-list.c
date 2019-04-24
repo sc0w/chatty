@@ -705,10 +705,12 @@ chatty_msg_list_add_message (ChattyMsgList *self,
     g_free (str);
   }
 
-  g_signal_emit (self,
-                 signals[SIGNAL_MESSAGE_ADDED],
-                 0,
-                 G_OBJECT(vbox));
+  if (message_dir == MSG_IS_OUTGOING) {
+    g_signal_emit (self,
+                   signals[SIGNAL_MESSAGE_ADDED],
+                   0,
+                   G_OBJECT(vbox));
+  }
 
   chatty_msg_list_hide_header (self);
 

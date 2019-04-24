@@ -128,25 +128,15 @@ cb_msg_list_message_added (ChattyMsgList *sender,
                            GtkWidget     *bubble,
                            gpointer       data)
 {
-  GtkWidget           *child;
-  GList               *children;
   ChattyConversation  *chatty_conv;
 
   chatty_conv  = (ChattyConversation *)data;
 
-  children = gtk_container_get_children (GTK_CONTAINER(bubble));
-
-  do {
-    child = children->data;
-
-    if (g_strcmp0 (gtk_widget_get_name (child), "label-footer") == 0) {
-      chatty_conv->msg_bubble_footer = child;
-    }
-  } while ((children = g_list_next (children)) != NULL);
-
-  children = g_list_first (children);
-  g_list_foreach (children, (GFunc)g_free, NULL);
-  g_list_free (children);
+  if (chatty_conv->msg_bubble_footer != NULL) {
+    gtk_box_pack_start (GTK_BOX(bubble),
+                        chatty_conv->msg_bubble_footer,
+                        FALSE, FALSE, 10);
+  }
 }
 
 
@@ -213,8 +203,8 @@ cb_button_send_clicked (GtkButton *sender,
   PurpleAccount       *account;
   GtkTextIter          start, end;
   gchar               *message = NULL;
-  const gchar         *protocol_id;
   gchar               *footer_str = NULL;
+  const gchar         *protocol_id;
   gchar                sms_id_str[12];
   guint                sms_id;
 
@@ -251,6 +241,10 @@ cb_button_send_clicked (GtkButton *sender,
                             " ✓",
                             "</span></small>",
                             NULL);
+
+  chatty_conv->msg_bubble_footer = GTK_WIDGET(gtk_label_new (NULL));
+  gtk_label_set_markup (GTK_LABEL(chatty_conv->msg_bubble_footer), footer_str);
+  gtk_label_set_xalign (GTK_LABEL(chatty_conv->msg_bubble_footer), 1);
 
   if (gtk_text_buffer_get_char_count (chatty_conv->msg_buffer)) {
     // provide a msg-id to the sms-plugin for send-receipts
@@ -2230,7 +2224,7 @@ chatty_conv_write_conversation (PurpleConversation *conv,
       chatty_msg_list_add_message (chatty_conv->msg_list,
                                    MSG_IS_OUTGOING,
                                    msg_html,
-                                   group_chat ? who : NULL,
+                                   NULL,
                                    NULL);
 
       g_free (msg_html);
@@ -2811,6 +2805,8 @@ chatty_conversations_init (void)
 {
   void *handle = chatty_conversations_get_handle ();
   void *blist_handle = purple_blist_get_handle ();
+
+  chatty_conv_container_init ();
 
   purple_prefs_add_none (CHATTY_PREFS_ROOT "/conversations");
   purple_prefs_add_bool (CHATTY_PREFS_ROOT "/conversations/im/show_buddy_icons", TRUE);

@@ -34,7 +34,7 @@ cb_switch_prefs_state_changed (GtkSwitch *widget,
 {
   switch (GPOINTER_TO_INT(data)) {
     case CHATTY_PREF_SEND_RECEIPTS:
-      purple_prefs_set_bool (CHATTY_PREFS_ROOT "/blist/send_receipts", state);
+      purple_prefs_set_bool (CHATTY_PREFS_ROOT "/conversations/send_receipts", state);
       break;
     case CHATTY_PREF_MESSAGE_CARBONS:
       if (state) {
