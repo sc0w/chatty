@@ -15,6 +15,7 @@
 #include <handy.h>
 
 typedef struct {
+  GtkApplication    *app;
   GtkWindow         *main_window;
   HdyLeaflet        *content_box;
   HdyLeaflet        *header_box;

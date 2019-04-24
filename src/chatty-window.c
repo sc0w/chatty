@@ -177,8 +177,7 @@ chatty_window_init_data (void)
   chatty->dialog_new_chat = chatty_dialogs_create_dialog_new_chat ();
   chatty->dialog_muc_info = chatty_dialogs_create_dialog_muc_info ();
 
-  chatty_conv_container_init ();
-  purple_blist_show ();
+  libpurple_init ();
 
   chatty->dialog_settings = chatty_dialogs_create_dialog_settings ();
 
@@ -210,6 +209,8 @@ chatty_window_activate (GtkApplication *app,
   GtkCssProvider     *cssProvider = gtk_css_provider_new();
 
   chatty_data_t *chatty = chatty_get_data ();
+
+  chatty->app = app;
 
   builder = gtk_builder_new_from_resource ("/sm/puri/chatty/ui/chatty-window.ui");
 
