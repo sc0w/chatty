@@ -1909,7 +1909,7 @@ chatty_blist_chats_update_node (PurpleBuddy     *buddy,
     chatty_icon_do_alphashift (avatar, 77);
   }
 
-  if ((g_strcmp0 (chatty_node->conv.last_message_name, b_name)) == 0) {
+  if ((g_strcmp0 (chatty_node->conv.last_message_name, alias)) == 0) {
     tag = "";
   } else {
     tag = _("Me: ");

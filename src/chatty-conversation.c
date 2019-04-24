@@ -253,12 +253,6 @@ cb_button_send_clicked (GtkButton *sender,
                             NULL);
 
   if (gtk_text_buffer_get_char_count (chatty_conv->msg_buffer)) {
-    chatty_msg_list_add_message (chatty_conv->msg_list,
-                                 MSG_IS_OUTGOING,
-                                 message,
-                                 footer_str,
-                                 NULL);
-
     // provide a msg-id to the sms-plugin for send-receipts
     if (g_strcmp0 (protocol_id, "prpl-mm-sms") == 0) {
       sms_id = g_random_int ();
