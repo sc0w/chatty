@@ -1859,7 +1859,6 @@ chatty_blist_chats_update_node (PurpleBuddy     *buddy,
   gchar         *name = NULL;
   const gchar   *tag;
   const gchar   *alias;
-  const gchar   *b_name;
   const gchar   *protocol_id;
   gchar         *last_msg_text = NULL;
   gchar         *last_msg_ts = NULL;
@@ -1880,7 +1879,6 @@ chatty_blist_chats_update_node (PurpleBuddy     *buddy,
 
   protocol_id = purple_account_get_protocol_id (account);
 
-  b_name = purple_buddy_get_name (buddy);
   alias = purple_buddy_get_alias (buddy);
 
   if (g_strcmp0 (protocol_id, "prpl-mm-sms") == 0) {
