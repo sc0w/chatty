@@ -610,7 +610,8 @@ cb_chatty_cmd (PurpleConversation  *conv,
 {
   char *msg = NULL;
 
-  if (!g_strcmp0 (args[0], "help")) {
+
+  if (args[0] == NULL || !g_strcmp0 (args[0], "help")) {
     msg = g_strdup ("Commands for setting properties:\n\n"
                     "General settings:\n"
                     " - '/chatty help': Displays this message.\n"
@@ -679,6 +680,9 @@ cb_chatty_cmd (PurpleConversation  *conv,
       msg = g_strdup ("emoticons will not be converted");
     }
   }
+
+  g_debug("@DEBUG@ cb_chatty_cmd");
+  g_debug("%s", args[0]);
 
   if (msg) {
     purple_conversation_write (conv,
