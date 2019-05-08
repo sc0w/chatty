@@ -4,7 +4,6 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-#define HANDY_USE_UNSTABLE_API
 #include <glib.h>
 #include <glib/gi18n.h>
 #include <stdlib.h>
@@ -12,7 +11,6 @@
 #include <math.h>
 #include <cairo.h>
 #include "chatty-message-list.h"
-#include <handy.h>
 
 #define INDICATOR_WIDTH   60
 #define INDICATOR_HEIGHT  40
@@ -783,7 +781,7 @@ static void chatty_msg_list_size_allocate(GtkWidget *widget, GtkAllocation *allo
 
   GTK_WIDGET_CLASS (chatty_msg_list_parent_class)->size_allocate (widget, allocation);
 
-  g_autoptr (GList) children = gtk_container_get_children (GTK_CONTAINER (widget));
+  GList *children = gtk_container_get_children (GTK_CONTAINER (widget));
   scroll = GTK_SCROLLED_WINDOW (g_list_first(children)->data);
 
   view = GTK_VIEWPORT(gtk_bin_get_child (GTK_BIN(scroll)));
