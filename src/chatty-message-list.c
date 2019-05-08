@@ -772,16 +772,17 @@ chatty_msg_list_constructed (GObject *object)
 static void chatty_msg_list_size_allocate(GtkWidget *widget, GtkAllocation *allocation){
 
   GtkScrolledWindow *scroll;
-  GtkViewport *view;
-  GtkListBox *list;
-  GtkListBoxRow *row;
-  GtkRevealer *revealer;
-  GtkBox *hbox, *vbox;
-  GtkAllocation hbox_allocation;
+  GtkViewport       *view;
+  GtkListBox        *list;
+  GtkListBoxRow     *row;
+  GtkRevealer       *revealer;
+  GtkBox            *hbox, *vbox;
+  GtkAllocation     hbox_allocation;
+  GList             *children;
 
   GTK_WIDGET_CLASS (chatty_msg_list_parent_class)->size_allocate (widget, allocation);
 
-  GList *children = gtk_container_get_children (GTK_CONTAINER (widget));
+  children = gtk_container_get_children (GTK_CONTAINER (widget));
   scroll = GTK_SCROLLED_WINDOW (g_list_first(children)->data);
 
   view = GTK_VIEWPORT(gtk_bin_get_child (GTK_BIN(scroll)));
