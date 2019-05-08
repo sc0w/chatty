@@ -17,6 +17,7 @@
 #define INDICATOR_WIDTH   60
 #define INDICATOR_HEIGHT  40
 #define INDICATOR_MARGIN   2
+#define MSG_BUBBLE_MAX_RATIO .3
 
 #define LONGPRESS_TIMEOUT 2000
 
@@ -778,8 +779,6 @@ static void chatty_msg_list_size_allocate(GtkWidget *widget, GtkAllocation *allo
   GtkListBoxRow *row;
   GtkRevealer *revealer;
   GtkBox *hbox, *vbox;
-  GtkEventBox *ebox;
-  GtkLabel *label;
   GtkAllocation hbox_allocation;
 
   GTK_WIDGET_CLASS (chatty_msg_list_parent_class)->size_allocate (widget, allocation);
@@ -801,21 +800,15 @@ static void chatty_msg_list_size_allocate(GtkWidget *widget, GtkAllocation *allo
       children = gtk_container_get_children (GTK_CONTAINER (hbox));
       vbox = GTK_BOX(g_list_first (children)->data);
 
-      children = gtk_container_get_children (GTK_CONTAINER (vbox));
-      ebox = GTK_EVENT_BOX(g_list_first (children)->data);
-
-      label = GTK_LABEL(gtk_bin_get_child (GTK_BIN(ebox)));
-
       gtk_widget_get_clip (GTK_WIDGET(hbox), &hbox_allocation);
 
       if(!strcmp ("incoming", gtk_widget_get_name (GTK_WIDGET(row)))){
-        gtk_widget_set_margin_end(GTK_WIDGET(vbox), hbox_allocation.width*.333);
-      }else if(!strcmp ("outcoming", gtk_widget_get_name (GTK_WIDGET(row)))){
-        gtk_widget_set_margin_start(GTK_WIDGET(vbox), hbox_allocation.width*.333);
+        gtk_widget_set_margin_end(GTK_WIDGET(vbox), hbox_allocation.width * MSG_BUBBLE_MAX_RATIO);
       }
-
+      else if(!strcmp ("outcoming", gtk_widget_get_name (GTK_WIDGET(row)))){
+        gtk_widget_set_margin_start(GTK_WIDGET(vbox), hbox_allocation.width * MSG_BUBBLE_MAX_RATIO);
+      }
     }
-
   }
 
 }
