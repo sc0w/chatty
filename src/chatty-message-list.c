@@ -780,8 +780,6 @@ static void chatty_msg_list_size_allocate(GtkWidget *widget, GtkAllocation *allo
   GtkAllocation     hbox_allocation;
   GList             *children;
 
-  GTK_WIDGET_CLASS (chatty_msg_list_parent_class)->size_allocate (widget, allocation);
-
   children = gtk_container_get_children (GTK_CONTAINER (widget));
   scroll = GTK_SCROLLED_WINDOW (g_list_first(children)->data);
 
@@ -810,6 +808,7 @@ static void chatty_msg_list_size_allocate(GtkWidget *widget, GtkAllocation *allo
     }
   }
 
+  GTK_WIDGET_CLASS (chatty_msg_list_parent_class)->size_allocate (widget, allocation);
 }
 
 static void
