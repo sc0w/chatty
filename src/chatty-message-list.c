@@ -4,7 +4,6 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-
 #include <glib.h>
 #include <glib/gi18n.h>
 #include <stdlib.h>
@@ -16,6 +15,7 @@
 #define INDICATOR_WIDTH   60
 #define INDICATOR_HEIGHT  40
 #define INDICATOR_MARGIN   2
+#define MSG_BUBBLE_MAX_RATIO .3
 
 #define LONGPRESS_TIMEOUT 2000
 
@@ -639,10 +639,6 @@ chatty_msg_list_add_message (ChattyMsgList *self,
   gtk_label_set_line_wrap_mode (label_msg, PANGO_WRAP_WORD_CHAR);
   gtk_label_set_use_markup (GTK_LABEL(label_msg), TRUE);
 
-  // TODO adjust num_chars dynamically to scale labels
-  //      according to widget width
-  gtk_label_set_max_width_chars (label_msg, 22);
-
   gtk_widget_get_size_request (GTK_WIDGET(label_msg), &width, &height);
 
   ebox = gtk_event_box_new ();
@@ -669,15 +665,23 @@ chatty_msg_list_add_message (ChattyMsgList *self,
       gtk_box_pack_start (box, GTK_WIDGET(icon), FALSE, TRUE, 4);
     }
 
+    // Set name to identify the row in size_allocate
+    gtk_widget_set_name (GTK_WIDGET(row), "incoming");
+
     gtk_box_pack_start (box, GTK_WIDGET(vbox), FALSE, TRUE, 8);
     style = "bubble_white";
   } else if (message_dir == MSG_IS_OUTGOING) {
+    // Set name to identify the row in size_allocate
+    gtk_widget_set_name (GTK_WIDGET(row), "outcoming");
+
     gtk_box_pack_end (box, GTK_WIDGET(vbox), FALSE, FALSE, 8);
     style = "bubble_blue";
   } else if (message_dir == MSG_IS_SYSTEM) {
     gtk_box_pack_start (box, GTK_WIDGET(vbox), TRUE, TRUE, 8);
     style = "bubble_purple";
   }
+
+
 
   if (message_dir == MSG_IS_OUTGOING && priv->message_type == CHATTY_MSG_TYPE_SMS) {
     style = "bubble_green";
@@ -765,6 +769,47 @@ chatty_msg_list_constructed (GObject *object)
                                   G_ACTION_GROUP (simple_action_group));
 }
 
+static void chatty_msg_list_size_allocate(GtkWidget *widget, GtkAllocation *allocation){
+
+  GtkScrolledWindow *scroll;
+  GtkViewport       *view;
+  GtkListBox        *list;
+  GtkListBoxRow     *row;
+  GtkRevealer       *revealer;
+  GtkBox            *hbox, *vbox;
+  GtkAllocation     hbox_allocation;
+  GList             *children;
+
+  children = gtk_container_get_children (GTK_CONTAINER (widget));
+  scroll = GTK_SCROLLED_WINDOW (g_list_first(children)->data);
+
+  view = GTK_VIEWPORT(gtk_bin_get_child (GTK_BIN(scroll)));
+  list = GTK_LIST_BOX(gtk_bin_get_child (GTK_BIN(view)));
+
+  children = gtk_container_get_children (GTK_CONTAINER (list));
+
+  for (GList *l = children; l != NULL; l = g_list_next (l)){
+    row = l->data;
+    revealer = GTK_REVEALER (gtk_bin_get_child(GTK_BIN(row)));
+    if(revealer != NULL){
+      hbox = GTK_BOX(gtk_bin_get_child (GTK_BIN(revealer)));
+
+      children = gtk_container_get_children (GTK_CONTAINER (hbox));
+      vbox = GTK_BOX(g_list_first (children)->data);
+
+      gtk_widget_get_clip (GTK_WIDGET(hbox), &hbox_allocation);
+
+      if(!strcmp ("incoming", gtk_widget_get_name (GTK_WIDGET(row)))){
+        gtk_widget_set_margin_end(GTK_WIDGET(vbox), hbox_allocation.width * MSG_BUBBLE_MAX_RATIO);
+      }
+      else if(!strcmp ("outcoming", gtk_widget_get_name (GTK_WIDGET(row)))){
+        gtk_widget_set_margin_start(GTK_WIDGET(vbox), hbox_allocation.width * MSG_BUBBLE_MAX_RATIO);
+      }
+    }
+  }
+
+  GTK_WIDGET_CLASS (chatty_msg_list_parent_class)->size_allocate (widget, allocation);
+}
 
 static void
 chatty_msg_list_class_init (ChattyMsgListClass *klass)
@@ -777,7 +822,7 @@ chatty_msg_list_class_init (ChattyMsgListClass *klass)
   object_class->set_property = chatty_msg_list_set_property;
   object_class->get_property = chatty_msg_list_get_property;
 
-  //widget_class->size_allocate = chatty_msg_list_size_allocate;
+  widget_class->size_allocate = chatty_msg_list_size_allocate;
 
   props[PROP_TYPE] =
     g_param_spec_int ("message_type",
