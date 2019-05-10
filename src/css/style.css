@@ -65,6 +65,10 @@
   color: white;
 }
 
+.box_message {
+  background-color: @theme_base_color;
+}
+
 .list_no_select:selected {
   background-color: white;
 }
