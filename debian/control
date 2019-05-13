@@ -11,7 +11,7 @@ Build-Depends:
  libpurple-dev,
  meson,
 Standards-Version: 4.2.1
-Homepage: https://code.puri.sm/guido.gunther/chatty
+Homepage: https://source.puri.sm/Librem5/chatty
 
 Package: chatty
 Architecture: any
