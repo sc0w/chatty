@@ -164,6 +164,25 @@ chatty_window_update_sub_header_titlebar (GdkPixbuf  *icon,
 }
 
 
+void
+chatty_window_welcome_screen_show (gboolean show)
+{
+  chatty_data_t *chatty = chatty_get_data ();
+
+  if (show) {
+    gtk_widget_show (GTK_WIDGET(chatty->box_welcome_overlay));
+  } else {
+    gtk_widget_hide (GTK_WIDGET(chatty->box_welcome_overlay));
+  }
+
+  if (purple_accounts_find ("SMS", "prpl-mm-sms")) {
+    gtk_widget_show (GTK_WIDGET(chatty->label_welcome_overlay_sms));
+  } else {
+    gtk_widget_hide (GTK_WIDGET(chatty->label_welcome_overlay_sms));
+  }
+}
+
+
 static void
 chatty_window_init_data (void)
 {
@@ -187,13 +206,7 @@ chatty_window_init_data (void)
                                 chatty->search_entry_chats);
 
   if (purple_prefs_get_bool (CHATTY_PREFS_ROOT "/status/first_start")) {
-
-    if (purple_accounts_find ("SMS", "prpl-mm-sms")) {
-      chatty_dialogs_show_dialog_welcome (TRUE);
-    } else {
-      chatty_dialogs_show_dialog_welcome (FALSE);
-    }
-
+    chatty_window_welcome_screen_show (TRUE);
     purple_prefs_set_bool (CHATTY_PREFS_ROOT "/status/first_start", FALSE);
   }
 }
@@ -250,6 +263,9 @@ chatty_window_activate (GtkApplication *app,
   chatty->content_box = HDY_LEAFLET (gtk_builder_get_object (builder, "content_box"));
   chatty->header_box = HDY_LEAFLET (gtk_builder_get_object (builder, "header_box"));
   chatty->header_group = HDY_HEADER_GROUP (gtk_builder_get_object (builder, "header_group"));
+
+  chatty->box_welcome_overlay = GTK_BOX (gtk_builder_get_object (builder, "welcome_overlay"));
+  chatty->label_welcome_overlay_sms = GTK_WIDGET (gtk_builder_get_object (builder, "label_sms"));
 
   chatty->pane_view_message_list = GTK_WIDGET (gtk_builder_get_object (builder, "pane_view_message_list"));
   chatty->pane_view_chat_list = GTK_BOX (gtk_builder_get_object (builder, "pane_view_chat_list"));

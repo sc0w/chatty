@@ -1887,6 +1887,11 @@ chatty_blist_chats_update_node (PurpleBuddy     *buddy,
     color = CHATTY_COLOR_BLUE;
   }
 
+  if (!purple_prefs_get_bool (CHATTY_PREFS_ROOT "/status/first_start")) {
+     chatty_window_welcome_screen_show (FALSE);
+     purple_prefs_set_bool (CHATTY_PREFS_ROOT "/status/first_start", FALSE);
+  }
+
   if (purple_prefs_get_bool (CHATTY_PREFS_ROOT "/blist/greyout_offline_buddies") &&
       !PURPLE_BUDDY_IS_ONLINE(buddy)) {
 

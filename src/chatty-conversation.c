@@ -321,8 +321,7 @@ cb_textview_key_pressed (GtkWidget   *widget,
   if (!purple_prefs_get_bool (CHATTY_PREFS_ROOT "/conversations/return_sends")) {
     return FALSE;
   }
-
-  if (!key_event->state & GDK_SHIFT_MASK && key_event->keyval == GDK_KEY_Return) {
+  if (!(key_event->state & GDK_SHIFT_MASK) && key_event->keyval == GDK_KEY_Return) {
     cb_button_send_clicked (NULL, data);
 
     return TRUE;
@@ -652,6 +651,9 @@ cb_chatty_cmd (PurpleConversation  *conv,
     } else if (!g_strcmp0 (args[0], "emoticons")) {
       purple_prefs_set_bool (CHATTY_PREFS_ROOT "/conversations/convert_emoticons", TRUE);
       msg = g_strdup ("Emoticons will be converted");
+    } else if (!g_strcmp0 (args[0], "welcome")) {
+      purple_prefs_set_bool (CHATTY_PREFS_ROOT "/status/first_start", TRUE);
+      msg = g_strdup ("Welcome screen has been reset");
     }
   } else if (!g_strcmp0 (args[1], "off")) {
     if (!g_strcmp0 (args[0], "return_sends")) {
@@ -2207,7 +2209,9 @@ chatty_conv_write_conversation (PurpleConversation *conv,
     buddy = purple_find_buddy (account, who);
     node = (PurpleBlistNode*)buddy;
 
-    purple_blist_node_set_bool (node, "chatty-autojoin", TRUE);
+    if (node) {
+      purple_blist_node_set_bool (node, "chatty-autojoin", TRUE);
+    }
 
     group_chat = FALSE;
   }
@@ -2483,8 +2487,8 @@ chatty_conv_setup_pane (ChattyConversation *chatty_conv,
   GtkBuilder      *builder;
   GtkWidget       *scrolled;
   GtkAdjustment   *vadjust;
-  GtkWidget       *vbox;
-  GtkWidget       *box;
+  GtkWidget       *msg_view_box;
+  GtkWidget       *msg_view_list;
   GtkWidget       *frame;
   GtkStyleContext *sc;
 
@@ -2495,7 +2499,8 @@ chatty_conv_setup_pane (ChattyConversation *chatty_conv,
 
   chatty_conv->msg_entry = GTK_WIDGET(gtk_builder_get_object (builder, "text_input"));
 
-  box = GTK_WIDGET(gtk_builder_get_object (builder, "msg_input_box"));
+  msg_view_box = GTK_WIDGET(gtk_builder_get_object (builder, "msg_view_box"));
+  msg_view_list = GTK_WIDGET(gtk_builder_get_object (builder, "msg_view_list"));
   frame = GTK_WIDGET(gtk_builder_get_object (builder, "frame"));
   scrolled = GTK_WIDGET(gtk_builder_get_object (builder, "scrolled"));
   chatty_conv->button_send = GTK_WIDGET(gtk_builder_get_object (builder, "button_send"));
@@ -2509,8 +2514,6 @@ chatty_conv_setup_pane (ChattyConversation *chatty_conv,
 
   chatty_conv->msg_scrolled = scrolled;
   chatty_conv->msg_frame = frame;
-
-  vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
 
   chatty_conv->msg_buffer = gtk_text_buffer_new (NULL);
   gtk_text_view_set_buffer (GTK_TEXT_VIEW(chatty_conv->msg_entry),
@@ -2571,15 +2574,13 @@ chatty_conv_setup_pane (ChattyConversation *chatty_conv,
                     G_CALLBACK(cb_msg_list_message_added),
                     (gpointer) chatty_conv);
 
-  gtk_box_pack_start (GTK_BOX (vbox),
+  gtk_box_pack_start (GTK_BOX (msg_view_list),
                       GTK_WIDGET (chatty_conv->msg_list),
                       TRUE, TRUE, 0);
 
-  gtk_box_pack_start (GTK_BOX (vbox), box, FALSE, FALSE, 0);
+  gtk_widget_show_all (msg_view_box);
 
-  gtk_widget_show_all (vbox);
-
-  return vbox;
+  return msg_view_box;
 }
 
 

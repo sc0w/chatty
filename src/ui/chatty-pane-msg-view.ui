@@ -21,73 +21,134 @@
           <packing>
             <property name="expand">False</property>
             <property name="fill">True</property>
-            <property name="position">0</property>
           </packing>
         </child>
       </object>
     </child>
   </object>
-  <object class="GtkBox" id="msg_input_box">
-    <property name="orientation">horizontal</property>
+  <object class="GtkBox" id="msg_view_box">
+    <property name="orientation">vertical</property>
     <property name="visible">True</property>
-    <property name="margin">6</property>
-    <property name="spacing">6</property>
+    <property name="can_focus">False</property>
     <child>
-      <object class="GtkBox" id="frame">
-        <property name="orientation">horizontal</property>
+      <object class="GtkBox">
+        <property name="orientation">vertical</property>
         <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <style>
+          <class name="box_message"/>
+        </style>
         <child>
-          <object class="GtkScrolledWindow" id="scrolled">
-            <property name="max_content_height">90</property>
-            <property name="propagate_natural_height">True</property>
+          <object class="HdyColumn" >
             <property name="visible">True</property>
-            <child>
-              <object class="GtkTextView" id="text_input">
-                <property name="can_focus">True</property>
-                <property name="hexpand">True</property>
-                <property name="margin">6</property>
-                <property name="wrap-mode">GTK_WRAP_WORD_CHAR</property>
-                <property name="valign">center</property>
-                <property name="visible">True</property>
-              </object>
-            </child>
-          </object>
-        </child>
-        <child>
-          <object class="GtkMenuButton" id="button_encrypt">
-            <property name="visible">False</property>
-            <property name="no-show-all">True</property>
             <property name="can_focus">False</property>
-            <property name="receives_default">False</property>
-            <property name="popover">menu_encryption</property>
-            <style>
-              <class name="button_encrypt"/>
-              <class name="flat"/>
-            </style>
+            <property name="maximum-width">640</property>
+            <property name="linear-growth-width">640</property>
             <child>
-              <object class="GtkImage">
+              <object class="GtkBox" id="msg_view_list">
+                <property name="orientation">vertical</property>
+                <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="icon_name">changes-allow-symbolic</property>
+                <child>
+                </child>
                 <property name="visible">True</property>
               </object>
             </child>
           </object>
+          <packing>
+            <property name="expand">True</property>
+            <property name="fill">True</property>
+          </packing>
         </child>
       </object>
+      <packing>
+        <property name="expand">True</property>
+        <property name="fill">True</property>
+      </packing>
     </child>
     <child>
-      <object class="GtkButton" id="button_send">
-        <property name="can-focus">False</property>
-        <property name="valign">center</property>
-        <property name="visible">False</property>
+      <object class="GtkBox">
+        <property name="orientation">horizontal</property>
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="margin">6</property>
         <child>
-          <object class="GtkImage">
-            <property name="icon-name">mail-send-symbolic</property>
-            <property name="icon-size">1</property>
+          <object class="HdyColumn">
             <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="maximum-width">600</property>
+            <property name="linear-growth-width">600</property>
+            <child>
+              <object class="GtkBox">
+                <property name="orientation">horizontal</property>
+                <property name="visible">True</property>
+                <property name="spacing">6</property>
+                <child>
+                  <object class="GtkBox" id="frame">
+                    <property name="orientation">horizontal</property>
+                    <property name="visible">True</property>
+                    <child>
+                      <object class="GtkScrolledWindow" id="scrolled">
+                        <property name="max_content_height">90</property>
+                        <property name="propagate_natural_height">True</property>
+                        <property name="visible">True</property>
+                        <child>
+                          <object class="GtkTextView" id="text_input">
+                            <property name="can_focus">True</property>
+                            <property name="hexpand">True</property>
+                            <property name="margin">6</property>
+                            <property name="wrap-mode">GTK_WRAP_WORD_CHAR</property>
+                            <property name="valign">center</property>
+                            <property name="visible">True</property>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkMenuButton" id="button_encrypt">
+                        <property name="visible">False</property>
+                        <property name="no-show-all">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="receives_default">False</property>
+                        <property name="popover">menu_encryption</property>
+                        <style>
+                          <class name="button_encrypt"/>
+                          <class name="flat"/>
+                        </style>
+                        <child>
+                          <object class="GtkImage">
+                            <property name="can_focus">False</property>
+                            <property name="icon_name">changes-allow-symbolic</property>
+                            <property name="visible">True</property>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkButton" id="button_send">
+                    <property name="can-focus">False</property>
+                    <property name="valign">center</property>
+                    <property name="visible">False</property>
+                    <child>
+                      <object class="GtkImage">
+                        <property name="icon-name">mail-send-symbolic</property>
+                        <property name="icon-size">1</property>
+                        <property name="visible">True</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+              </object>
+            </child>
           </object>
         </child>
       </object>
+      <packing>
+        <property name="expand">False</property>
+        <property name="fill">True</property>
+      </packing>
     </child>
   </object>
 </interface>

@@ -1072,36 +1072,6 @@ chatty_dialogs_show_dialog_join_muc (void)
 
 
 void
-chatty_dialogs_show_dialog_welcome (gboolean show_label_sms)
-{
-  GtkBuilder *builder;
-  GtkWidget  *dialog;
-  GtkWidget  *label_sms;
-
-  chatty_data_t *chatty = chatty_get_data ();
-
-  builder = gtk_builder_new_from_resource ("/sm/puri/chatty/ui/chatty-dialog-welcome.ui");
-
-  label_sms = GTK_WIDGET (gtk_builder_get_object (builder, "label_sms"));
-
-  if (show_label_sms) {
-    gtk_widget_show (label_sms);
-  }
-
-  dialog = GTK_WIDGET (gtk_builder_get_object (builder, "dialog"));
-
-  gtk_window_set_transient_for (GTK_WINDOW(dialog),
-                                GTK_WINDOW(chatty->main_window));
-
-  gtk_dialog_run (GTK_DIALOG(dialog));
-
-
-  gtk_widget_destroy (dialog);
-  g_object_unref (builder);
-}
-
-
-void
 chatty_dialogs_show_dialog_about_chatty (const char *version)
 {
   GtkBuilder *builder;

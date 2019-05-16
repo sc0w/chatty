@@ -43,30 +43,9 @@ cb_account_added (PurpleAccount *account,
 {
   chatty_data_t *chatty = chatty_get_data ();
 
+  chatty_window_welcome_screen_show (FALSE);
+
   chatty_account_populate_account_list (chatty->list_manage_account, LIST_MANAGE_ACCOUNT);
-}
-
-
-static void
-cb_account_enabled_disabled (PurpleAccount *account,
-                             gpointer       user_data)
-{
-  HdyActionRow *row;
-  GtkWidget    *widget;
-  int           i;
-
-  chatty_data_t *chatty = chatty_get_data ();
-
-  do {
-    row = HDY_ACTION_ROW(gtk_list_box_get_row_at_index (chatty->list_manage_account, i++));
-
-    if (row != 0) {
-      if (g_object_get_data (G_OBJECT(row), "row-account") == account) {
-        widget = hdy_action_row_get_activatable_widget (row);
-        gtk_switch_set_state (GTK_SWITCH(widget), GPOINTER_TO_INT(user_data));
-      }
-    }
-  } while (row != NULL);
 }
 
 
@@ -206,7 +185,7 @@ chatty_account_add_to_accounts_list (PurpleAccount *account,
     hdy_action_row_set_title (row, purple_account_get_username (account));
     hdy_action_row_set_subtitle (row, purple_account_get_protocol_name (account));
     hdy_action_row_add_action (row, GTK_WIDGET(switch_account_enabled));
-    hdy_action_row_set_activatable_widget (row, GTK_WIDGET(switch_account_enabled));
+    hdy_action_row_set_activatable_widget (row, NULL);
   } else {
     prefix_radio_button = gtk_radio_button_new_from_widget (GTK_RADIO_BUTTON(chatty->dummy_prefix_radio));
     gtk_widget_show (GTK_WIDGET(prefix_radio_button));
@@ -508,17 +487,6 @@ chatty_account_init (void)
                          PURPLE_CALLBACK (cb_account_added),
                          NULL);
 
-  purple_signal_connect (purple_accounts_get_handle(),
-                         "account-disabled",
-                         chatty_account_get_handle(),
-                         PURPLE_CALLBACK(cb_account_enabled_disabled),
-                         GINT_TO_POINTER(FALSE));
-
-  purple_signal_connect (purple_accounts_get_handle(),
-                         "account-enabled",
-                         chatty_account_get_handle(),
-                         PURPLE_CALLBACK(cb_account_enabled_disabled),
-                         GINT_TO_POINTER(TRUE));
 
   if (!purple_prefs_get_bool ("/purple/savedstatus/startup_current_status")) {
     purple_savedstatus_activate (purple_savedstatus_get_startup ());

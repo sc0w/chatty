@@ -44,6 +44,8 @@ typedef struct {
   GtkWidget         *button_menu_add_contact;
   GtkWidget         *button_header_chat_info;
   GtkWidget         *separator_menu_msg_view;
+  GtkBox            *box_welcome_overlay;
+  GtkWidget         *label_welcome_overlay_sms;
 
   struct {
     GtkWidget     *label_chat_id;
@@ -100,6 +102,7 @@ typedef enum {
 } ChattyWindowMessageMode;
 
 void chatty_window_change_view (guint state);
+void chatty_window_welcome_screen_show (gboolean show);
 void chatty_window_activate (GtkApplication* app, gpointer user_data);
 void chatty_window_update_sub_header_titlebar (GdkPixbuf  *icon, const char *title);
 
