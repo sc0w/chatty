@@ -2209,7 +2209,9 @@ chatty_conv_write_conversation (PurpleConversation *conv,
     buddy = purple_find_buddy (account, who);
     node = (PurpleBlistNode*)buddy;
 
-    purple_blist_node_set_bool (node, "chatty-autojoin", TRUE);
+    if (node) {
+      purple_blist_node_set_bool (node, "chatty-autojoin", TRUE);
+    }
 
     group_chat = FALSE;
   }
