@@ -374,44 +374,153 @@
             <property name="hexpand">False</property>
             <property name="kinetic-scrolling">True</property>
             <child>
-              <object class="GtkBox">
+              <object class="GtkOverlay">
                 <property name="visible">True</property>
-                <property name="orientation">vertical</property>
                 <property name="can_focus">False</property>
-                <property name="expand">True</property>
-                <child>
-                  <object class="HdySearchBar" id="search_bar_chats">
-                    <property name="visible">True</property>
+                <child type="overlay">
+                  <object class="GtkBox" id="welcome_overlay">
+                    <property name="visible">False</property>
                     <property name="can_focus">False</property>
-                    <property name="halign">fill</property>
-                    <property name="valign">start</property>
-                    <property name="hexpand">True</property>
-                    <property name="show-close-button">False</property>
-                    <property name="search-mode-enabled">False</property>
+                    <property name="halign">center</property>
+                    <property name="valign">center</property>
+                    <property name="expand">True</property>
+                    <property name="orientation">vertical</property>
                     <child>
-                      <object class="HdyColumn">
+                      <object class="GtkImage">
                         <property name="visible">True</property>
-                        <property name="hexpand">True</property>
-                        <property name="maximum-width">600</property>
+                        <property name="can_focus">False</property>
+                        <property name="valign">center</property>
+                        <property name="margin_top">60</property>
+                        <property name="margin_bottom">36</property>
+                        <property name="pixel_size">128</property>
+                        <property name="icon_name">sm.puri.Chatty-symbolic</property>
+                        <property name="icon_size">0</property>
+                        <style>
+                          <class name="dim-label"/>
+                        </style>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkBox">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="orientation">vertical</property>
+                        <property name="margin_start">36</property>
+                        <property name="margin_end">36</property>
+                        <property name="expand">True</property>
                         <child>
-                          <object class="GtkSearchEntry" id="search_entry_chats">
+                          <object class="GtkLabel">
                             <property name="visible">True</property>
-                            <property name="hexpand">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="opacity">0.5</property>
+                            <property name="halign">center</property>
+                            <property name="margin_bottom">12</property>
+                            <property name="label" translatable="yes">Start chatting</property>
+                            <property name="justify">center</property>
+                            <property name="wrap">True</property>
+                            <attributes>
+                              <attribute name="weight" value="bold"/>
+                              <attribute name="scale" value="2"/>
+                            </attributes>
                           </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkLabel" id="label_sms">
+                            <property name="visible">False</property>
+                            <property name="can_focus">False</property>
+                            <property name="opacity">0.5</property>
+                            <property name="margin_top">24</property>
+                            <property name="label" translatable="yes">&lt;b&gt;SMS Chat&lt;/b&gt; is set up by default. Start a chat with the "+" button in the titlebar.</property>
+                            <property name="xalign">0</property>
+                            <property name="justify">left</property>
+                            <property name="wrap">True</property>
+                            <property name="use_markup">True</property>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkLabel">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="opacity">0.5</property>
+                            <property name="margin_top">24</property>
+                            <property name="margin_bottom">64</property>
+                            <property name="label" translatable="yes">Add &lt;b&gt;Instant Messaging&lt;/b&gt; by selecting &lt;i&gt;"Add new account"&lt;/i&gt; in the preferences.</property>
+                            <property name="xalign">0</property>
+                            <property name="justify">left</property>
+                            <property name="wrap">True</property>
+                            <property name="use_markup">True</property>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">2</property>
+                          </packing>
                         </child>
                       </object>
+                      <packing>
+                        <property name="expand">True</property>
+                        <property name="fill">True</property>
+                        <property name="position">1</property>
+                      </packing>
                     </child>
                   </object>
                 </child>
                 <child>
-                  <object class="GtkBox" id="pane_view_chat_list">
+                  <object class="GtkBox">
                     <property name="visible">True</property>
+                    <property name="orientation">vertical</property>
                     <property name="can_focus">False</property>
-                  </object>
-                  <packing>
                     <property name="expand">True</property>
-                    <property name="fill">True</property>
-                  </packing>
+                    <child>
+                      <object class="HdySearchBar" id="search_bar_chats">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="halign">fill</property>
+                        <property name="valign">start</property>
+                        <property name="hexpand">True</property>
+                        <property name="show-close-button">False</property>
+                        <property name="search-mode-enabled">False</property>
+                        <child>
+                          <object class="HdyColumn">
+                            <property name="visible">True</property>
+                            <property name="hexpand">True</property>
+                            <property name="maximum-width">600</property>
+                            <child>
+                              <object class="GtkSearchEntry" id="search_entry_chats">
+                                <property name="visible">True</property>
+                                <property name="hexpand">True</property>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkBox" id="pane_view_chat_list">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                      </object>
+                      <packing>
+                        <property name="expand">True</property>
+                        <property name="fill">True</property>
+                      </packing>
+                    </child>
+                  </object>
                 </child>
               </object>
             </child>

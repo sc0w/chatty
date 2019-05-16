@@ -651,6 +651,9 @@ cb_chatty_cmd (PurpleConversation  *conv,
     } else if (!g_strcmp0 (args[0], "emoticons")) {
       purple_prefs_set_bool (CHATTY_PREFS_ROOT "/conversations/convert_emoticons", TRUE);
       msg = g_strdup ("Emoticons will be converted");
+    } else if (!g_strcmp0 (args[0], "welcome")) {
+      purple_prefs_set_bool (CHATTY_PREFS_ROOT "/status/first_start", TRUE);
+      msg = g_strdup ("Welcome screen has been reset");
     }
   } else if (!g_strcmp0 (args[1], "off")) {
     if (!g_strcmp0 (args[0], "return_sends")) {
