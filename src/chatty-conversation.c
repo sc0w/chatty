@@ -15,6 +15,7 @@
 #include "chatty-purple-init.h"
 #include "chatty-message-list.h"
 #include "chatty-conversation.h"
+#include "chatty-history.h"
 
 
 #define MAX_MSGS 50
@@ -2161,6 +2162,8 @@ chatty_conv_write_conversation (PurpleConversation *conv,
   GtkWidget                *icon = NULL;
   int                       chat_id;
 
+  g_debug("@LELAND@: chatty_conv_write_conversation %s", message); //TODO: LELAND: Remove
+
   chatty_conv = CHATTY_CONVERSATION (conv);
 
   g_return_if_fail (chatty_conv != NULL);
@@ -2199,8 +2202,6 @@ chatty_conv_write_conversation (PurpleConversation *conv,
           g_object_unref (avatar);
         }
       }
-
-      g_free (real_who);
     }
   } else {
     buddy = purple_find_buddy (account, who);
@@ -2220,7 +2221,8 @@ chatty_conv_write_conversation (PurpleConversation *conv,
                                    msg_html,
                                    group_chat ? who : NULL,
                                    icon ? icon : NULL);
-
+      chatty_history_add_message (chat_id, message, 1, real_who, "UID", mtime);
+                                                                                // TODO: LELAND: UID to be implemented by XEP-0313
       g_free (msg_html);
     } else if (flags & PURPLE_MESSAGE_SEND) {
       msg_html = chatty_conv_check_for_links (message);
@@ -2230,7 +2232,7 @@ chatty_conv_write_conversation (PurpleConversation *conv,
                                    msg_html,
                                    NULL,
                                    NULL);
-
+      chatty_history_add_message (chat_id, message, -1, real_who, "UID", mtime);
       g_free (msg_html);
     } else if (flags & PURPLE_MESSAGE_SYSTEM) {
       chatty_msg_list_add_message (chatty_conv->msg_list,
@@ -2238,10 +2240,13 @@ chatty_conv_write_conversation (PurpleConversation *conv,
                                    message,
                                    NULL,
                                    NULL);
+      chatty_history_add_message (chat_id, message, 0, real_who, "UID", mtime);
     }
 
     chatty_conv_set_unseen (chatty_conv, CHATTY_UNSEEN_NONE);
   }
+
+  g_free (real_who);
 }
 
 
