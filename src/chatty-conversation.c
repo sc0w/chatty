@@ -320,8 +320,7 @@ cb_textview_key_pressed (GtkWidget   *widget,
   if (!purple_prefs_get_bool (CHATTY_PREFS_ROOT "/conversations/return_sends")) {
     return FALSE;
   }
-
-  if (!key_event->state & GDK_SHIFT_MASK && key_event->keyval == GDK_KEY_Return) {
+  if (!(key_event->state & GDK_SHIFT_MASK) && key_event->keyval == GDK_KEY_Return) {
     cb_button_send_clicked (NULL, data);
 
     return TRUE;
