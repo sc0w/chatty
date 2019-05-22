@@ -8,6 +8,10 @@
 #ifndef __CONVERSATION_H_INCLUDE__
 #define __CONVERSATION_H_INCLUDE__
 
+#include <gtk/gtk.h>
+#include <gtk/gtkwidget.h>
+#include "purple.h"
+#include "chatty-message-list.h"
 
 typedef struct chatty_log                ChattyLog;
 typedef struct chatty_conversation       ChattyConversation;

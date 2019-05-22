@@ -7,8 +7,6 @@
 
 #define G_LOG_DOMAIN "chatty-conversation"
 
-#include "purple.h"
-#include <glib.h>
 #include <glib/gi18n.h>
 #include "chatty-window.h"
 #include "chatty-icons.h"
@@ -1045,6 +1043,42 @@ chatty_conv_delete_message_history (PurpleBuddy *buddy)
   return TRUE;
 }
 
+static void
+chatty_conv_get_im_messages_cb(char* msg, int time_stamp, int direction, ChattyConversation *chatty_conv){
+  gchar   *msg_html;
+  guint    msg_dir;
+  char    *ts = (char*) malloc(50*sizeof(char)); // TODO: LELAND: Set a max depending on the format and make it a #define
+
+  sprintf(ts, "%d", time_stamp);
+
+  if (direction == 1) {
+    msg_dir = MSG_IS_INCOMING;
+  } else if(direction == -1){
+    msg_dir = MSG_IS_OUTGOING;
+  } else {
+    msg_dir = MSG_IS_SYSTEM; // TODO: LELAND: Do we have this case for IMs?
+  }
+
+  msg_html = chatty_conv_check_for_links (msg);
+
+  if (msg_html[0] != '\0') {
+    chatty_msg_list_add_message (chatty_conv->msg_list,
+                                 msg_dir,
+                                 msg_html,
+                                 ts, // TODO: LELAND: Format? And shows only for the last message!
+                                 NULL);
+  }
+
+
+  g_free (msg_html);
+
+
+  g_object_set_data (G_OBJECT (chatty_conv->msg_entry),
+                     "attach-start-time",
+                     NULL);
+
+
+}
 
 /**
  * chatty_conv_add_message_history_to_conv:
@@ -1057,28 +1091,9 @@ chatty_conv_delete_message_history (PurpleBuddy *buddy)
 static gboolean
 chatty_conv_add_message_history_to_conv (gpointer data)
 {
-  // TODO
-  // this parser for the purple log files is
-  // just a tentative solution.
-  // Parsing the purple logfile data is cumbersome, and
-  // Chatty needs special log functionality for the
-  // send reports anyway. Also for infinite scrolling
-  // and for just pulling particular data, the logging
-  // should be built around a sqlLite database.
-
-  GList         *msgs = NULL;
-  ChattyLog     *log_data = NULL;
   PurpleAccount *account;
-  PurpleBuddy *buddy;
-  g_autofree gchar *name = NULL;
   const gchar   *conv_name;
-  const gchar   *b_name;
-  gchar         *time_stamp;
-  gchar         *msg_html;
-  GList         *history = NULL;
-  guint          msg_dir;
   gboolean       im;
-  g_auto(GStrv) line_split = NULL;
   ChattyConversation *chatty_conv = data;
 
   im = (chatty_conv->conv->type == PURPLE_CONV_TYPE_IM);
@@ -1090,84 +1105,13 @@ chatty_conv_add_message_history_to_conv (gpointer data)
     conv_name = purple_conversation_get_name (chatty_conv->conv);
     account = purple_conversation_get_account (chatty_conv->conv);
 
-    history = purple_log_get_logs (PURPLE_LOG_IM, conv_name, account);
-
-    if (history == NULL) {
-      g_list_free (history);
-      return FALSE;
-    }
-
-    buddy = purple_find_buddy (account, conv_name);
-    if (!buddy) {
-      /* Not in buddy list yet */
-      b_name = conv_name;
-    } else {
-      b_name = purple_buddy_get_alias (buddy);
-    }
-
-    line_split = g_strsplit (b_name, "/", -1);
-    name = g_strdup (line_split[0]);
-
-    // limit the log-list to MAX_MSGS msgs since we currently have no
-    // infinite scrolling implemented
-    for (int i = 0; history && i < MAX_MSGS; history = history->next) {
-      g_auto(GStrv) logs = NULL;
-      g_autofree gchar *read_log = purple_log_read ((PurpleLog*)history->data, NULL);
-      g_autofree gchar *stripped = purple_markup_strip_html (read_log);
-
-      logs = g_strsplit (stripped, "\n", -1);
-
-      for (int num = g_strv_length (logs) - 1; num >= 0; num--) {
-        log_data = chatty_conv_parse_message (logs[num]);
-
-        if (log_data) {
-          i++;
-          msgs = g_list_prepend (msgs, (gpointer)log_data);
-        }
-      }
-    }
-
-    g_list_foreach (history, (GFunc)purple_log_free, NULL);
-    g_list_free (history);
-
-    for (; msgs; msgs = msgs->next) {
-      log_data = msgs->data;
-
-      if (msgs == (g_list_last (msgs))) {
-        time_stamp = log_data->time_stamp;
-      } else {
-        time_stamp = NULL;
-      }
-
-      if ((g_strcmp0 (log_data->name, name)) == 0) {
-        msg_dir = MSG_IS_INCOMING;
-      } else {
-        msg_dir = MSG_IS_OUTGOING;
-      }
-
-      msg_html = chatty_conv_check_for_links (log_data->msg);
-
-      if (msg_html[0] != '\0') {
-        chatty_msg_list_add_message (chatty_conv->msg_list,
-                                     msg_dir,
-                                     msg_html,
-                                     time_stamp,
-                                     NULL);
-      }
-
-      g_free (msg_html);
-    }
-
-    g_list_foreach (msgs, (GFunc)g_free, NULL);
-    g_list_free (msgs);
+    chatty_history_get_im_messages (account->username, conv_name, chatty_conv_get_im_messages_cb, chatty_conv); // TODO: LELAND: Infinite, not lazy by now
   }
-
-  g_object_set_data (G_OBJECT (chatty_conv->msg_entry),
-                     "attach-start-time",
-                     NULL);
 
   return FALSE;
 }
+
+
 
 
 /**
@@ -2163,8 +2107,9 @@ chatty_conv_write_conversation (PurpleConversation *conv,
   GdkPixbuf                *avatar = NULL;
   GtkWidget                *icon = NULL;
   int                       chat_id;
-
-  g_debug("@LELAND@: chatty_conv_write_conversation %s", message); //TODO: LELAND: Remove
+  const char               *conv_name;
+  g_auto(GStrv)            line_split = NULL;
+  g_autofree gchar         *who_= NULL;
 
   chatty_conv = CHATTY_CONVERSATION (conv);
 
@@ -2173,6 +2118,8 @@ chatty_conv_write_conversation (PurpleConversation *conv,
   if ((flags & PURPLE_MESSAGE_SYSTEM) && !(flags & PURPLE_MESSAGE_NOTIFY)) {
     flags &= ~(PURPLE_MESSAGE_SEND | PURPLE_MESSAGE_RECV);
   }
+
+  conv_name = purple_conversation_get_name (chatty_conv->conv);
 
   account = purple_conversation_get_account (conv);
   g_return_if_fail (account != NULL);
@@ -2217,6 +2164,11 @@ chatty_conv_write_conversation (PurpleConversation *conv,
   }
 
   if (*message != '\0') {
+
+    // TODO: LELAND: Fix this. Does purple exposes this directly?
+    line_split = g_strsplit (who, "/", -1);
+    who_ = g_strdup(line_split[0]);
+
     if (flags & PURPLE_MESSAGE_RECV) {
       msg_html = chatty_conv_check_for_links (message);
 
@@ -2225,8 +2177,11 @@ chatty_conv_write_conversation (PurpleConversation *conv,
                                    msg_html,
                                    group_chat ? who : NULL,
                                    icon ? icon : NULL);
-      chatty_history_add_message (chat_id, message, 1, real_who, "UID", mtime);
-                                                                                // TODO: LELAND: UID to be implemented by XEP-0313
+      if (type == PURPLE_CONV_TYPE_CHAT){
+        chatty_history_add_chat_message (chat_id, message, 1, real_who, "UID", mtime, conv_name);  // TODO: LELAND: UID to be implemented by XEP-0313
+      } else {
+        chatty_history_add_im_message (message, 1, account->username, who_, "UID", mtime);
+      }
       g_free (msg_html);
     } else if (flags & PURPLE_MESSAGE_SEND) {
       msg_html = chatty_conv_check_for_links (message);
@@ -2236,7 +2191,11 @@ chatty_conv_write_conversation (PurpleConversation *conv,
                                    msg_html,
                                    NULL,
                                    NULL);
-      chatty_history_add_message (chat_id, message, -1, real_who, "UID", mtime);
+      if (type == PURPLE_CONV_TYPE_CHAT){
+        chatty_history_add_chat_message (chat_id, message, -1, real_who, "UID", mtime, conv_name);
+      } else {
+        chatty_history_add_im_message (message, -1, account->username, who_, "UID", mtime);
+      }
       g_free (msg_html);
     } else if (flags & PURPLE_MESSAGE_SYSTEM) {
       chatty_msg_list_add_message (chatty_conv->msg_list,
@@ -2244,7 +2203,11 @@ chatty_conv_write_conversation (PurpleConversation *conv,
                                    message,
                                    NULL,
                                    NULL);
-      chatty_history_add_message (chat_id, message, 0, real_who, "UID", mtime);
+      if (type == PURPLE_CONV_TYPE_CHAT){
+        chatty_history_add_chat_message (chat_id, message, 0, real_who, "UID", mtime, conv_name);
+      } else {
+        chatty_history_add_im_message (message, 0, account->username, who_, "UID", mtime);
+      }
     }
 
     chatty_conv_set_unseen (chatty_conv, CHATTY_UNSEEN_NONE);
