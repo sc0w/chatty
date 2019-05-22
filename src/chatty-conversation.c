@@ -2166,6 +2166,7 @@ chatty_conv_write_conversation (PurpleConversation *conv,
   if (*message != '\0') {
 
     // TODO: LELAND: Fix this. Does purple exposes this directly?
+    // TODO: Should we store the resource ?
     line_split = g_strsplit (who, "/", -1);
     who_ = g_strdup(line_split[0]);
 

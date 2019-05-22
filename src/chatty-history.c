@@ -77,8 +77,8 @@ static void
 chatty_history_create_schemas(void)
 {
 
-  chatty_history_create_chat_schema();
-  //chatty_history_create_im_schema(); // TODO: LELAND: Define chat schema
+  //chatty_history_create_chat_schema();
+  chatty_history_create_im_schema(); // TODO: LELAND: Define chat schema
 
 }
 
