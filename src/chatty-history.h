@@ -20,6 +20,7 @@ void chatty_history_add_chat_message(int         conv_id,
                                      const char *stanza,
                                      int         direction,
                                      const char *jid,
+                                     const char *alias,
                                      const char *uid,
                                      time_t      m_time,
                                      const char *conv_name);
@@ -39,5 +40,10 @@ void chatty_history_get_im_messages(const char* account,
                                     const char* jid,
                                     void (*callback)(char* msg, int direction, int time_stamp, ChattyConversation *chatty_conv),
                                     ChattyConversation *chatty_conv);
+
+void
+chatty_history_get_chat_messages(const char* conv_name,
+                               void (*callback)(char* msg, int direction, int time_stamp, char* from, char *alias, ChattyConversation *chatty_conv),
+                               ChattyConversation *chatty_conv);
 
 #endif

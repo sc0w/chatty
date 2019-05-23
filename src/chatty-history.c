@@ -23,14 +23,14 @@ chatty_history_create_chat_schema(void)
     "id                 INTEGER     NOT NULL    PRIMARY KEY AUTOINCREMENT," \
     "timestamp          INTEGER     NOT_NULL    UNIQUE,"  \
     "direction          INTEGER     NOT NULL," \
-    "conv_id            INTEGER     NOT NULL," \
+    "conv_name          TEXT,"  \
     "jid                TEXT        NOT_NULL," \
+    "alias              TEXT,"  \
     "uid                TEXT        NOT_NULL," \
-    "message            TEXT," \
-    "conv_name          TEXT" \
-
+    "message            TEXT" \
     ");";
   // TODO: LELAND: 'uid' to be implemented by XEP-0313. By now, using timestamp as UNIQUE to avoid dups in db
+  // TODO: LELAND: Should 'alias' be NOT NULL?
 
   rc = sqlite3_exec(db, sql, NULL, NULL, &zErrMsg);
 
@@ -77,7 +77,7 @@ static void
 chatty_history_create_schemas(void)
 {
 
-  //chatty_history_create_chat_schema();
+  chatty_history_create_chat_schema();
   chatty_history_create_im_schema(); // TODO: LELAND: Define chat schema
 
 }
@@ -127,12 +127,13 @@ chatty_history_close(void)
 
 void
 chatty_history_add_chat_message(int         conv_id,
-                           const char *message,
-                           int         direction,
-                           const char *jid,
-                           const char *uid,
-                           time_t      mtime,
-                           const char *conv_name)
+                            const char *message,
+                            int         direction,
+                            const char *jid,
+                            const char *alias,
+                            const char *uid,
+                            time_t      mtime,
+                            const char *conv_name)
 {
 
   sqlite3_stmt *stmt;
@@ -145,10 +146,7 @@ chatty_history_add_chat_message(int         conv_id,
   if (Err != SQLITE_OK)
       g_debug("Error preparing %d", Err);
 
-  Err = sqlite3_bind_int(stmt, 4, conv_id);
-  if (Err != SQLITE_OK)
-      g_debug("Error binding"); //TODO: LELAND: Handle errors
-  Err = sqlite3_bind_text(stmt, 7, message, -1, SQLITE_TRANSIENT);
+  Err = sqlite3_bind_text(stmt, 8, message, -1, SQLITE_TRANSIENT);
   if (Err != SQLITE_OK)
       g_debug("Error binding");//TODO: LELAND: Handle errors
   Err = sqlite3_bind_int(stmt, 3, direction);
@@ -157,17 +155,20 @@ chatty_history_add_chat_message(int         conv_id,
   Err = sqlite3_bind_text(stmt, 5, jid, -1, SQLITE_TRANSIENT);
   if (Err != SQLITE_OK)
       g_debug("Error binding");//TODO: LELAND: Handle errors
-  Err = sqlite3_bind_text(stmt, 6, uid, -1, SQLITE_TRANSIENT);
+  Err = sqlite3_bind_text(stmt, 7, uid, -1, SQLITE_TRANSIENT);
   if (Err != SQLITE_OK)
       g_debug("Error binding");//TODO: LELAND: Handle errors
   Err = sqlite3_bind_int64(stmt, 2, mtime); // TODO: LELAND: Do we need human readable format?
                                             // TODO: LELAND: Do we need a local tstamp?
   if (Err != SQLITE_OK)
       g_debug("Error binding");//TODO: LELAND: Handle errors
-  Err = sqlite3_bind_text(stmt, 8, conv_name, -1, SQLITE_TRANSIENT);
+  Err = sqlite3_bind_text(stmt, 4, conv_name, -1, SQLITE_TRANSIENT);
   if (Err != SQLITE_OK)
       g_debug("Error binding");//TODO: LELAND: Handle errors
-
+  Err = sqlite3_bind_text(stmt, 6, alias, -1, SQLITE_TRANSIENT);
+  if (Err != SQLITE_OK)
+      g_debug("Error binding");//TODO: LELAND: Handle errors
+                               //
   Err = sqlite3_step(stmt);
   if (Err != SQLITE_DONE)//TODO: LELAND: Handle errors
   {
@@ -234,6 +235,46 @@ chatty_history_add_im_message(
   }
 
   Err = sqlite3_finalize(stmt);//TODO: LELAND: Handle errors
+
+}
+
+
+void
+chatty_history_get_chat_messages(const char* conv_name,
+                               void (*callback)(char* msg, int direction, int time_stamp, char *from, char *alias, ChattyConversation *chatty_conv),
+                               ChattyConversation *chatty_conv)
+{
+
+  int Err;
+  sqlite3_stmt *stmt;
+  char *msg;
+  int time_stamp;
+  int direction;
+  char *from;
+  char *alias;
+
+  // TODO: LELAND: Watch out sqli!
+
+  Err = sqlite3_prepare_v2(db, "SELECT * FROM chatty_chat WHERE conv_name=(?)", -1, &stmt, NULL);
+  if (Err != SQLITE_OK)
+      g_debug("Error preparing %d", Err); //TODO: LELAND: Handle errors
+
+  Err = sqlite3_bind_text(stmt, 1, conv_name, -1, SQLITE_TRANSIENT);
+  if (Err != SQLITE_OK)
+      g_debug("Error binding");//TODO: LELAND: Handle errors
+
+  while ((sqlite3_step(stmt)) == SQLITE_ROW) {
+      time_stamp = sqlite3_column_int(stmt, 1);
+      direction = sqlite3_column_int(stmt, 2);
+      msg = sqlite3_column_text(stmt, 7);
+      from = sqlite3_column_text(stmt, 4);
+      alias = sqlite3_column_text(stmt, 5);
+      callback(msg, time_stamp, direction, from, alias, chatty_conv);
+  }
+
+  Err = sqlite3_finalize(stmt);//TODO: LELAND: Handle errors
+  if (Err != SQLITE_OK)
+      g_debug("Error finalizing");//TODO: LELAND: Handle errors
 
 }
 

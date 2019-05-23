@@ -1011,6 +1011,27 @@ chatty_conv_message_get_last_msg (PurpleBuddy *buddy)
 
 
 /**
+ * chatty_conv_muc_get_avatar_color:
+ * @user_id: a const char
+ *
+ * Picks a color for muc user avatars
+ *
+ */
+static gchar *
+chatty_conv_muc_get_avatar_color (const char *user_id)
+{
+  const char   *color;
+  guint   hash = 0U;
+
+  hash = g_str_hash (user_id);
+
+  color = avatar_colors[hash % G_N_ELEMENTS (avatar_colors)];
+
+  return g_strdup (color);
+}
+
+
+/**
  * chatty_conv_delete_message_history:
  * @buddy: a PurpleBuddy
  *
@@ -1071,6 +1092,7 @@ chatty_conv_get_im_messages_cb(char* msg, int time_stamp, int direction, ChattyC
 
 
   g_free (msg_html);
+  free(ts);
 
 
   g_object_set_data (G_OBJECT (chatty_conv->msg_entry),
@@ -1079,6 +1101,73 @@ chatty_conv_get_im_messages_cb(char* msg, int time_stamp, int direction, ChattyC
 
 
 }
+
+
+static void
+chatty_conv_get_chat_messages_cb(char* msg, int time_stamp, int direction, char* from, char *alias, ChattyConversation *chatty_conv){
+  gchar   *msg_html;
+  PurpleBuddy              *buddy;
+  const char               *color;
+  GdkPixbuf                *avatar = NULL;
+  GtkWidget                *icon = NULL;
+  PurpleAccount            *account;
+
+  msg_html = chatty_conv_check_for_links (msg);
+
+  if (msg_html[0] != '\0') {
+
+    if (direction == 1) {
+      msg_html = chatty_conv_check_for_links (msg);
+
+      account = purple_conversation_get_account (chatty_conv->conv);
+      buddy = purple_find_buddy (account, from);
+      color = chatty_conv_muc_get_avatar_color (from);
+
+      avatar = chatty_icon_get_buddy_icon ((PurpleBlistNode*)buddy,
+                                           alias,
+                                           CHATTY_ICON_SIZE_MEDIUM,
+                                           color,
+                                           FALSE);
+      if (avatar) {
+        icon = gtk_image_new_from_pixbuf (avatar);
+        g_object_unref (avatar);
+      }
+
+      chatty_msg_list_add_message (chatty_conv->msg_list,
+                                   MSG_IS_INCOMING,
+                                   msg_html,
+                                   from,
+                                   icon ? icon : NULL);
+
+    } else if (direction == -1) {
+      msg_html = chatty_conv_check_for_links (msg);
+
+      chatty_msg_list_add_message (chatty_conv->msg_list,
+                                   MSG_IS_OUTGOING,
+                                   msg_html,
+                                   NULL,
+                                   NULL);
+    } else {
+      chatty_msg_list_add_message (chatty_conv->msg_list,
+                                   MSG_IS_SYSTEM,
+                                   msg,
+                                   NULL,
+                                   NULL);
+    }
+
+    chatty_conv_set_unseen (chatty_conv, CHATTY_UNSEEN_NONE);
+  }
+
+
+  g_free (msg_html);
+
+  g_object_set_data (G_OBJECT (chatty_conv->msg_entry),
+                     "attach-start-time",
+                     NULL);
+
+
+}
+
 
 /**
  * chatty_conv_add_message_history_to_conv:
@@ -1101,11 +1190,13 @@ chatty_conv_add_message_history_to_conv (gpointer data)
   g_source_remove (chatty_conv->attach.timer);
   chatty_conv->attach.timer = 0;
 
-  if (im) {
-    conv_name = purple_conversation_get_name (chatty_conv->conv);
-    account = purple_conversation_get_account (chatty_conv->conv);
+  conv_name = purple_conversation_get_name (chatty_conv->conv);
+  account = purple_conversation_get_account (chatty_conv->conv);
 
+  if (im) {
     chatty_history_get_im_messages (account->username, conv_name, chatty_conv_get_im_messages_cb, chatty_conv); // TODO: LELAND: Infinite, not lazy by now
+  }else{
+    chatty_history_get_chat_messages (conv_name, chatty_conv_get_chat_messages_cb, chatty_conv);
   }
 
   return FALSE;
@@ -1164,27 +1255,6 @@ chatty_conv_container_get_active_purple_conv (GtkNotebook *notebook)
   chatty_conv = chatty_conv_container_get_active_chatty_conv (notebook);
 
   return chatty_conv ? chatty_conv->conv : NULL;
-}
-
-
-/**
- * chatty_conv_muc_get_avatar_color:
- * @user_id: a const char
- *
- * Picks a color for muc user avatars
- *
- */
-static gchar *
-chatty_conv_muc_get_avatar_color (const char *user_id)
-{
-  const char   *color;
-  guint   hash = 0U;
-
-  hash = g_str_hash (user_id);
-
-  color = avatar_colors[hash % G_N_ELEMENTS (avatar_colors)];
-
-  return g_strdup (color);
 }
 
 
@@ -2035,7 +2105,6 @@ chatty_conv_write_chat (PurpleConversation *conv,
 {
   purple_conversation_write (conv, who, message, flags, mtime);
 
-  g_debug ("chatty_conv_write_chat who: %s   msg: %s", who, message);
 }
 
 
@@ -2179,7 +2248,7 @@ chatty_conv_write_conversation (PurpleConversation *conv,
                                    group_chat ? who : NULL,
                                    icon ? icon : NULL);
       if (type == PURPLE_CONV_TYPE_CHAT){
-        chatty_history_add_chat_message (chat_id, message, 1, real_who, "UID", mtime, conv_name);  // TODO: LELAND: UID to be implemented by XEP-0313
+        chatty_history_add_chat_message (chat_id, message, 1, real_who, alias, "UID", mtime, conv_name);  // TODO: LELAND: UID to be implemented by XEP-0313
       } else {
         chatty_history_add_im_message (message, 1, account->username, who_, "UID", mtime);
       }
@@ -2193,7 +2262,7 @@ chatty_conv_write_conversation (PurpleConversation *conv,
                                    NULL,
                                    NULL);
       if (type == PURPLE_CONV_TYPE_CHAT){
-        chatty_history_add_chat_message (chat_id, message, -1, real_who, "UID", mtime, conv_name);
+        chatty_history_add_chat_message (chat_id, message, -1, real_who, alias, "UID", mtime, conv_name);
       } else {
         chatty_history_add_im_message (message, -1, account->username, who_, "UID", mtime);
       }
@@ -2205,7 +2274,7 @@ chatty_conv_write_conversation (PurpleConversation *conv,
                                    NULL,
                                    NULL);
       if (type == PURPLE_CONV_TYPE_CHAT){
-        chatty_history_add_chat_message (chat_id, message, 0, real_who, "UID", mtime, conv_name);
+        chatty_history_add_chat_message (chat_id, message, 0, real_who, alias, "UID", mtime, conv_name);
       } else {
         chatty_history_add_im_message (message, 0, account->username, who_, "UID", mtime);
       }
