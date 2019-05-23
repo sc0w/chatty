@@ -795,7 +795,14 @@ static void chatty_msg_list_size_allocate(GtkWidget *widget, GtkAllocation *allo
       hbox = GTK_BOX(gtk_bin_get_child (GTK_BIN(revealer)));
 
       children = gtk_container_get_children (GTK_CONTAINER (hbox));
-      vbox = GTK_BOX(g_list_first (children)->data);
+
+      if (GTK_IS_IMAGE(g_list_first (children)->data)) {
+        vbox = GTK_BOX(g_list_next (children)->data);
+      } else if (GTK_IS_DRAWING_AREA(g_list_first (children)->data)) {
+        continue;
+      } else {
+        vbox = GTK_BOX(g_list_first (children)->data);
+      }
 
       gtk_widget_get_clip (GTK_WIDGET(hbox), &hbox_allocation);
 
