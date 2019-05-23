@@ -9,6 +9,7 @@
 #include <sqlite3.h>
 #include <glib.h>
 #include "stdio.h"
+#include <sys/stat.h>
 
 static sqlite3 *db;
 
@@ -86,10 +87,16 @@ chatty_history_create_schemas(void)
 int
 chatty_history_open(void)
 {
-  int rc;
-
   //TODO: LELAND: What happens for multiple opens. Does SQL3 handle it?
-  rc = sqlite3_open("chatty-history.db", &db); //TODO: LELAND: This file, where should it be located? right now at host ~
+
+  int rc;
+  char *db_path;
+
+  db_path =  g_build_filename (purple_user_dir(), "chatty", "db", NULL);
+  g_mkdir_with_parents (db_path, S_IRWXU);
+  db_path = g_build_filename(db_path, "chatty-history.db", NULL);
+  rc = sqlite3_open(db_path, &db);
+  g_free(db_path);
 
   chatty_history_create_schemas();
 
