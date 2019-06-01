@@ -686,6 +686,10 @@ chatty_blist_chat_list_set_row (void)
 
     gtk_tree_view_row_activated (_chatty_blist->treeview_chats, path, NULL);
     gtk_tree_view_set_cursor (_chatty_blist->treeview_chats, path, NULL, FALSE);
+  } else {
+    // The chats list is empty, go back to initial view
+    chatty_window_update_sub_header_titlebar (NULL, NULL);
+    chatty_window_change_view (CHATTY_VIEW_CHAT_LIST);
   }
 }
 
