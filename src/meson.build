@@ -10,6 +10,7 @@ chatty_sources = [
   './xeps/chatty-xep-0184.c',
   'chatty-purple-init.c',
   'chatty-icons.c',
+  'chatty-lurch.c',
   'chatty-popover-actions.c'
 ]
 
