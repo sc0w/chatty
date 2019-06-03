@@ -132,6 +132,7 @@ cb_set_enable (int      err,
   conv = (PurpleConversation *) user_data;
   chatty_conv = CHATTY_CONVERSATION(conv);
 
+  gtk_switch_set_state (chatty_conv->omemo.switch_on_off, TRUE);
   chatty_conv->omemo.enabled = TRUE;
 }
 
@@ -151,6 +152,7 @@ cb_set_disable (int      err,
   conv = (PurpleConversation *) user_data;
   chatty_conv = CHATTY_CONVERSATION(conv);
 
+  gtk_switch_set_state (chatty_conv->omemo.switch_on_off, FALSE);
   chatty_conv->omemo.enabled = FALSE;
 }
 
@@ -163,7 +165,6 @@ cb_get_status (int      err,
   PurpleConversation *conv = (PurpleConversation *) user_data;
   ChattyConversation *chatty_conv;
   GtkStyleContext    *sc;
-  const char         *msg;
 
   if (err) {
     g_debug ("Failed to get the OMEMO status.");
@@ -211,8 +212,6 @@ chatty_lurch_create_fingerprint_row (const char *fp,
   char          *markup_fp = NULL;
   char          *markup_id = NULL;
   char          *device_id;
-
-  g_return_if_fail (fp != NULL);
 
   line_split = g_strsplit (fp, " ", -1);
 
@@ -294,19 +293,19 @@ chatty_lurch_get_fp_list_own (PurpleConversation *conv)
 {
   PurpleAccount          *account;
   PurpleConversationType  type;
-  const char             *name;
 
   void * plugins_handle = purple_plugins_get_handle();
 
   account = purple_conversation_get_account (conv);
   type = purple_conversation_get_type (conv);
-  name = purple_conversation_get_name (conv);
 
-  purple_signal_emit (plugins_handle,
-                      "lurch-fp-list",
-                      account,
-                      cb_get_fp_list_own,
-                      conv);
+  if (type == PURPLE_CONV_TYPE_IM) {
+    purple_signal_emit (plugins_handle,
+                        "lurch-fp-list",
+                        account,
+                        cb_get_fp_list_own,
+                        conv);
+  }
 }
 
 
@@ -323,12 +322,14 @@ chatty_lurch_get_fp_list_contact (PurpleConversation *conv)
   type = purple_conversation_get_type (conv);
   name = purple_conversation_get_name (conv);
 
-  purple_signal_emit (plugins_handle,
-                      "lurch-fp-other",
-                      account,
-                      name,
-                      cb_get_fp_list_contact,
-                      conv);
+  if (type == PURPLE_CONV_TYPE_IM) {
+    purple_signal_emit (plugins_handle,
+                        "lurch-fp-other",
+                        account,
+                        name,
+                        cb_get_fp_list_contact,
+                        conv);
+  }
 }
 
 
@@ -385,7 +386,7 @@ chatty_lurch_disable (PurpleConversation *conv)
                         "lurch-disable-im",
                         account,
                         name,
-                        cb_set_enable,
+                        cb_set_disable,
                         conv);
   }
 }

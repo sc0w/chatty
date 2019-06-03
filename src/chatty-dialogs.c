@@ -99,8 +99,6 @@ cb_switch_omemo_state_changed (GtkSwitch *widget,
 
   chatty_lurch_get_status (conv);
 
-  gtk_switch_set_state (widget, state);
-
   return TRUE;
 }
 
@@ -110,11 +108,12 @@ cb_switch_notify_state_changed (GtkSwitch *widget,
                                gboolean   state,
                                gpointer   user_data)
 {
+  PurpleBuddy        *buddy;
   PurpleConversation *conv;
 
   conv = (PurpleConversation *) user_data;
 
-  PurpleBuddy *buddy = purple_find_buddy (conv->account, conv->name);
+  buddy = purple_find_buddy (conv->account, conv->name);
 
   purple_blist_node_set_bool (PURPLE_BLIST_NODE(buddy), "chatty-notifications", state);
 
@@ -1113,6 +1112,7 @@ chatty_dialogs_show_dialog_join_muc (void)
 void
 chatty_dialogs_show_dialog_user_info (ChattyConversation *chatty_conv)
 {
+  PurpleBuddy   *buddy;
   GtkBuilder    *builder;
   GtkWidget     *dialog;
   GtkWidget     *label_alias;
@@ -1121,7 +1121,6 @@ chatty_dialogs_show_dialog_user_info (ChattyConversation *chatty_conv)
   GtkWidget     *label_fp_list;
   GtkWidget     *row_encryption;
   GtkSwitch     *switch_notify;
-  GtkSwitch     *switch_omemo;
   GtkListBox    *listbox_prefs;
 
   chatty_data_t *chatty = chatty_get_data ();
@@ -1137,8 +1136,8 @@ chatty_dialogs_show_dialog_user_info (ChattyConversation *chatty_conv)
   if (chatty_purple->plugin_lurch_loaded) {
     label_status = GTK_WIDGET (gtk_builder_get_object (builder, "label_status"));
     label_fp_list = GTK_WIDGET (gtk_builder_get_object (builder, "label_fp_list"));
-    switch_omemo = GTK_SWITCH (gtk_builder_get_object (builder, "switch_omemo"));
     row_encryption = GTK_WIDGET (gtk_builder_get_object (builder, "row_encryption"));
+    chatty_conv->omemo.switch_on_off = GTK_SWITCH (gtk_builder_get_object (builder, "switch_omemo"));
     chatty_conv->omemo.label_status_msg = GTK_WIDGET (gtk_builder_get_object (builder, "label_status_msg"));
     chatty_conv->omemo.listbox_fp_contact = GTK_LIST_BOX (gtk_builder_get_object (builder, "listbox_fp"));
 
@@ -1156,9 +1155,9 @@ chatty_dialogs_show_dialog_user_info (ChattyConversation *chatty_conv)
     chatty_lurch_get_status (chatty_conv->conv);
     chatty_lurch_get_fp_list_contact (chatty_conv->conv);
 
-    gtk_switch_set_state (switch_omemo, chatty_conv->omemo.enabled);
+    gtk_switch_set_state (chatty_conv->omemo.switch_on_off, chatty_conv->omemo.enabled);
 
-    g_signal_connect (switch_omemo,
+    g_signal_connect (chatty_conv->omemo.switch_on_off,
                       "state-set",
                       G_CALLBACK(cb_switch_omemo_state_changed),
                       (gpointer)chatty_conv->conv);
@@ -1168,7 +1167,7 @@ chatty_dialogs_show_dialog_user_info (ChattyConversation *chatty_conv)
                                 hdy_list_box_separator_header,
                                 NULL, NULL);
 
-  PurpleBuddy *buddy = purple_find_buddy (chatty_conv->conv->account, chatty_conv->conv->name);
+  buddy = purple_find_buddy (chatty_conv->conv->account, chatty_conv->conv->name);
 
   gtk_switch_set_state (switch_notify, purple_blist_node_get_bool (PURPLE_BLIST_NODE(buddy), "chatty-notifications"));
 
