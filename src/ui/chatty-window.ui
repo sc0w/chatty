@@ -89,7 +89,7 @@
         <property name="margin">12</property>
         <property name="orientation">vertical</property>
         <child>
-          <object class="GtkModelButton" id="button_menu_chat_info">
+          <object class="GtkModelButton">
             <property name="visible">True</property>
             <property name="active">False</property>
             <property name="can_focus">False</property>

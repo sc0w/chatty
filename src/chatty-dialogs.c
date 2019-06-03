@@ -15,6 +15,7 @@
 #include "chatty-purple-init.h"
 #include "chatty-config.h"
 #include "chatty-dialogs.h"
+#include "chatty-lurch.h"
 
 static void chatty_dialogs_reset_settings_dialog (void);
 static void chatty_dialogs_reset_new_contact_dialog (void);
@@ -78,6 +79,44 @@ cb_switch_prefs_state_changed (GtkSwitch *widget,
     default:
       break;
   }
+
+  gtk_switch_set_state (widget, state);
+
+  return TRUE;
+}
+
+
+static gboolean
+cb_switch_omemo_state_changed (GtkSwitch *widget,
+                               gboolean   state,
+                               gpointer   user_data)
+{
+  PurpleConversation *conv;
+
+  conv = (PurpleConversation *) user_data;
+
+  state ? chatty_lurch_enable (conv) : chatty_lurch_disable (conv);
+
+  chatty_lurch_get_status (conv);
+
+  gtk_switch_set_state (widget, state);
+
+  return TRUE;
+}
+
+
+static gboolean
+cb_switch_notify_state_changed (GtkSwitch *widget,
+                               gboolean   state,
+                               gpointer   user_data)
+{
+  PurpleConversation *conv;
+
+  conv = (PurpleConversation *) user_data;
+
+  PurpleBuddy *buddy = purple_find_buddy (conv->account, conv->name);
+
+  purple_blist_node_set_bool (PURPLE_BLIST_NODE(buddy), "chatty-notifications", state);
 
   gtk_switch_set_state (widget, state);
 
@@ -1072,6 +1111,88 @@ chatty_dialogs_show_dialog_join_muc (void)
 
 
 void
+chatty_dialogs_show_dialog_user_info (ChattyConversation *chatty_conv)
+{
+  GtkBuilder    *builder;
+  GtkWidget     *dialog;
+  GtkWidget     *label_alias;
+  GtkWidget     *label_jid;
+  GtkWidget     *label_status;
+  GtkWidget     *label_fp_list;
+  GtkWidget     *row_encryption;
+  GtkSwitch     *switch_notify;
+  GtkSwitch     *switch_omemo;
+  GtkListBox    *listbox_prefs;
+
+  chatty_data_t *chatty = chatty_get_data ();
+  chatty_purple_data_t *chatty_purple = chatty_get_purple_data ();
+
+  builder = gtk_builder_new_from_resource ("/sm/puri/chatty/ui/chatty-dialog-user-info.ui");
+
+  label_alias = GTK_WIDGET (gtk_builder_get_object (builder, "label_alias"));
+  label_jid = GTK_WIDGET (gtk_builder_get_object (builder, "label_jid"));
+  switch_notify = GTK_SWITCH (gtk_builder_get_object (builder, "switch_notify"));
+  listbox_prefs = GTK_LIST_BOX (gtk_builder_get_object (builder, "listbox_prefs"));
+
+  if (chatty_purple->plugin_lurch_loaded) {
+    label_status = GTK_WIDGET (gtk_builder_get_object (builder, "label_status"));
+    label_fp_list = GTK_WIDGET (gtk_builder_get_object (builder, "label_fp_list"));
+    switch_omemo = GTK_SWITCH (gtk_builder_get_object (builder, "switch_omemo"));
+    row_encryption = GTK_WIDGET (gtk_builder_get_object (builder, "row_encryption"));
+    chatty_conv->omemo.label_status_msg = GTK_WIDGET (gtk_builder_get_object (builder, "label_status_msg"));
+    chatty_conv->omemo.listbox_fp_contact = GTK_LIST_BOX (gtk_builder_get_object (builder, "listbox_fp"));
+
+    gtk_widget_show (GTK_WIDGET(listbox_prefs));
+    gtk_widget_show (GTK_WIDGET(chatty_conv->omemo.listbox_fp_contact));
+    gtk_widget_show (GTK_WIDGET(row_encryption));
+    gtk_widget_show (GTK_WIDGET(label_status));
+    gtk_widget_show (GTK_WIDGET(chatty_conv->omemo.label_status_msg));
+    gtk_widget_show (GTK_WIDGET(label_fp_list));
+
+    gtk_list_box_set_header_func (chatty_conv->omemo.listbox_fp_contact,
+                                  hdy_list_box_separator_header,
+                                  NULL, NULL);
+
+    chatty_lurch_get_status (chatty_conv->conv);
+    chatty_lurch_get_fp_list_contact (chatty_conv->conv);
+
+    gtk_switch_set_state (switch_omemo, chatty_conv->omemo.enabled);
+
+    g_signal_connect (switch_omemo,
+                      "state-set",
+                      G_CALLBACK(cb_switch_omemo_state_changed),
+                      (gpointer)chatty_conv->conv);
+  }
+
+  gtk_list_box_set_header_func (listbox_prefs,
+                                hdy_list_box_separator_header,
+                                NULL, NULL);
+
+  PurpleBuddy *buddy = purple_find_buddy (chatty_conv->conv->account, chatty_conv->conv->name);
+
+  gtk_switch_set_state (switch_notify, purple_blist_node_get_bool (PURPLE_BLIST_NODE(buddy), "chatty-notifications"));
+
+  g_signal_connect (switch_notify,
+                    "state-set",
+                    G_CALLBACK(cb_switch_notify_state_changed),
+                    (gpointer)chatty_conv->conv);
+
+  gtk_label_set_text (GTK_LABEL(label_alias), "beawesome");
+  gtk_label_set_text (GTK_LABEL(label_jid), chatty_conv->conv->name);
+
+  dialog = GTK_WIDGET (gtk_builder_get_object (builder, "dialog"));
+
+  gtk_window_set_transient_for (GTK_WINDOW(dialog),
+                                GTK_WINDOW(chatty->main_window));
+
+  gtk_dialog_run (GTK_DIALOG(dialog));
+
+  gtk_widget_destroy (dialog);
+  g_object_unref (builder);
+}
+
+
+void
 chatty_dialogs_show_dialog_about_chatty (const char *version)
 {
   GtkBuilder *builder;
@@ -1091,7 +1212,6 @@ chatty_dialogs_show_dialog_about_chatty (const char *version)
                                 GTK_WINDOW(chatty->main_window));
 
   gtk_dialog_run (GTK_DIALOG(dialog));
-
 
   gtk_widget_destroy (dialog);
   g_object_unref (builder);

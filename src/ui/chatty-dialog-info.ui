@@ -77,9 +77,6 @@
                 <property name="margin_bottom">12</property>
                 <property name="justify">center</property>
                 <property name="wrap">True</property>
-                <attributes>
-                  <attribute name="weight" value="bold"/>
-                </attributes>
               </object>
               <packing>
                 <property name="expand">False</property>

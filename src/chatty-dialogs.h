@@ -10,6 +10,7 @@
 
 #include <gtk/gtk.h>
 #include <purple.h>
+#include "chatty-conversation.h"
 
 typedef struct {
   GtkStack          *stack_panes_settings;
@@ -45,6 +46,7 @@ GtkWidget * chatty_dialogs_create_dialog_new_chat (void);
 GtkWidget * chatty_dialogs_create_dialog_muc_info (void);
 void chatty_dialogs_show_dialog_new_contact (void);
 void chatty_dialogs_show_dialog_join_muc (void);
+void chatty_dialogs_show_dialog_user_info (ChattyConversation *chatty_conv);
 void chatty_dialogs_show_dialog_about_chatty (const char *version);
 
 #endif
