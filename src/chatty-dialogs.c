@@ -138,6 +138,16 @@ cb_button_muc_info_back_clicked (GtkButton *sender,
 
 
 static void
+cb_entry_name_changed (GtkEntry *sender,
+                       gpointer  data)
+{
+  chatty_dialog_data_t *chatty_dialog = chatty_get_dialog_data ();
+
+  gtk_widget_set_sensitive (GTK_WIDGET(chatty_dialog->button_save_account), TRUE);
+}
+
+
+static void
 cb_button_delete_account_clicked (GtkButton *sender,
                                   gpointer   data)
 {
@@ -207,6 +217,9 @@ cb_button_save_account_clicked (GtkButton *sender,
 
   chatty_dialog_data_t *chatty_dialog = chatty_get_dialog_data ();
 
+  purple_account_set_username(chatty->selected_account,
+                              gtk_entry_get_text (chatty_dialog->entry_name));
+
   entry_account_pwd = (GtkEntry *)data;
 
   purple_account_set_password (chatty->selected_account,
@@ -222,6 +235,9 @@ cb_button_save_account_clicked (GtkButton *sender,
    purple_account_connect (chatty->selected_account);
   }
 
+  chatty_account_populate_account_list (chatty->list_manage_account,
+                                        LIST_MANAGE_ACCOUNT); // username might have changed
+
   gtk_stack_set_visible_child_name (chatty_dialog->stack_panes_settings,
                                     "view-settings");
 }
@@ -235,7 +251,7 @@ write_account_data_into_dialog (chatty_data_t *chatty, chatty_dialog_data_t *cha
   account_name = purple_account_get_username (chatty->selected_account);
   protocol_name = purple_account_get_protocol_name (chatty->selected_account);
 
-  gtk_label_set_text (chatty_dialog->label_name, account_name);
+  gtk_entry_set_text (chatty_dialog->entry_name, account_name);
   gtk_label_set_text (chatty_dialog->label_protocol, protocol_name);
 
   if (purple_account_is_connected (chatty->selected_account)) {
@@ -738,18 +754,21 @@ chatty_dialogs_create_edit_account_view (GtkBuilder *builder)
   button_edit_pw = GTK_WIDGET (gtk_builder_get_object (builder, "button_edit_pw"));
   chatty_dialog->button_save_account = GTK_WIDGET (gtk_builder_get_object (builder, "button_save_account"));
   button_back = GTK_WIDGET (gtk_builder_get_object (builder, "button_edit_account_back"));
-  chatty_dialog->label_name = GTK_LABEL (gtk_builder_get_object (builder, "label_account_id"));
+  chatty_dialog->entry_name = GTK_ENTRY (gtk_builder_get_object (builder, "entry_account_id"));
   chatty_dialog->label_protocol = GTK_LABEL (gtk_builder_get_object (builder, "label_protocol"));
   chatty_dialog->label_status = GTK_LABEL (gtk_builder_get_object (builder, "label_status"));
   entry_account_pwd = GTK_ENTRY (gtk_builder_get_object (builder, "entry_account_pwd"));
 
 
-  gtk_entry_set_text (GTK_ENTRY(entry_account_pwd), "xxxxxxxxx");
-
   g_signal_connect (G_OBJECT(button_delete),
                     "clicked",
                     G_CALLBACK (cb_button_delete_account_clicked),
                     NULL);
+
+  g_signal_connect (G_OBJECT(chatty_dialog->entry_name),
+		    "changed",
+		    G_CALLBACK (cb_entry_name_changed),
+		    NULL);
 
   g_signal_connect (G_OBJECT(button_edit_pw),
                     "clicked",
