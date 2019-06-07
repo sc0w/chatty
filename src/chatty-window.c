@@ -237,7 +237,6 @@ chatty_window_activate (GtkApplication *app,
   GtkBuilder         *builder;
   GtkWindow          *window;
   GSimpleActionGroup *simple_action_group;
-  GtkCssProvider     *cssProvider = gtk_css_provider_new();
 
   chatty_data_t *chatty = chatty_get_data ();
 
@@ -262,11 +261,6 @@ chatty_window_activate (GtkApplication *app,
   chatty_popover_actions_init (window);
 
   chatty->main_window = window;
-
-  gtk_css_provider_load_from_resource (cssProvider, "/sm/puri/chatty/css/style.css");
-  gtk_style_context_add_provider_for_screen (gdk_screen_get_default(),
-                                             GTK_STYLE_PROVIDER (cssProvider),
-                                             GTK_STYLE_PROVIDER_PRIORITY_USER);
 
   chatty->header_spinner = GTK_WIDGET (gtk_builder_get_object (builder, "header_spinner"));
   chatty->sub_header_bar = GTK_HEADER_BAR (gtk_builder_get_object (builder, "sub_header_bar"));
