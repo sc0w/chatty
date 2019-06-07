@@ -15,7 +15,6 @@ typedef struct {
   GtkStack          *stack_panes_settings;
   GtkStack          *stack_panes_new_chat;
   GtkStack          *stack_panes_muc_info;
-  GtkLabel          *label_name;
   GtkLabel          *label_protocol;
   GtkLabel          *label_status;
   GtkListBox        *list_select_account;
@@ -29,6 +28,7 @@ typedef struct {
   GtkWidget         *radio_button_telegram;
   const char        *current_topic;
   const char        *new_topic;
+  GtkEntry          *entry_name;
   GtkEntry          *entry_account_name;
   GtkEntry          *entry_account_pwd;
   GtkEntry          *entry_account_server;
