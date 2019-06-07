@@ -241,9 +241,9 @@ chatty_window_activate (GtkApplication *app,
 
   chatty_data_t *chatty = chatty_get_data ();
 
-  chatty->app = app;
-
   memset (chatty, 0, sizeof(chatty_data_t));
+
+  chatty->app = app;
 
   builder = gtk_builder_new_from_resource ("/sm/puri/chatty/ui/chatty-window.ui");
 

@@ -205,7 +205,7 @@ cb_button_send_clicked (GtkButton *sender,
   gchar               *message = NULL;
   gchar               *footer_str = NULL;
   const gchar         *protocol_id;
-  gchar                sms_id_str[12];
+  gchar               *sms_id_str;
   guint                sms_id;
 
   chatty_conv  = (ChattyConversation *)data;
@@ -251,10 +251,10 @@ cb_button_send_clicked (GtkButton *sender,
     if (g_strcmp0 (protocol_id, "prpl-mm-sms") == 0) {
       sms_id = g_random_int ();
 
-      sprintf (sms_id_str, "%i", sms_id);
+      sms_id_str = g_strdup_printf ("%i", sms_id);
 
       g_hash_table_insert (ht_sms_id,
-                           strdup (sms_id_str), chatty_conv->msg_bubble_footer);
+                           sms_id_str, chatty_conv->msg_bubble_footer);
 
       g_debug ("hash table insert sms_id_str: %s  ht_size: %i\n",
                sms_id_str, g_hash_table_size (ht_sms_id));
