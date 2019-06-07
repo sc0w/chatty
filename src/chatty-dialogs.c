@@ -20,6 +20,7 @@
 static void chatty_dialogs_reset_settings_dialog (void);
 static void chatty_dialogs_reset_new_contact_dialog (void);
 static void chatty_dialogs_reset_invite_contact_dialog (void);
+static void chatty_entry_set_enabled (GtkWidget *widget, gboolean state);
 
 static void chatty_disconnect_account_signals (PurpleAccount *account);
 
@@ -255,6 +256,8 @@ cb_button_save_account_clicked (GtkButton *sender,
 
   chatty_dialog_data_t *chatty_dialog = chatty_get_dialog_data ();
 
+  chatty_entry_set_enabled (GTK_WIDGET(chatty_dialog->entry_name), FALSE);
+
   purple_account_set_username(chatty->selected_account,
                               gtk_entry_get_text (chatty_dialog->entry_name));
 
@@ -342,6 +345,25 @@ cb_list_account_manage_row_activated (GtkListBox    *box,
     }
 
     write_account_data_into_dialog (chatty, chatty_dialog);
+  }
+}
+
+static void
+chatty_entry_set_enabled (GtkWidget *widget,
+                          gboolean   state)
+{
+  GtkStyleContext    *sc;
+
+  chatty_dialog_data_t *chatty_dialog = chatty_get_dialog_data ();
+
+  sc = gtk_widget_get_style_context (GTK_WIDGET(widget));
+
+  if (state) {
+    gtk_style_context_remove_class (sc, "entry_hide");
+    gtk_widget_set_sensitive (GTK_WIDGET(chatty_dialog->entry_name), TRUE);
+  } else {
+    gtk_style_context_add_class (sc, "entry_hide");
+    gtk_widget_set_sensitive (GTK_WIDGET(chatty_dialog->entry_name), FALSE);
   }
 }
 
@@ -532,7 +554,7 @@ cb_account_connection_error (PurpleAccount *gc, PurpleConnectionError err, const
   gtk_message_dialog_format_secondary_text (GTK_MESSAGE_DIALOG(dialog),
                                             _("Failed to login as %s:\n%s"),
                                             purple_account_get_username (account),
-					    desc);
+              desc);
 
   gtk_dialog_set_default_response (GTK_DIALOG(dialog), GTK_RESPONSE_CANCEL);
   gtk_window_set_position (GTK_WINDOW(dialog), GTK_WIN_POS_CENTER_ON_PARENT);
@@ -540,6 +562,8 @@ cb_account_connection_error (PurpleAccount *gc, PurpleConnectionError err, const
   gtk_dialog_run (GTK_DIALOG(dialog));
 
   gtk_widget_destroy (dialog);
+
+  chatty_entry_set_enabled (GTK_WIDGET(chatty_dialog->entry_name), TRUE);
 
   gtk_stack_set_visible_child_name (chatty_dialog->stack_panes_settings,
                                     "view-edit-account");
@@ -717,6 +741,8 @@ chatty_dialogs_reset_settings_dialog (void)
   gtk_widget_set_sensitive (GTK_WIDGET(chatty_dialog->button_add_account), FALSE);
   gtk_widget_set_sensitive (GTK_WIDGET(chatty_dialog->entry_account_pwd), FALSE);
 
+  chatty_entry_set_enabled (GTK_WIDGET(chatty_dialog->entry_name), FALSE);
+
   gtk_entry_set_text (GTK_ENTRY(chatty_dialog->entry_account_name), "");
   gtk_entry_set_text (GTK_ENTRY(chatty_dialog->entry_account_pwd), "");
 
@@ -848,9 +874,9 @@ chatty_dialogs_create_edit_account_view (GtkBuilder *builder)
                     NULL);
 
   g_signal_connect (G_OBJECT(chatty_dialog->entry_name),
-		    "changed",
-		    G_CALLBACK (cb_entry_name_changed),
-		    NULL);
+        "changed",
+        G_CALLBACK (cb_entry_name_changed),
+        NULL);
 
   g_signal_connect (G_OBJECT(button_edit_pw),
                     "clicked",
