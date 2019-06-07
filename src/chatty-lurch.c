@@ -10,6 +10,7 @@
 #include <glib/gi18n.h>
 #include <gtk/gtk.h>
 #include "purple.h"
+#include "chatty-utils.h"
 #include "chatty-dialogs.h"
 #include "chatty-lurch.h"
 #include "chatty-conversation.h"
@@ -345,7 +346,7 @@ chatty_lurch_get_fp_list_contact (PurpleConversation *conv)
     purple_signal_emit (plugins_handle,
                         "lurch-fp-other",
                         account,
-                        name,
+                        chatty_utils_jabber_id_strip (name),
                         cb_get_fp_list_contact,
                         conv);
   }
@@ -382,7 +383,7 @@ chatty_lurch_enable (PurpleConversation *conv)
     purple_signal_emit (purple_plugins_get_handle(),
                         "lurch-enable-im",
                         account,
-                        name,
+                        chatty_utils_jabber_id_strip (name),
                         cb_set_enable,
                         conv);
   }
@@ -404,7 +405,7 @@ chatty_lurch_disable (PurpleConversation *conv)
     purple_signal_emit (purple_plugins_get_handle(),
                         "lurch-disable-im",
                         account,
-                        name,
+                        chatty_utils_jabber_id_strip (name),
                         cb_set_disable,
                         conv);
   }
@@ -426,7 +427,7 @@ chatty_lurch_get_status (PurpleConversation *conv)
     purple_signal_emit (purple_plugins_get_handle(),
                         "lurch-status-im",
                         account,
-                        name,
+                        chatty_utils_jabber_id_strip (name),
                         cb_get_status,
                         conv);
   }

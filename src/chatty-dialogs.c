@@ -16,6 +16,7 @@
 #include "chatty-config.h"
 #include "chatty-dialogs.h"
 #include "chatty-lurch.h"
+#include "chatty-utils.h"
 
 static void chatty_dialogs_reset_settings_dialog (void);
 static void chatty_dialogs_reset_new_contact_dialog (void);
@@ -1332,7 +1333,9 @@ chatty_dialogs_show_dialog_user_info (ChattyConversation *chatty_conv)
   buddy = purple_find_buddy (chatty_conv->conv->account, chatty_conv->conv->name);
   alias = purple_buddy_get_alias (buddy);
 
-  gtk_switch_set_state (switch_notify, purple_blist_node_get_bool (PURPLE_BLIST_NODE(buddy), "chatty-notifications"));
+  gtk_switch_set_state (switch_notify,
+                        purple_blist_node_get_bool (PURPLE_BLIST_NODE(buddy),
+                        "chatty-notifications"));
 
   g_signal_connect (switch_notify,
                     "state-set",
@@ -1340,7 +1343,7 @@ chatty_dialogs_show_dialog_user_info (ChattyConversation *chatty_conv)
                     (gpointer)chatty_conv->conv);
 
   gtk_label_set_text (GTK_LABEL(label_alias), alias);
-  gtk_label_set_text (GTK_LABEL(label_jid), chatty_conv->conv->name);
+  gtk_label_set_text (GTK_LABEL(label_jid), chatty_utils_jabber_id_strip (chatty_conv->conv->name));
 
   dialog = GTK_WIDGET (gtk_builder_get_object (builder, "dialog"));
 

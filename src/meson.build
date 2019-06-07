@@ -12,6 +12,7 @@ chatty_sources = [
   'chatty-purple-init.c',
   'chatty-icons.c',
   'chatty-lurch.c',
+  'chatty-utils.c',
   'chatty-popover-actions.c'
 ]
 
