@@ -39,7 +39,9 @@
 
 struct _ChattyApplication
 {
-  GtkApplication parent_instance;
+  GtkApplication  parent_instance;
+
+  GtkCssProvider *css_provider;
 };
 
 G_DEFINE_TYPE (ChattyApplication, chatty_application, GTK_TYPE_APPLICATION)
@@ -48,15 +50,29 @@ G_DEFINE_TYPE (ChattyApplication, chatty_application, GTK_TYPE_APPLICATION)
 static void
 chatty_application_finalize (GObject *object)
 {
+  ChattyApplication *self = (ChattyApplication *)object;
+
+  g_clear_object (&self->css_provider);
+
   G_OBJECT_CLASS (chatty_application_parent_class)->finalize (object);
 }
 
 static void
 chatty_application_startup (GApplication *application)
 {
+  ChattyApplication *self = (ChattyApplication *)application;
+
   G_APPLICATION_CLASS (chatty_application_parent_class)->startup (application);
 
   g_set_application_name (CHATTY_APP_NAME);
+
+  self->css_provider = gtk_css_provider_new ();
+  gtk_css_provider_load_from_resource (self->css_provider,
+                                       "/sm/puri/chatty/css/style.css");
+
+  gtk_style_context_add_provider_for_screen (gdk_screen_get_default(),
+                                             GTK_STYLE_PROVIDER (self->css_provider),
+                                             GTK_STYLE_PROVIDER_PRIORITY_USER);
 }
 
 static void
