@@ -189,12 +189,13 @@
                               </object>
                             </child>
                             <child>
-                              <object class="HdyActionRow" id="row_encryption">
+                              <object class="HdyActionRow">
                                 <property name="title" translatable="yes">Encryption</property>
                                 <property name="subtitle" translatable="yes">Secure messaging using OMEMO</property>
                                 <property name="visible">False</property>
                                 <property name="selectable">False</property>
                                 <property name="activatable">False</property>
+                                <property name="visible" bind-source="listbox_fp" bind-property="visible" bind-flags="sync-create"/>
                                 <child type="action">
                                   <object class="GtkSwitch" id="switch_omemo">
                                     <property name="can_focus">True</property>
@@ -207,7 +208,7 @@
                           </object>
                         </child>
                         <child>
-                          <object class="GtkLabel" id="label_fp_list">
+                          <object class="GtkLabel">
                             <property name="visible">False</property>
                             <property name="can_focus">False</property>
                             <property name="expand">True</property>
@@ -216,6 +217,7 @@
                             <property name="halign">start</property>
                             <property name="margin-top">24</property>
                             <property name="margin-bottom">12</property>
+                            <property name="visible" bind-source="listbox_fp" bind-property="visible" bind-flags="sync-create"/>
                             <attributes>
                               <attribute name="weight" value="bold"/>
                             </attributes>

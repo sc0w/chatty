@@ -10,6 +10,7 @@
 #include <glib/gi18n.h>
 #include <gtk/gtk.h>
 #include "purple.h"
+#include "chatty-dialogs.h"
 #include "chatty-lurch.h"
 #include "chatty-conversation.h"
 
@@ -42,38 +43,45 @@ cb_get_fp_list_own (int         err,
                     GHashTable *id_fp_table,
                     gpointer    user_data)
 {
-    PurpleConversation *conv;
-    ChattyConversation *chatty_conv;
-    GList              *key_list = NULL;
-    const GList        *curr_p = NULL;
-    const char         *fp = NULL;
+  GList       *key_list = NULL;
+  const GList *curr_p = NULL;
+  const char  *fp = NULL;
+  GtkWidget   *row;
 
-    if (err) {
-      g_debug ("Failed to get the fingerprints from own account.");
-      return;
-    }
+  chatty_dialog_data_t *chatty_dialog = chatty_get_dialog_data ();
 
-    if (!id_fp_table) {
-      g_debug ("No OMEMO devices available.");
-      return;
-    }
+  if (err || !id_fp_table) {
+    gtk_widget_hide (GTK_WIDGET(chatty_dialog->omemo.listbox_fp_own));
+    gtk_widget_hide (GTK_WIDGET(chatty_dialog->omemo.listbox_fp_own_dev));
 
-    conv = (PurpleConversation *) user_data;
-    chatty_conv = CHATTY_CONVERSATION(conv);
+    return;
+  }
 
-    if (chatty_conv->omemo.listbox_fp_own) {
-      key_list = g_hash_table_get_keys(id_fp_table);
+  if (chatty_dialog->omemo.listbox_fp_own &&
+      chatty_dialog->omemo.listbox_fp_own_dev) {
 
-      for (curr_p = key_list; curr_p; curr_p = curr_p->next) {
-        fp = (char *) g_hash_table_lookup(id_fp_table, curr_p->data);
+    key_list = g_hash_table_get_keys (id_fp_table);
 
-        g_debug ("DeviceId: %i fingerprint:\n%s\n", *((guint32 *) curr_p->data),
-                 fp ? fp : "(no session)");
+    for (curr_p = key_list; curr_p; curr_p = curr_p->next) {
+      fp = (char *) g_hash_table_lookup(id_fp_table, curr_p->data);
 
-        gtk_container_add (GTK_CONTAINER(chatty_conv->omemo.listbox_fp_own),
-                           chatty_lurch_create_fingerprint_row (fp, *((guint32 *) curr_p->data)));
+      g_debug ("DeviceId: %i fingerprint:\n%s\n", *((guint32 *) curr_p->data),
+               fp ? fp : "(no session)");
+
+      row = chatty_lurch_create_fingerprint_row (fp, *((guint32 *) curr_p->data));
+
+      if (row) {
+        if (g_list_length (key_list) == 1) {
+          gtk_container_add (GTK_CONTAINER(chatty_dialog->omemo.listbox_fp_own), row);
+          gtk_widget_hide (GTK_WIDGET(chatty_dialog->omemo.listbox_fp_own_dev));
+        } else if (curr_p == g_list_last (key_list)) {
+          gtk_container_add (GTK_CONTAINER(chatty_dialog->omemo.listbox_fp_own), row);
+        } else {
+          gtk_container_add (GTK_CONTAINER(chatty_dialog->omemo.listbox_fp_own_dev), row);
+        }
       }
     }
+  }
 }
 
 
@@ -82,26 +90,21 @@ cb_get_fp_list_contact (int         err,
                         GHashTable *id_fp_table,
                         gpointer    user_data)
 {
-  PurpleConversation *conv;
-  ChattyConversation *chatty_conv;
-  GList              *key_list = NULL;
-  const GList        *curr_p = NULL;
-  const char         *fp = NULL;
+  GList       *key_list = NULL;
+  const GList *curr_p = NULL;
+  const char  *fp = NULL;
+  GtkWidget   *row;
 
-  if (err) {
-    g_debug ("Failed to get the fingerprints from conversation partner.");
+  chatty_dialog_data_t *chatty_dialog = chatty_get_dialog_data ();
+
+  if (err || !id_fp_table) {
+    gtk_widget_hide (GTK_WIDGET(chatty_dialog->omemo.listbox_fp_contact));
+    gtk_label_set_text (GTK_LABEL(chatty_dialog->omemo.label_status_msg), _("Encryption not available"));
+
     return;
   }
 
-  if (!id_fp_table) {
-    g_debug ("No OMEMO devices of contact available.");
-    return;
-  }
-
-  conv = (PurpleConversation *) user_data;
-  chatty_conv = CHATTY_CONVERSATION(conv);
-
-  if (chatty_conv->omemo.listbox_fp_contact) {
+  if (chatty_dialog->omemo.listbox_fp_contact) {
     key_list = g_hash_table_get_keys(id_fp_table);
 
     for (curr_p = key_list; curr_p; curr_p = curr_p->next) {
@@ -110,8 +113,11 @@ cb_get_fp_list_contact (int         err,
       g_debug ("DeviceId: %i fingerprint:\n%s\n", *((guint32 *) curr_p->data),
                fp ? fp : "(no session)");
 
-      gtk_container_add (GTK_CONTAINER(chatty_conv->omemo.listbox_fp_contact),
-                         chatty_lurch_create_fingerprint_row (fp, *((guint32 *) curr_p->data)));
+      row = chatty_lurch_create_fingerprint_row (fp, *((guint32 *) curr_p->data));
+
+      if (row) {
+        gtk_container_add (GTK_CONTAINER(chatty_dialog->omemo.listbox_fp_contact), row);
+      }
     }
   }
 }
@@ -124,6 +130,8 @@ cb_set_enable (int      err,
   PurpleConversation *conv;
   ChattyConversation *chatty_conv;
 
+  chatty_dialog_data_t *chatty_dialog = chatty_get_dialog_data ();
+
   if (err) {
     g_debug ("Failed to enable OMEMO for this conversation.");
     return;
@@ -132,7 +140,7 @@ cb_set_enable (int      err,
   conv = (PurpleConversation *) user_data;
   chatty_conv = CHATTY_CONVERSATION(conv);
 
-  gtk_switch_set_state (chatty_conv->omemo.switch_on_off, TRUE);
+  gtk_switch_set_state (chatty_dialog->omemo.switch_on_off, TRUE);
   chatty_conv->omemo.enabled = TRUE;
 }
 
@@ -144,6 +152,8 @@ cb_set_disable (int      err,
   PurpleConversation *conv;
   ChattyConversation *chatty_conv;
 
+  chatty_dialog_data_t *chatty_dialog = chatty_get_dialog_data ();
+
   if (err) {
     g_debug ("Failed to disable OMEMO for this conversation.");
     return;
@@ -152,7 +162,7 @@ cb_set_disable (int      err,
   conv = (PurpleConversation *) user_data;
   chatty_conv = CHATTY_CONVERSATION(conv);
 
-  gtk_switch_set_state (chatty_conv->omemo.switch_on_off, FALSE);
+  gtk_switch_set_state (chatty_dialog->omemo.switch_on_off, FALSE);
   chatty_conv->omemo.enabled = FALSE;
 }
 
@@ -165,6 +175,9 @@ cb_get_status (int      err,
   PurpleConversation *conv = (PurpleConversation *) user_data;
   ChattyConversation *chatty_conv;
   GtkStyleContext    *sc;
+  const char         *status_msg;
+
+  chatty_dialog_data_t *chatty_dialog = chatty_get_dialog_data ();
 
   if (err) {
     g_debug ("Failed to get the OMEMO status.");
@@ -177,23 +190,33 @@ cb_get_status (int      err,
 
   switch (status) {
     case LURCH_STATUS_DISABLED:
+      status_msg = _("This chat is not encrypted");
+      break;
     case LURCH_STATUS_NOT_SUPPORTED:
+      status_msg = _("Encryption is not available");
+      break;
     case LURCH_STATUS_NO_SESSION:
-      gtk_label_set_text (GTK_LABEL(chatty_conv->omemo.label_status_msg), _("This chat is not encrypted"));
-      gtk_image_set_from_icon_name (chatty_conv->omemo.symbol_encrypt, "changes-allow-symbolic", 1);
-      gtk_style_context_remove_class (sc, "encrypt");
-      gtk_style_context_add_class (sc, "unencrypt");
+      status_msg = _("This chat is not encrypted");
       chatty_conv->omemo.enabled = FALSE;
       break;
     case LURCH_STATUS_OK:
-      gtk_label_set_text (GTK_LABEL(chatty_conv->omemo.label_status_msg), _("This chat is encrypted"));
-      gtk_image_set_from_icon_name (chatty_conv->omemo.symbol_encrypt, "changes-prevent-symbolic", 1);
-      gtk_style_context_remove_class (sc, "unencrypt");
-      gtk_style_context_add_class (sc, "encrypt");
+      status_msg = _("This chat is encrypted");
       chatty_conv->omemo.enabled = TRUE;
       break;
     default:
       g_debug ("Received unknown status code.");
+  }
+
+  gtk_image_set_from_icon_name (chatty_conv->omemo.symbol_encrypt,
+                                chatty_conv->omemo.enabled ? "changes-prevent-symbolic" :
+                                                             "changes-allow-symbolic",
+                                1);
+
+  gtk_style_context_remove_class (sc, chatty_conv->omemo.enabled ? "unencrypt" : "encrypt");
+  gtk_style_context_add_class (sc, chatty_conv->omemo.enabled ? "encrypt" : "unencrypt");
+
+  if (chatty_dialog->omemo.label_status_msg) {
+    gtk_label_set_text (GTK_LABEL(chatty_dialog->omemo.label_status_msg), status_msg);
   }
 
   chatty_conv->omemo.status = status;
@@ -213,11 +236,15 @@ chatty_lurch_create_fingerprint_row (const char *fp,
   char          *markup_id = NULL;
   char          *device_id;
 
+  if (!fp) {
+    return NULL;
+  }
+
   line_split = g_strsplit (fp, " ", -1);
 
   markup_fp = "<span font_family='monospace' font='9'>";
 
-  for (int i = 0; i < 8; i ++) {
+  for (int i = 0; i < 8; i++) {
     markup_fp = g_strconcat (markup_fp,
                              i % 2 ? "<span color='DarkGrey'>"
                                    : "<span color='DimGrey'>",
@@ -289,23 +316,15 @@ chatty_lurch_create_fingerprint_row (const char *fp,
 
 
 void
-chatty_lurch_get_fp_list_own (PurpleConversation *conv)
+chatty_lurch_get_fp_list_own (PurpleAccount *account)
 {
-  PurpleAccount          *account;
-  PurpleConversationType  type;
-
   void * plugins_handle = purple_plugins_get_handle();
 
-  account = purple_conversation_get_account (conv);
-  type = purple_conversation_get_type (conv);
-
-  if (type == PURPLE_CONV_TYPE_IM) {
-    purple_signal_emit (plugins_handle,
-                        "lurch-fp-list",
-                        account,
-                        cb_get_fp_list_own,
-                        conv);
-  }
+  purple_signal_emit (plugins_handle,
+                      "lurch-fp-list",
+                      account,
+                      cb_get_fp_list_own,
+                      NULL);
 }
 
 

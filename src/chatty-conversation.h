@@ -54,11 +54,7 @@ struct chatty_conversation {
   } input;
 
   struct {
-    GtkListBox *listbox_fp_own;
-    GtkListBox *listbox_fp_contact;
     GtkImage   *symbol_encrypt;
-    GtkSwitch  *switch_on_off;
-    GtkWidget  *label_status_msg;
     const char *fp_own_device;
     guint       status;
     gboolean    enabled;
