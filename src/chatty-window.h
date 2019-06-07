@@ -20,30 +20,36 @@ typedef struct {
   HdyLeaflet        *content_box;
   HdyLeaflet        *header_box;
   HdyHeaderGroup    *header_group;
-  GtkWidget         *dialog_settings;
-  GtkWidget         *dialog_new_chat;
-  GtkWidget         *dialog_muc_info;
-  GtkStack          *stack_panes_main;
-  HdySearchBar      *search_bar_chats;
-  GtkEntry          *search_entry_chats;
-  GtkEntry          *search_entry_contacts;
-  PurpleAccount     *selected_account;
-  GtkListBox        *list_manage_account;
-  GtkBox            *pane_view_chat_list;
-  GtkBox            *pane_view_muc_info;
-  GtkWidget         *pane_view_message_list;
-  GtkBox            *pane_view_new_chat;
+
   GtkHeaderBar      *sub_header_bar;
   GtkWidget         *sub_header_icon;
   GtkWidget         *sub_header_label;
   GtkWidget         *header_spinner;
+
+  GtkWidget         *dialog_settings;
+  GtkWidget         *dialog_new_chat;
+  GtkWidget         *dialog_muc_info;
+
+  GtkStack          *stack_panes_main;
+  GtkBox            *pane_view_chat_list;
+  GtkBox            *pane_view_muc_info;
+  GtkWidget         *pane_view_message_list;
+  GtkBox            *pane_view_new_chat;
+
+  HdySearchBar      *search_bar_chats;
+  GtkEntry          *search_entry_chats;
+  GtkEntry          *search_entry_contacts;
+
+  GtkWidget         *button_menu_add_contact;
+  GtkWidget         *button_header_chat_info;
+
+  PurpleAccount     *selected_account;
+  GtkListBox        *list_manage_account;
+
   GSList            *radio_button_list;
   GtkWidget         *dummy_prefix_radio;
   GtkWidget         *label_contact_id;
-  GtkWidget         *button_menu_chat_info;
-  GtkWidget         *button_menu_add_contact;
-  GtkWidget         *button_header_chat_info;
-  GtkWidget         *separator_menu_msg_view;
+
   GtkBox            *box_welcome_overlay;
   GtkWidget         *label_welcome_overlay_sms;
 
@@ -63,10 +69,12 @@ typedef struct {
 
 chatty_data_t *chatty_get_data(void);
 
-#define CHATTY_COLOR_GREEN  "6BBA3D"
-#define CHATTY_COLOR_BLUE   "4A8FD9"
-#define CHATTY_COLOR_PURPLE "842B84"
-#define CHATTY_COLOR_GREY   "B2B2B2"
+#define CHATTY_COLOR_GREEN     "6BBA3D"
+#define CHATTY_COLOR_BLUE      "4A8FD9"
+#define CHATTY_COLOR_PURPLE    "842B84"
+#define CHATTY_COLOR_GREY      "B2B2B2"
+#define CHATTY_COLOR_DIM_GREY  "797979"
+#define CHATTY_COLOR_DARK_GREY "323232"
 
 enum {
   CHATTY_PREF_SEND_RECEIPTS,
