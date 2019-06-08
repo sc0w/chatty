@@ -1002,8 +1002,7 @@ chatty_conv_message_get_last_msg (PurpleBuddy *buddy)
 
   log_data = chatty_conv_parse_message (logs[num_logs]);
 
-  g_list_foreach (history, (GFunc)purple_log_free, NULL);
-  g_list_free (history);
+  g_list_free_full (history, (GDestroyNotify)purple_log_free);
   g_free (read_log);
   g_free (stripped);
 
@@ -1038,8 +1037,7 @@ chatty_conv_delete_message_history (PurpleBuddy *buddy)
     purple_log_delete ((PurpleLog*)history->data);
   }
 
-  g_list_foreach (history, (GFunc)purple_log_free, NULL);
-  g_list_free (history);
+  g_list_free_full (history, (GDestroyNotify)purple_log_free);
 
   return TRUE;
 }
@@ -1126,8 +1124,7 @@ chatty_conv_add_message_history_to_conv (gpointer data)
       }
     }
 
-    g_list_foreach (history, (GFunc)purple_log_free, NULL);
-    g_list_free (history);
+    g_list_free_full (history, (GDestroyNotify)purple_log_free);
 
     for (; msgs; msgs = msgs->next) {
       log_data = msgs->data;
@@ -1157,8 +1154,7 @@ chatty_conv_add_message_history_to_conv (gpointer data)
       g_free (msg_html);
     }
 
-    g_list_foreach (msgs, (GFunc)g_free, NULL);
-    g_list_free (msgs);
+    g_list_free_full (msgs, (GDestroyNotify)g_free);
   }
 
   g_object_set_data (G_OBJECT (chatty_conv->input.entry),
