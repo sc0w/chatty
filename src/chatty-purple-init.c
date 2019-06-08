@@ -138,8 +138,6 @@ chatty_eventloop_get_ui_ops (void)
 static void
 chatty_purple_quit (void)
 {
-  chatty_data_t *chatty = chatty_get_data ();
-
   chatty_conversations_uninit ();
   chatty_blist_uninit ();
   chatty_connection_uninit();
@@ -156,7 +154,7 @@ chatty_purple_quit (void)
 
   chatty_xeps_close ();
 
-  g_application_quit (G_APPLICATION (chatty->app));
+  g_application_quit (g_application_get_default ());
 }
 
 
@@ -301,8 +299,6 @@ libpurple_init (void)
   gchar         *search_path;
   gboolean       debug;
 
-  chatty_data_t *chatty = chatty_get_data ();
-
   chatty_purple_data_t *chatty_purple = chatty_get_purple_data ();
 
   signal (SIGCHLD, SIG_IGN);
@@ -323,13 +319,13 @@ libpurple_init (void)
   if (!purple_core_init (CHATTY_UI)) {
     g_printerr ("libpurple initialization failed\n");
 
-    g_application_quit (G_APPLICATION (chatty->app));
+    g_application_quit (g_application_get_default ());
   }
 
   if (!purple_core_ensure_single_instance ()) {
     g_printerr ("Another libpurple client is already running\n");
 
-    g_application_quit (G_APPLICATION (chatty->app));
+    g_application_quit (g_application_get_default ());
   }
 
   purple_set_blist (purple_blist_new ());
