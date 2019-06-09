@@ -192,6 +192,7 @@ cb_button_delete_account_clicked (GtkButton *sender,
                                   gpointer   data)
 {
   GtkWidget     *dialog;
+  GtkWindow     *window;
   PurpleAccount *account;
   int            response;
 
@@ -201,7 +202,8 @@ cb_button_delete_account_clicked (GtkButton *sender,
 
   account = chatty->selected_account;
 
-  dialog = gtk_message_dialog_new (chatty->main_window,
+  window = gtk_application_get_active_window (GTK_APPLICATION (g_application_get_default ()));
+  dialog = gtk_message_dialog_new (window,
                                    GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
                                    GTK_MESSAGE_WARNING,
                                    GTK_BUTTONS_OK_CANCEL,
@@ -537,6 +539,7 @@ static void
 cb_account_connection_error (PurpleAccount *gc, PurpleConnectionError err, const gchar *desc, gpointer unused)
 {
   GtkWidget     *dialog;
+  GtkWindow     *window;
   PurpleAccount *account;
 
   chatty_data_t *chatty = chatty_get_data ();
@@ -546,7 +549,8 @@ cb_account_connection_error (PurpleAccount *gc, PurpleConnectionError err, const
 
   chatty_disconnect_account_signals (account);
 
-  dialog = gtk_message_dialog_new (chatty->main_window,
+  window = gtk_application_get_active_window (GTK_APPLICATION (g_application_get_default ()));
+  dialog = gtk_message_dialog_new (window,
                                    GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
                                    GTK_MESSAGE_ERROR,
                                    GTK_BUTTONS_OK,
@@ -787,11 +791,11 @@ chatty_dialogs_create_add_account_view (GtkBuilder *builder)
   PurplePlugin *protocol;
   GtkWidget    *dialog;
   GtkWidget    *button_back;
+  GtkWindow    *window;
   GtkListBox   *list_protocol_sel;
   HdyActionRow *action_row_matrix;
   HdyActionRow *action_row_telegram;
 
-  chatty_data_t        *chatty = chatty_get_data ();
   chatty_dialog_data_t *chatty_dialog = chatty_get_dialog_data ();
 
   button_back = GTK_WIDGET (gtk_builder_get_object (builder, "button_add_account_back"));
@@ -832,8 +836,8 @@ chatty_dialogs_create_add_account_view (GtkBuilder *builder)
 
   dialog = GTK_WIDGET (gtk_builder_get_object (builder, "dialog"));
 
-  gtk_window_set_transient_for (GTK_WINDOW(dialog),
-                                GTK_WINDOW(chatty->main_window));
+  window = gtk_application_get_active_window (GTK_APPLICATION (g_application_get_default ()));
+  gtk_window_set_transient_for (GTK_WINDOW(dialog), window);
 
   g_signal_connect (G_OBJECT(chatty_dialog->button_add_account),
                     "clicked",
@@ -901,6 +905,7 @@ chatty_dialogs_create_dialog_settings (void)
 {
   GtkBuilder    *builder;
   GtkWidget     *dialog;
+  GtkWindow     *window;
   GtkListBox    *list_privacy_prefs;
   GtkListBox    *list_xmpp_prefs;
   GtkListBox    *list_editor_prefs;
@@ -1025,8 +1030,8 @@ chatty_dialogs_create_dialog_settings (void)
   chatty_dialogs_create_edit_account_view (builder);
   chatty_dialogs_create_add_account_view (builder);
 
-  gtk_window_set_transient_for (GTK_WINDOW(dialog),
-                                GTK_WINDOW(chatty->main_window));
+  window = gtk_application_get_active_window (GTK_APPLICATION (g_application_get_default ()));
+  gtk_window_set_transient_for (GTK_WINDOW(dialog), window);
 
   g_object_unref (builder);
 
@@ -1042,6 +1047,7 @@ chatty_dialogs_create_dialog_new_chat (void)
   GtkWidget  *button_back;
   GtkWidget  *button_add_contact;
   GtkWidget  *button_show_add_contact;
+  GtkWindow  *window;
 
   chatty_data_t        *chatty = chatty_get_data ();
   chatty_dialog_data_t *chatty_dialog = chatty_get_dialog_data ();
@@ -1095,8 +1101,8 @@ chatty_dialogs_create_dialog_new_chat (void)
                           G_CALLBACK(cb_contact_name_delete_text),
                           (gpointer)button_add_contact);
 
-  gtk_window_set_transient_for (GTK_WINDOW(dialog),
-                                GTK_WINDOW(chatty->main_window));
+  window = gtk_application_get_active_window (GTK_APPLICATION (g_application_get_default ()));
+  gtk_window_set_transient_for (GTK_WINDOW(dialog), window);
 
   g_object_unref (builder);
 
@@ -1112,6 +1118,7 @@ chatty_dialogs_create_dialog_muc_info (void)
   GtkWidget  *button_back;
   GtkWidget  *button_invite_contact;
   GtkWidget  *button_show_invite_contact;
+  GtkWindow  *window;
   GtkListBox *list_muc_settings;
 
   chatty_data_t        *chatty = chatty_get_data ();
@@ -1205,8 +1212,8 @@ chatty_dialogs_create_dialog_muc_info (void)
                           G_CALLBACK(cb_invite_name_delete_text),
                           (gpointer)button_invite_contact);
 
-  gtk_window_set_transient_for (GTK_WINDOW(dialog),
-                                GTK_WINDOW(chatty->main_window));
+  window = gtk_application_get_active_window (GTK_APPLICATION (g_application_get_default ()));
+  gtk_window_set_transient_for (GTK_WINDOW(dialog), window);
 
   g_object_unref (builder);
 
@@ -1220,6 +1227,7 @@ chatty_dialogs_show_dialog_join_muc (void)
   GtkBuilder *builder;
   GtkWidget  *dialog;
   GtkWidget  *button_join_chat;
+  GtkWindow  *window;
   GtkListBox *list_select_muc_account;
   GtkEntry   *entry_group_chat_id;
   GtkEntry   *entry_group_chat_pw;
@@ -1251,8 +1259,8 @@ chatty_dialogs_show_dialog_join_muc (void)
   chatty_account_populate_account_list (list_select_muc_account,
                                         LIST_SELECT_MUC_ACCOUNT);
 
-  gtk_window_set_transient_for (GTK_WINDOW(dialog),
-                                GTK_WINDOW(chatty->main_window));
+  window = gtk_application_get_active_window (GTK_APPLICATION (g_application_get_default ()));
+  gtk_window_set_transient_for (GTK_WINDOW(dialog), window);
 
   response = gtk_dialog_run (GTK_DIALOG(dialog));
 
@@ -1281,12 +1289,12 @@ chatty_dialogs_show_dialog_user_info (ChattyConversation *chatty_conv)
   GtkWidget     *label_alias;
   GtkWidget     *label_jid;
   GtkWidget     *label_status;
+  GtkWindow     *window;
   GtkSwitch     *switch_notify;
   GtkListBox    *listbox_prefs;
   const char    *protocol_id;
   const char    *alias;
 
-  chatty_data_t *chatty = chatty_get_data ();
   chatty_purple_data_t *chatty_purple = chatty_get_purple_data ();
   chatty_dialog_data_t *chatty_dialog = chatty_get_dialog_data ();
 
@@ -1347,8 +1355,8 @@ chatty_dialogs_show_dialog_user_info (ChattyConversation *chatty_conv)
 
   dialog = GTK_WIDGET (gtk_builder_get_object (builder, "dialog"));
 
-  gtk_window_set_transient_for (GTK_WINDOW(dialog),
-                                GTK_WINDOW(chatty->main_window));
+  window = gtk_application_get_active_window (GTK_APPLICATION (g_application_get_default ()));
+  gtk_window_set_transient_for (GTK_WINDOW(dialog), window);
 
   gtk_dialog_run (GTK_DIALOG(dialog));
 
@@ -1363,8 +1371,7 @@ chatty_dialogs_show_dialog_about_chatty (const char *version)
   GtkBuilder *builder;
   GtkWidget  *dialog;
   GtkWidget  *label_version;
-
-  chatty_data_t *chatty = chatty_get_data ();
+  GtkWindow  *window;
 
   builder = gtk_builder_new_from_resource ("/sm/puri/chatty/ui/chatty-dialog-info.ui");
 
@@ -1373,8 +1380,8 @@ chatty_dialogs_show_dialog_about_chatty (const char *version)
 
   dialog = GTK_WIDGET (gtk_builder_get_object (builder, "dialog"));
 
-  gtk_window_set_transient_for (GTK_WINDOW(dialog),
-                                GTK_WINDOW(chatty->main_window));
+  window = gtk_application_get_active_window (GTK_APPLICATION (g_application_get_default ()));
+  gtk_window_set_transient_for (GTK_WINDOW(dialog), window);
 
   gtk_dialog_run (GTK_DIALOG(dialog));
 

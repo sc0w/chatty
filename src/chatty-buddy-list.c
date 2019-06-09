@@ -805,12 +805,11 @@ chatty_blist_chat_list_remove_buddy (void)
   ChattyBlistNode *ui;
   PurpleChat      *chat;
   GtkWidget       *dialog;
+  GtkWindow       *window;
   const char      *name;
   const char      *text;
   const char      *sub_text;
   int              response;
-
-  chatty_data_t *chatty = chatty_get_data ();
 
   node = _chatty_blist->selected_node;
 
@@ -828,7 +827,8 @@ chatty_blist_chat_list_remove_buddy (void)
     sub_text = _("This deletes the conversation history");
   }
 
-  dialog = gtk_message_dialog_new (chatty->main_window,
+  window = gtk_application_get_active_window (GTK_APPLICATION (g_application_get_default ()));
+  dialog = gtk_message_dialog_new (window,
                                    GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
                                    GTK_MESSAGE_QUESTION,
                                    GTK_BUTTONS_NONE,
