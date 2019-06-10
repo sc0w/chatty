@@ -20,6 +20,7 @@
 #include "chatty-purple-init.h"
 #include "chatty-buddy-list.h"
 #include "chatty-conversation.h"
+#include "chatty-history.h"
 #define HANDY_USE_UNSTABLE_API
 #include <handy.h>
 
@@ -809,6 +810,7 @@ chatty_blist_chat_list_remove_buddy (void)
   const char      *text;
   const char      *sub_text;
   int              response;
+  const char      *conv_name;
 
   chatty_data_t *chatty = chatty_get_data ();
 
@@ -861,6 +863,10 @@ chatty_blist_chat_list_remove_buddy (void)
 
       chatty_window_update_sub_header_titlebar (NULL, "");
     } else if (PURPLE_BLIST_NODE_IS_CHAT(node)) {
+      conv_name = purple_conversation_get_name(ui->conv.conv);
+      g_debug("@LELAND@ chatty_blist_chat_list_remove_buddy");
+      chatty_history_delete_chat(conv_name);
+
       purple_blist_remove_chat (chat);
     }
 

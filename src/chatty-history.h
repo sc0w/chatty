@@ -11,6 +11,7 @@
 #include "time.h"
 #include "chatty-conversation.h"
 
+//TODO:LELAND: Document methods!
 
 int chatty_history_open(void);
 
@@ -45,5 +46,13 @@ void
 chatty_history_get_chat_messages(const char* conv_name,
                                void (*callback)(char* msg, int direction, int time_stamp, char* from, char *alias, ChattyConversation *chatty_conv),
                                ChattyConversation *chatty_conv);
+
+int
+chatty_history_get_chat_last_message_time(const char* conv_name);
+
+
+void
+chatty_history_delete_chat(const char* conv_name);
+
 
 #endif

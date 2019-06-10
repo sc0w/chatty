@@ -2274,9 +2274,10 @@ chatty_conv_write_conversation (PurpleConversation *conv,
                                    NULL,
                                    NULL);
       if (type == PURPLE_CONV_TYPE_CHAT){
-        chatty_history_add_chat_message (chat_id, message, 0, real_who, alias, "UID", mtime, conv_name);
+        // TODO: LELAND: Do not store these or store them but dont show to the user
+        //chatty_history_add_chat_message (chat_id, message, 0, real_who, alias, "UID", mtime, conv_name);
       } else {
-        chatty_history_add_im_message (message, 0, account->username, who_, "UID", mtime);
+        //chatty_history_add_im_message (message, 0, account->username, who_, "UID", mtime);
       }
     }
 
@@ -2483,8 +2484,28 @@ chatty_conv_join_chat (PurpleChat *chat)
                                                 account);
 
   if (!conv || purple_conv_chat_has_left (PURPLE_CONV_CHAT(conv))) {
+
+    // TODO: LELAND: Move these declarations to f top
+    /*time_t mtime;
+    struct tm * timeinfo;
+    char *iso_timestamp;
+
+    iso_timestamp = malloc(100); // TODO: LELAND: Adjust
+
+    mtime = chatty_history_get_chat_last_message_time(name);
+    timeinfo = gmtime (&mtime);
+    strftime (iso_timestamp, 100, "%Y-%m-%dT%H:%M:%SZ", timeinfo);
+    g_debug("@LELAND@ Epoch to iso for epoch %ld is :  %s", mtime, iso_timestamp);
+
+    //g_hash_table_steal (components, "history_since");
+    g_hash_table_insert(components, "history_since", iso_timestamp);
     serv_join_chat (purple_account_get_connection (account), components);
+    g_free (iso_timestamp);*/
+
+    serv_join_chat (purple_account_get_connection (account), components);
+
   } else if (conv) {
+    g_debug("@LELAND@ Joining existent chat");
     purple_conversation_present(conv);
 
     purple_signal_emit (chatty_conversations_get_handle (),

@@ -124,7 +124,7 @@ chatty_history_close(void)
     case SQLITE_OK:
       g_debug("Database closed successfully\n");
       break;
-    case SQLITE_BUSY:
+    default:
       g_debug("Database could not be closed\n");
       break;
     }
@@ -245,6 +245,37 @@ chatty_history_add_im_message(
 
 }
 
+int
+chatty_history_get_chat_last_message_time(const char* conv_name)
+{
+
+  int Err;
+  sqlite3_stmt *stmt;
+  int time_stamp  = 0;
+
+  // TODO: LELAND: Watch out sqli!
+  g_debug ("@LELAND@ chatty_history_get_chat_last_message_time for conv_name %s", conv_name);
+
+  Err = sqlite3_prepare_v2(db, "SELECT max(timestamp) FROM chatty_chat WHERE conv_name=(?)", -1, &stmt, NULL);
+  if (Err != SQLITE_OK)
+      g_debug("Error preparing %d", Err); //TODO: LELAND: Handle errors
+
+  Err = sqlite3_bind_text(stmt, 1, conv_name, -1, SQLITE_TRANSIENT);
+  if (Err != SQLITE_OK)
+      g_debug("Error binding");//TODO: LELAND: Handle errors
+
+  g_debug ("@LELAND@ Chat Last Time");
+  while ((sqlite3_step(stmt)) == SQLITE_ROW) {
+      time_stamp = sqlite3_column_int(stmt, 0);
+      g_debug ("@LELAND@ Chat Last Time: Found row! %d", time_stamp);
+  }
+
+  Err = sqlite3_finalize(stmt);//TODO: LELAND: Handle errors
+  if (Err != SQLITE_OK)
+      g_debug("Error finalizing");//TODO: LELAND: Handle errors
+
+  return time_stamp;
+}
 
 void
 chatty_history_get_chat_messages(const char* conv_name,
@@ -333,4 +364,29 @@ chatty_history_remove_message(void)
 {
 
 }
+
+void
+chatty_history_delete_chat(const char* conv_name){
+  int Err;
+  sqlite3_stmt *stmt;
+
+  // TODO: LELAND: Watch out sqli!
+  g_debug ("@LELAND@ chatty_history_delete_chat for conv_name %s", conv_name);
+
+  Err = sqlite3_prepare_v2(db, "DELETE FROM chatty_chat WHERE conv_name=(?)", -1, &stmt, NULL);
+  if (Err != SQLITE_OK)
+      g_debug("Error when removing chat from DDBB : %d", Err); //TODO: LELAND: Handle errors
+
+  Err = sqlite3_bind_text(stmt, 1, conv_name, -1, SQLITE_TRANSIENT);
+  if (Err != SQLITE_OK)
+      g_debug("Error when removing chat from DDBB : %d", Err);//TODO: LELAND: Handle errors
+
+  sqlite3_step(stmt);
+
+  Err = sqlite3_finalize(stmt);//TODO: LELAND: Handle errors
+  if (Err != SQLITE_OK)
+      g_debug("Error when removing chat from DDBB : %d", Err);//TODO: LELAND: Handle errors
+
+}
+
                                    
