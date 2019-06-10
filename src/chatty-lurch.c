@@ -45,6 +45,7 @@ cb_get_fp_list_own (int         err,
                     gpointer    user_data)
 {
   GList       *key_list = NULL;
+  GList       *filtered_list = NULL;
   const GList *curr_p = NULL;
   const char  *fp = NULL;
   GtkWidget   *row;
@@ -66,23 +67,35 @@ cb_get_fp_list_own (int         err,
     for (curr_p = key_list; curr_p; curr_p = curr_p->next) {
       fp = (char *) g_hash_table_lookup(id_fp_table, curr_p->data);
 
+      if (fp) {
+        filtered_list = g_list_append (filtered_list, curr_p->data);
+      }
+    }
+
+    for (curr_p = filtered_list; curr_p; curr_p = curr_p->next) {
+      fp = (char *) g_hash_table_lookup(id_fp_table, curr_p->data);
+
       g_debug ("DeviceId: %i fingerprint:\n%s\n", *((guint32 *) curr_p->data),
                fp ? fp : "(no session)");
 
       row = chatty_lurch_create_fingerprint_row (fp, *((guint32 *) curr_p->data));
 
       if (row) {
-        if (g_list_length (key_list) == 1) {
-          gtk_container_add (GTK_CONTAINER(chatty_dialog->omemo.listbox_fp_own), row);
-          gtk_widget_hide (GTK_WIDGET(chatty_dialog->omemo.listbox_fp_own_dev));
-        } else if (curr_p == g_list_last (key_list)) {
+        if (curr_p == g_list_last (filtered_list)) {
           gtk_container_add (GTK_CONTAINER(chatty_dialog->omemo.listbox_fp_own), row);
         } else {
           gtk_container_add (GTK_CONTAINER(chatty_dialog->omemo.listbox_fp_own_dev), row);
         }
       }
     }
+
+    if (g_list_length (filtered_list) == 1) {
+      gtk_widget_hide (GTK_WIDGET(chatty_dialog->omemo.listbox_fp_own_dev));
+    }
   }
+
+  g_list_free (key_list);
+  g_list_free (filtered_list);
 }
 
 
@@ -121,6 +134,8 @@ cb_get_fp_list_contact (int         err,
       }
     }
   }
+
+  g_list_free (key_list);
 }
 
 
