@@ -286,10 +286,10 @@ chatty_account_notify_added (PurpleAccount *account,
                              const char    *msg)
 {
   GtkWidget  *dialog;
+  GtkWindow  *window;
 
-  chatty_data_t *chatty = chatty_get_data ();
-
-  dialog = gtk_message_dialog_new (chatty->main_window,
+  window = gtk_application_get_active_window (GTK_APPLICATION (g_application_get_default ()));
+  dialog = gtk_message_dialog_new (window,
                                    GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
                                    GTK_MESSAGE_INFO,
                                    GTK_BUTTONS_OK,
@@ -349,12 +349,12 @@ chatty_account_request_authorization (PurpleAccount *account,
                                       void          *user_data)
 {
   GtkWidget           *dialog;
+  GtkWindow           *window;
   struct auth_request *ar;
   int                  response;
 
-  chatty_data_t *chatty = chatty_get_data ();
-
-  dialog = gtk_message_dialog_new (chatty->main_window,
+  window = gtk_application_get_active_window (GTK_APPLICATION (g_application_get_default ()));
+  dialog = gtk_message_dialog_new (window,
                                    GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
                                    GTK_MESSAGE_QUESTION,
                                    GTK_BUTTONS_NONE,

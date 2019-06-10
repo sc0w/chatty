@@ -258,8 +258,6 @@ chatty_window_activate (GtkApplication *app,
 
   chatty_popover_actions_init (window);
 
-  chatty->main_window = window;
-
   chatty->header_spinner = GTK_WIDGET (gtk_builder_get_object (builder, "header_spinner"));
   chatty->sub_header_bar = GTK_HEADER_BAR (gtk_builder_get_object (builder, "sub_header_bar"));
   chatty->sub_header_label = GTK_WIDGET (gtk_builder_get_object (builder, "sub_header_label"));
