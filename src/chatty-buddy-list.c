@@ -772,6 +772,8 @@ chatty_blist_chat_list_leave_chat (void)
   PurpleBlistNode *node;
   ChattyBlistNode *ui;
 
+  g_debug("@LELAND@ Leaving chat...");
+
   node = _chatty_blist->selected_node;
 
   if (node) {
@@ -786,6 +788,8 @@ chatty_blist_chat_list_leave_chat (void)
   }
 
   chatty_blist_chat_list_set_row ();
+
+  g_debug("@LELAND@ END Leaving chat...");
 }
 
 
@@ -866,6 +870,10 @@ chatty_blist_chat_list_remove_buddy (void)
       conv_name = purple_conversation_get_name(ui->conv.conv);
       g_debug("@LELAND@ chatty_blist_chat_list_remove_buddy");
       chatty_history_delete_chat(conv_name);
+      // TODO: LELAND: Is this the right place? After recreating a recently
+      // deleted chat (same session), the conversation is still in memory
+      // somewhere and when re-joining the same chat, the db is not re-populated
+      // (until next app session) since there is no server call. Ask @Andrea
 
       purple_blist_remove_chat (chat);
     }

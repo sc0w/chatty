@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+#define G_LOG_DOMAIN "chatty-history"
 
 #include "chatty-history.h"
 #include <sqlite3.h>
@@ -22,15 +23,16 @@ chatty_history_create_chat_schema(void)
 
   sql = "CREATE TABLE IF NOT EXISTS chatty_chat("  \
     "id                 INTEGER     NOT NULL    PRIMARY KEY AUTOINCREMENT," \
-    "timestamp          INTEGER     NOT_NULL    UNIQUE,"  \
+    "timestamp          INTEGER     NOT_NULL,"  \
     "direction          INTEGER     NOT NULL," \
     "conv_name          TEXT,"  \
     "jid                TEXT        NOT_NULL," \
     "alias              TEXT,"  \
     "uid                TEXT        NOT_NULL," \
-    "message            TEXT" \
+    "message            TEXT," \
+    "UNIQUE (timestamp, message)"
     ");";
-  // TODO: LELAND: 'uid' to be implemented by XEP-0313. By now, using timestamp as UNIQUE to avoid dups in db
+  // TODO: LELAND: 'uid' to be implemented by XEP-0313. By now, using UNIQUE constraint to avoid dups in db
   // TODO: LELAND: Should 'alias' be NOT NULL?
 
   rc = sqlite3_exec(db, sql, NULL, NULL, &zErrMsg);
@@ -53,14 +55,15 @@ chatty_history_create_im_schema(void)
 
   sql = "CREATE TABLE IF NOT EXISTS chatty_im("  \
     "id                 INTEGER     NOT NULL    PRIMARY KEY AUTOINCREMENT," \
-    "timestamp          INTEGER     NOT_NULL    UNIQUE,"  \
+    "timestamp          INTEGER     NOT_NULL,"  \
     "direction          INTEGER     NOT NULL," \
     "account            TEXT        NOT_NULL," \
     "jid                TEXT        NOT_NULL," \
     "uid                TEXT        NOT_NULL," \
-    "message            TEXT" \
+    "message            TEXT," \
+    "UNIQUE (timestamp, message)"
     ");";
-  // TODO: LELAND: 'uid' to be implemented by XEP-0313. By now, using timestamp as UNIQUE to avoid dups in db
+  // TODO: LELAND: 'uid' to be implemented by XEP-0313. By now, using UNIQUE constraint to avoid dups in db
 
   rc = sqlite3_exec(db, sql, NULL, NULL, &zErrMsg);
 
@@ -293,7 +296,7 @@ chatty_history_get_chat_messages(const char* conv_name,
 
   // TODO: LELAND: Watch out sqli!
 
-  Err = sqlite3_prepare_v2(db, "SELECT * FROM chatty_chat WHERE conv_name=(?)", -1, &stmt, NULL);
+  Err = sqlite3_prepare_v2(db, "SELECT * FROM chatty_chat WHERE conv_name=(?) ORDER BY timestamp ASC", -1, &stmt, NULL);
   if (Err != SQLITE_OK)
       g_debug("Error preparing %d", Err); //TODO: LELAND: Handle errors
 
@@ -332,7 +335,7 @@ chatty_history_get_im_messages(const char* account,
 
   // TODO: LELAND: Watch out sqli!
 
-  Err = sqlite3_prepare_v2(db, "SELECT * FROM chatty_im WHERE account=(?) AND jid=(?)", -1, &stmt, NULL);
+  Err = sqlite3_prepare_v2(db, "SELECT * FROM chatty_im WHERE account=(?) AND jid=(?) ORDER BY timestamp ASC", -1, &stmt, NULL);
   if (Err != SQLITE_OK)
       g_debug("Error preparing %d", Err);
 
