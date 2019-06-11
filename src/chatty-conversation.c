@@ -2440,6 +2440,28 @@ chatty_conv_im_with_buddy (PurpleAccount *account,
   chatty_conv_set_unseen (chatty_conv, CHATTY_UNSEEN_NONE);
 }
 
+static void
+chatty_conv_add_history_since_component(GHashTable *components, const char *name){
+  // TODO: This f() must be also called from buddy-list#cb_auto_join_chats. Expose
+
+  time_t mtime;
+  struct tm * timeinfo;
+  char *iso_timestamp;
+
+  iso_timestamp = malloc(100); // TODO: LELAND: Adjust size. Also, free this
+                               // for some reason if freed inside if,
+                               // writes garbage to blist.xml
+                               // Why cant I use an string?
+
+  mtime = chatty_history_get_chat_last_message_time(name);
+  mtime += 1; // Use the next epoch to exclude the last stored message
+  timeinfo = gmtime (&mtime);
+  strftime (iso_timestamp, 100, "%Y-%m-%dT%H:%M:%SZ", timeinfo);
+
+  g_hash_table_steal (components, "history_since");
+  g_hash_table_insert(components, "history_since", iso_timestamp);
+
+}
 
 /**
  * chatty_conv_join_chat:
@@ -2484,31 +2506,9 @@ chatty_conv_join_chat (PurpleChat *chat)
                                                 account);
 
   if (!conv || purple_conv_chat_has_left (PURPLE_CONV_CHAT(conv))) {
-
-    g_debug("@LELAND@ Joining NEW chat -----------------------------------NNNNNNNN");
-
-    // TODO: LELAND: Move these declarations to f top
-    time_t mtime;
-    struct tm * timeinfo;
-    char *iso_timestamp;
-
-    iso_timestamp = malloc(100); // TODO: LELAND: Adjust size. Also, free this
-                                 // for some reason if freed inside if,
-                                 // writes garbage to blist.xml
-
-    mtime = chatty_history_get_chat_last_message_time(name);
-    mtime =+1; // Use the next epoch to exclude the last stored message
-    timeinfo = gmtime (&mtime);
-    strftime (iso_timestamp, 100, "%Y-%m-%dT%H:%M:%SZ", timeinfo);
-    g_debug("@LELAND@ Epoch to iso for epoch %ld is :  %s", mtime, iso_timestamp);
-
-    g_hash_table_steal (components, "history_since");
-    g_hash_table_insert(components, "history_since", iso_timestamp);
+    chatty_conv_add_history_since_component(components, name);
     serv_join_chat (purple_account_get_connection (account), components);
-
-
   } else if (conv) {
-    g_debug("@LELAND@ Joining existent chat ^^^^^^^^^^^^^^^^^^^^^^^^ E");
     purple_conversation_present(conv);
 
     purple_signal_emit (chatty_conversations_get_handle (),

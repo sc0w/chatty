@@ -537,6 +537,8 @@ cb_auto_join_chats (gpointer data)
   PurpleConnection *pc = data;
   PurpleAccount    *account = purple_connection_get_account (pc);
 
+  g_debug("@LELAND@ Auto joining chat...");
+
   for (node = purple_blist_get_root (); node;
        node = purple_blist_node_next (node, FALSE)) {
 
