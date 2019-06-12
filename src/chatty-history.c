@@ -323,7 +323,7 @@ chatty_history_get_chat_messages(const char* conv_name,
 void
 chatty_history_get_im_messages(const char* account,
                                const char* jid,
-                               void (*callback)(char* msg, int direction, int time_stamp, ChattyConversation *chatty_conv),
+                               void (*callback)(char* msg, int direction, int time_stamp, ChattyConversation *chatty_conv), // TODO: LELAND: Do I need to declare all this for the cb?
                                ChattyConversation *chatty_conv)
 {
 
@@ -368,6 +368,8 @@ chatty_history_remove_message(void)
 
 }
 
+// TODO: LELAND: BUG!: this method has to take also the account of the local user
+// This implies to add it to the DDBB schema too!
 void
 chatty_history_delete_chat(const char* conv_name){
   int Err;
@@ -392,4 +394,31 @@ chatty_history_delete_chat(const char* conv_name){
 
 }
 
+void
+chatty_history_delete_im(const char *account, const char *jid){
+  int Err;
+  sqlite3_stmt *stmt;
+
+  // TODO: LELAND: Watch out sqli!
+  g_debug ("@LELAND@ chatty_history_delete_im for account %s and buddy jid %s", account, jid);
+
+  Err = sqlite3_prepare_v2(db, "DELETE FROM chatty_im WHERE account=(?) AND jid=(?)", -1, &stmt, NULL);
+  if (Err != SQLITE_OK)
+      g_debug("Error when removing IM from DDBB : %d", Err); //TODO: LELAND: Handle errors
+
+  Err = sqlite3_bind_text(stmt, 1, account, -1, SQLITE_TRANSIENT);
+  if (Err != SQLITE_OK)
+      g_debug("Error when removing IM from DDBB : %d", Err);//TODO: LELAND: Handle errors
+
+  Err = sqlite3_bind_text(stmt, 2, jid, -1, SQLITE_TRANSIENT);
+  if (Err != SQLITE_OK)
+      g_debug("Error when removing IM from DDBB : %d", Err);//TODO: LELAND: Handle errors
+                                                            //
+  sqlite3_step(stmt);
+
+  Err = sqlite3_finalize(stmt);//TODO: LELAND: Handle errors
+  if (Err != SQLITE_OK)
+      g_debug("Error when removing IM from DDBB : %d", Err);//TODO: LELAND: Handle errors
+
+}
                                    

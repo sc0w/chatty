@@ -865,6 +865,7 @@ chatty_blist_chat_list_remove_buddy (void)
 
   if (response == GTK_RESPONSE_OK) {
     if (PURPLE_BLIST_NODE_IS_BUDDY(node)) {
+      chatty_history_delete_im(buddy->account->username, buddy->name);
       chatty_conv_delete_message_history (buddy);
 
       purple_account_remove_buddy (buddy->account, buddy, NULL);

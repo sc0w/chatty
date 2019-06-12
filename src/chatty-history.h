@@ -54,5 +54,8 @@ chatty_history_get_chat_last_message_time(const char* conv_name);
 void
 chatty_history_delete_chat(const char* conv_name);
 
+void
+chatty_history_delete_im(const char *account, const char *jid);
+
 
 #endif
