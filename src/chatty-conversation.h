@@ -112,6 +112,8 @@ gboolean chatty_conv_delete_message_history (PurpleBuddy *buddy);
 GList *chatty_conv_find_unseen (ChattyUnseenState  state);
 void chatty_conv_set_unseen (ChattyConversation *chatty_conv,
                              ChattyUnseenState   state);
+void chatty_conv_add_history_since_component(GHashTable *components, const char *conv_name);
+
 
 
 #endif

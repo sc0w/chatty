@@ -535,9 +535,9 @@ cb_auto_join_chats (gpointer data)
 {
   PurpleBlistNode  *node;
   PurpleConnection *pc = data;
+  GHashTable               *components;
+  PurplePluginProtocolInfo *prpl_info;
   PurpleAccount    *account = purple_connection_get_account (pc);
-
-  g_debug("@LELAND@ Auto joining chat...");
 
   for (node = purple_blist_get_root (); node;
        node = purple_blist_node_next (node, FALSE)) {
@@ -547,6 +547,10 @@ cb_auto_join_chats (gpointer data)
 
       if (purple_chat_get_account (chat) == account &&
           purple_blist_node_get_bool (node, "chatty-autojoin")) {
+
+        prpl_info = PURPLE_PLUGIN_PROTOCOL_INFO(purple_find_prpl (purple_account_get_protocol_id (account)));
+        components = purple_chat_get_components (chat);
+        chatty_conv_add_history_since_component(components, prpl_info->get_chat_name(components));
 
         serv_join_chat (purple_account_get_connection (account),
                         purple_chat_get_components (chat));

@@ -1136,7 +1136,7 @@ chatty_conv_get_chat_messages_cb(char* msg, int time_stamp, int direction, char*
       chatty_msg_list_add_message (chatty_conv->msg_list,
                                    MSG_IS_INCOMING,
                                    msg_html,
-                                   from,
+                                   NULL,
                                    icon ? icon : NULL);
 
     } else if (direction == -1) {
@@ -2440,10 +2440,9 @@ chatty_conv_im_with_buddy (PurpleAccount *account,
   chatty_conv_set_unseen (chatty_conv, CHATTY_UNSEEN_NONE);
 }
 
-static void
-chatty_conv_add_history_since_component(GHashTable *components, const char *name){
-  // TODO: This f() must be also called from buddy-list#cb_auto_join_chats. Expose
-
+// TODO: LELAND: Should this go to some utilities file?
+void
+chatty_conv_add_history_since_component(GHashTable *components, const char *conv_name){
   time_t mtime;
   struct tm * timeinfo;
   char *iso_timestamp;
@@ -2453,8 +2452,8 @@ chatty_conv_add_history_since_component(GHashTable *components, const char *name
                                // writes garbage to blist.xml
                                // Why cant I use an string?
 
-  mtime = chatty_history_get_chat_last_message_time(name);
-  mtime += 1; // Use the next epoch to exclude the last stored message
+  mtime = chatty_history_get_chat_last_message_time(conv_name);
+  mtime += 1; // Use the next epoch to exclude the last stored message(s)
   timeinfo = gmtime (&mtime);
   strftime (iso_timestamp, 100, "%Y-%m-%dT%H:%M:%SZ", timeinfo);
 
@@ -2737,7 +2736,7 @@ chatty_conv_new (PurpleConversation *conv)
     purple_conversation_set_logging (conv, purple_value_get_boolean (value));
   }
 
-  chatty_conv->attach.timer = g_idle_add (chatty_conv_add_message_history_to_conv, chatty_conv);
+  chatty_conv_add_message_history_to_conv(chatty_conv);
 
   if (CHATTY_IS_CHATTY_CONVERSATION (conv)) {
     purple_signal_emit (chatty_conversations_get_handle (),
