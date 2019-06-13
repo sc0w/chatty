@@ -1038,9 +1038,11 @@ chatty_conv_muc_get_avatar_color (const char *user_id)
  * Delete all logs from the given buddyname
  *
  */
+// TODO: LELAND: Can I remove this method now?
 gboolean
 chatty_conv_delete_message_history (PurpleBuddy *buddy)
 {
+
   GList         *history;
   PurpleAccount *account;
   const gchar   *b_name;
@@ -1065,7 +1067,10 @@ chatty_conv_delete_message_history (PurpleBuddy *buddy)
 }
 
 static void
-chatty_conv_get_im_messages_cb(char* msg, int time_stamp, int direction, ChattyConversation *chatty_conv){
+chatty_conv_get_im_messages_cb (const unsigned char* msg,
+                                int time_stamp,
+                                int direction,
+                                ChattyConversation *chatty_conv){
   gchar   *msg_html;
   guint    msg_dir;
   char    *ts = (char*) malloc(50*sizeof(char)); // TODO: LELAND: Set a max depending on the format and make it a #define
@@ -1080,7 +1085,7 @@ chatty_conv_get_im_messages_cb(char* msg, int time_stamp, int direction, ChattyC
     msg_dir = MSG_IS_SYSTEM; // TODO: LELAND: Do we have this case for IMs?
   }
 
-  msg_html = chatty_conv_check_for_links (msg);
+  msg_html = chatty_conv_check_for_links ((const gchar*)msg);
 
   if (msg_html[0] != '\0') {
     chatty_msg_list_add_message (chatty_conv->msg_list,
@@ -1104,7 +1109,12 @@ chatty_conv_get_im_messages_cb(char* msg, int time_stamp, int direction, ChattyC
 
 
 static void
-chatty_conv_get_chat_messages_cb(char* msg, int time_stamp, int direction, char* from, char *alias, ChattyConversation *chatty_conv){
+chatty_conv_get_chat_messages_cb (const unsigned char* msg,
+                                  int time_stamp,
+                                  int direction,
+                                  const unsigned char* from,
+                                  const unsigned char *alias,
+                                  ChattyConversation *chatty_conv){
   gchar   *msg_html;
   PurpleBuddy              *buddy;
   const char               *color;
@@ -1112,19 +1122,19 @@ chatty_conv_get_chat_messages_cb(char* msg, int time_stamp, int direction, char*
   GtkWidget                *icon = NULL;
   PurpleAccount            *account;
 
-  msg_html = chatty_conv_check_for_links (msg);
+  msg_html = chatty_conv_check_for_links ((const gchar*)msg);
 
   if (msg_html[0] != '\0') {
 
     if (direction == 1) {
-      msg_html = chatty_conv_check_for_links (msg);
+      msg_html = chatty_conv_check_for_links ((const gchar*)msg);
 
       account = purple_conversation_get_account (chatty_conv->conv);
-      buddy = purple_find_buddy (account, from);
-      color = chatty_conv_muc_get_avatar_color (from);
+      buddy = purple_find_buddy (account, (const gchar*)from);
+      color = chatty_conv_muc_get_avatar_color ((const gchar*)from);
 
       avatar = chatty_icon_get_buddy_icon ((PurpleBlistNode*)buddy,
-                                           alias,
+                                           (const gchar*)alias,
                                            CHATTY_ICON_SIZE_MEDIUM,
                                            color,
                                            FALSE);
@@ -1140,7 +1150,7 @@ chatty_conv_get_chat_messages_cb(char* msg, int time_stamp, int direction, char*
                                    icon ? icon : NULL);
 
     } else if (direction == -1) {
-      msg_html = chatty_conv_check_for_links (msg);
+      msg_html = chatty_conv_check_for_links ((const gchar*)msg);
 
       chatty_msg_list_add_message (chatty_conv->msg_list,
                                    MSG_IS_OUTGOING,
@@ -1150,7 +1160,7 @@ chatty_conv_get_chat_messages_cb(char* msg, int time_stamp, int direction, char*
     } else {
       chatty_msg_list_add_message (chatty_conv->msg_list,
                                    MSG_IS_SYSTEM,
-                                   msg,
+                                   (const gchar*)msg,
                                    NULL,
                                    NULL);
     }
@@ -1194,7 +1204,7 @@ chatty_conv_add_message_history_to_conv (gpointer data)
   account = purple_conversation_get_account (chatty_conv->conv);
 
   if (im) {
-    chatty_history_get_im_messages (account->username, conv_name, chatty_conv_get_im_messages_cb, chatty_conv); // TODO: LELAND: Infinite, not lazy by now
+    chatty_history_get_im_messages (account->username, conv_name, chatty_conv_get_im_messages_cb, chatty_conv);
   }else{
     chatty_history_get_chat_messages (conv_name, chatty_conv_get_chat_messages_cb, chatty_conv);
   }
@@ -2248,7 +2258,7 @@ chatty_conv_write_conversation (PurpleConversation *conv,
                                    group_chat ? who : NULL,
                                    icon ? icon : NULL);
       if (type == PURPLE_CONV_TYPE_CHAT){
-        chatty_history_add_chat_message (chat_id, message, 1, real_who, alias, "UID", mtime, conv_name);  // TODO: LELAND: UID to be implemented by XEP-0313
+        chatty_history_add_chat_message (message, 1, real_who, alias, "UID", mtime, conv_name);  // TODO: LELAND: UID to be implemented by XEP-0313
       } else {
         chatty_history_add_im_message (message, 1, account->username, who_, "UID", mtime);
       }
@@ -2262,7 +2272,7 @@ chatty_conv_write_conversation (PurpleConversation *conv,
                                    NULL,
                                    NULL);
       if (type == PURPLE_CONV_TYPE_CHAT){
-        chatty_history_add_chat_message (chat_id, message, -1, real_who, alias, "UID", mtime, conv_name);
+        chatty_history_add_chat_message (message, -1, real_who, alias, "UID", mtime, conv_name);
       } else {
         chatty_history_add_im_message (message, -1, account->username, who_, "UID", mtime);
       }
@@ -2274,7 +2284,7 @@ chatty_conv_write_conversation (PurpleConversation *conv,
                                    NULL,
                                    NULL);
       if (type == PURPLE_CONV_TYPE_CHAT){
-        // TODO: LELAND: Do not store these or store them but dont show to the user
+        // TODO: LELAND: Do not store "The topic is:" or store them but dont show to the user
         //chatty_history_add_chat_message (chat_id, message, 0, real_who, alias, "UID", mtime, conv_name);
       } else {
         //chatty_history_add_im_message (message, 0, account->username, who_, "UID", mtime);
