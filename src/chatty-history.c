@@ -6,6 +6,23 @@
 
 #define G_LOG_DOMAIN "chatty-history"
 
+#define CHAT_ID_IDX         1
+#define CHAT_TIMESTAMP_IDX  2
+#define CHAT_DIRECTION_IDX  3
+#define CHAT_FROM_IDX       4
+#define CHAT_TO_IDX         5
+#define CHAT_ALIAS_IDX      6
+#define CHAT_UID_IDX        7
+#define CHAT_MESSAGE_IDX    8
+
+#define IM_ID_IDX         1
+#define IM_TIMESTAMP_IDX  2
+#define IM_DIRECTION_IDX  3
+#define IM_FROM_IDX       4
+#define IM_TO_IDX         5
+#define IM_UID_IDX        6
+#define IM_MESSAGE_IDX    7
+
 #include "chatty-history.h"
 #include <sqlite3.h>
 #include <glib.h>
@@ -23,10 +40,10 @@ chatty_history_create_chat_schema (void)
 
   sql = "CREATE TABLE IF NOT EXISTS chatty_chat("  \
     "id                 INTEGER     NOT NULL    PRIMARY KEY AUTOINCREMENT," \
-    "timestamp          INTEGER     NOT_NULL,"  \
+    "timestamp          INTEGER     NOT_NULL," \
     "direction          INTEGER     NOT NULL," \
-    "conv_name          TEXT,"  \
-    "jid                TEXT        NOT_NULL," \
+    "from_id            TEXT        NOT NULL," \
+    "to_id              TEXT        NOT_NULL," \
     "alias              TEXT,"  \
     "uid                TEXT        NOT_NULL," \
     "message            TEXT," \
@@ -57,8 +74,8 @@ chatty_history_create_im_schema (void)
     "id                 INTEGER     NOT NULL    PRIMARY KEY AUTOINCREMENT," \
     "timestamp          INTEGER     NOT_NULL,"  \
     "direction          INTEGER     NOT NULL," \
-    "account            TEXT        NOT_NULL," \
-    "jid                TEXT        NOT_NULL," \
+    "from_id            TEXT        NOT_NULL," \
+    "to_id              TEXT        NOT_NULL," \
     "uid                TEXT        NOT_NULL," \
     "message            TEXT," \
     "UNIQUE (timestamp, message)"
@@ -133,47 +150,45 @@ chatty_history_close (void)
 void
 chatty_history_add_chat_message ( const char *message,
                                   int         direction,
-                                  const char *jid,
+                                  const char *from,
                                   const char *alias,
                                   const char *uid,
                                   time_t      mtime,
-                                  const char *conv_name)
+                                  const char *to)
 {
 
   sqlite3_stmt *stmt;
   int rc;
 
-  // TODO: LELAND: Once schemas are fixed, make col indexes #defines
-
   rc = sqlite3_prepare_v2(db, "INSERT INTO chatty_chat VALUES (?, ?, ?, ?, ?, ?, ?, ?)", -1, &stmt, NULL);
   if (rc != SQLITE_OK)
       g_debug("Error preparing statement when adding CHAT message. errno: %d, desc: %s", rc, sqlite3_errmsg(db));
 
-  rc = sqlite3_bind_text(stmt, 8, message, -1, SQLITE_TRANSIENT);
+  rc = sqlite3_bind_text(stmt, CHAT_MESSAGE_IDX, message, -1, SQLITE_TRANSIENT);
   if (rc != SQLITE_OK)
       g_debug("Error binding value when adding CHAT message. errno: %d, desc: %s", rc, sqlite3_errmsg(db));
 
-  rc = sqlite3_bind_int(stmt, 3, direction);
+  rc = sqlite3_bind_int(stmt, CHAT_DIRECTION_IDX, direction);
   if (rc != SQLITE_OK)
       g_debug("Error binding value when adding CHAT message. errno: %d, desc: %s", rc, sqlite3_errmsg(db));
 
-  rc = sqlite3_bind_text(stmt, 5, jid, -1, SQLITE_TRANSIENT);
+  rc = sqlite3_bind_text(stmt, CHAT_FROM_IDX, from, -1, SQLITE_TRANSIENT);
   if (rc != SQLITE_OK)
       g_debug("Error binding value when adding CHAT message. errno: %d, desc: %s", rc, sqlite3_errmsg(db));
 
-  rc = sqlite3_bind_text(stmt, 7, uid, -1, SQLITE_TRANSIENT);
+  rc = sqlite3_bind_text(stmt, CHAT_UID_IDX, uid, -1, SQLITE_TRANSIENT);
   if (rc != SQLITE_OK)
       g_debug("Error binding value when adding CHAT message. errno: %d, desc: %s", rc, sqlite3_errmsg(db));
 
-  rc = sqlite3_bind_int64(stmt, 2, mtime);
+  rc = sqlite3_bind_int64(stmt, CHAT_TIMESTAMP_IDX, mtime);
   if (rc != SQLITE_OK)
       g_debug("Error binding value when adding CHAT message. errno: %d, desc: %s", rc, sqlite3_errmsg(db));
 
-  rc = sqlite3_bind_text(stmt, 4, conv_name, -1, SQLITE_TRANSIENT);
+  rc = sqlite3_bind_text(stmt, CHAT_TO_IDX, to, -1, SQLITE_TRANSIENT);
   if (rc != SQLITE_OK)
       g_debug("Error binding value when adding CHAT message. errno: %d, desc: %s", rc, sqlite3_errmsg(db));
 
-  rc = sqlite3_bind_text(stmt, 6, alias, -1, SQLITE_TRANSIENT);
+  rc = sqlite3_bind_text(stmt, CHAT_ALIAS_IDX, alias, -1, SQLITE_TRANSIENT);
   if (rc != SQLITE_OK)
       g_debug("Error binding value when adding CHAT message. errno: %d, desc: %s", rc, sqlite3_errmsg(db));
 
@@ -191,8 +206,8 @@ chatty_history_add_chat_message ( const char *message,
 void
 chatty_history_add_im_message (const char *message,
                               int         direction,
-                              const char *account,
-                              const char *jid,
+                              const char *from,
+                              const char *to,
                               const char *uid,
                               time_t      mtime)
 {
@@ -204,27 +219,27 @@ chatty_history_add_im_message (const char *message,
   if (rc != SQLITE_OK)
       g_debug("Error preparing statement when adding IM message. errno: %d, desc: %s", rc, sqlite3_errmsg(db));
 
-  rc = sqlite3_bind_text(stmt, 7, message, -1, SQLITE_TRANSIENT);
+  rc = sqlite3_bind_text(stmt, IM_MESSAGE_IDX, message, -1, SQLITE_TRANSIENT);
   if (rc != SQLITE_OK)
       g_debug("Error binding value when adding IM message. errno: %d, desc: %s", rc, sqlite3_errmsg(db));
 
-  rc = sqlite3_bind_int(stmt, 3, direction);
+  rc = sqlite3_bind_int(stmt, IM_DIRECTION_IDX, direction);
   if (rc != SQLITE_OK)
       g_debug("Error binding value when adding IM message. errno: %d, desc: %s", rc, sqlite3_errmsg(db));
 
-  rc = sqlite3_bind_text(stmt, 5, jid, -1, SQLITE_TRANSIENT);
+  rc = sqlite3_bind_text(stmt, IM_TO_IDX, to, -1, SQLITE_TRANSIENT);
   if (rc != SQLITE_OK)
       g_debug("Error binding value when adding IM message. errno: %d, desc: %s", rc, sqlite3_errmsg(db));
 
-  rc = sqlite3_bind_text(stmt, 4, account, -1, SQLITE_TRANSIENT);
+  rc = sqlite3_bind_text(stmt, IM_FROM_IDX, from, -1, SQLITE_TRANSIENT);
   if (rc != SQLITE_OK)
       g_debug("Error binding value when adding IM message. errno: %d, desc: %s", rc, sqlite3_errmsg(db));
 
-  rc = sqlite3_bind_text(stmt, 6, uid, -1, SQLITE_TRANSIENT);
+  rc = sqlite3_bind_text(stmt, IM_UID_IDX, uid, -1, SQLITE_TRANSIENT);
   if (rc != SQLITE_OK)
       g_debug("Error binding value when adding IM message. errno: %d, desc: %s", rc, sqlite3_errmsg(db));
 
-  rc = sqlite3_bind_int64(stmt, 2, mtime);
+  rc = sqlite3_bind_int64(stmt, IM_TIMESTAMP_IDX, mtime);
   if (rc != SQLITE_OK)
       g_debug("Error binding value when adding IM message. errno: %d, desc: %s", rc, sqlite3_errmsg(db));
 
@@ -239,19 +254,20 @@ chatty_history_add_im_message (const char *message,
 }
 
 
+// TODO: LELAND: BUG! 'from' is needed
 int
-chatty_history_get_chat_last_message_time (const char* conv_name)
+chatty_history_get_chat_last_message_time (const char* to)
 {
 
   int rc;
   sqlite3_stmt *stmt;
   int time_stamp  = 0;
 
-  rc = sqlite3_prepare_v2(db, "SELECT max(timestamp) FROM chatty_chat WHERE conv_name=(?)", -1, &stmt, NULL);
+  rc = sqlite3_prepare_v2(db, "SELECT max(timestamp) FROM chatty_chat WHERE to_id=(?)", -1, &stmt, NULL);
   if (rc != SQLITE_OK)
       g_debug("Error preparing when getting chat last message. errno: %d, desc: %s", rc, sqlite3_errmsg(db));
 
-  rc = sqlite3_bind_text(stmt, 1, conv_name, -1, SQLITE_TRANSIENT);
+  rc = sqlite3_bind_text(stmt, 1, to, -1, SQLITE_TRANSIENT);
   if (rc != SQLITE_OK)
       g_debug("Error binding when getting chat last message. errno: %d, desc: %s", rc, sqlite3_errmsg(db));
 
@@ -267,8 +283,9 @@ chatty_history_get_chat_last_message_time (const char* conv_name)
 }
 
 
+// TODO: LELAND: BUG! 'from' is needed
 void
-chatty_history_get_chat_messages (const char* conv_name,
+chatty_history_get_chat_messages (const char* to,
                                   void (*cb)( const unsigned char* msg,
                                               int direction,
                                               int time_stamp,
@@ -286,11 +303,11 @@ chatty_history_get_chat_messages (const char* conv_name,
   const unsigned char *from;
   const unsigned char *alias;
 
-  rc = sqlite3_prepare_v2(db, "SELECT * FROM chatty_chat WHERE conv_name=(?) ORDER BY timestamp ASC", -1, &stmt, NULL);
+  rc = sqlite3_prepare_v2(db, "SELECT * FROM chatty_chat WHERE to_id=(?) ORDER BY timestamp ASC", -1, &stmt, NULL);
   if (rc != SQLITE_OK)
       g_debug("Error preparing statement when querying CHAT messages. errno: %d, desc: %s", rc, sqlite3_errmsg(db));
 
-  rc = sqlite3_bind_text(stmt, 1, conv_name, -1, SQLITE_TRANSIENT);
+  rc = sqlite3_bind_text(stmt, 1, to, -1, SQLITE_TRANSIENT);
   if (rc != SQLITE_OK)
       g_debug("Error binding values when querying CHAT messages. errno: %d, desc: %s", rc, sqlite3_errmsg(db));
 
@@ -311,8 +328,8 @@ chatty_history_get_chat_messages (const char* conv_name,
 
 
 void
-chatty_history_get_im_messages (const char* account,
-                                const char* jid,
+chatty_history_get_im_messages (const char* from,
+                                const char* to,
                                 void (*cb)(const unsigned char* msg,
                                            int direction,
                                            int time_stamp,
@@ -326,15 +343,15 @@ chatty_history_get_im_messages (const char* account,
   int time_stamp;
   int direction;
 
-  rc = sqlite3_prepare_v2(db, "SELECT * FROM chatty_im WHERE account=(?) AND jid=(?) ORDER BY timestamp ASC", -1, &stmt, NULL);
+  rc = sqlite3_prepare_v2(db, "SELECT * FROM chatty_im WHERE from_id=(?) AND to_id=(?) ORDER BY timestamp ASC", -1, &stmt, NULL);
   if (rc != SQLITE_OK)
       g_debug("Error preparing statement when querying IM messages. errno: %d, desc: %s", rc, sqlite3_errmsg(db));
 
-  rc = sqlite3_bind_text(stmt, 1, account, -1, SQLITE_TRANSIENT);
+  rc = sqlite3_bind_text(stmt, 1, from, -1, SQLITE_TRANSIENT);
   if (rc != SQLITE_OK)
       g_debug("Error binding when querying IM messages. errno: %d, desc: %s", rc, sqlite3_errmsg(db));
 
-  rc = sqlite3_bind_text(stmt, 2, jid, -1, SQLITE_TRANSIENT);
+  rc = sqlite3_bind_text(stmt, 2, to, -1, SQLITE_TRANSIENT);
   if (rc != SQLITE_OK)
     g_debug("Error binding when querying IM messages. errno: %d, desc: %s", rc, sqlite3_errmsg(db));
 
@@ -352,23 +369,26 @@ chatty_history_get_im_messages (const char* account,
 }
 
 
-// TODO: LELAND: BUG!: this method has to take also the account of the local user
-// This implies to add it to the DDBB schema too!
 void
-chatty_history_delete_chat (const char* conv_name){
+chatty_history_delete_chat (const char* from,
+                            const char* to){
   int rc;
   sqlite3_stmt *stmt;
 
-  rc = sqlite3_prepare_v2(db, "DELETE FROM chatty_chat WHERE conv_name=(?)", -1, &stmt, NULL);
+  rc = sqlite3_prepare_v2(db, "DELETE FROM chatty_chat WHERE from_id=(?) AND to_id=(?)", -1, &stmt, NULL);
   if (rc != SQLITE_OK)
       g_debug("Error preparing statement when deleting CHAT messages. errno: %d, desc: %s", rc, sqlite3_errmsg(db));
 
-  rc = sqlite3_bind_text(stmt, 1, conv_name, -1, SQLITE_TRANSIENT);
+  rc = sqlite3_bind_text(stmt, 1, from, -1, SQLITE_TRANSIENT);
+  if (rc != SQLITE_OK)
+      g_debug("Error binding when deleting CHAT messages. errno: %d, desc: %s", rc, sqlite3_errmsg(db));
+
+  rc = sqlite3_bind_text(stmt, 2, to, -1, SQLITE_TRANSIENT);
   if (rc != SQLITE_OK)
       g_debug("Error binding when deleting CHAT messages. errno: %d, desc: %s", rc, sqlite3_errmsg(db));
 
   sqlite3_step(stmt);
-  if (rc != SQLITE_DONE)
+  if (rc != SQLITE_OK)
       g_debug("Error in step when deleting CHAT messages. errno: %d, desc: %s", rc, sqlite3_errmsg(db));
 
   rc = sqlite3_finalize(stmt);
@@ -379,27 +399,25 @@ chatty_history_delete_chat (const char* conv_name){
 
 
 void
-chatty_history_delete_im (const char *account,
-                          const char *jid){
+chatty_history_delete_im (const char *from,
+                          const char *to){
   int rc;
   sqlite3_stmt *stmt;
 
-  g_debug ("@LELAND@ chatty_history_delete_im for account %s and buddy jid %s", account, jid);
-
-  rc = sqlite3_prepare_v2(db, "DELETE FROM chatty_im WHERE account=(?) AND jid=(?)", -1, &stmt, NULL);
+  rc = sqlite3_prepare_v2(db, "DELETE FROM chatty_im WHERE from_id=(?) AND to_id=(?)", -1, &stmt, NULL);
   if (rc != SQLITE_OK)
       g_debug("Error preparing statement when deleting IM messages. errno: %d, desc: %s", rc, sqlite3_errmsg(db));
 
-  rc = sqlite3_bind_text(stmt, 1, account, -1, SQLITE_TRANSIENT);
+  rc = sqlite3_bind_text(stmt, 1, from, -1, SQLITE_TRANSIENT);
   if (rc != SQLITE_OK)
       g_debug("Error binding when deleting IM messages. errno: %d, desc: %s", rc, sqlite3_errmsg(db));
 
-  rc = sqlite3_bind_text(stmt, 2, jid, -1, SQLITE_TRANSIENT);
+  rc = sqlite3_bind_text(stmt, 2, to, -1, SQLITE_TRANSIENT);
   if (rc != SQLITE_OK)
       g_debug("Error binding when deleting IM messages. errno: %d, desc: %s", rc, sqlite3_errmsg(db));
                                                             //
   sqlite3_step(stmt);
-  if (rc != SQLITE_DONE)
+  if (rc != SQLITE_OK)
       g_debug("Error in step when deleting IM messages. errno: %d, desc: %s", rc, sqlite3_errmsg(db));
 
   rc = sqlite3_finalize(stmt);

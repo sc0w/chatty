@@ -2258,7 +2258,7 @@ chatty_conv_write_conversation (PurpleConversation *conv,
                                    group_chat ? who : NULL,
                                    icon ? icon : NULL);
       if (type == PURPLE_CONV_TYPE_CHAT){
-        chatty_history_add_chat_message (message, 1, real_who, alias, "UID", mtime, conv_name);  // TODO: LELAND: UID to be implemented by XEP-0313
+        chatty_history_add_chat_message (message, 1, account->username, alias, "UID", mtime, conv_name);  // TODO: LELAND: UID to be implemented by XEP-0313
       } else {
         chatty_history_add_im_message (message, 1, account->username, who_, "UID", mtime);
       }
@@ -2272,7 +2272,7 @@ chatty_conv_write_conversation (PurpleConversation *conv,
                                    NULL,
                                    NULL);
       if (type == PURPLE_CONV_TYPE_CHAT){
-        chatty_history_add_chat_message (message, -1, real_who, alias, "UID", mtime, conv_name);
+        chatty_history_add_chat_message (message, -1, account->username, alias, "UID", mtime, conv_name);
       } else {
         chatty_history_add_im_message (message, -1, account->username, who_, "UID", mtime);
       }

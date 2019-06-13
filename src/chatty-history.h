@@ -19,22 +19,22 @@ void chatty_history_close (void);
 
 void chatty_history_add_chat_message (const char *stanza,
                                       int         direction,
-                                      const char *jid,
+                                      const char *from,
                                       const char *alias,
                                       const char *uid,
                                       time_t      m_time,
-                                      const char *conv_name);
+                                      const char *to);
 
 void chatty_history_add_im_message (const char *stanza,
                                     int         direction,
-                                    const char *account,
-                                    const char *jid,
+                                    const char *from,
+                                    const char *to,
                                     const char *uid,
                                     time_t      m_time);
 
 
-void chatty_history_get_im_messages (const char* account,
-                                     const char* jid,
+void chatty_history_get_im_messages (const char* from,
+                                     const char* to,
                                      void (*cb)(const unsigned char* msg,
                                                int direction,
                                                int time_stamp,
@@ -42,7 +42,7 @@ void chatty_history_get_im_messages (const char* account,
                                      ChattyConversation *chatty_conv);
 
 void
-chatty_history_get_chat_messages (const char* conv_name,
+chatty_history_get_chat_messages (const char* to,
                                   void (*cb)(const unsigned char* msg,
                                             int direction,
                                             int time_stamp,
@@ -56,10 +56,12 @@ chatty_history_get_chat_last_message_time (const char* conv_name);
 
 
 void
-chatty_history_delete_chat (const char* conv_name);
+chatty_history_delete_chat (const char* from,
+                            const char* to);
 
 void
-chatty_history_delete_im (const char *account, const char *jid);
+chatty_history_delete_im (const char *from,
+                          const char *to);
 
 
 #endif

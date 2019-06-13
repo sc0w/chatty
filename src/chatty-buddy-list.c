@@ -875,8 +875,7 @@ chatty_blist_chat_list_remove_buddy (void)
       chatty_window_update_sub_header_titlebar (NULL, "");
     } else if (PURPLE_BLIST_NODE_IS_CHAT(node)) {
       conv_name = purple_conversation_get_name(ui->conv.conv);
-      g_debug("@LELAND@ chatty_blist_chat_list_remove_buddy");
-      chatty_history_delete_chat(conv_name);
+      chatty_history_delete_chat(ui->conv.conv->account->username, conv_name);
       // TODO: LELAND: Is this the right place? After recreating a recently
       // deleted chat (same session), the conversation is still in memory
       // somewhere and when re-joining the same chat, the db is not re-populated
