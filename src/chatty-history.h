@@ -19,11 +19,11 @@ void chatty_history_close (void);
 
 void chatty_history_add_chat_message (const char *stanza,
                                       int         direction,
+                                      const char *account,
                                       const char *from,
-                                      const char *alias,
                                       const char *uid,
                                       time_t      m_time,
-                                      const char *to);
+                                      const char *room);
 
 void chatty_history_add_im_message (const char *stanza,
                                     int         direction,
@@ -42,22 +42,22 @@ void chatty_history_get_im_messages (const char* from,
                                      ChattyConversation *chatty_conv);
 
 void
-chatty_history_get_chat_messages (const char* to,
+chatty_history_get_chat_messages (const char* room,
                                   void (*cb)(const unsigned char* msg,
                                             int direction,
                                             int time_stamp,
-                                            const unsigned char* from,
-                                            const unsigned char *alias,
+                                            const char* room,
+                                            const unsigned char *who,
                                             ChattyConversation *chatty_conv),
                                   ChattyConversation *chatty_conv);
 
 int
-chatty_history_get_chat_last_message_time (const char* conv_name);
+chatty_history_get_chat_last_message_time (const char* room);
 
 
 void
-chatty_history_delete_chat (const char* from,
-                            const char* to);
+chatty_history_delete_chat (const char* account,
+                            const char* room);
 
 void
 chatty_history_delete_im (const char *from,

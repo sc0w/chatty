@@ -1112,8 +1112,8 @@ static void
 chatty_conv_get_chat_messages_cb (const unsigned char* msg,
                                   int time_stamp,
                                   int direction,
-                                  const unsigned char* from,
-                                  const unsigned char *alias,
+                                  const char* room,
+                                  const unsigned char *who,
                                   ChattyConversation *chatty_conv){
   gchar   *msg_html;
   PurpleBuddy              *buddy;
@@ -1130,11 +1130,11 @@ chatty_conv_get_chat_messages_cb (const unsigned char* msg,
       msg_html = chatty_conv_check_for_links ((const gchar*)msg);
 
       account = purple_conversation_get_account (chatty_conv->conv);
-      buddy = purple_find_buddy (account, (const gchar*)from);
-      color = chatty_conv_muc_get_avatar_color ((const gchar*)from);
+      buddy = purple_find_buddy (account, (const gchar*)room);
+      color = chatty_conv_muc_get_avatar_color ((const gchar*)room);
 
       avatar = chatty_icon_get_buddy_icon ((PurpleBlistNode*)buddy,
-                                           (const gchar*)alias,
+                                           (const gchar*)who,
                                            CHATTY_ICON_SIZE_MEDIUM,
                                            color,
                                            FALSE);
@@ -2258,7 +2258,7 @@ chatty_conv_write_conversation (PurpleConversation *conv,
                                    group_chat ? who : NULL,
                                    icon ? icon : NULL);
       if (type == PURPLE_CONV_TYPE_CHAT){
-        chatty_history_add_chat_message (message, 1, account->username, alias, "UID", mtime, conv_name);  // TODO: LELAND: UID to be implemented by XEP-0313
+        chatty_history_add_chat_message (message, 1, account->username, real_who, "UID", mtime, conv_name);  // TODO: LELAND: UID to be implemented by XEP-0313
       } else {
         chatty_history_add_im_message (message, 1, account->username, who_, "UID", mtime);
       }
@@ -2272,7 +2272,7 @@ chatty_conv_write_conversation (PurpleConversation *conv,
                                    NULL,
                                    NULL);
       if (type == PURPLE_CONV_TYPE_CHAT){
-        chatty_history_add_chat_message (message, -1, account->username, alias, "UID", mtime, conv_name);
+        chatty_history_add_chat_message (message, -1, account->username, real_who, "UID", mtime, conv_name);
       } else {
         chatty_history_add_im_message (message, -1, account->username, who_, "UID", mtime);
       }
