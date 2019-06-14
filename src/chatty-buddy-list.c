@@ -550,7 +550,7 @@ cb_auto_join_chats (gpointer data)
 
         prpl_info = PURPLE_PLUGIN_PROTOCOL_INFO(purple_find_prpl (purple_account_get_protocol_id (account)));
         components = purple_chat_get_components (chat);
-        chatty_conv_add_history_since_component(components, prpl_info->get_chat_name(components));
+        chatty_conv_add_history_since_component(components, account->username, prpl_info->get_chat_name(components));
 
         serv_join_chat (purple_account_get_connection (account),
                         purple_chat_get_components (chat));

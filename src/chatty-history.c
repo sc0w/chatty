@@ -18,8 +18,8 @@
 #define IM_ID_IDX         1
 #define IM_TIMESTAMP_IDX  2
 #define IM_DIRECTION_IDX  3
-#define IM_ACCOUNT_IDX       4
-#define IM_WHO_IDX         5
+#define IM_ACCOUNT_IDX    4
+#define IM_WHO_IDX        5
 #define IM_UID_IDX        6
 #define IM_MESSAGE_IDX    7
 
@@ -254,9 +254,9 @@ chatty_history_add_im_message (const char *message,
 }
 
 
-// TODO: LELAND: BUG! 'account' is needed
 int
-chatty_history_get_chat_last_message_time (const char* room)
+chatty_history_get_chat_last_message_time (const char* account,
+                                           const char* room)
 {
 
   int rc;
@@ -283,10 +283,10 @@ chatty_history_get_chat_last_message_time (const char* room)
 }
 
 
-// TODO: LELAND: BUG! 'account' is needed
 void
-chatty_history_get_chat_messages (const char* room,
-                                  void (*cb)( const unsigned char* msg,
+chatty_history_get_chat_messages (const char *account,
+                                  const char *room,
+                                  void (*cb)( const unsigned char *msg,
                                               int direction,
                                               int time_stamp,
                                               const char *room,
@@ -302,11 +302,15 @@ chatty_history_get_chat_messages (const char* room,
   int direction;
   const unsigned char *who;
 
-  rc = sqlite3_prepare_v2(db, "SELECT timestamp,direction,message,who FROM chatty_chat WHERE room=(?) ORDER BY timestamp ASC", -1, &stmt, NULL);
+  rc = sqlite3_prepare_v2(db, "SELECT timestamp,direction,message,who FROM chatty_chat WHERE account=(?) AND room=(?) ORDER BY timestamp ASC", -1, &stmt, NULL);
   if (rc != SQLITE_OK)
       g_debug("Error preparing statement when querying CHAT messages. errno: %d, desc: %s", rc, sqlite3_errmsg(db));
 
-  rc = sqlite3_bind_text(stmt, 1, room, -1, SQLITE_TRANSIENT);
+  rc = sqlite3_bind_text(stmt, 1, account, -1, SQLITE_TRANSIENT);
+  if (rc != SQLITE_OK)
+      g_debug("Error binding values when querying CHAT messages. errno: %d, desc: %s", rc, sqlite3_errmsg(db));
+
+  rc = sqlite3_bind_text(stmt, 2, room, -1, SQLITE_TRANSIENT);
   if (rc != SQLITE_OK)
       g_debug("Error binding values when querying CHAT messages. errno: %d, desc: %s", rc, sqlite3_errmsg(db));
 

@@ -42,7 +42,8 @@ void chatty_history_get_im_messages (const char* account,
                                      ChattyConversation *chatty_conv);
 
 void
-chatty_history_get_chat_messages (const char* room,
+chatty_history_get_chat_messages (const char *account,
+                                  const char *room,
                                   void (*cb)(const unsigned char* msg,
                                             int direction,
                                             int time_stamp,
@@ -52,7 +53,8 @@ chatty_history_get_chat_messages (const char* room,
                                   ChattyConversation *chatty_conv);
 
 int
-chatty_history_get_chat_last_message_time (const char* room);
+chatty_history_get_chat_last_message_time (const char* account,
+                                           const char* room);
 
 
 void

@@ -1220,7 +1220,7 @@ chatty_conv_add_message_history_to_conv (gpointer data)
     g_debug("@LELAND: Searching IMs for account %s, who %s", account->username, conv_name);
     chatty_history_get_im_messages (account->username, conv_name, chatty_conv_get_im_messages_cb, chatty_conv);
   }else{
-    chatty_history_get_chat_messages (conv_name, chatty_conv_get_chat_messages_cb, chatty_conv);
+    chatty_history_get_chat_messages (account->username, conv_name, chatty_conv_get_chat_messages_cb, chatty_conv);
   }
 
   return FALSE;
@@ -2471,7 +2471,9 @@ chatty_conv_im_with_buddy (PurpleAccount *account,
 
 // TODO: LELAND: Should this go to some utilities file?
 void
-chatty_conv_add_history_since_component(GHashTable *components, const char *conv_name){
+chatty_conv_add_history_since_component(GHashTable *components,
+                                        const char *account,
+                                        const char *room){
   time_t mtime;
   struct tm * timeinfo;
   char *iso_timestamp;
@@ -2481,10 +2483,11 @@ chatty_conv_add_history_since_component(GHashTable *components, const char *conv
                                // writes garbage to blist.xml
                                // Why cant I use an string?
 
-  mtime = chatty_history_get_chat_last_message_time(conv_name);
+  mtime = chatty_history_get_chat_last_message_time(account, room);
   mtime += 1; // Use the next epoch to exclude the last stored message(s)
   timeinfo = gmtime (&mtime);
   strftime (iso_timestamp, 50*sizeof(char), "%Y-%m-%dT%H:%M:%SZ", timeinfo);
+  g_debug("@LELAND: iso8601 : %s", iso_timestamp);
 
   g_hash_table_steal (components, "history_since");
   g_hash_table_insert(components, "history_since", iso_timestamp);
@@ -2534,7 +2537,7 @@ chatty_conv_join_chat (PurpleChat *chat)
                                                 account);
 
   if (!conv || purple_conv_chat_has_left (PURPLE_CONV_CHAT(conv))) {
-    chatty_conv_add_history_since_component(components, name);
+    chatty_conv_add_history_since_component(components, account->username, name);
     serv_join_chat (purple_account_get_connection (account), components);
   } else if (conv) {
     purple_conversation_present(conv);
