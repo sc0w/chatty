@@ -20,24 +20,24 @@ void chatty_history_close (void);
 void chatty_history_add_chat_message (const char *stanza,
                                       int         direction,
                                       const char *account,
-                                      const char *from,
+                                      const char *who,
                                       const char *uid,
                                       time_t      m_time,
                                       const char *room);
 
 void chatty_history_add_im_message (const char *stanza,
                                     int         direction,
-                                    const char *from,
-                                    const char *to,
+                                    const char *account,
+                                    const char *who,
                                     const char *uid,
                                     time_t      m_time);
 
 
-void chatty_history_get_im_messages (const char* from,
-                                     const char* to,
+void chatty_history_get_im_messages (const char* account,
+                                     const char* who,
                                      void (*cb)(const unsigned char* msg,
                                                int direction,
-                                               int time_stamp,
+                                               time_t time_stamp,
                                                ChattyConversation *chatty_conv),
                                      ChattyConversation *chatty_conv);
 
@@ -60,8 +60,8 @@ chatty_history_delete_chat (const char* account,
                             const char* room);
 
 void
-chatty_history_delete_im (const char *from,
-                          const char *to);
+chatty_history_delete_im (const char *account,
+                          const char *who);
 
 
 #endif

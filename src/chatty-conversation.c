@@ -1068,14 +1068,18 @@ chatty_conv_delete_message_history (PurpleBuddy *buddy)
 
 static void
 chatty_conv_get_im_messages_cb (const unsigned char* msg,
-                                int time_stamp,
                                 int direction,
+                                time_t time_stamp,
                                 ChattyConversation *chatty_conv){
   gchar   *msg_html;
   guint    msg_dir;
-  char    *ts = (char*) malloc(50*sizeof(char)); // TODO: LELAND: Set a max depending on the format and make it a #define
+  struct tm * timeinfo;
+  char *iso_timestamp;
 
-  sprintf(ts, "%d", time_stamp);
+  iso_timestamp = (char*) malloc(50*sizeof(char)); // TODO: LELAND: Set a max depending on the format and make it a #define
+
+  timeinfo = gmtime (&time_stamp);
+  strftime (iso_timestamp, 50*sizeof(char), "%Y-%m-%dT%H:%M:%SZ", timeinfo);
 
   if (direction == 1) {
     msg_dir = MSG_IS_INCOMING;
@@ -1091,14 +1095,14 @@ chatty_conv_get_im_messages_cb (const unsigned char* msg,
     chatty_msg_list_add_message (chatty_conv->msg_list,
                                  msg_dir,
                                  msg_html,
-                                 ts, // TODO: LELAND: Format? And shows only for the last message!
+                                 iso_timestamp, // TODO: LELAND: show only for the last message!
+                                                // Also, use local time-zone
                                  NULL);
   }
 
 
   g_free (msg_html);
-  free(ts);
-
+  g_free(iso_timestamp);
 
   g_object_set_data (G_OBJECT (chatty_conv->msg_entry),
                      "attach-start-time",
@@ -1121,6 +1125,8 @@ chatty_conv_get_chat_messages_cb (const unsigned char* msg,
   GdkPixbuf                *avatar = NULL;
   GtkWidget                *icon = NULL;
   PurpleAccount            *account;
+  gchar                    *alias;
+  gchar                    **line_split;
 
   msg_html = chatty_conv_check_for_links ((const gchar*)msg);
 
@@ -1133,11 +1139,18 @@ chatty_conv_get_chat_messages_cb (const unsigned char* msg,
       buddy = purple_find_buddy (account, (const gchar*)room);
       color = chatty_conv_muc_get_avatar_color ((const gchar*)room);
 
+      // Extract the alias from 'who' (full_room_address/alias)
+      line_split = g_strsplit ((const gchar*)who, "/", -1);
+      alias = g_strdup(line_split[1]);
+
       avatar = chatty_icon_get_buddy_icon ((PurpleBlistNode*)buddy,
-                                           (const gchar*)who,
+                                           (const gchar*)alias,
                                            CHATTY_ICON_SIZE_MEDIUM,
                                            color,
                                            FALSE);
+      g_strfreev(line_split);
+      g_free(alias);
+
       if (avatar) {
         icon = gtk_image_new_from_pixbuf (avatar);
         g_object_unref (avatar);
@@ -1204,6 +1217,7 @@ chatty_conv_add_message_history_to_conv (gpointer data)
   account = purple_conversation_get_account (chatty_conv->conv);
 
   if (im) {
+    g_debug("@LELAND: Searching IMs for account %s, who %s", account->username, conv_name);
     chatty_history_get_im_messages (account->username, conv_name, chatty_conv_get_im_messages_cb, chatty_conv);
   }else{
     chatty_history_get_chat_messages (conv_name, chatty_conv_get_chat_messages_cb, chatty_conv);
@@ -2187,8 +2201,10 @@ chatty_conv_write_conversation (PurpleConversation *conv,
   GtkWidget                *icon = NULL;
   int                       chat_id;
   const char               *conv_name;
-  g_auto(GStrv)            line_split = NULL;
-  g_autofree gchar         *who_= NULL;
+  gchar                    *who_no_resource;
+  gchar                    **line_split;
+
+  g_debug("@LELAND: storing IM %s from %s", message, who);
 
   chatty_conv = CHATTY_CONVERSATION (conv);
 
@@ -2244,10 +2260,9 @@ chatty_conv_write_conversation (PurpleConversation *conv,
 
   if (*message != '\0') {
 
-    // TODO: LELAND: Fix this. Does purple exposes this directly?
-    // TODO: Should we store the resource ?
-    line_split = g_strsplit (who, "/", -1);
-    who_ = g_strdup(line_split[0]);
+    // TODO: LELAND: Sometimes 'who' adds the resource, sometimes not. Debug
+    line_split = g_strsplit ((const gchar*)who, "/", -1);
+    who_no_resource = g_strdup(line_split[0]);
 
     if (flags & PURPLE_MESSAGE_RECV) {
       msg_html = chatty_conv_check_for_links (message);
@@ -2260,7 +2275,7 @@ chatty_conv_write_conversation (PurpleConversation *conv,
       if (type == PURPLE_CONV_TYPE_CHAT){
         chatty_history_add_chat_message (message, 1, account->username, real_who, "UID", mtime, conv_name);  // TODO: LELAND: UID to be implemented by XEP-0313
       } else {
-        chatty_history_add_im_message (message, 1, account->username, who_, "UID", mtime);
+        chatty_history_add_im_message (message, 1, account->username, who_no_resource, "UID", mtime);
       }
       g_free (msg_html);
     } else if (flags & PURPLE_MESSAGE_SEND) {
@@ -2274,7 +2289,7 @@ chatty_conv_write_conversation (PurpleConversation *conv,
       if (type == PURPLE_CONV_TYPE_CHAT){
         chatty_history_add_chat_message (message, -1, account->username, real_who, "UID", mtime, conv_name);
       } else {
-        chatty_history_add_im_message (message, -1, account->username, who_, "UID", mtime);
+        chatty_history_add_im_message (message, -1, account->username, who_no_resource, "UID", mtime);
       }
       g_free (msg_html);
     } else if (flags & PURPLE_MESSAGE_SYSTEM) {
@@ -2287,14 +2302,18 @@ chatty_conv_write_conversation (PurpleConversation *conv,
         // TODO: LELAND: Do not store "The topic is:" or store them but dont show to the user
         //chatty_history_add_chat_message (chat_id, message, 0, real_who, alias, "UID", mtime, conv_name);
       } else {
-        //chatty_history_add_im_message (message, 0, account->username, who_, "UID", mtime);
+        //chatty_history_add_im_message (message, 0, account->username, who, "UID", mtime);
       }
     }
+
+    g_free(who_no_resource);
+    g_free(line_split);
 
     chatty_conv_set_unseen (chatty_conv, CHATTY_UNSEEN_NONE);
   }
 
   g_free (real_who);
+
 }
 
 
@@ -2457,7 +2476,7 @@ chatty_conv_add_history_since_component(GHashTable *components, const char *conv
   struct tm * timeinfo;
   char *iso_timestamp;
 
-  iso_timestamp = malloc(100); // TODO: LELAND: Adjust size. Also, free this
+  iso_timestamp = malloc(50*sizeof(char)); // TODO: LELAND: Adjust size. Also, free this
                                // for some reason if freed inside if,
                                // writes garbage to blist.xml
                                // Why cant I use an string?
@@ -2465,7 +2484,7 @@ chatty_conv_add_history_since_component(GHashTable *components, const char *conv
   mtime = chatty_history_get_chat_last_message_time(conv_name);
   mtime += 1; // Use the next epoch to exclude the last stored message(s)
   timeinfo = gmtime (&mtime);
-  strftime (iso_timestamp, 100, "%Y-%m-%dT%H:%M:%SZ", timeinfo);
+  strftime (iso_timestamp, 50*sizeof(char), "%Y-%m-%dT%H:%M:%SZ", timeinfo);
 
   g_hash_table_steal (components, "history_since");
   g_hash_table_insert(components, "history_since", iso_timestamp);
