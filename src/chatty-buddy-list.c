@@ -778,8 +778,6 @@ chatty_blist_chat_list_leave_chat (void)
   PurpleBlistNode *node;
   ChattyBlistNode *ui;
 
-  g_debug("@LELAND@ Leaving chat...");
-
   node = _chatty_blist->selected_node;
 
   if (node) {
@@ -795,7 +793,6 @@ chatty_blist_chat_list_leave_chat (void)
 
   chatty_blist_chat_list_set_row ();
 
-  g_debug("@LELAND@ END Leaving chat...");
 }
 
 

@@ -1207,6 +1207,8 @@ chatty_conv_add_message_history_to_conv (gpointer data)
   const gchar   *conv_name;
   gboolean       im;
   ChattyConversation *chatty_conv = data;
+  gchar         *who;
+  gchar         **line_split;
 
   im = (chatty_conv->conv->type == PURPLE_CONV_TYPE_IM);
 
@@ -1217,8 +1219,12 @@ chatty_conv_add_message_history_to_conv (gpointer data)
   account = purple_conversation_get_account (chatty_conv->conv);
 
   if (im) {
-    g_debug("@LELAND: Searching IMs for account %s, who %s", account->username, conv_name);
-    chatty_history_get_im_messages (account->username, conv_name, chatty_conv_get_im_messages_cb, chatty_conv);
+    // Remove resource (user could be connecting from different devices/applications)
+    // TODO: LELAND: This should be an utility fn. Does libpurple offer a helper for this?
+    line_split = g_strsplit (conv_name, "/", -1);
+    who = g_strdup(line_split[0]);
+
+    chatty_history_get_im_messages (account->username, who, chatty_conv_get_im_messages_cb, chatty_conv);
   }else{
     chatty_history_get_chat_messages (account->username, conv_name, chatty_conv_get_chat_messages_cb, chatty_conv);
   }
@@ -2204,8 +2210,6 @@ chatty_conv_write_conversation (PurpleConversation *conv,
   gchar                    *who_no_resource;
   gchar                    **line_split;
 
-  g_debug("@LELAND: storing IM %s from %s", message, who);
-
   chatty_conv = CHATTY_CONVERSATION (conv);
 
   g_return_if_fail (chatty_conv != NULL);
@@ -2260,7 +2264,6 @@ chatty_conv_write_conversation (PurpleConversation *conv,
 
   if (*message != '\0') {
 
-    // TODO: LELAND: Sometimes 'who' adds the resource, sometimes not. Debug
     line_split = g_strsplit ((const gchar*)who, "/", -1);
     who_no_resource = g_strdup(line_split[0]);
 
@@ -2487,7 +2490,6 @@ chatty_conv_add_history_since_component(GHashTable *components,
   mtime += 1; // Use the next epoch to exclude the last stored message(s)
   timeinfo = gmtime (&mtime);
   strftime (iso_timestamp, 50*sizeof(char), "%Y-%m-%dT%H:%M:%SZ", timeinfo);
-  g_debug("@LELAND: iso8601 : %s", iso_timestamp);
 
   g_hash_table_steal (components, "history_since");
   g_hash_table_insert(components, "history_since", iso_timestamp);
@@ -2697,7 +2699,6 @@ chatty_conv_new (PurpleConversation *conv)
 
   if (conv_type == PURPLE_CONV_TYPE_IM && (chatty_conv = chatty_conv_find_conv (conv))) {
     conv->ui_data = chatty_conv;
-
     return;
   }
 

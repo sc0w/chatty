@@ -214,7 +214,6 @@ chatty_history_add_im_message (const char *message,
   sqlite3_stmt *stmt;
   int rc;
 
-  g_debug("@LELAND: Adding IM message %s for account %s and who %s", message, account, who);
   rc = sqlite3_prepare_v2(db, "INSERT INTO chatty_im VALUES (?, ?, ?, ?, ?, ?, ?)", -1, &stmt, NULL);
   if (rc != SQLITE_OK)
       g_debug("Error preparing statement when adding IM message. errno: %d, desc: %s", rc, sqlite3_errmsg(db));
@@ -345,7 +344,6 @@ chatty_history_get_im_messages (const char* account,
   int time_stamp;
   int direction;
 
-  g_debug("@LELAND: IM messages from account : %s with %s", account, who);
   rc = sqlite3_prepare_v2(db, "SELECT timestamp,direction,message FROM chatty_im WHERE account=(?) AND who=(?) ORDER BY timestamp ASC", -1, &stmt, NULL);
   if (rc != SQLITE_OK)
       g_debug("Error preparing statement when querying IM messages. errno: %d, desc: %s", rc, sqlite3_errmsg(db));
