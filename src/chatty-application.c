@@ -47,6 +47,11 @@ struct _ChattyApplication
 G_DEFINE_TYPE (ChattyApplication, chatty_application, GTK_TYPE_APPLICATION)
 
 
+static GOptionEntry cmd_options[] = {
+  { "version", 0, 0, 0, NULL, N_("Show release version"), NULL },
+  { NULL }
+};
+
 static void
 chatty_application_finalize (GObject *object)
 {
@@ -55,6 +60,19 @@ chatty_application_finalize (GObject *object)
   g_clear_object (&self->css_provider);
 
   G_OBJECT_CLASS (chatty_application_parent_class)->finalize (object);
+}
+
+static gint
+chatty_application_handle_local_options (GApplication *application,
+                                         GVariantDict *options)
+{
+  if (g_variant_dict_contains (options, "version"))
+    {
+      g_print ("%s %s\n", PACKAGE_NAME, PACKAGE_VERSION);
+      return 0;
+    }
+
+  return -1;
 }
 
 static void
@@ -102,6 +120,7 @@ chatty_application_class_init (ChattyApplicationClass *klass)
 
   object_class->finalize = chatty_application_finalize;
 
+  application_class->handle_local_options = chatty_application_handle_local_options;
   application_class->startup = chatty_application_startup;
   application_class->activate = chatty_application_activate;
 }
@@ -109,6 +128,7 @@ chatty_application_class_init (ChattyApplicationClass *klass)
 static void
 chatty_application_init (ChattyApplication *self)
 {
+  g_application_add_main_option_entries (G_APPLICATION (self), cmd_options);
 }
 
 ChattyApplication *
