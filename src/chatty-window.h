@@ -14,6 +14,14 @@
 #define HANDY_USE_UNSTABLE_API
 #include <handy.h>
 
+
+typedef enum {
+  CHATTY_CML_OPT_NONE     = 0,
+  CHATTY_CML_OPT_NO_LOGIN = 1 << 0,
+  CHATTY_CML_OPT_DEBUG    = 1 << 1,
+  CHATTY_CML_OPT_VERBOSE  = 1 << 2
+} ChattyCmlOptions;
+
 typedef struct {
   HdyLeaflet        *content_box;
   HdyLeaflet        *header_box;
@@ -51,6 +59,8 @@ typedef struct {
   GtkBox            *box_welcome_overlay;
   GtkWidget         *label_welcome_overlay_sms;
 
+  ChattyCmlOptions   cml_options;
+
   struct {
     GtkWidget     *label_chat_id;
     GtkWidget     *label_topic;
@@ -62,7 +72,6 @@ typedef struct {
     GtkSwitch     *switch_prefs_persistant;
     GtkSwitch     *switch_prefs_autojoin;
   } muc;
-
 } chatty_data_t;
 
 chatty_data_t *chatty_get_data(void);
