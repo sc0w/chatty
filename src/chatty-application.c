@@ -90,13 +90,12 @@ chatty_application_command_line (GApplication            *application,
 
   chatty->cml_options = CHATTY_CML_OPT_NONE;
 
-  if (g_variant_dict_contains (options, "nologin")) {
+  if (g_variant_dict_contains (options, "nologin"))
     chatty->cml_options |= CHATTY_CML_OPT_NO_LOGIN;
-  } else if (g_variant_dict_contains (options, "debug")) {
+  else if (g_variant_dict_contains (options, "debug"))
     chatty->cml_options |= CHATTY_CML_OPT_DEBUG;
-  } else if (g_variant_dict_contains (options, "verbose")) {
+  else if (g_variant_dict_contains (options, "verbose"))
     chatty->cml_options |= CHATTY_CML_OPT_VERBOSE;
-  }
 
   g_application_activate (application);
 
@@ -145,10 +144,6 @@ chatty_application_class_init (ChattyApplicationClass *klass)
 {
   GApplicationClass *application_class = G_APPLICATION_CLASS (klass);
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
-
-  chatty_data_t *chatty = chatty_get_data ();
-
-  memset (chatty, 0, sizeof(chatty_data_t));
 
   object_class->finalize = chatty_application_finalize;
 

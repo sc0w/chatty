@@ -492,9 +492,9 @@ chatty_account_init (void)
                          NULL);
 
   if (chatty->cml_options & CHATTY_CML_OPT_NO_LOGIN) {
-    for (accounts = purple_accounts_get_all(); accounts != NULL; accounts = accounts->next) {
+    for (accounts = purple_accounts_get_all (); accounts != NULL; accounts = accounts->next) {
 			PurpleAccount *account = accounts->data;
-			purple_account_set_enabled(account, CHATTY_UI, FALSE);
+			purple_account_set_enabled (account, CHATTY_UI, FALSE);
 		}
   } else if (!purple_prefs_get_bool ("/purple/savedstatus/startup_current_status")) {
     purple_savedstatus_activate (purple_savedstatus_get_startup ());
