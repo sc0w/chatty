@@ -300,13 +300,8 @@ libpurple_init (void)
 
   signal (SIGCHLD, SIG_IGN);
 
-  if (chatty->cml_options & CHATTY_CML_OPT_DEBUG) {
-    purple_debug_set_enabled (TRUE);
-  }
-
-  if (chatty->cml_options & CHATTY_CML_OPT_VERBOSE) {
-    purple_debug_set_verbose (TRUE);
-  }
+  purple_debug_set_enabled (!!(chatty->cml_options & CHATTY_CML_OPT_DEBUG));
+  purple_debug_set_verbose (!!(chatty->cml_options & CHATTY_CML_OPT_VERBOSE));
 
   purple_core_set_ui_ops (chatty_core_get_ui_ops ());
   purple_eventloop_set_ui_ops (chatty_eventloop_get_ui_ops ());

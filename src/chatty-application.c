@@ -46,12 +46,11 @@ struct _ChattyApplication
 
 G_DEFINE_TYPE (ChattyApplication, chatty_application, GTK_TYPE_APPLICATION)
 
-
 static GOptionEntry cmd_options[] = {
   { "version", 'v', G_OPTION_FLAG_NONE, G_OPTION_ARG_NONE, NULL, N_("Show release version"), NULL },
-  { "nologin", 'n', G_OPTION_FLAG_NONE, G_OPTION_ARG_NONE, NULL, N_("Disable all accounts"), NULL },
+  { "disable", 'D', G_OPTION_FLAG_NONE, G_OPTION_ARG_NONE, NULL, N_("Disable all accounts"), NULL },
   { "debug", 'd', G_OPTION_FLAG_NONE, G_OPTION_ARG_NONE, NULL, N_("Enable libpurple debug messages"), NULL },
-  { "verbose", 'e', G_OPTION_FLAG_NONE, G_OPTION_ARG_NONE, NULL, N_("Enable verbose libpurple debug messages"), NULL },
+  { "verbose", 'V', G_OPTION_FLAG_NONE, G_OPTION_ARG_NONE, NULL, N_("Enable verbose libpurple debug messages"), NULL },
   { NULL }
 };
 
@@ -90,8 +89,8 @@ chatty_application_command_line (GApplication            *application,
 
   chatty->cml_options = CHATTY_CML_OPT_NONE;
 
-  if (g_variant_dict_contains (options, "nologin"))
-    chatty->cml_options |= CHATTY_CML_OPT_NO_LOGIN;
+  if (g_variant_dict_contains (options, "disable"))
+    chatty->cml_options |= CHATTY_CML_OPT_DISABLE;
   else if (g_variant_dict_contains (options, "debug"))
     chatty->cml_options |= CHATTY_CML_OPT_DEBUG;
   else if (g_variant_dict_contains (options, "verbose"))
@@ -99,7 +98,7 @@ chatty_application_command_line (GApplication            *application,
 
   g_application_activate (application);
 
-  return EXIT_SUCCESS;;
+  return EXIT_SUCCESS;
 }
 
 static void

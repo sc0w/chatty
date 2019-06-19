@@ -474,7 +474,7 @@ chatty_account_get_handle (void) {
 void
 chatty_account_init (void)
 {
-  GList             *accounts;
+  GList *accounts;
 
   chatty_data_t *chatty = chatty_get_data ();
 
@@ -491,13 +491,13 @@ chatty_account_init (void)
                          PURPLE_CALLBACK (cb_account_added),
                          NULL);
 
-  if (chatty->cml_options & CHATTY_CML_OPT_NO_LOGIN) {
+  if (chatty->cml_options & CHATTY_CML_OPT_DISABLE) {
     for (accounts = purple_accounts_get_all (); accounts != NULL; accounts = accounts->next) {
-			PurpleAccount *account = accounts->data;
-			purple_account_set_enabled (account, CHATTY_UI, FALSE);
-		}
-  } else if (!purple_prefs_get_bool ("/purple/savedstatus/startup_current_status")) {
-    purple_savedstatus_activate (purple_savedstatus_get_startup ());
+      PurpleAccount *account = accounts->data;
+      purple_account_set_enabled (account, CHATTY_UI, FALSE);
+    }
+  } else {
+    purple_savedstatus_activate (purple_savedstatus_new (NULL, PURPLE_STATUS_AVAILABLE));
   }
 }
 
