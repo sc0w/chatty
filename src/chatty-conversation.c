@@ -16,7 +16,7 @@
 #include "chatty-conversation.h"
 #include "chatty-history.h"
 
-
+#define MAX_GMT_ISO_SIZE 20
 #define MAX_MSGS 50
 
 static GHashTable *ht_sms_id = NULL;
@@ -1785,7 +1785,7 @@ chatty_conv_muc_list_update_user (PurpleConversation *conv,
 
   if (!cbuddy) {
     return;
-  }
+  } 
 
   g_debug ("chatty_conv_muc_list_update_user conv: %s user_name: %s",
            purple_conversation_get_name (conv), user);
@@ -2469,15 +2469,15 @@ chatty_conv_add_history_since_component(GHashTable *components,
   struct tm * timeinfo;
   char *iso_timestamp;
 
-  iso_timestamp = malloc(50*sizeof(char)); // TODO: LELAND: Adjust size. Also, free this
-                               // for some reason if freed inside if,
+  iso_timestamp = malloc(MAX_GMT_ISO_SIZE*sizeof(char));
+                               // TODO @LELAND for some reason if freed here,
                                // writes garbage to blist.xml
                                // Why cant I use an string?
 
   mtime = chatty_history_get_chat_last_message_time(account, room);
   mtime += 1; // Use the next epoch to exclude the last stored message(s)
   timeinfo = gmtime (&mtime);
-  strftime (iso_timestamp, 50*sizeof(char), "%Y-%m-%dT%H:%M:%SZ", timeinfo);
+  strftime (iso_timestamp, MAX_GMT_ISO_SIZE*sizeof(char), "%Y-%m-%dT%H:%M:%SZ", timeinfo);
 
   g_hash_table_steal (components, "history_since");
   g_hash_table_insert(components, "history_since", iso_timestamp);
