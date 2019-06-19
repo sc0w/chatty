@@ -36,9 +36,10 @@ void chatty_history_add_im_message (const char *stanza,
 void chatty_history_get_im_messages (const char* account,
                                      const char* who,
                                      void (*cb)(const unsigned char* msg,
-                                               int direction,
-                                               time_t time_stamp,
-                                               ChattyConversation *chatty_conv),
+                                                int direction,
+                                                time_t time_stamp,
+                                                ChattyConversation *chatty_conv,
+                                                int last_message),
                                      ChattyConversation *chatty_conv);
 
 void

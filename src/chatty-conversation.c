@@ -1068,16 +1068,10 @@ static void
 chatty_conv_get_im_messages_cb (const unsigned char* msg,
                                 int direction,
                                 time_t time_stamp,
-                                ChattyConversation *chatty_conv){
+                                ChattyConversation *chatty_conv,
+                                int last_message){
   gchar   *msg_html;
   guint    msg_dir;
-  struct tm * timeinfo;
-  char *iso_timestamp;
-
-  iso_timestamp = (char*) malloc(50*sizeof(char)); // TODO: LELAND: Set a max depending on the format and make it a #define
-
-  timeinfo = gmtime (&time_stamp);
-  strftime (iso_timestamp, 50*sizeof(char), "%Y-%m-%dT%H:%M:%SZ", timeinfo);
 
   if (direction == 1) {
     msg_dir = MSG_IS_INCOMING;
@@ -1093,14 +1087,11 @@ chatty_conv_get_im_messages_cb (const unsigned char* msg,
     chatty_msg_list_add_message (chatty_conv->msg_list,
                                  msg_dir,
                                  msg_html,
-                                 iso_timestamp, // TODO: LELAND: show only for the last message!
-                                                // Also, use local time-zone
+                                 last_message ? asctime(localtime(&time_stamp)) : NULL, // last seen message
                                  NULL);
   }
 
-
   g_free (msg_html);
-  g_free(iso_timestamp);
 
   g_object_set_data (G_OBJECT (chatty_conv->input.entry),
                      "attach-start-time",

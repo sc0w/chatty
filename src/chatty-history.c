@@ -334,7 +334,8 @@ chatty_history_get_im_messages (const char* account,
                                 void (*cb)(const unsigned char* msg,
                                            int direction,
                                            time_t time_stamp,
-                                           ChattyConversation *chatty_conv),
+                                           ChattyConversation *chatty_conv,
+                                           int last_message),
                                 ChattyConversation *chatty_conv)
 {
 
@@ -343,7 +344,31 @@ chatty_history_get_im_messages (const char* account,
   const unsigned char *msg;
   int time_stamp;
   int direction;
+  int rows;
 
+  // First, count the result rows to identify the last row
+  rc = sqlite3_prepare_v2(db, "SELECT count(*) FROM chatty_im WHERE account=(?) AND who=(?) ORDER BY timestamp ASC", -1, &stmt, NULL);
+  if (rc != SQLITE_OK)
+    g_debug("Error preparing statement when querying IM messages. errno: %d, desc: %s", rc, sqlite3_errmsg(db));
+
+  rc = sqlite3_bind_text(stmt, 1, account, -1, SQLITE_TRANSIENT);
+  if (rc != SQLITE_OK)
+    g_debug("Error binding when querying IM messages. errno: %d, desc: %s", rc, sqlite3_errmsg(db));
+
+  rc = sqlite3_bind_text(stmt, 2, who, -1, SQLITE_TRANSIENT);
+  if (rc != SQLITE_OK)
+    g_debug("Error binding when querying IM messages. errno: %d, desc: %s", rc, sqlite3_errmsg(db));
+
+  while ((sqlite3_step(stmt)) == SQLITE_ROW) {
+    rows = sqlite3_column_int(stmt, 0);
+  }
+
+  rc = sqlite3_finalize(stmt);
+  if (rc != SQLITE_OK)
+    g_debug("Error finalizing when querying IM messages. errno: %d, desc: %s", rc, sqlite3_errmsg(db));
+
+
+  // Then, fetch the result and detect the last row.
   rc = sqlite3_prepare_v2(db, "SELECT timestamp,direction,message FROM chatty_im WHERE account=(?) AND who=(?) ORDER BY timestamp ASC", -1, &stmt, NULL);
   if (rc != SQLITE_OK)
       g_debug("Error preparing statement when querying IM messages. errno: %d, desc: %s", rc, sqlite3_errmsg(db));
@@ -357,10 +382,11 @@ chatty_history_get_im_messages (const char* account,
     g_debug("Error binding when querying IM messages. errno: %d, desc: %s", rc, sqlite3_errmsg(db));
 
   while ((sqlite3_step(stmt)) == SQLITE_ROW) {
+    rows--;
     time_stamp = sqlite3_column_int(stmt, 0);
     direction = sqlite3_column_int(stmt, 1);
     msg = sqlite3_column_text(stmt, 2);
-    cb(msg, direction, time_stamp, chatty_conv);
+    cb(msg, direction, time_stamp, chatty_conv, rows == 0);
   }
 
   rc = sqlite3_finalize(stmt);
