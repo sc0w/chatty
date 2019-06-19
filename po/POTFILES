@@ -1,6 +1,8 @@
 data/sm.puri.Chatty.appdata.xml.in
 data/sm.puri.Chatty.desktop.in
 data/sm.puri.Chatty.gschema.xml
+src/chatty-application.c
+src/chatty-application.h
 src/chatty-account.c
 src/chatty-account.h
 src/chatty-buddy-list.c
@@ -11,6 +13,8 @@ src/chatty-conversation.c
 src/chatty-conversation.h
 src/chatty-dialogs.c
 src/chatty-dialogs.h
+src/chatty-lurch.c
+src/chatty-lurch.h
 src/chatty-icons.c
 src/chatty-icons.h
 src/chatty-message-list.c
@@ -27,7 +31,7 @@ src/ui/chatty-dialog-join-muc.ui
 src/ui/chatty-dialog-muc-info.ui
 src/ui/chatty-dialog-new-chat.ui
 src/ui/chatty-dialog-settings.ui
-src/ui/chatty-dialog-welcome.ui
+src/ui/chatty-dialog-user-info.ui
 src/ui/chatty-message-list-popover.ui
 src/ui/chatty-message-list.ui
 src/ui/chatty-pane-msg-view.ui

@@ -286,10 +286,10 @@ chatty_account_notify_added (PurpleAccount *account,
                              const char    *msg)
 {
   GtkWidget  *dialog;
+  GtkWindow  *window;
 
-  chatty_data_t *chatty = chatty_get_data ();
-
-  dialog = gtk_message_dialog_new (chatty->main_window,
+  window = gtk_application_get_active_window (GTK_APPLICATION (g_application_get_default ()));
+  dialog = gtk_message_dialog_new (window,
                                    GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
                                    GTK_MESSAGE_INFO,
                                    GTK_BUTTONS_OK,
@@ -349,12 +349,12 @@ chatty_account_request_authorization (PurpleAccount *account,
                                       void          *user_data)
 {
   GtkWidget           *dialog;
+  GtkWindow           *window;
   struct auth_request *ar;
   int                  response;
 
-  chatty_data_t *chatty = chatty_get_data ();
-
-  dialog = gtk_message_dialog_new (chatty->main_window,
+  window = gtk_application_get_active_window (GTK_APPLICATION (g_application_get_default ()));
+  dialog = gtk_message_dialog_new (window,
                                    GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
                                    GTK_MESSAGE_QUESTION,
                                    GTK_BUTTONS_NONE,
@@ -474,6 +474,10 @@ chatty_account_get_handle (void) {
 void
 chatty_account_init (void)
 {
+  GList *accounts;
+
+  chatty_data_t *chatty = chatty_get_data ();
+
   purple_signal_register (chatty_account_get_handle(), "account-modified",
                           purple_marshal_VOID__POINTER, NULL, 1,
                           purple_value_new (PURPLE_TYPE_SUBTYPE,
@@ -487,9 +491,13 @@ chatty_account_init (void)
                          PURPLE_CALLBACK (cb_account_added),
                          NULL);
 
-
-  if (!purple_prefs_get_bool ("/purple/savedstatus/startup_current_status")) {
-    purple_savedstatus_activate (purple_savedstatus_get_startup ());
+  if (chatty->cml_options & CHATTY_CML_OPT_DISABLE) {
+    for (accounts = purple_accounts_get_all (); accounts != NULL; accounts = accounts->next) {
+      PurpleAccount *account = accounts->data;
+      purple_account_set_enabled (account, CHATTY_UI, FALSE);
+    }
+  } else {
+    purple_savedstatus_activate (purple_savedstatus_new (NULL, PURPLE_STATUS_AVAILABLE));
   }
 }
 

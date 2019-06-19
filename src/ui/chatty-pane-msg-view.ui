@@ -105,23 +105,15 @@
                       </object>
                     </child>
                     <child>
-                      <object class="GtkMenuButton" id="button_encrypt">
-                        <property name="visible">False</property>
-                        <property name="no-show-all">True</property>
+                      <object class="GtkImage" id="symbol_encrypt">
                         <property name="can_focus">False</property>
-                        <property name="receives_default">False</property>
-                        <property name="popover">menu_encryption</property>
+                        <property name="icon_name">changes-allow-symbolic</property>
+                        <property name="no-show-all">True</property>
+                        <property name="visible">False</property>
+                        <property name="margin-right">6</property>
                         <style>
-                          <class name="button_encrypt"/>
-                          <class name="flat"/>
+                          <class name="encrypt"/>
                         </style>
-                        <child>
-                          <object class="GtkImage">
-                            <property name="can_focus">False</property>
-                            <property name="icon_name">changes-allow-symbolic</property>
-                            <property name="visible">True</property>
-                          </object>
-                        </child>
                       </object>
                     </child>
                   </object>

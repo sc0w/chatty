@@ -10,6 +10,7 @@
 #include <glib/gi18n.h>
 #include "chatty-window.h"
 #include "chatty-icons.h"
+#include "chatty-lurch.h"
 #include "chatty-purple-init.h"
 #include "chatty-message-list.h"
 #include "chatty-conversation.h"
@@ -37,7 +38,6 @@ chatty_conv_write_conversation (PurpleConversation *conv,
 
 void chatty_conv_new (PurpleConversation *conv);
 static gboolean chatty_conv_check_for_command (PurpleConversation *conv);
-ChattyConversation * chatty_conv_container_get_active_chatty_conv (GtkNotebook *notebook);
 static void chatty_update_typing_status (ChattyConversation *chatty_conv);
 static void chatty_check_for_emoticon (ChattyConversation *chatty_conv);
 
@@ -204,7 +204,7 @@ cb_button_send_clicked (GtkButton *sender,
   gchar               *message = NULL;
   gchar               *footer_str = NULL;
   const gchar         *protocol_id;
-  gchar                sms_id_str[12];
+  gchar               *sms_id_str;
   guint                sms_id;
 
   chatty_conv  = (ChattyConversation *)data;
@@ -212,11 +212,11 @@ cb_button_send_clicked (GtkButton *sender,
 
   account = purple_conversation_get_account (conv);
 
-  gtk_text_buffer_get_bounds (chatty_conv->msg_buffer, &start, &end);
+  gtk_text_buffer_get_bounds (chatty_conv->input.buffer, &start, &end);
 
   if (chatty_conv_check_for_command (conv)) {
-    gtk_widget_hide (chatty_conv->button_send);
-    gtk_text_buffer_delete (chatty_conv->msg_buffer, &start, &end);
+    gtk_widget_hide (chatty_conv->input.button_send);
+    gtk_text_buffer_delete (chatty_conv->input.buffer, &start, &end);
     return;
   }
 
@@ -226,11 +226,11 @@ cb_button_send_clicked (GtkButton *sender,
 
   protocol_id = purple_account_get_protocol_id (account);
 
-  gtk_widget_grab_focus (chatty_conv->msg_entry);
+  gtk_widget_grab_focus (chatty_conv->input.entry);
 
   purple_idle_touch ();
 
-  message = gtk_text_buffer_get_text (chatty_conv->msg_buffer,
+  message = gtk_text_buffer_get_text (chatty_conv->input.buffer,
                                       &start,
                                       &end,
                                       FALSE);
@@ -245,15 +245,15 @@ cb_button_send_clicked (GtkButton *sender,
   gtk_label_set_markup (GTK_LABEL(chatty_conv->msg_bubble_footer), footer_str);
   gtk_label_set_xalign (GTK_LABEL(chatty_conv->msg_bubble_footer), 1);
 
-  if (gtk_text_buffer_get_char_count (chatty_conv->msg_buffer)) {
+  if (gtk_text_buffer_get_char_count (chatty_conv->input.buffer)) {
     // provide a msg-id to the sms-plugin for send-receipts
     if (g_strcmp0 (protocol_id, "prpl-mm-sms") == 0) {
       sms_id = g_random_int ();
 
-      sprintf (sms_id_str, "%i", sms_id);
+      sms_id_str = g_strdup_printf ("%i", sms_id);
 
       g_hash_table_insert (ht_sms_id,
-                           strdup (sms_id_str), chatty_conv->msg_bubble_footer);
+                           sms_id_str, chatty_conv->msg_bubble_footer);
 
       g_debug ("hash table insert sms_id_str: %s  ht_size: %i\n",
                sms_id_str, g_hash_table_size (ht_sms_id));
@@ -271,10 +271,10 @@ cb_button_send_clicked (GtkButton *sender,
       purple_conv_chat_send(PURPLE_CONV_CHAT(conv), message);
     }
 
-    gtk_widget_hide (chatty_conv->button_send);
+    gtk_widget_hide (chatty_conv->input.button_send);
   }
 
-  gtk_text_buffer_delete (chatty_conv->msg_buffer, &start, &end);
+  gtk_text_buffer_delete (chatty_conv->input.buffer, &start, &end);
 
   g_free (message);
   g_free (footer_str);
@@ -338,10 +338,10 @@ cb_textview_key_released (GtkWidget   *widget,
 
   chatty_conv = (ChattyConversation *)data;
 
-  if (gtk_text_buffer_get_char_count (chatty_conv->msg_buffer)) {
-    gtk_widget_show (chatty_conv->button_send);
+  if (gtk_text_buffer_get_char_count (chatty_conv->input.buffer)) {
+    gtk_widget_show (chatty_conv->input.button_send);
   } else {
-    gtk_widget_hide (chatty_conv->button_send);
+    gtk_widget_hide (chatty_conv->input.button_send);
   }
 
   if (purple_prefs_get_bool (CHATTY_PREFS_ROOT "/conversations/send_typing")) {
@@ -435,11 +435,11 @@ cb_msg_input_vadjust (GObject     *sender,
 
   ChattyConversation *chatty_conv = data;
 
-  vadjust = gtk_scrolled_window_get_vadjustment (GTK_SCROLLED_WINDOW(chatty_conv->msg_scrolled));
-  vscroll = gtk_scrolled_window_get_vscrollbar (GTK_SCROLLED_WINDOW(chatty_conv->msg_scrolled));
+  vadjust = gtk_scrolled_window_get_vadjustment (GTK_SCROLLED_WINDOW(chatty_conv->input.scrolled));
+  vscroll = gtk_scrolled_window_get_vscrollbar (GTK_SCROLLED_WINDOW(chatty_conv->input.scrolled));
   upper = gtk_adjustment_get_upper (GTK_ADJUSTMENT(vadjust));
   page_size = gtk_adjustment_get_page_size (GTK_ADJUSTMENT(vadjust));
-  max_height = gtk_scrolled_window_get_max_content_height (GTK_SCROLLED_WINDOW(chatty_conv->msg_scrolled));
+  max_height = gtk_scrolled_window_get_max_content_height (GTK_SCROLLED_WINDOW(chatty_conv->input.scrolled));
 
   gtk_adjustment_set_value (vadjust, upper - page_size);
 
@@ -449,7 +449,7 @@ cb_msg_input_vadjust (GObject     *sender,
     gtk_widget_set_visible (vscroll, FALSE);
   }
 
-  gtk_widget_queue_draw (chatty_conv->msg_frame);
+  gtk_widget_queue_draw (chatty_conv->input.frame);
 }
 
 
@@ -498,11 +498,11 @@ chatty_check_for_emoticon (ChattyConversation *chatty_conv)
   gpointer            key, value;
   char               *text;
 
-  gtk_text_buffer_get_bounds (chatty_conv->msg_buffer,
+  gtk_text_buffer_get_bounds (chatty_conv->input.buffer,
                               &start,
                               &end);
 
-  text = gtk_text_buffer_get_text (chatty_conv->msg_buffer,
+  text = gtk_text_buffer_get_text (chatty_conv->input.buffer,
                                    &start, &end,
                                    FALSE);
 
@@ -513,8 +513,8 @@ chatty_check_for_emoticon (ChattyConversation *chatty_conv)
       position = end;
 
       gtk_text_iter_backward_chars (&position, strlen ((char*)key));
-      gtk_text_buffer_delete (chatty_conv->msg_buffer, &position, &end);
-      gtk_text_buffer_insert (chatty_conv->msg_buffer, &position, (char*)value, -1);
+      gtk_text_buffer_delete (chatty_conv->input.buffer, &position, &end);
+      gtk_text_buffer_insert (chatty_conv->input.buffer, &position, (char*)value, -1);
     }
 
   }
@@ -541,11 +541,11 @@ chatty_update_typing_status (ChattyConversation *chatty_conv)
     return;
   }
 
-  gtk_text_buffer_get_bounds (chatty_conv->msg_buffer,
+  gtk_text_buffer_get_bounds (chatty_conv->input.buffer,
                               &start,
                               &end);
 
-  text = gtk_text_buffer_get_text (chatty_conv->msg_buffer,
+  text = gtk_text_buffer_get_text (chatty_conv->input.buffer,
                                    &start, &end,
                                    FALSE);
 
@@ -723,11 +723,11 @@ chatty_conv_check_for_command (PurpleConversation *conv)
 
   flags |= PURPLE_MESSAGE_NO_LOG | PURPLE_MESSAGE_SYSTEM;
 
-  gtk_text_buffer_get_bounds (chatty_conv->msg_buffer,
+  gtk_text_buffer_get_bounds (chatty_conv->input.buffer,
                               &start,
                               &end);
 
-  cmd = gtk_text_buffer_get_text (chatty_conv->msg_buffer,
+  cmd = gtk_text_buffer_get_text (chatty_conv->input.buffer,
                                   &start, &end,
                                   FALSE);
 
@@ -1001,8 +1001,7 @@ chatty_conv_message_get_last_msg (PurpleBuddy *buddy)
 
   log_data = chatty_conv_parse_message (logs[num_logs]);
 
-  g_list_foreach (history, (GFunc)purple_log_free, NULL);
-  g_list_free (history);
+  g_list_free_full (history, (GDestroyNotify)purple_log_free);
   g_free (read_log);
   g_free (stripped);
 
@@ -1060,8 +1059,7 @@ chatty_conv_delete_message_history (PurpleBuddy *buddy)
     purple_log_delete ((PurpleLog*)history->data);
   }
 
-  g_list_foreach (history, (GFunc)purple_log_free, NULL);
-  g_list_free (history);
+  g_list_free_full (history, (GDestroyNotify)purple_log_free);
 
   return TRUE;
 }
@@ -1104,7 +1102,7 @@ chatty_conv_get_im_messages_cb (const unsigned char* msg,
   g_free (msg_html);
   g_free(iso_timestamp);
 
-  g_object_set_data (G_OBJECT (chatty_conv->msg_entry),
+  g_object_set_data (G_OBJECT (chatty_conv->input.entry),
                      "attach-start-time",
                      NULL);
 
@@ -1179,15 +1177,14 @@ chatty_conv_get_chat_messages_cb (const unsigned char* msg,
     }
 
     chatty_conv_set_unseen (chatty_conv, CHATTY_UNSEEN_NONE);
-  }
 
+  }
 
   g_free (msg_html);
 
-  g_object_set_data (G_OBJECT (chatty_conv->msg_entry),
+  g_object_set_data (G_OBJECT (chatty_conv->input.entry),
                      "attach-start-time",
                      NULL);
-
 
 }
 
@@ -1239,7 +1236,7 @@ chatty_conv_add_message_history_to_conv (gpointer data)
  * chatty_conv_container_get_active_chatty_conv:
  * @notebook: a GtkNotebook
  *
- * Returns the purple conversation that is
+ * Returns the chatty conversation that is
  * currently set active in the notebook
  *
  * Returns: ChattyConversation
@@ -2066,7 +2063,7 @@ chatty_conv_stack_add_conv (ChattyConversation *chatty_conv)
   g_free (text);
   g_strfreev (name_split);
 
-  gtk_widget_grab_focus (chatty_conv->msg_entry);
+  gtk_widget_grab_focus (chatty_conv->input.entry);
 }
 
 
@@ -2381,7 +2378,7 @@ chatty_conv_switch_conv (ChattyConversation *chatty_conv)
   g_debug ("chatty_conv_switch_conv active_conv: %s   page_num %i",
            purple_conversation_get_name (chatty_conv->conv), page_num);
 
-  gtk_widget_grab_focus (GTK_WIDGET(chatty_conv->msg_entry));
+  gtk_widget_grab_focus (GTK_WIDGET(chatty_conv->input.entry));
 }
 
 
@@ -2574,12 +2571,13 @@ static GtkWidget *
 chatty_conv_setup_pane (ChattyConversation *chatty_conv,
                         guint               msg_type)
 {
+  PurpleConversationType  type;
+
   GtkBuilder      *builder;
   GtkWidget       *scrolled;
   GtkAdjustment   *vadjust;
   GtkWidget       *msg_view_box;
   GtkWidget       *msg_view_list;
-  GtkWidget       *frame;
   GtkStyleContext *sc;
 
   gtk_icon_theme_add_resource_path (gtk_icon_theme_get_default (),
@@ -2587,13 +2585,21 @@ chatty_conv_setup_pane (ChattyConversation *chatty_conv,
 
   builder = gtk_builder_new_from_resource ("/sm/puri/chatty/ui/chatty-pane-msg-view.ui");
 
-  chatty_conv->msg_entry = GTK_WIDGET(gtk_builder_get_object (builder, "text_input"));
+  chatty_conv->input.entry = GTK_WIDGET(gtk_builder_get_object (builder, "text_input"));
 
   msg_view_box = GTK_WIDGET(gtk_builder_get_object (builder, "msg_view_box"));
   msg_view_list = GTK_WIDGET(gtk_builder_get_object (builder, "msg_view_list"));
-  frame = GTK_WIDGET(gtk_builder_get_object (builder, "frame"));
   scrolled = GTK_WIDGET(gtk_builder_get_object (builder, "scrolled"));
-  chatty_conv->button_send = GTK_WIDGET(gtk_builder_get_object (builder, "button_send"));
+  chatty_conv->input.frame = GTK_WIDGET(gtk_builder_get_object (builder, "frame"));
+  chatty_conv->input.button_send = GTK_WIDGET(gtk_builder_get_object (builder, "button_send"));
+  chatty_conv->omemo.symbol_encrypt = GTK_IMAGE(gtk_builder_get_object (builder, "symbol_encrypt"));
+
+  type = purple_conversation_get_type (chatty_conv->conv);
+
+  if (type == PURPLE_CONV_TYPE_IM) {
+    gtk_widget_show (GTK_WIDGET(chatty_conv->omemo.symbol_encrypt));
+    chatty_lurch_get_status (chatty_conv->conv);
+  }
 
   vadjust = gtk_scrolled_window_get_vadjustment (GTK_SCROLLED_WINDOW(scrolled));
 
@@ -2602,37 +2608,36 @@ chatty_conv_setup_pane (ChattyConversation *chatty_conv,
                           G_CALLBACK (cb_msg_input_vadjust),
                           (gpointer) chatty_conv);
 
-  chatty_conv->msg_scrolled = scrolled;
-  chatty_conv->msg_frame = frame;
+  chatty_conv->input.scrolled = scrolled;
 
-  chatty_conv->msg_buffer = gtk_text_buffer_new (NULL);
-  gtk_text_view_set_buffer (GTK_TEXT_VIEW(chatty_conv->msg_entry),
-                            chatty_conv->msg_buffer);
+  chatty_conv->input.buffer = gtk_text_buffer_new (NULL);
+  gtk_text_view_set_buffer (GTK_TEXT_VIEW(chatty_conv->input.entry),
+                            chatty_conv->input.buffer);
 
-  g_object_set_data (G_OBJECT(chatty_conv->msg_buffer),
+  g_object_set_data (G_OBJECT(chatty_conv->input.buffer),
                               "user_data", chatty_conv);
 
-  g_signal_connect (G_OBJECT(chatty_conv->msg_entry),
+  g_signal_connect (G_OBJECT(chatty_conv->input.entry),
                     "key-press-event",
                     G_CALLBACK(cb_textview_key_pressed),
                     (gpointer) chatty_conv);
 
-  g_signal_connect (G_OBJECT(chatty_conv->msg_entry),
+  g_signal_connect (G_OBJECT(chatty_conv->input.entry),
                     "key-release-event",
                     G_CALLBACK(cb_textview_key_released),
                     (gpointer) chatty_conv);
 
-  g_signal_connect (G_OBJECT(chatty_conv->msg_entry),
+  g_signal_connect (G_OBJECT(chatty_conv->input.entry),
                     "focus-in-event",
                     G_CALLBACK(cb_textview_focus_in),
-                    (gpointer) frame);
+                    (gpointer) chatty_conv->input.frame);
 
-  g_signal_connect (G_OBJECT(chatty_conv->msg_entry),
+  g_signal_connect (G_OBJECT(chatty_conv->input.entry),
                     "focus-out-event",
                     G_CALLBACK(cb_textview_focus_out),
-                    (gpointer) frame);
+                    (gpointer) chatty_conv->input.frame);
 
-  sc = gtk_widget_get_style_context (chatty_conv->button_send);
+  sc = gtk_widget_get_style_context (chatty_conv->input.button_send);
 
   switch (msg_type) {
     case CHATTY_MSG_TYPE_SMS:
@@ -2648,11 +2653,11 @@ chatty_conv_setup_pane (ChattyConversation *chatty_conv,
       break;
   }
 
-  sc = gtk_widget_get_style_context (frame);
+  sc = gtk_widget_get_style_context (chatty_conv->input.frame);
 
   gtk_style_context_add_class (sc, "msg_entry_defocused");
 
-  g_signal_connect (chatty_conv->button_send,
+  g_signal_connect (chatty_conv->input.button_send,
                     "clicked",
                     G_CALLBACK(cb_button_send_clicked),
                     (gpointer) chatty_conv);
@@ -2745,7 +2750,7 @@ chatty_conv_new (PurpleConversation *conv)
                      "ChattyConversation",
                      chatty_conv);
 
-  gtk_widget_hide (chatty_conv->button_send);
+  gtk_widget_hide (chatty_conv->input.button_send);
   gtk_widget_show (chatty_conv->tab_cont);
 
   if (chatty_conv->tab_cont == NULL) {

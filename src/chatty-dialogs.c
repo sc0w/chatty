@@ -15,10 +15,15 @@
 #include "chatty-purple-init.h"
 #include "chatty-config.h"
 #include "chatty-dialogs.h"
+#include "chatty-lurch.h"
+#include "chatty-utils.h"
 
 static void chatty_dialogs_reset_settings_dialog (void);
 static void chatty_dialogs_reset_new_contact_dialog (void);
 static void chatty_dialogs_reset_invite_contact_dialog (void);
+static void chatty_entry_set_enabled (GtkWidget *widget, gboolean state);
+
+static void chatty_disconnect_account_signals (PurpleAccount *account);
 
 static chatty_dialog_data_t chatty_dialog_data;
 
@@ -86,6 +91,43 @@ cb_switch_prefs_state_changed (GtkSwitch *widget,
 
 
 static gboolean
+cb_switch_omemo_state_changed (GtkSwitch *widget,
+                               gboolean   state,
+                               gpointer   user_data)
+{
+  PurpleConversation *conv;
+
+  conv = (PurpleConversation *) user_data;
+
+  state ? chatty_lurch_enable (conv) : chatty_lurch_disable (conv);
+
+  chatty_lurch_get_status (conv);
+
+  return TRUE;
+}
+
+
+static gboolean
+cb_switch_notify_state_changed (GtkSwitch *widget,
+                               gboolean   state,
+                               gpointer   user_data)
+{
+  PurpleBuddy        *buddy;
+  PurpleConversation *conv;
+
+  conv = (PurpleConversation *) user_data;
+
+  buddy = purple_find_buddy (conv->account, conv->name);
+
+  purple_blist_node_set_bool (PURPLE_BLIST_NODE(buddy), "chatty-notifications", state);
+
+  gtk_switch_set_state (widget, state);
+
+  return TRUE;
+}
+
+
+static gboolean
 cb_dialog_delete (GtkWidget *widget,
                   GdkEvent  *event,
                   gpointer   user_data)
@@ -136,10 +178,21 @@ cb_button_muc_info_back_clicked (GtkButton *sender,
 
 
 static void
+cb_entry_name_changed (GtkEntry *sender,
+                       gpointer  data)
+{
+  chatty_dialog_data_t *chatty_dialog = chatty_get_dialog_data ();
+
+  gtk_widget_set_sensitive (GTK_WIDGET(chatty_dialog->button_save_account), TRUE);
+}
+
+
+static void
 cb_button_delete_account_clicked (GtkButton *sender,
                                   gpointer   data)
 {
   GtkWidget     *dialog;
+  GtkWindow     *window;
   PurpleAccount *account;
   int            response;
 
@@ -149,7 +202,8 @@ cb_button_delete_account_clicked (GtkButton *sender,
 
   account = chatty->selected_account;
 
-  dialog = gtk_message_dialog_new (chatty->main_window,
+  window = gtk_application_get_active_window (GTK_APPLICATION (g_application_get_default ()));
+  dialog = gtk_message_dialog_new (window,
                                    GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
                                    GTK_MESSAGE_WARNING,
                                    GTK_BUTTONS_OK_CANCEL,
@@ -205,6 +259,11 @@ cb_button_save_account_clicked (GtkButton *sender,
 
   chatty_dialog_data_t *chatty_dialog = chatty_get_dialog_data ();
 
+  chatty_entry_set_enabled (GTK_WIDGET(chatty_dialog->entry_name), FALSE);
+
+  purple_account_set_username(chatty->selected_account,
+                              gtk_entry_get_text (chatty_dialog->entry_name));
+
   entry_account_pwd = (GtkEntry *)data;
 
   purple_account_set_password (chatty->selected_account,
@@ -220,8 +279,32 @@ cb_button_save_account_clicked (GtkButton *sender,
    purple_account_connect (chatty->selected_account);
   }
 
+  chatty_account_populate_account_list (chatty->list_manage_account,
+                                        LIST_MANAGE_ACCOUNT); // username might have changed
+
   gtk_stack_set_visible_child_name (chatty_dialog->stack_panes_settings,
                                     "view-settings");
+}
+
+static void
+write_account_data_into_dialog (chatty_data_t *chatty, chatty_dialog_data_t *chatty_dialog)
+{
+  const char *account_name;
+  const char *protocol_name;
+
+  account_name = purple_account_get_username (chatty->selected_account);
+  protocol_name = purple_account_get_protocol_name (chatty->selected_account);
+
+  gtk_entry_set_text (chatty_dialog->entry_name, account_name);
+  gtk_label_set_text (chatty_dialog->label_protocol, protocol_name);
+
+  if (purple_account_is_connected (chatty->selected_account)) {
+    gtk_label_set_text (chatty_dialog->label_status, _("connected"));
+  } else if (purple_account_is_connecting (chatty->selected_account)) {
+    gtk_label_set_text (chatty_dialog->label_status, _("connecting..."));
+  } else if (purple_account_is_disconnected (chatty->selected_account)) {
+    gtk_label_set_text (chatty_dialog->label_status, _("disconnected"));
+  }
 }
 
 
@@ -230,12 +313,12 @@ cb_list_account_manage_row_activated (GtkListBox    *box,
                                       GtkListBoxRow *row,
                                       gpointer       user_data)
 {
-  const char *account_name;
-  const char *protocol_name;
+  const gchar *protocol_id;
 
   chatty_data_t *chatty = chatty_get_data ();
 
   chatty_dialog_data_t *chatty_dialog = chatty_get_dialog_data ();
+  chatty_purple_data_t *chatty_purple = chatty_get_purple_data ();
 
   if (g_object_get_data (G_OBJECT (row), "row-new-account")) {
     gtk_widget_grab_focus (GTK_WIDGET(chatty_dialog->entry_account_name));
@@ -246,21 +329,47 @@ cb_list_account_manage_row_activated (GtkListBox    *box,
                                       "view-edit-account");
     chatty->selected_account = g_object_get_data (G_OBJECT (row), "row-account");
 
-    account_name = purple_account_get_username (chatty->selected_account);
-    protocol_name = purple_account_get_protocol_name (chatty->selected_account);
+    protocol_id = purple_account_get_protocol_id (chatty->selected_account);
 
-    gtk_label_set_text (chatty_dialog->label_name, account_name);
-    gtk_label_set_text (chatty_dialog->label_protocol, protocol_name);
+    if (chatty_purple->plugin_lurch_loaded && (!g_strcmp0 (protocol_id, "prpl-jabber"))) {
 
-    if (purple_account_is_connected (chatty->selected_account)) {
-      gtk_label_set_text (chatty_dialog->label_status, _("connected"));
-    } else if (purple_account_is_connecting (chatty->selected_account)) {
-      gtk_label_set_text (chatty_dialog->label_status, _("connecting..."));
-    } else if (purple_account_is_disconnected (chatty->selected_account)) {
-      gtk_label_set_text (chatty_dialog->label_status, _("disconnected"));
+      gtk_widget_show (GTK_WIDGET(chatty_dialog->omemo.listbox_fp_own));
+      gtk_widget_show (GTK_WIDGET(chatty_dialog->omemo.listbox_fp_own_dev));
+
+      gtk_list_box_set_header_func (chatty_dialog->omemo.listbox_fp_own,
+                                    hdy_list_box_separator_header,
+                                    NULL, NULL);
+
+      gtk_list_box_set_header_func (chatty_dialog->omemo.listbox_fp_own_dev,
+                                    hdy_list_box_separator_header,
+                                    NULL, NULL);
+
+      chatty_lurch_get_fp_list_own (chatty->selected_account);
     }
+
+    write_account_data_into_dialog (chatty, chatty_dialog);
   }
 }
+
+static void
+chatty_entry_set_enabled (GtkWidget *widget,
+                          gboolean   state)
+{
+  GtkStyleContext    *sc;
+
+  chatty_dialog_data_t *chatty_dialog = chatty_get_dialog_data ();
+
+  sc = gtk_widget_get_style_context (GTK_WIDGET(widget));
+
+  if (state) {
+    gtk_style_context_remove_class (sc, "entry_hide");
+    gtk_widget_set_sensitive (GTK_WIDGET(chatty_dialog->entry_name), TRUE);
+  } else {
+    gtk_style_context_add_class (sc, "entry_hide");
+    gtk_widget_set_sensitive (GTK_WIDGET(chatty_dialog->entry_name), FALSE);
+  }
+}
+
 
 
 static void
@@ -426,6 +535,70 @@ cb_button_invite_contact_clicked (GtkButton *sender,
                                     "view-muc-info");
 }
 
+static void
+cb_account_connection_error (PurpleAccount *gc, PurpleConnectionError err, const gchar *desc, gpointer unused)
+{
+  GtkWidget     *dialog;
+  GtkWindow     *window;
+  PurpleAccount *account;
+
+  chatty_data_t *chatty = chatty_get_data ();
+  chatty_dialog_data_t *chatty_dialog = chatty_get_dialog_data ();
+
+  account = chatty->selected_account;
+
+  chatty_disconnect_account_signals (account);
+
+  window = gtk_application_get_active_window (GTK_APPLICATION (g_application_get_default ()));
+  dialog = gtk_message_dialog_new (window,
+                                   GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+                                   GTK_MESSAGE_ERROR,
+                                   GTK_BUTTONS_OK,
+                                   _("Cannot login"));
+
+  gtk_message_dialog_format_secondary_text (GTK_MESSAGE_DIALOG(dialog),
+                                            _("Failed to login as %s:\n%s"),
+                                            purple_account_get_username (account),
+              desc);
+
+  gtk_dialog_set_default_response (GTK_DIALOG(dialog), GTK_RESPONSE_CANCEL);
+  gtk_window_set_position (GTK_WINDOW(dialog), GTK_WIN_POS_CENTER_ON_PARENT);
+
+  gtk_dialog_run (GTK_DIALOG(dialog));
+
+  gtk_widget_destroy (dialog);
+
+  chatty_entry_set_enabled (GTK_WIDGET(chatty_dialog->entry_name), TRUE);
+
+  gtk_stack_set_visible_child_name (chatty_dialog->stack_panes_settings,
+                                    "view-edit-account");
+
+  write_account_data_into_dialog (chatty, chatty_dialog);
+}
+
+static void
+cb_account_signed_on (PurpleAccount *gc, gpointer unused)
+{
+  PurpleAccount *account;
+
+  chatty_data_t *chatty = chatty_get_data ();
+  chatty_dialog_data_t *chatty_dialog = chatty_get_dialog_data ();
+
+  account = chatty->selected_account;
+
+  chatty_disconnect_account_signals (account);
+  gtk_stack_set_visible_child_name (chatty_dialog->stack_panes_settings, "view-settings");
+}
+
+static void
+chatty_disconnect_account_signals (PurpleAccount *account)
+{
+  void *connections_handle = purple_connections_get_handle();
+
+  purple_signal_disconnect (connections_handle, "connection-error", account, PURPLE_CALLBACK (cb_account_connection_error));
+  purple_signal_disconnect (connections_handle, "signed-on", account, PURPLE_CALLBACK (cb_account_signed_on));
+}
+
 
 static void
 cb_button_add_account_clicked (GtkButton *sender,
@@ -435,12 +608,14 @@ cb_button_add_account_clicked (GtkButton *sender,
   GtkToggleButton *button_xmpp;
   GtkToggleButton *button_matrix;
   GtkToggleButton *button_telegram;
+  void            *connections_handle;
   const gchar     *protocol;
   const gchar     *name;
   const gchar     *pwd;
   const gchar     *setting = NULL;
   const gchar     *value;
 
+  chatty_data_t        *chatty = chatty_get_data ();
   chatty_dialog_data_t *chatty_dialog = chatty_get_dialog_data ();
 
   name = gtk_entry_get_text (GTK_ENTRY(chatty_dialog->entry_account_name));
@@ -474,13 +649,14 @@ cb_button_add_account_clicked (GtkButton *sender,
     purple_account_set_string (account, setting, value);
   }
 
+  connections_handle = purple_connections_get_handle ();
+  chatty->selected_account = account;
+  purple_signal_connect (connections_handle, "connection-error", account, PURPLE_CALLBACK (cb_account_connection_error), NULL);
+  purple_signal_connect (connections_handle, "signed-on", account, PURPLE_CALLBACK (cb_account_signed_on), NULL);
   purple_account_set_enabled (account, CHATTY_UI, TRUE);
   purple_accounts_add (account);
 
   chatty_dialogs_reset_settings_dialog ();
-
-  gtk_stack_set_visible_child_name (chatty_dialog->stack_panes_settings,
-                                    "view-settings");
 }
 
 
@@ -551,6 +727,16 @@ cb_textview_key_released (GtkWidget   *widget,
 }
 
 
+
+
+static void
+cb_empty_list (GtkWidget *child,
+               gpointer   user_data)
+{
+  gtk_widget_destroy (GTK_WIDGET(child));
+}
+
+
 static void
 chatty_dialogs_reset_settings_dialog (void)
 {
@@ -560,8 +746,22 @@ chatty_dialogs_reset_settings_dialog (void)
   gtk_widget_set_sensitive (GTK_WIDGET(chatty_dialog->button_add_account), FALSE);
   gtk_widget_set_sensitive (GTK_WIDGET(chatty_dialog->entry_account_pwd), FALSE);
 
+  chatty_entry_set_enabled (GTK_WIDGET(chatty_dialog->entry_name), FALSE);
+
   gtk_entry_set_text (GTK_ENTRY(chatty_dialog->entry_account_name), "");
   gtk_entry_set_text (GTK_ENTRY(chatty_dialog->entry_account_pwd), "");
+
+  if (chatty_dialog->omemo.listbox_fp_own) {
+    gtk_container_foreach (GTK_CONTAINER (chatty_dialog->omemo.listbox_fp_own),
+                           cb_empty_list,
+                           NULL);
+  }
+
+  if (chatty_dialog->omemo.listbox_fp_own_dev) {
+    gtk_container_foreach (GTK_CONTAINER (chatty_dialog->omemo.listbox_fp_own_dev),
+                           cb_empty_list,
+                           NULL);
+  }
 }
 
 
@@ -591,11 +791,11 @@ chatty_dialogs_create_add_account_view (GtkBuilder *builder)
   PurplePlugin *protocol;
   GtkWidget    *dialog;
   GtkWidget    *button_back;
+  GtkWindow    *window;
   GtkListBox   *list_protocol_sel;
   HdyActionRow *action_row_matrix;
   HdyActionRow *action_row_telegram;
 
-  chatty_data_t        *chatty = chatty_get_data ();
   chatty_dialog_data_t *chatty_dialog = chatty_get_dialog_data ();
 
   button_back = GTK_WIDGET (gtk_builder_get_object (builder, "button_add_account_back"));
@@ -636,8 +836,8 @@ chatty_dialogs_create_add_account_view (GtkBuilder *builder)
 
   dialog = GTK_WIDGET (gtk_builder_get_object (builder, "dialog"));
 
-  gtk_window_set_transient_for (GTK_WINDOW(dialog),
-                                GTK_WINDOW(chatty->main_window));
+  window = gtk_application_get_active_window (GTK_APPLICATION (g_application_get_default ()));
+  gtk_window_set_transient_for (GTK_WINDOW(dialog), window);
 
   g_signal_connect (G_OBJECT(chatty_dialog->button_add_account),
                     "clicked",
@@ -654,10 +854,10 @@ chatty_dialogs_create_add_account_view (GtkBuilder *builder)
 static void
 chatty_dialogs_create_edit_account_view (GtkBuilder *builder)
 {
-  GtkWidget  *button_back;
-  GtkWidget  *button_edit_pw;
-  GtkWidget  *button_delete;
-  GtkEntry   *entry_account_pwd;
+  GtkWidget     *button_back;
+  GtkWidget     *button_edit_pw;
+  GtkWidget     *button_delete;
+  GtkEntry      *entry_account_pwd;
 
   chatty_dialog_data_t *chatty_dialog = chatty_get_dialog_data ();
 
@@ -666,18 +866,22 @@ chatty_dialogs_create_edit_account_view (GtkBuilder *builder)
   button_edit_pw = GTK_WIDGET (gtk_builder_get_object (builder, "button_edit_pw"));
   chatty_dialog->button_save_account = GTK_WIDGET (gtk_builder_get_object (builder, "button_save_account"));
   button_back = GTK_WIDGET (gtk_builder_get_object (builder, "button_edit_account_back"));
-  chatty_dialog->label_name = GTK_LABEL (gtk_builder_get_object (builder, "label_account_id"));
+  chatty_dialog->entry_name = GTK_ENTRY (gtk_builder_get_object (builder, "entry_account_id"));
   chatty_dialog->label_protocol = GTK_LABEL (gtk_builder_get_object (builder, "label_protocol"));
   chatty_dialog->label_status = GTK_LABEL (gtk_builder_get_object (builder, "label_status"));
   entry_account_pwd = GTK_ENTRY (gtk_builder_get_object (builder, "entry_account_pwd"));
-
-
-  gtk_entry_set_text (GTK_ENTRY(entry_account_pwd), "xxxxxxxxx");
+  chatty_dialog->omemo.listbox_fp_own = GTK_LIST_BOX (gtk_builder_get_object (builder, "listbox_fp_own"));
+  chatty_dialog->omemo.listbox_fp_own_dev = GTK_LIST_BOX (gtk_builder_get_object (builder, "listbox_fp_own_dev"));
 
   g_signal_connect (G_OBJECT(button_delete),
                     "clicked",
                     G_CALLBACK (cb_button_delete_account_clicked),
                     NULL);
+
+  g_signal_connect (G_OBJECT(chatty_dialog->entry_name),
+        "changed",
+        G_CALLBACK (cb_entry_name_changed),
+        NULL);
 
   g_signal_connect (G_OBJECT(button_edit_pw),
                     "clicked",
@@ -701,6 +905,7 @@ chatty_dialogs_create_dialog_settings (void)
 {
   GtkBuilder    *builder;
   GtkWidget     *dialog;
+  GtkWindow     *window;
   GtkListBox    *list_privacy_prefs;
   GtkListBox    *list_xmpp_prefs;
   GtkListBox    *list_editor_prefs;
@@ -825,8 +1030,8 @@ chatty_dialogs_create_dialog_settings (void)
   chatty_dialogs_create_edit_account_view (builder);
   chatty_dialogs_create_add_account_view (builder);
 
-  gtk_window_set_transient_for (GTK_WINDOW(dialog),
-                                GTK_WINDOW(chatty->main_window));
+  window = gtk_application_get_active_window (GTK_APPLICATION (g_application_get_default ()));
+  gtk_window_set_transient_for (GTK_WINDOW(dialog), window);
 
   g_object_unref (builder);
 
@@ -842,6 +1047,7 @@ chatty_dialogs_create_dialog_new_chat (void)
   GtkWidget  *button_back;
   GtkWidget  *button_add_contact;
   GtkWidget  *button_show_add_contact;
+  GtkWindow  *window;
 
   chatty_data_t        *chatty = chatty_get_data ();
   chatty_dialog_data_t *chatty_dialog = chatty_get_dialog_data ();
@@ -895,8 +1101,8 @@ chatty_dialogs_create_dialog_new_chat (void)
                           G_CALLBACK(cb_contact_name_delete_text),
                           (gpointer)button_add_contact);
 
-  gtk_window_set_transient_for (GTK_WINDOW(dialog),
-                                GTK_WINDOW(chatty->main_window));
+  window = gtk_application_get_active_window (GTK_APPLICATION (g_application_get_default ()));
+  gtk_window_set_transient_for (GTK_WINDOW(dialog), window);
 
   g_object_unref (builder);
 
@@ -912,6 +1118,7 @@ chatty_dialogs_create_dialog_muc_info (void)
   GtkWidget  *button_back;
   GtkWidget  *button_invite_contact;
   GtkWidget  *button_show_invite_contact;
+  GtkWindow  *window;
   GtkListBox *list_muc_settings;
 
   chatty_data_t        *chatty = chatty_get_data ();
@@ -1005,8 +1212,8 @@ chatty_dialogs_create_dialog_muc_info (void)
                           G_CALLBACK(cb_invite_name_delete_text),
                           (gpointer)button_invite_contact);
 
-  gtk_window_set_transient_for (GTK_WINDOW(dialog),
-                                GTK_WINDOW(chatty->main_window));
+  window = gtk_application_get_active_window (GTK_APPLICATION (g_application_get_default ()));
+  gtk_window_set_transient_for (GTK_WINDOW(dialog), window);
 
   g_object_unref (builder);
 
@@ -1020,6 +1227,7 @@ chatty_dialogs_show_dialog_join_muc (void)
   GtkBuilder *builder;
   GtkWidget  *dialog;
   GtkWidget  *button_join_chat;
+  GtkWindow  *window;
   GtkListBox *list_select_muc_account;
   GtkEntry   *entry_group_chat_id;
   GtkEntry   *entry_group_chat_pw;
@@ -1051,8 +1259,8 @@ chatty_dialogs_show_dialog_join_muc (void)
   chatty_account_populate_account_list (list_select_muc_account,
                                         LIST_SELECT_MUC_ACCOUNT);
 
-  gtk_window_set_transient_for (GTK_WINDOW(dialog),
-                                GTK_WINDOW(chatty->main_window));
+  window = gtk_application_get_active_window (GTK_APPLICATION (g_application_get_default ()));
+  gtk_window_set_transient_for (GTK_WINDOW(dialog), window);
 
   response = gtk_dialog_run (GTK_DIALOG(dialog));
 
@@ -1072,13 +1280,98 @@ chatty_dialogs_show_dialog_join_muc (void)
 
 
 void
+chatty_dialogs_show_dialog_user_info (ChattyConversation *chatty_conv)
+{
+  PurpleBuddy   *buddy;
+  PurpleAccount *account;
+  GtkBuilder    *builder;
+  GtkWidget     *dialog;
+  GtkWidget     *label_alias;
+  GtkWidget     *label_jid;
+  GtkWidget     *label_status;
+  GtkWindow     *window;
+  GtkSwitch     *switch_notify;
+  GtkListBox    *listbox_prefs;
+  const char    *protocol_id;
+  const char    *alias;
+
+  chatty_purple_data_t *chatty_purple = chatty_get_purple_data ();
+  chatty_dialog_data_t *chatty_dialog = chatty_get_dialog_data ();
+
+  builder = gtk_builder_new_from_resource ("/sm/puri/chatty/ui/chatty-dialog-user-info.ui");
+
+  label_alias = GTK_WIDGET (gtk_builder_get_object (builder, "label_alias"));
+  label_jid = GTK_WIDGET (gtk_builder_get_object (builder, "label_jid"));
+  switch_notify = GTK_SWITCH (gtk_builder_get_object (builder, "switch_notify"));
+  listbox_prefs = GTK_LIST_BOX (gtk_builder_get_object (builder, "listbox_prefs"));
+
+  account = purple_conversation_get_account (chatty_conv->conv);
+  protocol_id = purple_account_get_protocol_id (account);
+
+  if (chatty_purple->plugin_lurch_loaded && (!g_strcmp0 (protocol_id, "prpl-jabber"))) {
+    label_status = GTK_WIDGET (gtk_builder_get_object (builder, "label_status"));
+    chatty_dialog->omemo.switch_on_off = GTK_SWITCH (gtk_builder_get_object (builder, "switch_omemo"));
+    chatty_dialog->omemo.label_status_msg = GTK_WIDGET (gtk_builder_get_object (builder, "label_status_msg"));
+    chatty_dialog->omemo.listbox_fp_contact = GTK_LIST_BOX (gtk_builder_get_object (builder, "listbox_fp"));
+
+    gtk_widget_show (GTK_WIDGET(listbox_prefs));
+    gtk_widget_show (GTK_WIDGET(chatty_dialog->omemo.listbox_fp_contact));
+    gtk_widget_show (GTK_WIDGET(label_status));
+    gtk_widget_show (GTK_WIDGET(chatty_dialog->omemo.label_status_msg));
+
+    gtk_list_box_set_header_func (chatty_dialog->omemo.listbox_fp_contact,
+                                  hdy_list_box_separator_header,
+                                  NULL, NULL);
+
+    chatty_lurch_get_status (chatty_conv->conv);
+    chatty_lurch_get_fp_list_contact (chatty_conv->conv);
+
+    gtk_switch_set_state (chatty_dialog->omemo.switch_on_off, chatty_conv->omemo.enabled);
+
+    g_signal_connect (chatty_dialog->omemo.switch_on_off,
+                      "state-set",
+                      G_CALLBACK(cb_switch_omemo_state_changed),
+                      (gpointer)chatty_conv->conv);
+  }
+
+  gtk_list_box_set_header_func (listbox_prefs,
+                                hdy_list_box_separator_header,
+                                NULL, NULL);
+
+  buddy = purple_find_buddy (chatty_conv->conv->account, chatty_conv->conv->name);
+  alias = purple_buddy_get_alias (buddy);
+
+  gtk_switch_set_state (switch_notify,
+                        purple_blist_node_get_bool (PURPLE_BLIST_NODE(buddy),
+                        "chatty-notifications"));
+
+  g_signal_connect (switch_notify,
+                    "state-set",
+                    G_CALLBACK(cb_switch_notify_state_changed),
+                    (gpointer)chatty_conv->conv);
+
+  gtk_label_set_text (GTK_LABEL(label_alias), alias);
+  gtk_label_set_text (GTK_LABEL(label_jid), chatty_utils_jabber_id_strip (chatty_conv->conv->name));
+
+  dialog = GTK_WIDGET (gtk_builder_get_object (builder, "dialog"));
+
+  window = gtk_application_get_active_window (GTK_APPLICATION (g_application_get_default ()));
+  gtk_window_set_transient_for (GTK_WINDOW(dialog), window);
+
+  gtk_dialog_run (GTK_DIALOG(dialog));
+
+  gtk_widget_destroy (dialog);
+  g_object_unref (builder);
+}
+
+
+void
 chatty_dialogs_show_dialog_about_chatty (const char *version)
 {
   GtkBuilder *builder;
   GtkWidget  *dialog;
   GtkWidget  *label_version;
-
-  chatty_data_t *chatty = chatty_get_data ();
+  GtkWindow  *window;
 
   builder = gtk_builder_new_from_resource ("/sm/puri/chatty/ui/chatty-dialog-info.ui");
 
@@ -1087,11 +1380,10 @@ chatty_dialogs_show_dialog_about_chatty (const char *version)
 
   dialog = GTK_WIDGET (gtk_builder_get_object (builder, "dialog"));
 
-  gtk_window_set_transient_for (GTK_WINDOW(dialog),
-                                GTK_WINDOW(chatty->main_window));
+  window = gtk_application_get_active_window (GTK_APPLICATION (g_application_get_default ()));
+  gtk_window_set_transient_for (GTK_WINDOW(dialog), window);
 
   gtk_dialog_run (GTK_DIALOG(dialog));
-
 
   gtk_widget_destroy (dialog);
   g_object_unref (builder);

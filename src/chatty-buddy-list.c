@@ -94,19 +94,14 @@ cb_tree_view_row_activated (GtkTreeView       *treeview,
 
     protocol_id = purple_account_get_protocol_id (account);
 
-    gtk_widget_hide (chatty->button_menu_chat_info);
     gtk_widget_hide (chatty->button_header_chat_info);
-
-
 
     if (purple_blist_node_get_bool (PURPLE_BLIST_NODE(buddy),
                                     "chatty-unknown-contact")) {
 
       gtk_widget_show (chatty->button_menu_add_contact);
-      gtk_widget_show (chatty->separator_menu_msg_view);
     } else {
       gtk_widget_hide (chatty->button_menu_add_contact);
-      gtk_widget_hide (chatty->separator_menu_msg_view);
     }
 
     if (g_strcmp0 (protocol_id, "prpl-mm-sms") == 0) {
@@ -140,9 +135,7 @@ cb_tree_view_row_activated (GtkTreeView       *treeview,
 
     _chatty_blist->selected_node = node;
 
-    gtk_widget_show (chatty->button_menu_chat_info);
     gtk_widget_show (chatty->button_header_chat_info);
-    gtk_widget_show (chatty->separator_menu_msg_view);
     gtk_widget_hide (chatty->button_menu_add_contact);
 
     chatty_conv_join_chat (chat);
@@ -351,13 +344,15 @@ cb_written_msg_update_ui (PurpleAccount       *account,
 {
   ChattyBlistNode *ui = node->ui_data;
 
-  if (ui->conv.conv != conv || !(flag & (PURPLE_MESSAGE_RECV))) {
+  if (ui->conv.conv != conv) {
     return;
   }
 
-  if (node != _chatty_blist->selected_node) {
-    ui->conv.flags |= CHATTY_BLIST_NODE_HAS_PENDING_MESSAGE;
-    ui->conv.pending_messages ++;
+  if (flag & (PURPLE_MESSAGE_SEND | PURPLE_MESSAGE_RECV)) {
+    if (node != _chatty_blist->selected_node) {
+      ui->conv.flags |= CHATTY_BLIST_NODE_HAS_PENDING_MESSAGE;
+      ui->conv.pending_messages ++;
+    }
   }
 
   chatty_blist_update (purple_get_blist(), node);
@@ -698,6 +693,10 @@ chatty_blist_chat_list_set_row (void)
 
     gtk_tree_view_row_activated (_chatty_blist->treeview_chats, path, NULL);
     gtk_tree_view_set_cursor (_chatty_blist->treeview_chats, path, NULL, FALSE);
+  } else {
+    // The chats list is empty, go back to initial view
+    chatty_window_update_sub_header_titlebar (NULL, NULL);
+    chatty_window_change_view (CHATTY_VIEW_CHAT_LIST);
   }
 }
 
@@ -759,6 +758,7 @@ chatty_blist_contact_list_add_buddy (void)
     account = purple_conversation_get_account (conv);
     purple_account_add_buddy (account, buddy);
     purple_blist_node_remove_setting (PURPLE_BLIST_NODE(buddy), "chatty-unknown-contact");
+    purple_blist_node_set_bool (node, "chatty-notifications", TRUE);
   }
 }
 
@@ -813,13 +813,12 @@ chatty_blist_chat_list_remove_buddy (void)
   ChattyBlistNode *ui;
   PurpleChat      *chat;
   GtkWidget       *dialog;
+  GtkWindow       *window;
   const char      *name;
   const char      *text;
   const char      *sub_text;
   int              response;
   const char      *conv_name;
-
-  chatty_data_t *chatty = chatty_get_data ();
 
   node = _chatty_blist->selected_node;
 
@@ -837,7 +836,8 @@ chatty_blist_chat_list_remove_buddy (void)
     sub_text = _("This deletes the conversation history");
   }
 
-  dialog = gtk_message_dialog_new (chatty->main_window,
+  window = gtk_application_get_active_window (GTK_APPLICATION (g_application_get_default ()));
+  dialog = gtk_message_dialog_new (window,
                                    GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
                                    GTK_MESSAGE_QUESTION,
                                    GTK_BUTTONS_NONE,
@@ -2274,8 +2274,8 @@ chatty_blist_request_add_buddy (PurpleAccount *account,
                                 const char    *group,
                                 const char    *alias)
 {
-  PurpleBuddy *buddy;
-  const char  *account_name;
+  PurpleBuddy     *buddy;
+  const char      *account_name;
 
   buddy = purple_find_buddy (account, username);
 
@@ -2283,6 +2283,7 @@ chatty_blist_request_add_buddy (PurpleAccount *account,
     buddy = purple_buddy_new (account, username, alias);
 
     purple_blist_add_buddy (buddy, NULL, NULL, NULL);
+    purple_blist_node_set_bool (PURPLE_BLIST_NODE(buddy), "chatty-notifications", TRUE);
   }
 
   purple_account_add_buddy (account, buddy);

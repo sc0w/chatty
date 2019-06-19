@@ -115,6 +115,24 @@ chatty_new_chat_action (GSimpleAction *action,
 }
 
 
+static void
+chatty_window_show_chat_info (void)
+{
+  ChattyConversation *chatty_conv;
+
+  chatty_data_t *chatty = chatty_get_data ();
+
+  chatty_conv = chatty_conv_container_get_active_chatty_conv (GTK_NOTEBOOK(chatty->pane_view_message_list));
+
+  if (purple_conversation_get_type (chatty_conv->conv) == PURPLE_CONV_TYPE_IM) {
+    chatty_dialogs_show_dialog_user_info (chatty_conv);
+
+  } else if (purple_conversation_get_type (chatty_conv->conv) == PURPLE_CONV_TYPE_CHAT) {
+    gtk_widget_show (GTK_WIDGET(chatty->dialog_muc_info));
+  }
+}
+
+
 void
 chatty_window_change_view (ChattyWindowState view)
 {
@@ -134,7 +152,7 @@ chatty_window_change_view (ChattyWindowState view)
       gtk_widget_show (GTK_WIDGET(chatty->dialog_new_chat));
       break;
     case CHATTY_VIEW_CHAT_INFO:
-      gtk_widget_show (GTK_WIDGET(chatty->dialog_muc_info));
+      chatty_window_show_chat_info ();
       break;
     case CHATTY_VIEW_MESSAGE_LIST:
       hdy_leaflet_set_visible_child_name (chatty->content_box, "content");
@@ -219,11 +237,8 @@ chatty_window_activate (GtkApplication *app,
   GtkBuilder         *builder;
   GtkWindow          *window;
   GSimpleActionGroup *simple_action_group;
-  GtkCssProvider     *cssProvider = gtk_css_provider_new();
 
   chatty_data_t *chatty = chatty_get_data ();
-
-  chatty->app = app;
 
   builder = gtk_builder_new_from_resource ("/sm/puri/chatty/ui/chatty-window.ui");
 
@@ -241,21 +256,12 @@ chatty_window_activate (GtkApplication *app,
 
   chatty_popover_actions_init (window);
 
-  chatty->main_window = window;
-
-  gtk_css_provider_load_from_resource (cssProvider, "/sm/puri/chatty/css/style.css");
-  gtk_style_context_add_provider_for_screen (gdk_screen_get_default(),
-                                             GTK_STYLE_PROVIDER (cssProvider),
-                                             GTK_STYLE_PROVIDER_PRIORITY_USER);
-
   chatty->header_spinner = GTK_WIDGET (gtk_builder_get_object (builder, "header_spinner"));
   chatty->sub_header_bar = GTK_HEADER_BAR (gtk_builder_get_object (builder, "sub_header_bar"));
   chatty->sub_header_label = GTK_WIDGET (gtk_builder_get_object (builder, "sub_header_label"));
   chatty->sub_header_icon = GTK_WIDGET (gtk_builder_get_object (builder, "sub_header_icon"));
-  chatty->button_menu_chat_info = GTK_WIDGET (gtk_builder_get_object (builder, "button_menu_chat_info"));
   chatty->button_menu_add_contact = GTK_WIDGET (gtk_builder_get_object (builder, "button_menu_add_contact"));
   chatty->button_header_chat_info = GTK_WIDGET (gtk_builder_get_object (builder, "button_header_chat_info"));
-  chatty->separator_menu_msg_view = GTK_WIDGET (gtk_builder_get_object (builder, "separator_menu_msg_view"));
 
   chatty->search_bar_chats = HDY_SEARCH_BAR (gtk_builder_get_object (builder, "search_bar_chats"));
   chatty->search_entry_chats = GTK_ENTRY (gtk_builder_get_object (builder, "search_entry_chats"));

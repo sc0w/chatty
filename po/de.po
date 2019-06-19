@@ -1,5 +1,6 @@
 # Daniel Brunkhorst <daniel.brunkhorst@posteo.de>, 2018. #zanata
 # Max Schmidt <grell.robin@gmail.com>, 2019. #zanata
+# Schnee Wittchen <fru@fruweb.de>, 2019. #zanata
 msgid ""
 msgstr ""
 "Project-Id-Version: purism-chatty\n"
@@ -8,8 +9,8 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2019-01-19 10:36+0000\n"
-"Last-Translator: Max Schmidt <grell.robin@gmail.com>\n"
+"PO-Revision-Date: 2019-05-28 07:36+0000\n"
+"Last-Translator: Schnee Wittchen <fru@fruweb.de>\n"
 "Language-Team: German\n"
 "Language: de\n"
 "X-Generator: Zanata 4.6.2\n"
@@ -84,15 +85,15 @@ msgstr "%s den Kontakten hinzufügen"
 
 #: src/chatty-buddy-list.c:822
 msgid "Disconnect group chat"
-msgstr ""
+msgstr "Gruppenchat beenden"
 
 #: src/chatty-buddy-list.c:823
 msgid "This removes chat from chats list"
-msgstr ""
+msgstr "Dies entfernt den Chat von der Chatliste"
 
 #: src/chatty-buddy-list.c:827
 msgid "Delete chat with"
-msgstr ""
+msgstr "Lösche den Chat mit"
 
 #: src/chatty-buddy-list.c:828
 msgid "This deletes the conversation history"
@@ -114,19 +115,19 @@ msgstr "Ich:"
 
 #: src/chatty-conversation.c:1434
 msgid "Owner"
-msgstr ""
+msgstr "Besitzer"
 
 #: src/chatty-conversation.c:1437
 msgid "Moderator"
-msgstr ""
+msgstr "Moderator"
 
 #: src/chatty-conversation.c:1440
 msgid "Member"
-msgstr ""
+msgstr "Mitglied"
 
 #: src/chatty-conversation.c:1893
 msgid "members"
-msgstr ""
+msgstr "Mitglieder"
 
 #: src/chatty-dialogs.c:156 src/ui/chatty-dialog-settings.ui:544
 msgid "Delete Account"
@@ -179,227 +180,227 @@ msgstr "und kann Kosten Ihres Mobilfunkanbieters verursachen."
 
 #: src/ui/chatty-dialog-info.ui:11 src/ui/chatty-window.ui:70
 msgid "About Chatty"
-msgstr ""
+msgstr "Über Chatty"
 
 #: src/ui/chatty-dialog-info.ui:95
 msgid "An SMS and XMPP messaging client"
-msgstr ""
+msgstr "Ein SMS und XMPP Messaging-Client"
 
 #: src/ui/chatty-dialog-join-muc.ui:12 src/ui/chatty-window.ui:19
 msgid "New Group Chat"
-msgstr ""
+msgstr "Neuer Gruppenchat"
 
 #: src/ui/chatty-dialog-join-muc.ui:28
 msgid "Join Chat"
-msgstr ""
+msgstr "Chat beitreten"
 
 #: src/ui/chatty-dialog-join-muc.ui:80 src/ui/chatty-dialog-new-chat.ui:199
 msgid "Select chat account"
-msgstr ""
+msgstr "Wähle Chat-Account"
 
 #: src/ui/chatty-dialog-join-muc.ui:130
 msgid "Password (optional)"
-msgstr ""
+msgstr "Passwort (optional)"
 
 #: src/ui/chatty-dialog-join-muc.ui:180
 msgid "Autojoin"
-msgstr ""
+msgstr "Automatisches Beitreten"
 
 #: src/ui/chatty-dialog-join-muc.ui:181
 msgid "Join group chat at startup"
-msgstr ""
+msgstr "Trete Gruppenchats beim Start bei"
 
 #: src/ui/chatty-dialog-muc-info.ui:25
 msgid "Group Details"
-msgstr ""
+msgstr "Gruppendetails"
 
 #: src/ui/chatty-dialog-muc-info.ui:50
 msgid "Invite Contact"
-msgstr ""
+msgstr "Kontakt einladen"
 
 #: src/ui/chatty-dialog-muc-info.ui:66
 msgid "Invite"
-msgstr ""
+msgstr "Einladen"
 
 #: src/ui/chatty-dialog-muc-info.ui:205
 msgid "Room settings"
-msgstr ""
+msgstr "Raumeinstellungen"
 
 #: src/ui/chatty-dialog-muc-info.ui:228
 msgid "Notifications"
-msgstr ""
+msgstr "Benachrichtigungen"
 
 #: src/ui/chatty-dialog-muc-info.ui:229
 msgid "Show notification badge"
-msgstr ""
+msgstr "Zeige Benachrichtigungsmarkierung"
 
 #: src/ui/chatty-dialog-muc-info.ui:244
 msgid "Edit topic"
-msgstr ""
+msgstr "Thema ändern"
 
 #: src/ui/chatty-dialog-muc-info.ui:245
 msgid "Users may change the topic"
-msgstr ""
+msgstr "Nutzer können das Thema ändern"
 
 #: src/ui/chatty-dialog-muc-info.ui:260
 msgid "Persistent"
-msgstr ""
+msgstr "Dauerhaft"
 
 #: src/ui/chatty-dialog-muc-info.ui:261
 msgid "Room persists after the last user left"
-msgstr ""
+msgstr "Raum besteht weiterhin, nachdem der letzte Nutzer ihn verlässt"
 
 #: src/ui/chatty-dialog-muc-info.ui:276
 msgid "Auto-join"
-msgstr ""
+msgstr "Automatisches Beitreten"
 
 #: src/ui/chatty-dialog-muc-info.ui:277
 msgid "Join chat at startup"
-msgstr ""
+msgstr "Betrete Chat beim Start"
 
 #: src/ui/chatty-dialog-muc-info.ui:299
 msgid "0 members"
-msgstr ""
+msgstr "0 Mitglieder"
 
 #: src/ui/chatty-dialog-muc-info.ui:395
 msgid "Invite Message"
-msgstr ""
+msgstr "Einladungsnachricht"
 
 #: src/ui/chatty-dialog-new-chat.ui:25
 msgid "Start Chat"
-msgstr ""
+msgstr "Starte Chat"
 
 #: src/ui/chatty-dialog-new-chat.ui:50
 msgid "New Contact"
-msgstr ""
+msgstr "Neuer Kontakt"
 
 #: src/ui/chatty-dialog-new-chat.ui:66 src/ui/chatty-window.ui:112
 msgid "Add Contact"
-msgstr ""
+msgstr "Füge Kontakt hinzu"
 
 #: src/ui/chatty-dialog-new-chat.ui:249
 msgid "Alias (optional)"
-msgstr ""
+msgstr "Alias (optional)"
 
 #: src/ui/chatty-dialog-settings.ui:22 src/ui/chatty-window.ui:57
 msgid "Preferences"
-msgstr ""
+msgstr "Einstellungen"
 
 #: src/ui/chatty-dialog-settings.ui:32
 msgid "Edit Account"
-msgstr ""
+msgstr "Account ändern"
 
 #: src/ui/chatty-dialog-settings.ui:47
 msgid "Save"
-msgstr ""
+msgstr "Speichern"
 
 #: src/ui/chatty-dialog-settings.ui:65
 msgid "Add Account"
-msgstr ""
+msgstr "Account hinzufügen"
 
 #: src/ui/chatty-dialog-settings.ui:80
 msgid "Add"
-msgstr ""
+msgstr "Hinzufügen"
 
 #: src/ui/chatty-dialog-settings.ui:145
 msgid "Accounts"
-msgstr ""
+msgstr "Accounts"
 
 #: src/ui/chatty-dialog-settings.ui:170
 msgid "Privacy"
-msgstr ""
+msgstr "Privatsphäre"
 
 #: src/ui/chatty-dialog-settings.ui:191
 msgid "Message Receipts"
-msgstr ""
+msgstr "Nachrichtenübermittlung bestätigen"
 
 #: src/ui/chatty-dialog-settings.ui:192
 msgid "Confirm received messages"
-msgstr ""
+msgstr "Bestätige erhaltene Nachrichten"
 
 #: src/ui/chatty-dialog-settings.ui:205
 msgid "Message Carbons"
-msgstr ""
+msgstr "Nachrichtenkopien"
 
 #: src/ui/chatty-dialog-settings.ui:206
 msgid "Share chat history among devices"
-msgstr ""
+msgstr "Teile Nachrichtenverlauf zwischen Geräten"
 
 #: src/ui/chatty-dialog-settings.ui:221
 msgid "Typing Notification"
-msgstr ""
+msgstr "Tippbenachrichtigung"
 
 #: src/ui/chatty-dialog-settings.ui:222
 msgid "Send typing messages"
-msgstr ""
+msgstr "Sende Tippbenachrichtigungen"
 
 #: src/ui/chatty-dialog-settings.ui:244
 msgid "Chats List"
-msgstr ""
+msgstr "Chatliste"
 
 #: src/ui/chatty-dialog-settings.ui:265
 msgid "Show Offline Contacts"
-msgstr ""
+msgstr "Zeige Offline Kontakte"
 
 #: src/ui/chatty-dialog-settings.ui:266
 msgid "Show contacts in the chats list"
-msgstr ""
+msgstr "Zeige Kontakte in der Kontaktliste"
 
 #: src/ui/chatty-dialog-settings.ui:281
 msgid "Indicate Offline Contacts"
-msgstr ""
+msgstr "Markiere Offlinekontakte"
 
 #: src/ui/chatty-dialog-settings.ui:282
 msgid "Grey out avatars from offline contacts"
-msgstr ""
+msgstr "Avatare von Offlinekontakten ausgrauen"
 
 #: src/ui/chatty-dialog-settings.ui:297
 msgid "Indicate Idle Contacts"
-msgstr ""
+msgstr "Markiere Kontakte im Idle"
 
 #: src/ui/chatty-dialog-settings.ui:298
 msgid "Blur avatars from offline contacts"
-msgstr ""
+msgstr "Verschwommene Avatare bei Offlinekontakten"
 
 #: src/ui/chatty-dialog-settings.ui:313
 msgid "Indicate Unknown Contacts"
-msgstr ""
+msgstr "Markiere unbekannte Kontakte"
 
 #: src/ui/chatty-dialog-settings.ui:314
 msgid "Color unknown contact ID red"
-msgstr ""
+msgstr "Färbe unbekannte Kontakt IDs rot"
 
 #: src/ui/chatty-dialog-settings.ui:334
 msgid "Editor"
-msgstr ""
+msgstr "Editor"
 
 #: src/ui/chatty-dialog-settings.ui:358
 msgid "Graphical Emoticons"
-msgstr ""
+msgstr "Grafische Emoticons"
 
 #: src/ui/chatty-dialog-settings.ui:359
 msgid "Convert ASCII emoticons"
-msgstr ""
+msgstr "Konvertiere ASCII Emoticons"
 
 #: src/ui/chatty-dialog-settings.ui:374
 msgid "Return = Send Message"
-msgstr ""
+msgstr "Return = Nachricht senden"
 
 #: src/ui/chatty-dialog-settings.ui:375
 msgid "Send message with return key"
-msgstr ""
+msgstr "Sende Nachricht mit Return"
 
 #: src/ui/chatty-dialog-settings.ui:417
 msgid "Account ID:"
-msgstr ""
+msgstr "Account ID:"
 
 #: src/ui/chatty-dialog-settings.ui:443
 msgid "Protocol:"
-msgstr ""
+msgstr "Protokoll:"
 
 #: src/ui/chatty-dialog-settings.ui:469
 msgid "Status:"
-msgstr ""
+msgstr "Status:"
 
 #: src/ui/chatty-dialog-settings.ui:495 src/ui/chatty-dialog-settings.ui:685
 msgid "Password"
@@ -407,68 +408,72 @@ msgstr "Passwort"
 
 #: src/ui/chatty-dialog-settings.ui:588
 msgid "Select Protocol"
-msgstr ""
+msgstr "Protokoll auswählen"
 
 #: src/ui/chatty-dialog-settings.ui:609
 msgid "XMPP"
-msgstr ""
+msgstr "XMPP"
 
 #: src/ui/chatty-dialog-settings.ui:622
 msgid "Matrix"
-msgstr ""
+msgstr "Matrix"
 
 #: src/ui/chatty-dialog-settings.ui:636
 msgid "Telegram"
-msgstr ""
+msgstr "Telegram"
 
 #: src/ui/chatty-dialog-settings.ui:712
 msgid "Server"
-msgstr ""
+msgstr "Server"
 
 #: src/ui/chatty-dialog-welcome.ui:12
 msgid "Welcome to Chatty"
-msgstr ""
+msgstr "Willkommen bei Chatty"
 
 #: src/ui/chatty-dialog-welcome.ui:60
 msgid "Start chatting"
-msgstr ""
+msgstr "Starte Chat"
 
 #: src/ui/chatty-dialog-welcome.ui:80
 msgid ""
 "<b>SMS Chat</b> is set up by default. Start a chat with the \"+\" button in "
 "the titlebar."
 msgstr ""
+"<b>SMS Chat</b> ist standardmäßig aktiviert. Starte einen Chat mit der \"+\" "
+"Taste in der Titelleiste."
 
 #: src/ui/chatty-dialog-welcome.ui:99
 msgid ""
 "Add <b>Instant Messaging</b> by selecting <i>\"Add new account\"</i> in the "
 "preferences."
 msgstr ""
+"Füge <b>Instant Messaging</b> mithilfe von <i>\"Account hinzufügen\"</i> in "
+"den Einstellungen hinzu ."
 
 #: src/ui/chatty-message-list-popover.ui:18
 msgid "Copy"
-msgstr ""
+msgstr "Kopiere"
 
 #: src/ui/chatty-pane-msg-view.ui:14
 msgid "Unencrypted"
-msgstr ""
+msgstr "Unverschlüsselt"
 
 #: src/ui/chatty-window.ui:32
 msgid "New Direct Chat"
-msgstr ""
+msgstr "Neuer Einzelchat"
 
 #: src/ui/chatty-window.ui:98
 msgid "Chat Details"
-msgstr ""
+msgstr "Chatdetails"
 
 #: src/ui/chatty-window.ui:137
 msgid "Leave Chat"
-msgstr ""
+msgstr "Chat verlassen"
 
 #: src/ui/chatty-window.ui:150
 msgid "Delete Chat"
-msgstr ""
+msgstr "Chat löschen"
 
 #: src/ui/chatty-window.ui:184
 msgid "Chats"
-msgstr ""
+msgstr "Chats"

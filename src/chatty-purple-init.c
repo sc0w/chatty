@@ -138,8 +138,6 @@ chatty_eventloop_get_ui_ops (void)
 static void
 chatty_purple_quit (void)
 {
-  chatty_data_t *chatty = chatty_get_data ();
-
   chatty_conversations_uninit ();
   chatty_blist_uninit ();
   chatty_connection_uninit();
@@ -156,7 +154,7 @@ chatty_purple_quit (void)
 
   chatty_xeps_close ();
 
-  g_application_quit (G_APPLICATION (chatty->app));
+  g_application_quit (g_application_get_default ());
 }
 
 
@@ -184,10 +182,6 @@ chatty_purple_prefs_init (void)
   purple_prefs_add_none (CHATTY_PREFS_ROOT "/plugins");
   purple_prefs_add_bool (CHATTY_PREFS_ROOT "/plugins/message_carbons", TRUE);
   purple_prefs_add_path_list (CHATTY_PREFS_ROOT "/plugins/loaded", NULL);
-
-  purple_prefs_add_none (CHATTY_PREFS_ROOT "/debug");
-  purple_prefs_add_bool (CHATTY_PREFS_ROOT "/debug/enabled", FALSE);
-  purple_prefs_add_bool (CHATTY_PREFS_ROOT "/debug/verbose", FALSE);
 
   purple_prefs_add_none (CHATTY_PREFS_ROOT "/status");
   purple_prefs_add_bool (CHATTY_PREFS_ROOT "/status/first_start", TRUE);
@@ -299,7 +293,6 @@ libpurple_init (void)
 {
   PurpleAccount *account;
   gchar         *search_path;
-  gboolean       debug;
 
   chatty_data_t *chatty = chatty_get_data ();
 
@@ -307,11 +300,8 @@ libpurple_init (void)
 
   signal (SIGCHLD, SIG_IGN);
 
-  debug = purple_prefs_get_bool (CHATTY_PREFS_ROOT "/debug/enabled");
-  purple_debug_set_enabled (debug);
-
-  debug = purple_prefs_get_bool (CHATTY_PREFS_ROOT "/debug/verbose");
-  purple_debug_set_verbose (debug);
+  purple_debug_set_enabled (!!(chatty->cml_options & CHATTY_CML_OPT_DEBUG));
+  purple_debug_set_verbose (!!(chatty->cml_options & CHATTY_CML_OPT_VERBOSE));
 
   purple_core_set_ui_ops (chatty_core_get_ui_ops ());
   purple_eventloop_set_ui_ops (chatty_eventloop_get_ui_ops ());
@@ -323,13 +313,13 @@ libpurple_init (void)
   if (!purple_core_init (CHATTY_UI)) {
     g_printerr ("libpurple initialization failed\n");
 
-    g_application_quit (G_APPLICATION (chatty->app));
+    g_application_quit (g_application_get_default ());
   }
 
   if (!purple_core_ensure_single_instance ()) {
     g_printerr ("Another libpurple client is already running\n");
 
-    g_application_quit (G_APPLICATION (chatty->app));
+    g_application_quit (g_application_get_default ());
   }
 
   purple_set_blist (purple_blist_new ());

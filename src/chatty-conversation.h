@@ -38,24 +38,36 @@ struct chatty_log {
 
 struct chatty_conversation {
   PurpleConversation  *conv;
-  ChattyMsgList       *msg_list;
-  GtkWidget           *msg_entry;
-  GtkWidget           *msg_bubble_footer;
-  GtkWidget           *msg_frame;
-  GtkWidget           *msg_scrolled;
-  GtkTextBuffer       *msg_buffer;
-  GtkWidget           *button_send;
-  GtkWidget           *tab_cont;
-  GtkWidget           *icon;
-  guint                unseen_count;
-  guint                unseen_state;
-  gboolean             notifications;
+
+  ChattyMsgList *msg_list;
+  GtkWidget     *msg_bubble_footer;
+  GtkWidget     *tab_cont;
+  GtkWidget     *icon;
+
+  guint     unseen_count;
+  guint     unseen_state;
+  gboolean  notifications;
 
   struct {
-    GtkWidget    *list;
-    GtkTreeView  *treeview;
-    guint         user_count;
-    gboolean      notifications;
+    GtkWidget     *entry;
+    GtkTextBuffer *buffer;
+    GtkWidget     *scrolled;
+    GtkWidget     *frame;
+    GtkWidget     *button_send;
+  } input;
+
+  struct {
+    GtkImage   *symbol_encrypt;
+    const char *fp_own_device;
+    guint       status;
+    gboolean    enabled;
+  } omemo;
+
+  struct {
+    GtkWidget   *list;
+    GtkTreeView *treeview;
+    guint        user_count;
+    gboolean     notifications;
   } muc;
 
   struct {
@@ -107,6 +119,7 @@ void chatty_conv_container_init (void);
 void chatty_conversations_init (void);
 void chatty_conversations_uninit (void);
 PurpleConversation * chatty_conv_container_get_active_purple_conv (GtkNotebook *notebook);
+ChattyConversation * chatty_conv_container_get_active_chatty_conv (GtkNotebook *notebook);
 ChattyLog* chatty_conv_message_get_last_msg (PurpleBuddy *buddy);
 gboolean chatty_conv_delete_message_history (PurpleBuddy *buddy);
 GList *chatty_conv_find_unseen (ChattyUnseenState  state);

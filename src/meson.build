@@ -1,5 +1,6 @@
 chatty_sources = [
   'main.c',
+  'chatty-application.c',
   'chatty-window.c',
   'chatty-dialogs.c',
   'chatty-account.c',
@@ -10,8 +11,10 @@ chatty_sources = [
   './xeps/chatty-xep-0184.c',
   'chatty-purple-init.c',
   'chatty-icons.c',
-  'chatty-popover-actions.c',
-  'chatty-history.c'
+  'chatty-history.c',
+  'chatty-lurch.c',
+  'chatty-utils.c',
+  'chatty-popover-actions.c'
 ]
 
 chatty_deps = [
