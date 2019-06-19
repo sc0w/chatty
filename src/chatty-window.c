@@ -240,8 +240,6 @@ chatty_window_activate (GtkApplication *app,
 
   chatty_data_t *chatty = chatty_get_data ();
 
-  memset (chatty, 0, sizeof(chatty_data_t));
-
   builder = gtk_builder_new_from_resource ("/sm/puri/chatty/ui/chatty-window.ui");
 
   window = GTK_WINDOW (gtk_builder_get_object (builder, "window"));

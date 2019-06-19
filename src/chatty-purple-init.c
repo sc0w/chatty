@@ -183,10 +183,6 @@ chatty_purple_prefs_init (void)
   purple_prefs_add_bool (CHATTY_PREFS_ROOT "/plugins/message_carbons", TRUE);
   purple_prefs_add_path_list (CHATTY_PREFS_ROOT "/plugins/loaded", NULL);
 
-  purple_prefs_add_none (CHATTY_PREFS_ROOT "/debug");
-  purple_prefs_add_bool (CHATTY_PREFS_ROOT "/debug/enabled", FALSE);
-  purple_prefs_add_bool (CHATTY_PREFS_ROOT "/debug/verbose", FALSE);
-
   purple_prefs_add_none (CHATTY_PREFS_ROOT "/status");
   purple_prefs_add_bool (CHATTY_PREFS_ROOT "/status/first_start", TRUE);
 
@@ -297,17 +293,15 @@ libpurple_init (void)
 {
   PurpleAccount *account;
   gchar         *search_path;
-  gboolean       debug;
+
+  chatty_data_t *chatty = chatty_get_data ();
 
   chatty_purple_data_t *chatty_purple = chatty_get_purple_data ();
 
   signal (SIGCHLD, SIG_IGN);
 
-  debug = purple_prefs_get_bool (CHATTY_PREFS_ROOT "/debug/enabled");
-  purple_debug_set_enabled (debug);
-
-  debug = purple_prefs_get_bool (CHATTY_PREFS_ROOT "/debug/verbose");
-  purple_debug_set_verbose (debug);
+  purple_debug_set_enabled (!!(chatty->cml_options & CHATTY_CML_OPT_DEBUG));
+  purple_debug_set_verbose (!!(chatty->cml_options & CHATTY_CML_OPT_VERBOSE));
 
   purple_core_set_ui_ops (chatty_core_get_ui_ops ());
   purple_eventloop_set_ui_ops (chatty_eventloop_get_ui_ops ());

@@ -46,9 +46,11 @@ struct _ChattyApplication
 
 G_DEFINE_TYPE (ChattyApplication, chatty_application, GTK_TYPE_APPLICATION)
 
-
 static GOptionEntry cmd_options[] = {
-  { "version", 0, 0, 0, NULL, N_("Show release version"), NULL },
+  { "version", 'v', G_OPTION_FLAG_NONE, G_OPTION_ARG_NONE, NULL, N_("Show release version"), NULL },
+  { "disable", 'D', G_OPTION_FLAG_NONE, G_OPTION_ARG_NONE, NULL, N_("Disable all accounts"), NULL },
+  { "debug", 'd', G_OPTION_FLAG_NONE, G_OPTION_ARG_NONE, NULL, N_("Enable libpurple debug messages"), NULL },
+  { "verbose", 'V', G_OPTION_FLAG_NONE, G_OPTION_ARG_NONE, NULL, N_("Enable verbose libpurple debug messages"), NULL },
   { NULL }
 };
 
@@ -73,6 +75,30 @@ chatty_application_handle_local_options (GApplication *application,
     }
 
   return -1;
+}
+
+static gint
+chatty_application_command_line (GApplication            *application,
+                                 GApplicationCommandLine *command_line)
+{
+  GVariantDict *options;
+
+  chatty_data_t *chatty = chatty_get_data ();
+
+  options = g_application_command_line_get_options_dict (command_line);
+
+  chatty->cml_options = CHATTY_CML_OPT_NONE;
+
+  if (g_variant_dict_contains (options, "disable"))
+    chatty->cml_options |= CHATTY_CML_OPT_DISABLE;
+  else if (g_variant_dict_contains (options, "debug"))
+    chatty->cml_options |= CHATTY_CML_OPT_DEBUG;
+  else if (g_variant_dict_contains (options, "verbose"))
+    chatty->cml_options |= CHATTY_CML_OPT_VERBOSE;
+
+  g_application_activate (application);
+
+  return EXIT_SUCCESS;
 }
 
 static void
@@ -121,6 +147,7 @@ chatty_application_class_init (ChattyApplicationClass *klass)
   object_class->finalize = chatty_application_finalize;
 
   application_class->handle_local_options = chatty_application_handle_local_options;
+  application_class->command_line = chatty_application_command_line;
   application_class->startup = chatty_application_startup;
   application_class->activate = chatty_application_activate;
 }
@@ -136,6 +163,6 @@ chatty_application_new (void)
 {
   return g_object_new (CHATTY_TYPE_APPLICATION,
                        "application-id", CHATTY_APP_ID,
-                       "flags", G_APPLICATION_FLAGS_NONE,
+                       "flags", G_APPLICATION_HANDLES_COMMAND_LINE,
                        NULL);
 }
