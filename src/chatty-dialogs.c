@@ -23,6 +23,7 @@ static void chatty_dialogs_reset_new_contact_dialog (void);
 static void chatty_dialogs_reset_invite_contact_dialog (void);
 static void chatty_entry_set_enabled (GtkWidget *widget, gboolean state);
 
+static void chatty_connect_account_signals (PurpleAccount *account);
 static void chatty_disconnect_account_signals (PurpleAccount *account);
 
 static chatty_dialog_data_t chatty_dialog_data;
@@ -270,6 +271,8 @@ cb_button_save_account_clicked (GtkButton *sender,
                                gtk_entry_get_text (GTK_ENTRY(entry_account_pwd)));
 
   purple_account_set_remember_password (chatty->selected_account, TRUE);
+
+  chatty_connect_account_signals (chatty->selected_account);
 
   if (purple_account_is_connected (chatty->selected_account)) {
    purple_account_disconnect (chatty->selected_account);
@@ -591,12 +594,38 @@ cb_account_signed_on (PurpleAccount *gc, gpointer unused)
 }
 
 static void
+chatty_connect_account_signals (PurpleAccount *account)
+{
+  void *connections_handle = purple_connections_get_handle();
+
+  purple_signal_connect (connections_handle,
+                         "connection-error",
+                         account,
+                         PURPLE_CALLBACK(cb_account_connection_error),
+                         NULL);
+
+  purple_signal_connect (connections_handle,
+                         "signed-on",
+                         account,
+                         PURPLE_CALLBACK(cb_account_signed_on),
+                         NULL);
+}
+
+
+static void
 chatty_disconnect_account_signals (PurpleAccount *account)
 {
   void *connections_handle = purple_connections_get_handle();
 
-  purple_signal_disconnect (connections_handle, "connection-error", account, PURPLE_CALLBACK (cb_account_connection_error));
-  purple_signal_disconnect (connections_handle, "signed-on", account, PURPLE_CALLBACK (cb_account_signed_on));
+  purple_signal_disconnect (connections_handle,
+                            "connection-error",
+                            account,
+                            PURPLE_CALLBACK(cb_account_connection_error));
+
+  purple_signal_disconnect (connections_handle,
+                            "signed-on",
+                            account,
+                            PURPLE_CALLBACK(cb_account_signed_on));
 }
 
 
@@ -608,7 +637,6 @@ cb_button_add_account_clicked (GtkButton *sender,
   GtkToggleButton *button_xmpp;
   GtkToggleButton *button_matrix;
   GtkToggleButton *button_telegram;
-  void            *connections_handle;
   const gchar     *protocol;
   const gchar     *name;
   const gchar     *pwd;
@@ -649,10 +677,10 @@ cb_button_add_account_clicked (GtkButton *sender,
     purple_account_set_string (account, setting, value);
   }
 
-  connections_handle = purple_connections_get_handle ();
   chatty->selected_account = account;
-  purple_signal_connect (connections_handle, "connection-error", account, PURPLE_CALLBACK (cb_account_connection_error), NULL);
-  purple_signal_connect (connections_handle, "signed-on", account, PURPLE_CALLBACK (cb_account_signed_on), NULL);
+
+  chatty_connect_account_signals (account);
+
   purple_account_set_enabled (account, CHATTY_UI, TRUE);
   purple_accounts_add (account);
 
