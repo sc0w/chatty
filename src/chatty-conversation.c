@@ -16,7 +16,7 @@
 #include "chatty-conversation.h"
 #include "chatty-history.h"
 
-#define MAX_GMT_ISO_SIZE 20
+#define MAX_GMT_ISO_SIZE 256
 #define MAX_MSGS 50
 
 static GHashTable *ht_sms_id = NULL;
@@ -2467,9 +2467,7 @@ chatty_conv_add_history_since_component(GHashTable *components,
                                         const char *room){
   time_t mtime;
   struct tm * timeinfo;
-  char *iso_timestamp;
-
-  iso_timestamp = malloc(MAX_GMT_ISO_SIZE*sizeof(char));
+  g_autofree gchar *iso_timestamp = g_malloc0(MAX_GMT_ISO_SIZE * sizeof(char));
                                // TODO @LELAND for some reason if freed here,
                                // writes garbage to blist.xml
                                // Why cant I use an string?
@@ -2477,11 +2475,13 @@ chatty_conv_add_history_since_component(GHashTable *components,
   mtime = chatty_history_get_chat_last_message_time(account, room);
   mtime += 1; // Use the next epoch to exclude the last stored message(s)
   timeinfo = gmtime (&mtime);
-  strftime (iso_timestamp, MAX_GMT_ISO_SIZE*sizeof(char), "%Y-%m-%dT%H:%M:%SZ", timeinfo);
+  g_return_if_fail (strftime (iso_timestamp,
+                              MAX_GMT_ISO_SIZE*sizeof(char),
+                              "%Y-%m-%dT%H:%M:%SZ",
+                              timeinfo));
 
   g_hash_table_steal (components, "history_since");
-  g_hash_table_insert(components, "history_since", iso_timestamp);
-
+  g_hash_table_insert(components, "history_since", g_steal_pointer (&iso_timestamp));
 }
 
 /**
