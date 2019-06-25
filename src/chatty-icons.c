@@ -140,7 +140,7 @@ chatty_icon_get_buddy_icon (PurpleBlistNode *node,
   gdouble                    color_g;
   gdouble                    color_b;
 
-  g_debug ("chatty_icon_get_buddy_icon name: %s", name);
+  //g_debug ("chatty_icon_get_buddy_icon name: %s", name);
 
   // convert colors for drawing the cairo background
   if (color) {

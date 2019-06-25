@@ -11,6 +11,7 @@ chatty_sources = [
   './xeps/chatty-xep-0184.c',
   'chatty-purple-init.c',
   'chatty-icons.c',
+  'chatty-history.c',
   'chatty-lurch.c',
   'chatty-utils.c',
   'chatty-popover-actions.c'
@@ -21,6 +22,7 @@ chatty_deps = [
   dependency('gtk+-3.0', version: '>= 3.22'),
   dependency('purple'),
   dependency('libhandy-0.0', version: '>= 0.0.6'),
+  dependency('sqlite3', version: '>=3.0.0')
 ]
 
 gnome = import('gnome')

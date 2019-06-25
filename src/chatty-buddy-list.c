@@ -20,6 +20,7 @@
 #include "chatty-purple-init.h"
 #include "chatty-buddy-list.h"
 #include "chatty-conversation.h"
+#include "chatty-history.h"
 #define HANDY_USE_UNSTABLE_API
 #include <handy.h>
 
@@ -529,6 +530,8 @@ cb_auto_join_chats (gpointer data)
 {
   PurpleBlistNode  *node;
   PurpleConnection *pc = data;
+  GHashTable               *components;
+  PurplePluginProtocolInfo *prpl_info;
   PurpleAccount    *account = purple_connection_get_account (pc);
 
   for (node = purple_blist_get_root (); node;
@@ -539,6 +542,10 @@ cb_auto_join_chats (gpointer data)
 
       if (purple_chat_get_account (chat) == account &&
           purple_blist_node_get_bool (node, "chatty-autojoin")) {
+
+        prpl_info = PURPLE_PLUGIN_PROTOCOL_INFO(purple_find_prpl (purple_account_get_protocol_id (account)));
+        components = purple_chat_get_components (chat);
+        chatty_conv_add_history_since_component(components, account->username, prpl_info->get_chat_name(components));
 
         serv_join_chat (purple_account_get_connection (account),
                         purple_chat_get_components (chat));
@@ -785,6 +792,7 @@ chatty_blist_chat_list_leave_chat (void)
   }
 
   chatty_blist_chat_list_set_row ();
+
 }
 
 
@@ -810,6 +818,7 @@ chatty_blist_chat_list_remove_buddy (void)
   const char      *text;
   const char      *sub_text;
   int              response;
+  const char      *conv_name;
 
   node = _chatty_blist->selected_node;
 
@@ -853,6 +862,7 @@ chatty_blist_chat_list_remove_buddy (void)
 
   if (response == GTK_RESPONSE_OK) {
     if (PURPLE_BLIST_NODE_IS_BUDDY(node)) {
+      chatty_history_delete_im(buddy->account->username, buddy->name);
       chatty_conv_delete_message_history (buddy);
 
       purple_account_remove_buddy (buddy->account, buddy, NULL);
@@ -861,6 +871,13 @@ chatty_blist_chat_list_remove_buddy (void)
 
       chatty_window_update_sub_header_titlebar (NULL, "");
     } else if (PURPLE_BLIST_NODE_IS_CHAT(node)) {
+      conv_name = purple_conversation_get_name(ui->conv.conv);
+      chatty_history_delete_chat(ui->conv.conv->account->username, conv_name);
+      // TODO: LELAND: Is this the right place? After recreating a recently
+      // deleted chat (same session), the conversation is still in memory
+      // somewhere and when re-joining the same chat, the db is not re-populated
+      // (until next app session) since there is no server call. Ask @Andrea
+
       purple_blist_remove_chat (chat);
     }
 

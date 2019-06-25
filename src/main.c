@@ -9,16 +9,25 @@
 #include "chatty-config.h"
 #include "chatty-application.h"
 #include "chatty-purple-init.h"
+#include "chatty-history.h"
 
 
 int
 main (int   argc,
       char *argv[])
 {
+  int status;
+
   g_autoptr(ChattyApplication) application = NULL;
 
   g_set_prgname (CHATTY_APP_ID);
   application = chatty_application_new ();
 
-  return g_application_run (G_APPLICATION (application), argc, argv);
+  chatty_history_open();
+
+  status = g_application_run (G_APPLICATION (application), argc, argv);
+
+  chatty_history_close();
+
+  return status;
 }
