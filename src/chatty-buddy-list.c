@@ -2147,7 +2147,7 @@ chatty_blist_update_buddy (PurpleBuddyList *list,
                            PurpleBlistNode *node)
 {
   PurpleBuddy     *buddy;
-  ChattyLog       *log_data = NULL;
+  g_autofree ChattyLog       *log_data = NULL;
   ChattyBlistNode *ui;
 
   g_return_if_fail (PURPLE_BLIST_NODE_IS_BUDDY(node));
