@@ -969,6 +969,7 @@ chatty_conv_parse_message (const gchar* msg)
  *
  * Get the last message from log
  *
+ * Returns: (transfer-full): a #ChattyLog
  */
 ChattyLog*
 chatty_conv_message_get_last_msg (PurpleBuddy *buddy)
