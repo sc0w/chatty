@@ -18,6 +18,7 @@
 
 #define MAX_GMT_ISO_SIZE 256
 #define MAX_MSGS 50
+#define LAZY_LOAD_MSGS_LIMIT 10 // TODO: @LELAND: Tune this number
 
 static GHashTable *ht_sms_id = NULL;
 static GHashTable *ht_emoticon = NULL;
@@ -1216,9 +1217,9 @@ chatty_conv_add_message_history_to_conv (gpointer data)
     line_split = g_strsplit (conv_name, "/", -1);
     who = g_strdup(line_split[0]);
     
-    chatty_history_get_im_messages (account->username, who, chatty_conv_get_im_messages_cb, chatty_conv);
+    chatty_history_get_im_messages (account->username, who, chatty_conv_get_im_messages_cb, chatty_conv, LAZY_LOAD_MSGS_LIMIT );
   }else{
-    chatty_history_get_chat_messages (account->username, conv_name, chatty_conv_get_chat_messages_cb, chatty_conv);
+    chatty_history_get_chat_messages (account->username, conv_name, chatty_conv_get_chat_messages_cb, chatty_conv, LAZY_LOAD_MSGS_LIMIT );
   }
 
   return FALSE;

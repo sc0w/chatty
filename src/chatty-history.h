@@ -40,7 +40,8 @@ void chatty_history_get_im_messages (const char* account,
                                                 time_t time_stamp,
                                                 ChattyConversation *chatty_conv,
                                                 int last_message),
-                                     ChattyConversation *chatty_conv);
+                                     ChattyConversation *chatty_conv,
+                                     guint      limit);
 
 void
 chatty_history_get_chat_messages (const char *account,
@@ -51,7 +52,8 @@ chatty_history_get_chat_messages (const char *account,
                                             const char* room,
                                             const unsigned char *who,
                                             ChattyConversation *chatty_conv),
-                                  ChattyConversation *chatty_conv);
+                                  ChattyConversation *chatty_conv,
+                                  guint      limit);
 
 int
 chatty_history_get_chat_last_message_time (const char* account,
