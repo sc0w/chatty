@@ -290,9 +290,11 @@ chatty_history_get_chat_messages (const char *account,
                                               int time_stamp,
                                               const char *room,
                                               const unsigned char *who,
+                                              const unsigned char *uuid,
                                               ChattyConversation *chatty_conv),
                                   ChattyConversation *chatty_conv,
-                                  guint       limit)
+                                  guint       limit,
+                                  char        *from_uuid)
 {
 
   int rc;
@@ -301,8 +303,9 @@ chatty_history_get_chat_messages (const char *account,
   int time_stamp;
   int direction;
   const unsigned char *who;
+  const char* uuid;
 
-  rc = sqlite3_prepare_v2(db, "SELECT timestamp,direction,message,who FROM chatty_chat WHERE account=(?) AND room=(?) ORDER BY timestamp DESC LIMIT (?)", -1, &stmt, NULL);
+  rc = sqlite3_prepare_v2(db, "SELECT timestamp,direction,message,who,uid FROM chatty_chat WHERE account=(?) AND room=(?) ORDER BY timestamp DESC LIMIT (?)", -1, &stmt, NULL);
   if (rc != SQLITE_OK)
       g_debug("Error preparing statement when querying CHAT messages. errno: %d, desc: %s", rc, sqlite3_errmsg(db));
 
@@ -323,7 +326,8 @@ chatty_history_get_chat_messages (const char *account,
       direction = sqlite3_column_int(stmt, 1);
       msg = sqlite3_column_text(stmt, 2);
       who = sqlite3_column_text(stmt, 3);
-      cb(msg, time_stamp, direction, room, who, chatty_conv);
+      uuid = sqlite3_column_text(stmt, 4);
+      cb(msg, time_stamp, direction, room, who, uuid, chatty_conv);
   }
 
   rc = sqlite3_finalize(stmt);
@@ -339,10 +343,12 @@ chatty_history_get_im_messages (const char* account,
                                 void (*cb)(const unsigned char* msg,
                                            int direction,
                                            time_t time_stamp,
+                                           const unsigned char *uuid,
                                            ChattyConversation *chatty_conv,
                                            int last_message),
                                 ChattyConversation *chatty_conv,
-                                guint      limit)
+                                guint      limit,
+                                char       *uuid)
 {
 
   int rc;
@@ -353,7 +359,7 @@ chatty_history_get_im_messages (const char* account,
   int first;
 
   // Then, fetch the result and detect the last row.
-  rc = sqlite3_prepare_v2(db, "SELECT timestamp,direction,message FROM chatty_im WHERE account=(?) AND who=(?) ORDER BY timestamp DESC LIMIT (?)", -1, &stmt, NULL);
+  rc = sqlite3_prepare_v2(db, "SELECT timestamp,direction,message,uid FROM chatty_im WHERE account=(?) AND who=(?) ORDER BY timestamp DESC LIMIT (?)", -1, &stmt, NULL);
   if (rc != SQLITE_OK)
       g_debug("Error preparing statement when querying IM messages. errno: %d, desc: %s", rc, sqlite3_errmsg(db));
 
@@ -374,7 +380,8 @@ chatty_history_get_im_messages (const char* account,
     time_stamp = sqlite3_column_int(stmt, 0);
     direction = sqlite3_column_int(stmt, 1);
     msg = sqlite3_column_text(stmt, 2);
-    cb(msg, direction, time_stamp, chatty_conv, first);
+    uuid = sqlite3_column_text(stmt, 3);
+    cb(msg, direction, time_stamp, uuid, chatty_conv, first);
     first = 0;
   }
 

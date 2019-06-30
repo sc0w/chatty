@@ -38,11 +38,14 @@ void chatty_history_get_im_messages (const char* account,
                                      void (*cb)(const unsigned char* msg,
                                                 int direction,
                                                 time_t time_stamp,
+                                                const unsigned char* uuid,
                                                 ChattyConversation *chatty_conv,
                                                 int last_message),
                                      ChattyConversation *chatty_conv,
-                                     guint      limit);
+                                     guint      limit,
+                                     char       *from_uuid);
 
+// TODO: @LELAND: chatty_conv should be a gpointer
 void
 chatty_history_get_chat_messages (const char *account,
                                   const char *room,
@@ -51,9 +54,11 @@ chatty_history_get_chat_messages (const char *account,
                                             int time_stamp,
                                             const char* room,
                                             const unsigned char *who,
+                                            const unsigned char* uuid,
                                             ChattyConversation *chatty_conv),
                                   ChattyConversation *chatty_conv,
-                                  guint      limit);
+                                  guint      limit,
+                                  char       *from_uuid);
 
 int
 chatty_history_get_chat_last_message_time (const char* account,

@@ -217,6 +217,10 @@ cb_scroll_edge_reached (GtkScrolledWindow *scrolled_window,
                                      G_CALLBACK (cb_list_size_allocate),
                                      (gpointer) self);
 
+    // TODO: @LELAND: I have to block the "edge reached" (or ignore it) signal as well,
+    // until all messages from the chunk were pulled from the db.
+    // The user could reach the top again while the messages are being loaded
+
     chatty_msg_list_add_message_at ((ChattyMsgList *)self,
                                     MSG_IS_SYSTEM,
                                     "Loading more messages...",

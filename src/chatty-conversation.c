@@ -1066,14 +1066,19 @@ chatty_conv_delete_message_history (PurpleBuddy *buddy)
   return TRUE;
 }
 
+
 static void
 chatty_conv_get_im_messages_cb (const unsigned char* msg,
                                 int direction,
                                 time_t time_stamp,
+                                const unsigned char* uuid,
                                 ChattyConversation *chatty_conv,
                                 int last_message){
   gchar   *msg_html;
   guint    msg_dir;
+
+  g_debug("@LELAND: UUID found %s ", chatty_conv->from_uuid);
+  chatty_conv->from_uuid = uuid;
 
   if (direction == 1) {
     msg_dir = MSG_IS_INCOMING;
@@ -1110,8 +1115,9 @@ chatty_conv_get_chat_messages_cb (const unsigned char* msg,
                                   int direction,
                                   const char* room,
                                   const unsigned char *who,
+                                  const unsigned char *uuid,
                                   ChattyConversation *chatty_conv){
-  gchar   *msg_html;
+  gchar                    *msg_html;
   PurpleBuddy              *buddy;
   const char               *color;
   GdkPixbuf                *avatar = NULL;
@@ -1121,6 +1127,9 @@ chatty_conv_get_chat_messages_cb (const unsigned char* msg,
   gchar                    **line_split;
 
   msg_html = chatty_conv_check_for_links ((const gchar*)msg);
+
+  g_debug("@LELAND: UUID found %s ", chatty_conv->from_uuid);
+  chatty_conv->from_uuid = uuid;
 
   if (msg_html[0] != '\0') {
 
@@ -1197,12 +1206,12 @@ chatty_conv_get_chat_messages_cb (const unsigned char* msg,
 static gboolean
 chatty_conv_add_message_history_to_conv (gpointer data)
 {
-  PurpleAccount *account;
-  const gchar   *conv_name;
-  gboolean       im;
+  PurpleAccount      *account;
+  const gchar        *conv_name;
+  gboolean            im;
   ChattyConversation *chatty_conv = data;
-  gchar         *who;
-  gchar         **line_split;
+  gchar              *who;
+  gchar              **line_split;
 
   im = (chatty_conv->conv->type == PURPLE_CONV_TYPE_IM);
 
@@ -1212,16 +1221,18 @@ chatty_conv_add_message_history_to_conv (gpointer data)
   conv_name = purple_conversation_get_name (chatty_conv->conv);
   account = purple_conversation_get_account (chatty_conv->conv);
 
+
   if (im) {
     // Remove resource (user could be connecting from different devices/applications)
     // TODO: LELAND: Use the utilities for this.
     line_split = g_strsplit (conv_name, "/", -1);
     who = g_strdup(line_split[0]);
     
-    chatty_history_get_im_messages (account->username, who, chatty_conv_get_im_messages_cb, chatty_conv, LAZY_LOAD_MSGS_LIMIT );
+    chatty_history_get_im_messages (account->username, who, chatty_conv_get_im_messages_cb, chatty_conv, LAZY_LOAD_MSGS_LIMIT, chatty_conv->from_uuid );
   }else{
-    chatty_history_get_chat_messages (account->username, conv_name, chatty_conv_get_chat_messages_cb, chatty_conv, LAZY_LOAD_MSGS_LIMIT );
+    chatty_history_get_chat_messages (account->username, conv_name, chatty_conv_get_chat_messages_cb, chatty_conv, LAZY_LOAD_MSGS_LIMIT, chatty_conv->from_uuid );
   }
+
 
   return FALSE;
 }

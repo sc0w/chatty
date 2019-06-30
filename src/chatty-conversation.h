@@ -48,6 +48,8 @@ struct chatty_conversation {
   guint     unseen_state;
   gboolean  notifications;
 
+  char     *from_uuid;
+
   struct {
     GtkWidget     *entry;
     GtkTextBuffer *buffer;
