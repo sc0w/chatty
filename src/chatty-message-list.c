@@ -36,6 +36,11 @@ enum {
   SIGNAL_LAST_SIGNAL,
 };
 
+enum {
+  ADD_MESSAGE_ON_BOTTOM,
+  ADD_MESSAGE_ON_TOP,
+};
+
 static guint signals [SIGNAL_LAST_SIGNAL];
 
 typedef struct
@@ -80,6 +85,15 @@ header_strings_t header_strings[3] = {
     .str_2 = N_("and carrier rates may apply."),
   },
 };
+
+
+static void
+chatty_msg_list_add_message_at (ChattyMsgList *self,
+                                guint          message_dir,
+                                const gchar   *message,
+                                const gchar   *footer,
+                                GtkWidget     *icon,
+                                guint position);
 
 
 static void
@@ -195,6 +209,35 @@ cb_list_size_allocate (GtkWidget     *sender,
   size = gtk_adjustment_get_page_size (adj);
   upper = gtk_adjustment_get_upper (adj);
   gtk_adjustment_set_value (adj, upper - size);
+}
+
+
+static void
+cb_scroll_edge_reached (GtkScrolledWindow *scrolled_window,
+                        GtkPositionType     pos,
+                        gpointer            self)
+{
+  
+  ChattyMsgListPrivate *priv = chatty_msg_list_get_instance_private (self);
+  
+  if(pos == GTK_POS_TOP){
+    
+    // TODO: @LELAND: I have to unblock the signal again in all reelevant places
+    // or take another approach to this.
+    // disconnect signal
+    g_signal_handlers_block_by_func (GTK_WIDGET (priv->list),
+                                     G_CALLBACK (cb_list_size_allocate),
+                                     (gpointer) self);
+
+    chatty_msg_list_add_message_at ((ChattyMsgList *)self,
+                                    MSG_IS_SYSTEM,
+                                    "Loading more messages...",
+                                    NULL,
+                                    NULL,
+                                    ADD_MESSAGE_ON_TOP);
+
+    chatty_conv_lazy_load_messages();
+  }
 }
 
 
@@ -588,14 +631,16 @@ chatty_msg_list_clear (ChattyMsgList *self)
   g_list_free (iter);
 }
 
-
-void
-chatty_msg_list_add_message (ChattyMsgList *self,
-                             guint          message_dir,
-                             const gchar   *message,
-                             const gchar   *footer,
-                             GtkWidget     *icon)
+ 
+static void
+chatty_msg_list_add_message_at (ChattyMsgList *self,
+                                guint          message_dir,
+                                const gchar   *message,
+                                const gchar   *footer,
+                                GtkWidget     *icon,
+                                guint          position)
 {
+
   GtkListBoxRow   *row;
   GtkBox          *box;
   GtkBox          *vbox;
@@ -617,7 +662,11 @@ chatty_msg_list_add_message (ChattyMsgList *self,
                 "activatable", FALSE,
                 NULL);
 
-  gtk_container_add (GTK_CONTAINER (priv->list), GTK_WIDGET (row));
+  if (position == ADD_MESSAGE_ON_BOTTOM){
+    gtk_container_add (GTK_CONTAINER (priv->list), GTK_WIDGET (row));
+  } else {
+    gtk_list_box_prepend (GTK_LIST_BOX (priv->list), GTK_WIDGET (row));
+  }
 
   box = GTK_BOX (gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0));
   gtk_container_set_border_width (GTK_CONTAINER (box), 4);
@@ -723,6 +772,16 @@ chatty_msg_list_add_message (ChattyMsgList *self,
 }
 
 
+void
+chatty_msg_list_add_message (ChattyMsgList *self,
+                             guint          message_dir,
+                             const gchar   *message,
+                             const gchar   *footer,
+                             GtkWidget     *icon)
+{
+  chatty_msg_list_add_message_at (self, message_dir, message, footer, icon, ADD_MESSAGE_ON_BOTTOM);
+}
+
 
 static void
 chatty_msg_list_constructed (GObject *object)
@@ -749,6 +808,12 @@ chatty_msg_list_constructed (GObject *object)
                            G_CALLBACK (cb_list_focus),
                            (gpointer) self, 0);
 
+  // TODO: @LELAND: Is this the best place to put this?
+  g_signal_connect (GTK_SCROLLED_WINDOW (priv->scroll),
+                    "edge-reached",
+                    G_CALLBACK(cb_scroll_edge_reached),
+                    self);
+
   priv->typing_indicator = NULL;
 
   path = "/sm/puri/chatty/ui/chatty-message-list-popover.ui";
@@ -768,6 +833,7 @@ chatty_msg_list_constructed (GObject *object)
                                   "msg_list",
                                   G_ACTION_GROUP (simple_action_group));
 }
+
 
 static void chatty_msg_list_size_allocate(GtkWidget *widget, GtkAllocation *allocation){
 
@@ -817,6 +883,7 @@ static void chatty_msg_list_size_allocate(GtkWidget *widget, GtkAllocation *allo
 
   GTK_WIDGET_CLASS (chatty_msg_list_parent_class)->size_allocate (widget, allocation);
 }
+
 
 static void
 chatty_msg_list_class_init (ChattyMsgListClass *klass)

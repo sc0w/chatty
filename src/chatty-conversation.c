@@ -1184,8 +1184,8 @@ chatty_conv_get_chat_messages_cb (const unsigned char* msg,
  * chatty_conv_add_message_history_to_conv:
  * @data: a ChattyConversation
  *
- * Parse the chat log and add the
- * messages to a message-list
+ * Get messages from the DB and add
+ * them to a message-list
  *
  */
 static gboolean
@@ -1208,7 +1208,7 @@ chatty_conv_add_message_history_to_conv (gpointer data)
 
   if (im) {
     // Remove resource (user could be connecting from different devices/applications)
-    // TODO: LELAND: This should be an utility fn. Does libpurple offer a helper for this?
+    // TODO: LELAND: Use the utilities for this.
     line_split = g_strsplit (conv_name, "/", -1);
     who = g_strdup(line_split[0]);
 
@@ -2481,7 +2481,7 @@ chatty_conv_add_history_since_component(GHashTable *components,
                               timeinfo));
 
   g_hash_table_steal (components, "history_since");
-  g_hash_table_insert(components, "history_since", g_steal_pointer (&iso_timestamp));
+  g_hash_table_insert (components, "history_since", g_steal_pointer(&iso_timestamp));
 }
 
 /**
