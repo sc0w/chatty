@@ -15,6 +15,7 @@
 #include "chatty-message-list.h"
 #include "chatty-conversation.h"
 #include "chatty-history.h"
+#include "chatty-utils.h"
 
 #define MAX_GMT_ISO_SIZE 256
 #define MAX_MSGS 50
@@ -2269,9 +2270,9 @@ chatty_conv_write_conversation (PurpleConversation *conv,
                                    group_chat ? who : NULL,
                                    icon ? icon : NULL);
       if (type == PURPLE_CONV_TYPE_CHAT){
-        chatty_history_add_chat_message (message, 1, account->username, real_who, "UID", mtime, conv_name);  // TODO: LELAND: UID to be implemented by XEP-0313
+        chatty_history_add_chat_message (message, 1, account->username, real_who, chatty_utils_generate_uuid(), mtime, conv_name);  // TODO: LELAND: UID to be implemented by XEP-0313
       } else {
-        chatty_history_add_im_message (message, 1, account->username, who_no_resource, "UID", mtime);
+        chatty_history_add_im_message (message, 1, account->username, who_no_resource, chatty_utils_generate_uuid(), mtime);
       }
       g_free (msg_html);
     } else if (flags & PURPLE_MESSAGE_SEND) {
@@ -2283,9 +2284,9 @@ chatty_conv_write_conversation (PurpleConversation *conv,
                                    NULL,
                                    NULL);
       if (type == PURPLE_CONV_TYPE_CHAT){
-        chatty_history_add_chat_message (message, -1, account->username, real_who, "UID", mtime, conv_name);
+        chatty_history_add_chat_message (message, -1, account->username, real_who, chatty_utils_generate_uuid(), mtime, conv_name);
       } else {
-        chatty_history_add_im_message (message, -1, account->username, who_no_resource, "UID", mtime);
+        chatty_history_add_im_message (message, -1, account->username, who_no_resource, chatty_utils_generate_uuid(), mtime);
       }
       g_free (msg_html);
     } else if (flags & PURPLE_MESSAGE_SYSTEM) {
@@ -2296,9 +2297,9 @@ chatty_conv_write_conversation (PurpleConversation *conv,
                                    NULL);
       if (type == PURPLE_CONV_TYPE_CHAT){
         // TODO: LELAND: Do not store "The topic is:" or store them but dont show to the user
-        //chatty_history_add_chat_message (chat_id, message, 0, real_who, alias, "UID", mtime, conv_name);
+        //chatty_history_add_chat_message (chat_id, message, 0, real_who, alias, chatty_utils_generate_uuid(), mtime, conv_name);
       } else {
-        //chatty_history_add_im_message (message, 0, account->username, who, "UID", mtime);
+        //chatty_history_add_im_message (message, 0, account->username, who, chatty_utils_generate_uuid() , mtime);
       }
     }
 
