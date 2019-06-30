@@ -36,11 +36,6 @@ enum {
   SIGNAL_LAST_SIGNAL,
 };
 
-enum {
-  ADD_MESSAGE_ON_BOTTOM,
-  ADD_MESSAGE_ON_TOP,
-};
-
 static guint signals [SIGNAL_LAST_SIGNAL];
 
 typedef struct
@@ -87,13 +82,6 @@ header_strings_t header_strings[3] = {
 };
 
 
-static void
-chatty_msg_list_add_message_at (ChattyMsgList *self,
-                                guint          message_dir,
-                                const gchar   *message,
-                                const gchar   *footer,
-                                GtkWidget     *icon,
-                                guint position);
 
 
 static void
@@ -236,7 +224,7 @@ cb_scroll_edge_reached (GtkScrolledWindow *scrolled_window,
                                     NULL,
                                     ADD_MESSAGE_ON_TOP);
 
-    chatty_conv_lazy_load_messages();
+    // TODO: @LELAND: Call history load in conversation
   }
 }
 
@@ -360,7 +348,10 @@ chatty_msg_list_add_header (ChattyMsgList *self)
 
   gtk_widget_set_size_request (row,
                                1,
-                               320); // TODO: set priv->height instead);
+                               0); // TODO: set priv->height instead);
+                                   // TODO: @LELAND: Talk to Andrea about this header:
+                                   // Adding messages backward leves this space at the bottom (320 to 0 by now)
+
 
   gtk_container_add (GTK_CONTAINER (priv->list), row);
 
@@ -632,7 +623,7 @@ chatty_msg_list_clear (ChattyMsgList *self)
 }
 
  
-static void
+void
 chatty_msg_list_add_message_at (ChattyMsgList *self,
                                 guint          message_dir,
                                 const gchar   *message,

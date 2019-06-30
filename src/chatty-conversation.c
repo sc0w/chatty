@@ -1084,11 +1084,12 @@ chatty_conv_get_im_messages_cb (const unsigned char* msg,
   msg_html = chatty_conv_check_for_links ((const gchar*)msg);
 
   if (msg_html[0] != '\0') {
-    chatty_msg_list_add_message (chatty_conv->msg_list,
-                                 msg_dir,
-                                 msg_html,
-                                 last_message ? asctime(localtime(&time_stamp)) : NULL, // last seen message
-                                 NULL);
+    chatty_msg_list_add_message_at (chatty_conv->msg_list,
+                                    msg_dir,
+                                    msg_html,
+                                    last_message ? asctime(localtime(&time_stamp)) : NULL, // last seen message
+                                    NULL,
+                                    ADD_MESSAGE_ON_TOP);
   }
 
   g_free (msg_html);
@@ -1145,26 +1146,29 @@ chatty_conv_get_chat_messages_cb (const unsigned char* msg,
         g_object_unref (avatar);
       }
 
-      chatty_msg_list_add_message (chatty_conv->msg_list,
-                                   MSG_IS_INCOMING,
-                                   msg_html,
-                                   NULL,
-                                   icon ? icon : NULL);
+      chatty_msg_list_add_message_at (chatty_conv->msg_list,
+                                      MSG_IS_INCOMING,
+                                      msg_html,
+                                      NULL,
+                                      icon ? icon : NULL,
+                                      ADD_MESSAGE_ON_TOP);
 
     } else if (direction == -1) {
       msg_html = chatty_conv_check_for_links ((const gchar*)msg);
 
-      chatty_msg_list_add_message (chatty_conv->msg_list,
-                                   MSG_IS_OUTGOING,
-                                   msg_html,
-                                   NULL,
-                                   NULL);
+      chatty_msg_list_add_message_at (chatty_conv->msg_list,
+                                      MSG_IS_OUTGOING,
+                                      msg_html,
+                                      NULL,
+                                      NULL,
+                                      ADD_MESSAGE_ON_TOP);
     } else {
-      chatty_msg_list_add_message (chatty_conv->msg_list,
-                                   MSG_IS_SYSTEM,
-                                   (const gchar*)msg,
-                                   NULL,
-                                   NULL);
+      chatty_msg_list_add_message_at (chatty_conv->msg_list,
+                                      MSG_IS_SYSTEM,
+                                      (const gchar*)msg,
+                                      NULL,
+                                      NULL,
+                                      ADD_MESSAGE_ON_TOP);
     }
 
     chatty_conv_set_unseen (chatty_conv, CHATTY_UNSEEN_NONE);
@@ -1211,7 +1215,7 @@ chatty_conv_add_message_history_to_conv (gpointer data)
     // TODO: LELAND: Use the utilities for this.
     line_split = g_strsplit (conv_name, "/", -1);
     who = g_strdup(line_split[0]);
-
+    
     chatty_history_get_im_messages (account->username, who, chatty_conv_get_im_messages_cb, chatty_conv);
   }else{
     chatty_history_get_chat_messages (account->username, conv_name, chatty_conv_get_chat_messages_cb, chatty_conv);
