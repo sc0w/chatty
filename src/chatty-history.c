@@ -28,8 +28,66 @@
 #include <glib.h>
 #include "stdio.h"
 #include <sys/stat.h>
+#include <limits.h>
 
 static sqlite3 *db;
+
+
+static int
+get_chat_timestamp_for_uuid(char *uuid)
+{
+
+  int rc;
+  sqlite3_stmt *stmt;
+  unsigned int timestamp  = INT_MAX;
+
+  rc = sqlite3_prepare_v2(db, "SELECT timestamp FROM chatty_chat WHERE uid=(?)", -1, &stmt, NULL);
+  if (rc != SQLITE_OK)
+    g_debug("Error preparing when getting timestamp for uuid (CHAT). errno: %d, desc: %s", rc, sqlite3_errmsg(db));
+
+  rc = sqlite3_bind_text(stmt, 1, uuid, -1, SQLITE_TRANSIENT);
+  if (rc != SQLITE_OK)
+    g_debug("Error binding when getting timestamp for uuid (CHAT) errno: %d, desc: %s", rc, sqlite3_errmsg(db));
+
+  while ((sqlite3_step(stmt)) == SQLITE_ROW) {
+    timestamp = sqlite3_column_int(stmt, 0);
+  }
+
+  rc = sqlite3_finalize(stmt);
+  if (rc != SQLITE_OK)
+    g_debug("Error finalizing when getting timestamp for uuid (CHAT) errno: %d, desc: %s", rc, sqlite3_errmsg(db));
+
+  return timestamp;
+}
+
+
+static int
+get_im_timestamp_for_uuid(char *uuid)
+{
+
+  int rc;
+  sqlite3_stmt *stmt;
+  unsigned int timestamp  = INT_MAX;
+
+  rc = sqlite3_prepare_v2(db, "SELECT timestamp FROM chatty_im WHERE uid=(?)", -1, &stmt, NULL);
+  if (rc != SQLITE_OK)
+    g_debug("Error preparing when getting timestamp for uuid (IM). errno: %d, desc: %s", rc, sqlite3_errmsg(db));
+
+  rc = sqlite3_bind_text(stmt, 1, uuid, -1, SQLITE_TRANSIENT);
+  if (rc != SQLITE_OK)
+    g_debug("Error binding when getting timestamp for uuid (IM) errno: %d, desc: %s", rc, sqlite3_errmsg(db));
+
+  while ((sqlite3_step(stmt)) == SQLITE_ROW) {
+    timestamp = sqlite3_column_int(stmt, 0);
+  }
+
+  rc = sqlite3_finalize(stmt);
+  if (rc != SQLITE_OK)
+    g_debug("Error finalizing when getting timestamp for uuid (IM) errno: %d, desc: %s", rc, sqlite3_errmsg(db));
+
+  return timestamp;
+}
+
 
 static void
 chatty_history_create_chat_schema (void)
@@ -297,15 +355,19 @@ chatty_history_get_chat_messages (const char *account,
                                   char        *from_uuid)
 {
 
-  int rc;
-  sqlite3_stmt *stmt;
+  int                  rc;
+  sqlite3_stmt        *stmt;
   const unsigned char *msg;
-  int time_stamp;
-  int direction;
+  int                  time_stamp;
+  int                  direction;
   const unsigned char *who;
-  const char* uuid;
+  const char*          uuid;
+  int                  from_timestamp;
+  char                 skip;
 
-  rc = sqlite3_prepare_v2(db, "SELECT timestamp,direction,message,who,uid FROM chatty_chat WHERE account=(?) AND room=(?) ORDER BY timestamp DESC LIMIT (?)", -1, &stmt, NULL);
+  from_timestamp = get_chat_timestamp_for_uuid(from_uuid);
+
+  rc = sqlite3_prepare_v2(db, "SELECT timestamp,direction,message,who,uid FROM chatty_chat WHERE account=(?) AND room=(?) AND timestamp <= (?) ORDER BY timestamp DESC LIMIT (?)", -1, &stmt, NULL);
   if (rc != SQLITE_OK)
       g_debug("Error preparing statement when querying CHAT messages. errno: %d, desc: %s", rc, sqlite3_errmsg(db));
 
@@ -317,17 +379,27 @@ chatty_history_get_chat_messages (const char *account,
   if (rc != SQLITE_OK)
       g_debug("Error binding values when querying CHAT messages. errno: %d, desc: %s", rc, sqlite3_errmsg(db));
 
-  rc = sqlite3_bind_int(stmt, 3, limit);
+  rc = sqlite3_bind_int(stmt, 3, from_timestamp);
+  if (rc != SQLITE_OK)
+    g_debug("Error binding values when querying CHAT messages. errno: %d, desc: %s", rc, sqlite3_errmsg(db));
+  
+  rc = sqlite3_bind_int(stmt, 4, limit);
   if (rc != SQLITE_OK)
     g_debug("Error binding values when querying CHAT messages. errno: %d, desc: %s", rc, sqlite3_errmsg(db));
 
+  skip = from_uuid != NULL;
   while ((sqlite3_step(stmt)) == SQLITE_ROW) {
       time_stamp = sqlite3_column_int(stmt, 0);
       direction = sqlite3_column_int(stmt, 1);
       msg = sqlite3_column_text(stmt, 2);
       who = sqlite3_column_text(stmt, 3);
       uuid = sqlite3_column_text(stmt, 4);
-      cb(msg, time_stamp, direction, room, who, uuid, chatty_conv);
+      
+      if (skip)
+        skip = g_strcmp0(from_uuid, uuid);
+      if (!skip)
+        cb(msg, time_stamp, direction, room, who, uuid, chatty_conv);
+
   }
 
   rc = sqlite3_finalize(stmt);
@@ -348,18 +420,25 @@ chatty_history_get_im_messages (const char* account,
                                            int last_message),
                                 ChattyConversation *chatty_conv,
                                 guint      limit,
-                                char       *uuid)
+                                char       *from_uuid)
 {
 
   int rc;
-  sqlite3_stmt *stmt;
+  sqlite3_stmt        *stmt;
   const unsigned char *msg;
-  int time_stamp;
-  int direction;
-  int first;
+  int                  time_stamp;
+  int                  direction;
+  int                  first;
+  const char*          uuid;
+  int                  from_timestamp;
+  char                 skip;
+
+  from_timestamp = get_im_timestamp_for_uuid(from_uuid);
+
+  g_debug("@LELAND: from_timestamp: %u, from_uuid: %s", from_timestamp, from_uuid);
 
   // Then, fetch the result and detect the last row.
-  rc = sqlite3_prepare_v2(db, "SELECT timestamp,direction,message,uid FROM chatty_im WHERE account=(?) AND who=(?) ORDER BY timestamp DESC LIMIT (?)", -1, &stmt, NULL);
+  rc = sqlite3_prepare_v2(db, "SELECT timestamp,direction,message,uid FROM chatty_im WHERE account=(?) AND who=(?) AND timestamp <= (?) ORDER BY timestamp DESC LIMIT (?)", -1, &stmt, NULL);
   if (rc != SQLITE_OK)
       g_debug("Error preparing statement when querying IM messages. errno: %d, desc: %s", rc, sqlite3_errmsg(db));
 
@@ -371,18 +450,30 @@ chatty_history_get_im_messages (const char* account,
   if (rc != SQLITE_OK)
     g_debug("Error binding when querying IM messages. errno: %d, desc: %s", rc, sqlite3_errmsg(db));
 
-  rc = sqlite3_bind_int(stmt, 3, limit);
+  rc = sqlite3_bind_int(stmt, 3, from_timestamp);
   if (rc != SQLITE_OK)
     g_debug("Error binding when querying IM messages. errno: %d, desc: %s", rc, sqlite3_errmsg(db));
 
+  rc = sqlite3_bind_int(stmt, 4, limit);
+  if (rc != SQLITE_OK)
+    g_debug("Error binding when querying IM messages. errno: %d, desc: %s", rc, sqlite3_errmsg(db));
+  
+  skip = from_uuid != NULL;
   first = 1;
   while ((sqlite3_step(stmt)) == SQLITE_ROW) {
     time_stamp = sqlite3_column_int(stmt, 0);
     direction = sqlite3_column_int(stmt, 1);
     msg = sqlite3_column_text(stmt, 2);
     uuid = sqlite3_column_text(stmt, 3);
-    cb(msg, direction, time_stamp, uuid, chatty_conv, first);
-    first = 0;
+
+    g_debug("@LELAND: IM: skip: %d, from_uuid: %s, uuid: %s", skip, from_uuid, uuid);
+
+    if (skip)
+      skip = g_strcmp0(from_uuid, uuid);
+    if (!skip){
+      cb(msg, direction, time_stamp, uuid, chatty_conv, first);
+      first = 0;
+    }
   }
 
   rc = sqlite3_finalize(stmt);
@@ -449,3 +540,4 @@ chatty_history_delete_im (const char *account,
 
 }
                                    
+
