@@ -334,9 +334,14 @@ cb_textview_key_released (GtkWidget   *widget,
                           GdkEventKey *key_event,
                           gpointer     data)
 {
-  ChattyConversation  *chatty_conv;
+  PurpleAccount      *account;
+  ChattyConversation *chatty_conv;
+  const gchar        *protocol_id;
 
   chatty_conv = (ChattyConversation *)data;
+
+  account = purple_conversation_get_account (chatty_conv->conv);
+  protocol_id = purple_account_get_protocol_id (account);
 
   if (gtk_text_buffer_get_char_count (chatty_conv->input.buffer)) {
     gtk_widget_show (chatty_conv->input.button_send);
@@ -348,7 +353,8 @@ cb_textview_key_released (GtkWidget   *widget,
     chatty_update_typing_status (chatty_conv);
   }
 
-  if (purple_prefs_get_bool (CHATTY_PREFS_ROOT "/conversations/convert_emoticons")) {
+  if (purple_prefs_get_bool (CHATTY_PREFS_ROOT "/conversations/convert_emoticons") &&
+      (g_strcmp0 (protocol_id, "prpl-mm-sms") != 0)) {
     chatty_check_for_emoticon (chatty_conv);
   }
 
@@ -1786,7 +1792,7 @@ chatty_conv_muc_list_update_user (PurpleConversation *conv,
 
   if (!cbuddy) {
     return;
-  } 
+  }
 
   g_debug ("chatty_conv_muc_list_update_user conv: %s user_name: %s",
            purple_conversation_get_name (conv), user);
