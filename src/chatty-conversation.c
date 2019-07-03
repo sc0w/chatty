@@ -1000,8 +1000,6 @@ chatty_conv_message_get_last_msg (PurpleBuddy *buddy)
   logs = g_strsplit (stripped, "\n", -1);
   num_logs = g_strv_length (logs) - 2;
 
-  g_return_val_if_fail (num_logs >= 2, NULL);
-
   log_data = chatty_conv_parse_message (logs[num_logs]);
 
   g_list_free_full (history, (GDestroyNotify)purple_log_free);
