@@ -33,6 +33,7 @@ static GParamSpec *props[PROP_LAST_PROP];
 
 enum {
   SIGNAL_MESSAGE_ADDED,
+  SIGNAL_SCROLL_TOP,
   SIGNAL_LAST_SIGNAL,
 };
 
@@ -221,14 +222,16 @@ cb_scroll_edge_reached (GtkScrolledWindow *scrolled_window,
     // until all messages from the chunk were pulled from the db.
     // The user could reach the top again while the messages are being loaded
 
-    chatty_msg_list_add_message_at ((ChattyMsgList *)self,
+    /*    chatty_msg_list_add_message_at ((ChattyMsgList *)self,
                                     MSG_IS_SYSTEM,
                                     "Loading more messages...",
                                     NULL,
                                     NULL,
-                                    ADD_MESSAGE_ON_TOP);
+                                    ADD_MESSAGE_ON_TOP);*/
 
-    // TODO: @LELAND: Call history load in conversation
+    g_signal_emit (self,
+                   signals[SIGNAL_SCROLL_TOP],
+                   0);
   }
 }
 
@@ -932,6 +935,15 @@ chatty_msg_list_class_init (ChattyMsgListClass *klass)
                   G_TYPE_NONE,
                   1,
                   G_TYPE_OBJECT);
+  
+  signals[SIGNAL_SCROLL_TOP] =
+    g_signal_new ("scroll-top",
+                  G_TYPE_FROM_CLASS (klass),
+                  G_SIGNAL_RUN_LAST,
+                  0,
+                  NULL, NULL, NULL,
+                  G_TYPE_NONE,
+                  0);
 
   gtk_widget_class_set_template_from_resource (widget_class,
     "/sm/puri/chatty/ui/chatty-message-list.ui");

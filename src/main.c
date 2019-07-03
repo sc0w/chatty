@@ -5,6 +5,7 @@
  */
 
 
+#include <time.h>
 #include <glib/gi18n.h>
 #include "chatty-config.h"
 #include "chatty-application.h"
@@ -23,6 +24,7 @@ main (int   argc,
   g_set_prgname (CHATTY_APP_ID);
   application = chatty_application_new ();
 
+  srand(time(NULL));
   chatty_history_open();
 
   status = g_application_run (G_APPLICATION (application), argc, argv);

@@ -361,7 +361,7 @@ chatty_history_get_chat_messages (const char *account,
   int                  time_stamp;
   int                  direction;
   const unsigned char *who;
-  const char*          uuid;
+  const unsigned char* uuid;
   int                  from_timestamp;
   char                 skip;
 
@@ -395,10 +395,11 @@ chatty_history_get_chat_messages (const char *account,
       who = sqlite3_column_text(stmt, 3);
       uuid = sqlite3_column_text(stmt, 4);
       
-      if (skip)
+      if (skip){
         skip = g_strcmp0(from_uuid, uuid);
-      if (!skip)
+      } else {
         cb(msg, time_stamp, direction, room, who, uuid, chatty_conv);
+      }
 
   }
 
@@ -429,7 +430,7 @@ chatty_history_get_im_messages (const char* account,
   int                  time_stamp;
   int                  direction;
   int                  first;
-  const char*          uuid;
+  const unsigned char* uuid;
   int                  from_timestamp;
   char                 skip;
 
@@ -468,9 +469,12 @@ chatty_history_get_im_messages (const char* account,
 
     g_debug("@LELAND: IM: skip: %d, from_uuid: %s, uuid: %s", skip, from_uuid, uuid);
 
-    if (skip)
+    // TODO: @LELAND: This approach would return a variable number of messages
+    // in case a burst of messages were received for the same epoch
+    // If this is an issue, we should use a more fine grain timestamp.
+    if (skip){
       skip = g_strcmp0(from_uuid, uuid);
-    if (!skip){
+    } else {
       cb(msg, direction, time_stamp, uuid, chatty_conv, first);
       first = 0;
     }

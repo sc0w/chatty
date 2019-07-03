@@ -12,6 +12,6 @@
 
 char *chatty_utils_jabber_id_strip (const char *name);
 
-char *chatty_utils_generate_uuid (void);
+void chatty_utils_generate_uuid (char **uuid);
 
 #endif
