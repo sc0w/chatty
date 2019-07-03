@@ -498,6 +498,9 @@ cb_button_add_contact_clicked (GtkButton *sender,
 
   chatty_blist_add_buddy (who, alias);
 
+  gtk_entry_set_text (GTK_ENTRY(chatty_dialog->entry_contact_name), "");
+  gtk_entry_set_text (GTK_ENTRY(chatty_dialog->entry_contact_nick), "");
+
   gtk_stack_set_visible_child_name (chatty_dialog->stack_panes_new_chat,
                                     "view-new-chat");
 }
