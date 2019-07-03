@@ -21,6 +21,7 @@
 #include "chatty-buddy-list.h"
 #include "chatty-conversation.h"
 #include "chatty-history.h"
+#include "chatty-utils.h"
 #define HANDY_USE_UNSTABLE_API
 #include <handy.h>
 
@@ -2146,24 +2147,44 @@ static void
 chatty_blist_update_buddy (PurpleBuddyList *list,
                            PurpleBlistNode *node)
 {
-  PurpleBuddy     *buddy;
-  g_autofree ChattyLog       *log_data = NULL;
-  ChattyBlistNode *ui;
-
+  PurpleBuddy             *buddy;
+  g_autofree ChattyLog    *log_data;
+  ChattyBlistNode         *ui;
+  PurpleAccount           *account;
+  const char              *username;
+  const char              *who;
+  g_autofree gchar        *iso_timestamp;
+  struct tm               *timeinfo;
+  char                     message_exists;
+  
   g_return_if_fail (PURPLE_BLIST_NODE_IS_BUDDY(node));
 
   buddy = (PurpleBuddy*)node;
 
-  log_data = chatty_conv_message_get_last_msg (buddy);
+  account = purple_buddy_get_account (buddy);
+
+  username = purple_account_get_username (account);
+  who = purple_buddy_get_name (buddy);
+  log_data = g_new0(ChattyLog, 1);
+
+  message_exists = chatty_history_get_im_last_message(username, who, log_data);
 
   if (purple_blist_node_get_bool (node, "chatty-autojoin") &&
       chatty_blist_buddy_is_displayable (buddy) &&
-      log_data != NULL) {
+      message_exists) {
+
+    iso_timestamp = g_malloc0(MAX_GMT_ISO_SIZE * sizeof(char));
+
+    timeinfo = gmtime (&log_data->epoch);
+    g_return_if_fail (strftime (iso_timestamp,
+                                MAX_GMT_ISO_SIZE * sizeof(char),
+                                "%H:%M:%S %p",
+                                timeinfo));
 
     ui = node->ui_data;
     ui->conv.last_message = log_data->msg;
-    ui->conv.last_message_name = log_data->name;
-    ui->conv.last_msg_timestamp = log_data->time_stamp;
+    ui->conv.last_message_name = username;
+    ui->conv.last_msg_timestamp = iso_timestamp;
 
     chatty_blist_chats_update_node (buddy, node);
   } else {

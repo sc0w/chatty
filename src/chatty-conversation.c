@@ -15,8 +15,8 @@
 #include "chatty-message-list.h"
 #include "chatty-conversation.h"
 #include "chatty-history.h"
+#include "chatty-utils.h"
 
-#define MAX_GMT_ISO_SIZE 256
 #define MAX_MSGS 50
 
 static GHashTable *ht_sms_id = NULL;
@@ -910,103 +910,6 @@ chatty_conv_find_unseen (ChattyUnseenState  state)
   }
 
   return r;
-}
-
-
-/**
- * chatty_conv_parse_message:
- * @msg: a char pointer
- *
- * Parse a chat single chat log message
- *
- */
-static ChattyLog*
-chatty_conv_parse_message (const gchar* msg)
-{
-  ChattyLog     *log;
-  char          *timestamp;
-  g_auto(GStrv)  timesplit = NULL,
-                 accountsplit = NULL,
-                 namesplit = NULL;
-
-  if (msg == NULL)
-    return NULL;
-
-  /* Separate the timestamp from the rest of the message */
-  timesplit = g_strsplit (msg, ") ", 2);
-  /* Format is '(x:y:z' */
-  if (timesplit[0] == NULL || strlen (timesplit[0]) < 6)
-    return NULL;
-
-  timestamp = strchr(timesplit[0], '(');
-  g_return_val_if_fail (timestamp != NULL, NULL);
-
-  log = g_new0 (ChattyLog, 1);
-  log->time_stamp = g_strdup(&timestamp[1]);
-
-  if (timesplit[1] == NULL)
-    return log;
-
-  accountsplit = g_strsplit (timesplit[1], ": ", 2);
-
-  if (accountsplit[0] == NULL)
-    return log;
-
-  namesplit = g_strsplit (accountsplit[0], "/", 2);
-  log->name = g_strdup (namesplit[0]);
-
-  if (accountsplit[1] == NULL)
-    return log;
-
-  log->msg = g_strdup (accountsplit[1]);
-  return log;
-}
-
-
-/**
- * chatty_conv_message_get_last_msg:
- * @buddy: a PurpleBuddy
- *
- * Get the last message from log
- *
- * Returns: (transfer-full): a #ChattyLog
- */
-ChattyLog*
-chatty_conv_message_get_last_msg (PurpleBuddy *buddy)
-{
-  GList         *history;
-  ChattyLog     *log_data = NULL;
-  PurpleAccount *account;
-  g_auto(GStrv)  logs = NULL;
-  gchar         *read_log;
-  gchar         *stripped;
-  const gchar   *b_name;
-  int            num_logs;
-
-  account = purple_buddy_get_account (buddy);
-  b_name = purple_buddy_get_name (buddy);
-  history = purple_log_get_logs (PURPLE_LOG_IM, b_name, account);
-
-  if (history == NULL) {
-    g_list_free (history);
-    return NULL;
-  }
-
-  history = g_list_first (history);
-
-  read_log = purple_log_read ((PurpleLog*)history->data, NULL);
-  stripped = purple_markup_strip_html (read_log);
-
-  logs = g_strsplit (stripped, "\n", -1);
-  num_logs = g_strv_length (logs) - 2;
-
-  log_data = chatty_conv_parse_message (logs[num_logs]);
-
-  g_list_free_full (history, (GDestroyNotify)purple_log_free);
-  g_free (read_log);
-  g_free (stripped);
-
-  return log_data;;
 }
 
 
@@ -2469,15 +2372,12 @@ chatty_conv_add_history_since_component(GHashTable *components,
   time_t mtime;
   struct tm * timeinfo;
   g_autofree gchar *iso_timestamp = g_malloc0(MAX_GMT_ISO_SIZE * sizeof(char));
-                               // TODO @LELAND for some reason if freed here,
-                               // writes garbage to blist.xml
-                               // Why cant I use an string?
 
   mtime = chatty_history_get_chat_last_message_time(account, room);
   mtime += 1; // Use the next epoch to exclude the last stored message(s)
   timeinfo = gmtime (&mtime);
   g_return_if_fail (strftime (iso_timestamp,
-                              MAX_GMT_ISO_SIZE*sizeof(char),
+                              MAX_GMT_ISO_SIZE * sizeof(char),
                               "%Y-%m-%dT%H:%M:%SZ",
                               timeinfo));
 

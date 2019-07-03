@@ -66,5 +66,10 @@ void
 chatty_history_delete_im (const char *account,
                           const char *who);
 
+char
+chatty_history_get_im_last_message (const char*       account,
+                                    const char*       who,
+                                    ChattyLog*  chatty_log);
+
 
 #endif
