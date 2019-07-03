@@ -9,6 +9,12 @@
 #include "purple.h"
 #include "chatty-window.h"
 #include "chatty-connection.h"
+#include "chatty-purple-init.h"
+
+
+#define INITIAL_RECON_DELAY_MIN   8000
+#define INITIAL_RECON_DELAY_MAX  60000
+#define MAX_RECON_DELAY         600000
 
 
 static GHashTable *auto_reconns = NULL;
@@ -16,7 +22,7 @@ static GHashTable *auto_reconns = NULL;
 
 static void
 cb_account_removed (PurpleAccount *account,
-                    gpointer user_data)
+                    gpointer       user_data)
 {
   g_hash_table_remove (auto_reconns, account);
 }
@@ -43,29 +49,32 @@ chatty_connection_connected (PurpleConnection *gc)
 
   account  = purple_connection_get_account (gc);
 
+  g_debug ("chatty_connection_connected");
+
   if (purple_connections_get_connecting () == NULL) {
     gtk_spinner_stop (GTK_SPINNER(chatty->header_spinner));
   }
 
-  g_hash_table_remove(auto_reconns, account);
+  g_hash_table_remove (auto_reconns, account);
 }
 
 
 static void
 chatty_connection_disconnected (PurpleConnection *gc)
 {
-
+  g_debug ("chatty_connection_disconnected");
 }
 
 
 static gboolean
 chatty_connection_sign_on (gpointer data)
 {
-  PurpleAccount *account = data;
+  PurpleAccount   *account = data;
   ChattyAutoRecon *info;
-  PurpleStatus *status;
+  PurpleStatus    *status;
 
   g_return_val_if_fail (account != NULL, FALSE);
+
   info = g_hash_table_lookup (auto_reconns, account);
 
   if (info) {
@@ -73,11 +82,9 @@ chatty_connection_sign_on (gpointer data)
   }
 
   status = purple_account_get_active_status (account);
-  g_debug ("About to get all accounts");
 
-  if (purple_status_is_online (status))
-  {
-    g_debug ("get all accounts");
+  if (purple_status_is_online (status)) {
+    g_debug ("Connect account");
     purple_account_connect (account);
   }
 
@@ -105,7 +112,7 @@ chatty_connection_network_connected (void)
     l = l->next;
   }
 
-  g_list_free(list);
+  g_list_free (list);
 }
 
 
@@ -115,14 +122,19 @@ chatty_connection_network_disconnected (void)
   GList *list, *l;
 
   l = list = purple_accounts_get_all_active();
+
+  g_debug ("chatty_connection_network_disconnected");
+
   while (l) {
     PurpleAccount *a = (PurpleAccount*)l->data;
 
     if (!purple_account_is_disconnected (a)) {
       char *password = g_strdup(purple_account_get_password (a));
+
       purple_account_disconnect (a);
       purple_account_set_password (a, password);
-      g_free(password);
+
+      g_free (password);
     }
 
     l = l->next;
@@ -133,17 +145,47 @@ chatty_connection_network_disconnected (void)
 
 
 static void
-chatty_connection_report_disconnect_reason (PurpleConnection *gc,
+chatty_connection_report_disconnect_reason (PurpleConnection     *gc,
                                             PurpleConnectionError reason,
-                                            const char *text)
+                                            const char           *text)
 {
-  PurpleAccount *account = purple_connection_get_account (gc);
+
+  PurpleAccount   *account;
+  ChattyAutoRecon *info;
+
+  account = purple_connection_get_account (gc);
+
+  info = g_hash_table_lookup (auto_reconns, account);
+
+  if (!purple_connection_error_is_fatal (reason)) {
+    if (info == NULL) {
+      info = g_new0 (ChattyAutoRecon, 1);
+
+      g_hash_table_insert (auto_reconns, account, info);
+
+      info->delay = g_random_int_range (INITIAL_RECON_DELAY_MIN,
+                                        INITIAL_RECON_DELAY_MAX);
+    } else {
+      info->delay = MIN(2 * info->delay, MAX_RECON_DELAY);
+
+      if (info->timeout != 0) {
+        g_source_remove(info->timeout);
+      }
+    }
+
+    info->timeout = g_timeout_add (info->delay, chatty_connection_sign_on, account);
+  } else {
+    if (info != NULL) {
+      g_hash_table_remove (auto_reconns, account);
+    }
+
+    purple_account_set_enabled (account, CHATTY_UI, FALSE);
+  }
 
   g_debug ("Disconnected: \"%s\" (%s)\n  >Error: %d\n  >Reason: %s",
-                                purple_account_get_username(account),
-                                purple_account_get_protocol_id(account),
+                                purple_account_get_username (account),
+                                purple_account_get_protocol_id (account),
                                 reason, text);
-
 }
 
 
