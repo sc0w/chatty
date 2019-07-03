@@ -1320,6 +1320,7 @@ chatty_dialogs_show_dialog_user_info (ChattyConversation *chatty_conv)
   GtkWidget     *label_alias;
   GtkWidget     *label_jid;
   GtkWidget     *label_status;
+  GtkWidget     *label_user_id;
   GtkWindow     *window;
   GtkSwitch     *switch_notify;
   GtkListBox    *listbox_prefs;
@@ -1332,6 +1333,7 @@ chatty_dialogs_show_dialog_user_info (ChattyConversation *chatty_conv)
   builder = gtk_builder_new_from_resource ("/sm/puri/chatty/ui/chatty-dialog-user-info.ui");
 
   label_alias = GTK_WIDGET (gtk_builder_get_object (builder, "label_alias"));
+  label_user_id = GTK_WIDGET (gtk_builder_get_object (builder, "label_user_id"));
   label_jid = GTK_WIDGET (gtk_builder_get_object (builder, "label_jid"));
   switch_notify = GTK_SWITCH (gtk_builder_get_object (builder, "switch_notify"));
   listbox_prefs = GTK_LIST_BOX (gtk_builder_get_object (builder, "listbox_prefs"));
@@ -1354,6 +1356,8 @@ chatty_dialogs_show_dialog_user_info (ChattyConversation *chatty_conv)
                                   hdy_list_box_separator_header,
                                   NULL, NULL);
 
+    gtk_label_set_text (GTK_LABEL(label_user_id), "XMPP ID");
+
     chatty_lurch_get_status (chatty_conv->conv);
     chatty_lurch_get_fp_list_contact (chatty_conv->conv);
 
@@ -1363,6 +1367,10 @@ chatty_dialogs_show_dialog_user_info (ChattyConversation *chatty_conv)
                       "state-set",
                       G_CALLBACK(cb_switch_omemo_state_changed),
                       (gpointer)chatty_conv->conv);
+  }
+
+  if (!g_strcmp0 (protocol_id, "prpl-mm-sms")) {
+    gtk_label_set_text (GTK_LABEL(label_user_id), _("Phone Number:"));
   }
 
   gtk_list_box_set_header_func (listbox_prefs,
