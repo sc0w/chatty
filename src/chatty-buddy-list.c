@@ -2169,16 +2169,17 @@ chatty_blist_update_buddy (PurpleBuddyList *list,
 
   message_exists = chatty_history_get_im_last_message(username, who, log_data);
 
+  iso_timestamp = g_malloc0(MAX_GMT_ISO_SIZE * sizeof(char));
+
   if (purple_blist_node_get_bool (node, "chatty-autojoin") &&
       chatty_blist_buddy_is_displayable (buddy) &&
       message_exists) {
 
-    iso_timestamp = g_malloc0(MAX_GMT_ISO_SIZE * sizeof(char));
 
-    timeinfo = gmtime (&log_data->epoch);
+    timeinfo = localtime (&log_data->epoch);
     g_return_if_fail (strftime (iso_timestamp,
                                 MAX_GMT_ISO_SIZE * sizeof(char),
-                                "%H:%M:%S %p",
+                                "%I:%M %p",
                                 timeinfo));
 
     ui = node->ui_data;
