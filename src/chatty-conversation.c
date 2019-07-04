@@ -789,7 +789,7 @@ chatty_conv_check_for_command (PurpleConversation *conv)
           if (*spaceslash != '/') {
             purple_conversation_write (conv,
                                        "",
-                                       "Unknown command.",
+                                       "Unknown command. Get a list of available commands with '/chatty help'",
                                        flags,
                                        time(NULL));
             retval = TRUE;
