@@ -8,11 +8,6 @@
 #ifndef __CONNECTION_H_INCLUDE__
 #define __CONNECTION_H_INCLUDE__
 
-#define INITIAL_RECON_DELAY_MIN  8000
-#define INITIAL_RECON_DELAY_MAX  60000
-
-#define MAX_RECON_DELAY    600000
-
 
 typedef struct {
    int delay;

@@ -12,9 +12,9 @@
 #include "chatty-purple-init.h"
 
 
-#define INITIAL_RECON_DELAY_MIN   8000
-#define INITIAL_RECON_DELAY_MAX  60000
-#define MAX_RECON_DELAY         600000
+#define INITIAL_RECON_DELAY_MIN   8
+#define INITIAL_RECON_DELAY_MAX  60
+#define MAX_RECON_DELAY         600
 
 
 static GHashTable *auto_reconns = NULL;
@@ -173,7 +173,9 @@ chatty_connection_report_disconnect_reason (PurpleConnection     *gc,
       }
     }
 
-    info->timeout = g_timeout_add (info->delay, chatty_connection_sign_on, account);
+    info->timeout = g_timeout_add_seconds (info->delay,
+                                           chatty_connection_sign_on,
+                                           account);
   } else {
     if (info != NULL) {
       g_hash_table_remove (auto_reconns, account);
