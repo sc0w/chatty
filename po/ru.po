@@ -1,7 +1,4 @@
-# Punleuk Oum <punleuk.oum@gmail.com>, 2018. #zanata
-# Punleuk Oum <punleuk.oum@gmail.com>, 2019. #zanata
-# Scott <xmrscott@protonmail.com>, 2019. #zanata
-# Scott Anecito <scott.anecito@linux.com>, 2019. #zanata
+# Lighting <glighting@gmail.com>, 2019. #zanata
 msgid ""
 msgstr ""
 "Project-Id-Version: purism-chatty\n"
@@ -10,12 +7,13 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2019-04-14 06:46+0000\n"
-"Last-Translator: Punleuk Oum <punleuk.oum@gmail.com>\n"
-"Language-Team: Japanese\n"
-"Language: ja\n"
+"PO-Revision-Date: 2019-06-23 08:57+0000\n"
+"Last-Translator: Lighting <glighting@gmail.com>\n"
+"Language-Team: Russian\n"
+"Language: ru\n"
 "X-Generator: Zanata 4.6.2\n"
-"Plural-Forms: nplurals=1; plural=0\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
+"n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2)\n"
 
 #: data/sm.puri.Chatty.appdata.xml.in:6 data/sm.puri.Chatty.desktop.in:3
 msgid "Chatty"
@@ -23,27 +21,28 @@ msgstr "Chatty"
 
 #: data/sm.puri.Chatty.appdata.xml.in:7
 msgid "A messaging application"
-msgstr "メッセージングアプリ"
+msgstr "Приложение для обмена сообщениями"
 
 #: data/sm.puri.Chatty.appdata.xml.in:8
 msgid "Chatty is a messaging application supporting XMPP and SMS."
-msgstr "ChattyはXMPPとSMSをサポートするメッセージアプリケーション"
+msgstr "Chatty для обмена сообщениями с поддержкой XMPP и СМС"
 
 #: data/sm.puri.Chatty.appdata.xml.in:16
 msgid "Chatty's message window"
-msgstr "Chattyのメッセージウィンドウ"
+msgstr "Окно сообщения Chatty"
 
 #: data/sm.puri.Chatty.desktop.in:5
 msgid "sm.puri.Chatty"
-msgstr "sm.puri.Chatty"
+msgstr ""
 
 #: data/sm.puri.Chatty.desktop.in:6
+#, fuzzy
 msgid "SMS and XMPP chat application"
-msgstr "SMSとXMPPを使うチャット用アプリケーション"
+msgstr "Приложение СМС и XMPP чата"
 
 #: data/sm.puri.Chatty.desktop.in:7
 msgid "XMPP;SMS;chat;jabber;messaging;modem"
-msgstr "XMPP;SMS;chat;jabber;messaging;modem"
+msgstr ""
 
 #: src/chatty-application.c:50
 msgid "Show release version"
@@ -63,42 +62,43 @@ msgstr ""
 
 #: src/chatty-account.c:117
 msgid "SMS Number"
-msgstr "携帯番号"
+msgstr "Номер СМС"
 
 #: src/chatty-account.c:121
 msgid "Jabber ID"
-msgstr "Jabber ID"
+msgstr ""
 
 #: src/chatty-account.c:275
+#, fuzzy
 msgid "Add new account..."
-msgstr "新しいアカウントを追加する…"
+msgstr "Добавить уч. запись..."
 
 #: src/chatty-account.c:302
 msgid "Contact added"
-msgstr "コンタクトが追加されました"
+msgstr ""
 
 #: src/chatty-account.c:306
 #, c-format
 msgid "User %s has added %s to the contacts"
-msgstr "ユーザーの %s はコンタクトに %s が追加されました"
+msgstr ""
 
 #: src/chatty-account.c:367
 #, c-format
 msgid "Authorize %s?"
-msgstr "%s を認証しますか？"
+msgstr "Авторизовать %s?"
 
 #: src/chatty-account.c:371
 msgid "Reject"
-msgstr "拒否"
+msgstr "Отклонить"
 
 #: src/chatty-account.c:373
 msgid "Accept"
-msgstr "承諾"
+msgstr "Принять"
 
 #: src/chatty-account.c:378
 #, c-format
 msgid "Add %s to contact list"
-msgstr "%s をコンタクトに追加する"
+msgstr ""
 
 #: src/chatty-buddy-list.c:830
 msgid "Disconnect group chat"
@@ -109,34 +109,35 @@ msgid "This removes chat from chats list"
 msgstr ""
 
 #: src/chatty-buddy-list.c:835
+#, fuzzy
 msgid "Delete chat with"
-msgstr ""
+msgstr "Удалить чат с"
 
 #: src/chatty-buddy-list.c:836
 msgid "This deletes the conversation history"
-msgstr "会話の履歴を削除されます"
+msgstr "Это удалит историю разговоров"
 
 #: src/chatty-buddy-list.c:848 src/ui/chatty-dialog-join-muc.ui:16
 #: src/ui/chatty-dialog-muc-info.ui:54 src/ui/chatty-dialog-new-chat.ui:54
 #: src/ui/chatty-dialog-settings.ui:37 src/ui/chatty-dialog-settings.ui:70
 msgid "Cancel"
-msgstr "キャンセル"
+msgstr "Отмена"
 
 #: src/chatty-buddy-list.c:850
 msgid "Delete"
-msgstr "削除"
+msgstr "Удалить"
 
 #: src/chatty-buddy-list.c:1935
 msgid "Me: "
-msgstr "私："
+msgstr "Я:"
 
 #: src/chatty-conversation.c:1480
 msgid "Owner"
-msgstr ""
+msgstr "Владелец"
 
 #: src/chatty-conversation.c:1483
 msgid "Moderator"
-msgstr ""
+msgstr "Модератор"
 
 #: src/chatty-conversation.c:1486
 msgid "Member"
@@ -148,24 +149,24 @@ msgstr ""
 
 #: src/chatty-dialogs.c:211 src/ui/chatty-dialog-settings.ui:583
 msgid "Delete Account"
-msgstr "アカウントを削除"
+msgstr ""
 
 #: src/chatty-dialogs.c:214
 #, c-format
 msgid "Delete account %s?"
-msgstr "%s のアカウントを削除しますか？"
+msgstr ""
 
 #: src/chatty-dialogs.c:305
 msgid "connected"
-msgstr "接続されました"
+msgstr ""
 
 #: src/chatty-dialogs.c:307
 msgid "connecting..."
-msgstr "接続中..."
+msgstr ""
 
 #: src/chatty-dialogs.c:309
 msgid "disconnected"
-msgstr "切断されました"
+msgstr ""
 
 #: src/chatty-dialogs.c:563
 msgid "Cannot login"
@@ -199,31 +200,31 @@ msgstr ""
 
 #: src/chatty-message-list.c:68 src/chatty-message-list.c:73
 msgid "This is a IM conversation."
-msgstr "この会話はIMで通信します。"
+msgstr ""
 
 #: src/chatty-message-list.c:69 src/chatty-message-list.c:79
 msgid "Your messages are not encrypted,"
-msgstr "メッセージは暗号はしてませんので、"
+msgstr ""
 
 #: src/chatty-message-list.c:70
 msgid "ask your counterpart to use E2EE."
-msgstr "他方の送信者にエンドツーエンド暗号化の使用を依頼して下さい。"
+msgstr ""
 
 #: src/chatty-message-list.c:74
 msgid "Your messages are secured"
-msgstr "メッセージはエンドツーエンド暗号化"
+msgstr ""
 
 #: src/chatty-message-list.c:75
 msgid "by end-to-end encryption."
-msgstr "で安全されます。"
+msgstr ""
 
 #: src/chatty-message-list.c:78
 msgid "This is a SMS conversation."
-msgstr "この会話はSMSで通信します。"
+msgstr ""
 
 #: src/chatty-message-list.c:80
 msgid "and carrier rates may apply."
-msgstr "標準メッセージとデータは使用できます。"
+msgstr ""
 
 #: src/ui/chatty-dialog-info.ui:11 src/ui/chatty-window.ui:70
 msgid "About Chatty"
@@ -451,7 +452,7 @@ msgstr ""
 
 #: src/ui/chatty-dialog-settings.ui:531 src/ui/chatty-dialog-settings.ui:786
 msgid "Password"
-msgstr "パスワード"
+msgstr ""
 
 #: src/ui/chatty-dialog-settings.ui:599
 msgid "Own Fingerprint"
