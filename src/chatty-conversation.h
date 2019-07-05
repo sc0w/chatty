@@ -72,7 +72,6 @@ struct chatty_conversation {
   } muc;
 
   struct {
-    int    timer;
     GList *current;
   } attach;
 

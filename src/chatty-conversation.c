@@ -1070,9 +1070,6 @@ chatty_conv_add_message_history_to_conv (gpointer data)
 
   im = (chatty_conv->conv->type == PURPLE_CONV_TYPE_IM);
 
-  g_source_remove (chatty_conv->attach.timer);
-  chatty_conv->attach.timer = 0;
-
   conv_name = purple_conversation_get_name (chatty_conv->conv);
   account = purple_conversation_get_account (chatty_conv->conv);
 
@@ -2667,10 +2664,6 @@ chatty_conv_destroy (PurpleConversation *conv)
   chatty_conv = CHATTY_CONVERSATION (conv);
 
   chatty_conv_remove_conv (chatty_conv);
-
-  if (chatty_conv->attach.timer) {
-    g_source_remove(chatty_conv->attach.timer);
-  }
 
   g_hash_table_foreach_remove (ht_sms_id,
                                cb_ht_check_items,
