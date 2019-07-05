@@ -1584,23 +1584,26 @@ chatty_blist_chats_sort (PurpleBlistNode *node,
                          GtkTreeIter     *cur_iter,
                          GtkTreeIter     *iter)
 {
-  GtkTreeIter more_z;
+  GtkTreeIter  more_z;
+  time_t       time_now;
+  double       node_time_diff = 0;
+  double       curr_node_time_diff = 0;
+  const char  *buddy_name;
+  const char  *this_buddy_name;
 
-  int activity_score = 0, this_log_activity_score = 0;
-  const char *buddy_name, *this_buddy_name;
+  ChattyBlistNode *chatty_node = NULL;
 
   if(cur_iter && (gtk_tree_model_iter_n_children(GTK_TREE_MODEL(_chatty_blist->treemodel_chats), NULL) == 1)) {
     *iter = *cur_iter;
     return;
   }
 
-  if (PURPLE_BLIST_NODE_IS_BUDDY(node)) {
-    PurpleBuddy *buddy;
+  time (&time_now);
 
-    buddy = (PurpleBuddy*)node;
-    activity_score = purple_log_get_activity_score (PURPLE_LOG_IM,
-                                                    buddy->name,
-                                                    buddy->account);
+  if (PURPLE_BLIST_NODE_IS_BUDDY(node)) {
+    chatty_node = node->ui_data;
+
+    node_time_diff = difftime (time_now, chatty_node->conv.last_msg_ts_raw);
 
     buddy_name = purple_buddy_get_alias ((PurpleBuddy*)node);
   }
@@ -1616,7 +1619,6 @@ chatty_blist_chats_sort (PurpleBlistNode *node,
 
   do {
     PurpleBlistNode *n;
-    PurpleBuddy     *buddy;
     int              cmp;
 
     gtk_tree_model_get (GTK_TREE_MODEL(_chatty_blist->treemodel_chats),
@@ -1625,14 +1627,10 @@ chatty_blist_chats_sort (PurpleBlistNode *node,
                         &n,
                         -1);
 
-    this_log_activity_score = 0;
-
     if(PURPLE_BLIST_NODE_IS_BUDDY(n)) {
-      buddy = (PurpleBuddy*)n;
+      chatty_node = n->ui_data;
 
-      this_log_activity_score += purple_log_get_activity_score (PURPLE_LOG_IM,
-                                                                buddy->name,
-                                                                buddy->account);
+      curr_node_time_diff = difftime (time_now, chatty_node->conv.last_msg_ts_raw);
 
       this_buddy_name = purple_buddy_get_alias ((PurpleBuddy*)n);
     } else {
@@ -1641,8 +1639,9 @@ chatty_blist_chats_sort (PurpleBlistNode *node,
 
     cmp = purple_utf8_strcasecmp (buddy_name, this_buddy_name);
 
-    if (!PURPLE_BLIST_NODE_IS_BUDDY(n) || activity_score > this_log_activity_score ||
-        ((activity_score == this_log_activity_score) &&
+    if (!PURPLE_BLIST_NODE_IS_BUDDY(n)           ||
+        node_time_diff < curr_node_time_diff     ||
+        (((node_time_diff - curr_node_time_diff) < 0.1) &&
          (cmp < 0 || (cmp == 0 && node < n)))) {
 
       if (cur_iter != NULL) {
@@ -2184,6 +2183,7 @@ chatty_blist_update_buddy (PurpleBuddyList *list,
     ui = node->ui_data;
     ui->conv.last_message = log_data->msg;
     ui->conv.last_message_name = username;
+    ui->conv.last_msg_ts_raw = log_data->epoch;
     ui->conv.last_msg_timestamp = iso_timestamp;
 
     chatty_blist_chats_update_node (buddy, node);
