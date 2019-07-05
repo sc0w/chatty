@@ -864,7 +864,6 @@ chatty_blist_chat_list_remove_buddy (void)
   if (response == GTK_RESPONSE_OK) {
     if (PURPLE_BLIST_NODE_IS_BUDDY(node)) {
       chatty_history_delete_im(buddy->account->username, buddy->name);
-      chatty_conv_delete_message_history (buddy);
 
       purple_account_remove_buddy (buddy->account, buddy, NULL);
       purple_blist_remove_buddy (buddy);
@@ -2156,7 +2155,7 @@ chatty_blist_update_buddy (PurpleBuddyList *list,
   g_autofree gchar        *iso_timestamp;
   struct tm               *timeinfo;
   char                     message_exists;
-  
+
   g_return_if_fail (PURPLE_BLIST_NODE_IS_BUDDY(node));
 
   buddy = (PurpleBuddy*)node;

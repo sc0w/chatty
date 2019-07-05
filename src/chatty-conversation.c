@@ -934,40 +934,6 @@ chatty_conv_muc_get_avatar_color (const char *user_id)
 }
 
 
-/**
- * chatty_conv_delete_message_history:
- * @buddy: a PurpleBuddy
- *
- * Delete all logs from the given buddyname
- *
- */
-// TODO: LELAND: Can I remove this method now?
-gboolean
-chatty_conv_delete_message_history (PurpleBuddy *buddy)
-{
-
-  GList         *history;
-  PurpleAccount *account;
-  const gchar   *b_name;
-
-  account = purple_buddy_get_account (buddy);
-  b_name = purple_buddy_get_name (buddy);
-  history = purple_log_get_logs (PURPLE_LOG_IM, b_name, account);
-
-  if (history == NULL) {
-    g_list_free (history);
-    return FALSE;
-  }
-
-  for (int i = 0; history && i < MAX_MSGS; history = history->next) {
-    purple_log_delete ((PurpleLog*)history->data);
-  }
-
-  g_list_free_full (history, (GDestroyNotify)purple_log_free);
-
-  return TRUE;
-}
-
 static void
 chatty_conv_get_im_messages_cb (const unsigned char* msg,
                                 int direction,
@@ -1689,7 +1655,7 @@ chatty_conv_muc_list_update_user (PurpleConversation *conv,
 
   if (!cbuddy) {
     return;
-  } 
+  }
 
   g_debug ("chatty_conv_muc_list_update_user conv: %s user_name: %s",
            purple_conversation_get_name (conv), user);
