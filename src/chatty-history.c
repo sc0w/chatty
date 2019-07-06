@@ -282,6 +282,42 @@ chatty_history_get_chat_last_message_time (const char* account,
 }
 
 
+char
+chatty_history_get_im_last_message (const char *account,
+                                    const char *who,
+                                    ChattyLog  *chatty_log)
+{
+  int           rc;
+  sqlite3_stmt *stmt;
+
+  rc = sqlite3_prepare_v2(db, "SELECT message,max(timestamp) FROM chatty_im WHERE account=(?) AND who=(?)", -1, &stmt, NULL);
+  if (rc != SQLITE_OK)
+    g_debug("Error preparing when getting chat last message. errno: %d, desc: %s", rc, sqlite3_errmsg(db));
+
+  rc = sqlite3_bind_text(stmt, 1, account, -1, SQLITE_TRANSIENT);
+  if (rc != SQLITE_OK)
+    g_debug("Error binding when getting chat last message. errno: %d, desc: %s", rc, sqlite3_errmsg(db));
+
+  rc = sqlite3_bind_text(stmt, 2, who, -1, SQLITE_TRANSIENT);
+  if (rc != SQLITE_OK)
+    g_debug("Error binding when getting chat last message. errno: %d, desc: %s", rc, sqlite3_errmsg(db));
+
+  while ((sqlite3_step(stmt)) == SQLITE_ROW) {
+    chatty_log->msg = (char *) g_strdup((const gchar *) sqlite3_column_text(stmt, 0));
+    chatty_log->epoch = sqlite3_column_int(stmt, 1);
+  }
+
+  rc = sqlite3_finalize(stmt);
+  if (rc != SQLITE_OK)
+    g_debug("Error finalizing when getting chat last message. errno: %d, desc: %s", rc, sqlite3_errmsg(db));
+
+  // epoch is 0 if no messages are found in the query
+  // the max() query ALWAYS contains a row.
+  // TODO: @LELAND: Do something better here
+  return chatty_log->epoch;
+}
+
+
 void
 chatty_history_get_chat_messages (const char *account,
                                   const char *room,

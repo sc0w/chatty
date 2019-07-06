@@ -32,6 +32,7 @@ struct chatty_conv_view_header {
 
 struct chatty_log {
   char *time_stamp;
+  time_t   epoch;  // TODO: @LELAND: Once log-parsing functions are cleaned, review this
   char *name;
   char *msg;
 };
@@ -71,7 +72,6 @@ struct chatty_conversation {
   } muc;
 
   struct {
-    int    timer;
     GList *current;
   } attach;
 
