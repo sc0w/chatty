@@ -272,7 +272,7 @@ chatty_account_populate_account_list (GtkListBox *list, guint type)
                        "row-new-account",
                        (gpointer)TRUE);
 
-    hdy_action_row_set_title (row, _("Add new account..."));
+    hdy_action_row_set_title (row, _("Add new account…"));
 
     gtk_container_add (GTK_CONTAINER(chatty->list_manage_account),
                        GTK_WIDGET(row));

@@ -302,7 +302,7 @@ write_account_data_into_dialog (chatty_data_t *chatty, chatty_dialog_data_t *cha
   if (purple_account_is_connected (chatty->selected_account)) {
     gtk_label_set_text (chatty_dialog->label_status, _("connected"));
   } else if (purple_account_is_connecting (chatty->selected_account)) {
-    gtk_label_set_text (chatty_dialog->label_status, _("connecting..."));
+    gtk_label_set_text (chatty_dialog->label_status, _("connecting…"));
   } else if (purple_account_is_disconnected (chatty->selected_account)) {
     gtk_label_set_text (chatty_dialog->label_status, _("disconnected"));
   }
