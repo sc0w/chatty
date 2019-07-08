@@ -77,3 +77,46 @@
 .list_select:selected {
   background-color: #f5f5f5;
 }
+
+
+/* MESSAGE LIST AND BUBBLES */
+.message_list {
+  color: black;
+  background-color: white;
+}
+
+.message_bubble {
+  font-size: 16px;
+  color: black;
+  border-radius: 9px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+  padding-top: 6px;
+  padding-bottom: 6px;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+.bubble_white {
+  background-color: white;
+}
+
+.bubble_blue {
+  background-color: #e4f0fc;
+}
+
+.bubble_green {
+  background-color: #e2fae7;
+}
+
+.bubble_purple {
+  font-size: 14px;
+  color: white;
+  background-color: #862d86;
+}
+
+.label_disclaim {
+  font-size: 16px;
+  font-weight: bold;
+  padding-top: 120px;
+  padding-bottom: 20px;
+}
