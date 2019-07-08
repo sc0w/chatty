@@ -1405,25 +1405,48 @@ chatty_dialogs_show_dialog_user_info (ChattyConversation *chatty_conv)
 
 
 void
-chatty_dialogs_show_dialog_about_chatty (const char *version)
+chatty_dialogs_show_dialog_about_chatty (void)
 {
-  GtkBuilder *builder;
-  GtkWidget  *dialog;
-  GtkWidget  *label_version;
-  GtkWindow  *window;
+  GtkWindow *window;
 
-  builder = gtk_builder_new_from_resource ("/sm/puri/chatty/ui/chatty-dialog-info.ui");
+  static const gchar *authors[] = {
+    "Adrien Plazas <kekun.plazas@laposte.net>",
+    "Andrea Schäfer <mosibasu@me.com>",
+    "Benedikt Wildenhain <benedikt.wildenhain@hs-bochum.de>",
+    "Guido Günther <agx@sigxcpu.org>",
+    "Leland Carlye",
+    "Mohammed Sadiq https://www.sadiqpk.org/",
+    "Richard Bayerle (OMEMO Plugin) https://github.com/gkdr/lurch",
+    "and more...",
+    NULL
+  };
 
-  label_version = GTK_WIDGET (gtk_builder_get_object (builder, "label_version"));
-  gtk_label_set_text (GTK_LABEL(label_version), version);
+  static const gchar *artists[] = {
+    "Tobias Bernard <tbernard@gnome.org>",
+    NULL
+  };
 
-  dialog = GTK_WIDGET (gtk_builder_get_object (builder, "dialog"));
+  static const gchar *documenters[] = {
+    "Heather Ellsworth <heather.ellsworth@puri.sm>",
+    NULL
+  };
 
   window = gtk_application_get_active_window (GTK_APPLICATION (g_application_get_default ()));
-  gtk_window_set_transient_for (GTK_WINDOW(dialog), window);
 
-  gtk_dialog_run (GTK_DIALOG(dialog));
-
-  gtk_widget_destroy (dialog);
-  g_object_unref (builder);
+  gtk_show_about_dialog (GTK_WINDOW(window),
+                         "title", "About Chatty",
+                         "logo-icon-name", CHATTY_APP_ID,
+                         "program-name", "Chatty",
+                         "version", g_strdup_printf ("Version: %s %s",
+                                                     PACKAGE_VERSION,
+                                                     g_strndup (GIT_VERSION, 8)),
+                         "comments", "An SMS and XMPP messaging client",
+                         "website", "https://source.puri.sm/Librem5/chatty",
+                         "copyright", "© 2018 Purism SPC",
+                         "license-type", GTK_LICENSE_GPL_3_0,
+                         "authors", authors,
+                         "artists", artists,
+                         "documenters", documenters,
+                         "translator-credits", _("translator-credits"),
+                         NULL);
 }
