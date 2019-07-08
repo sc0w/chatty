@@ -302,10 +302,6 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkBox">
-                    <property name="expand">True</property>
-                    <property name="visible">True</property>
-                    <child>
                       <object class="GtkScrolledWindow">
                         <property name="propagate_natural_height">True</property>
                         <property name="kinetic-scrolling">True</property>
@@ -313,10 +309,6 @@
                         <property name="expand">True</property>
                         <property name="visible">True</property>
                         <child>
-                          <object class="GtkBox">
-                            <property name="orientation">vertical</property>
-                            <property name="visible">True</property>
-                            <child>
                               <object class="HdyColumn">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
@@ -556,21 +548,13 @@
                                   </object>
                                 </child>
                               </object>
-                            </child>
-                          </object>
                         </child>
                       </object>
-                    </child>
-                  </object>
                   <packing>
                     <property name="name">view-edit-account</property>
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkBox">
-                    <property name="orientation">vertical</property>
-                    <property name="visible">True</property>
-                    <child>
                       <object class="HdyColumn">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
@@ -747,8 +731,6 @@
                           </object>
                         </child>
                       </object>
-                    </child>
-                  </object>
                   <packing>
                     <property name="name">view-add-account</property>
                   </packing>
