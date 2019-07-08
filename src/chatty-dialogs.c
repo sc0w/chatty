@@ -17,6 +17,7 @@
 #include "chatty-dialogs.h"
 #include "chatty-lurch.h"
 #include "chatty-utils.h"
+#include "version.h"
 
 static void chatty_dialogs_reset_settings_dialog (void);
 static void chatty_dialogs_reset_new_contact_dialog (void);
@@ -1392,25 +1393,56 @@ chatty_dialogs_show_dialog_user_info (ChattyConversation *chatty_conv)
 
 
 void
-chatty_dialogs_show_dialog_about_chatty (const char *version)
+chatty_dialogs_show_dialog_about_chatty (void)
 {
-  GtkBuilder *builder;
-  GtkWidget  *dialog;
-  GtkWidget  *label_version;
-  GtkWindow  *window;
+  GtkWindow *window;
+  char      *version;
+  char      *git_version;
 
-  builder = gtk_builder_new_from_resource ("/sm/puri/chatty/ui/chatty-dialog-info.ui");
+  static const gchar *authors[] = {
+    "Adrien Plazas <kekun.plazas@laposte.net>",
+    "Andrea Schäfer <mosibasu@me.com>",
+    "Benedikt Wildenhain <benedikt.wildenhain@hs-bochum.de>",
+    "Guido Günther <agx@sigxcpu.org>",
+    "Leland Carlye <leland.carlye@protonmail.com>",
+    "Mohammed Sadiq https://www.sadiqpk.org/",
+    "Richard Bayerle (OMEMO Plugin) https://github.com/gkdr/lurch",
+    "and more...",
+    NULL
+  };
 
-  label_version = GTK_WIDGET (gtk_builder_get_object (builder, "label_version"));
-  gtk_label_set_text (GTK_LABEL(label_version), version);
+  static const gchar *artists[] = {
+    "Tobias Bernard <tbernard@gnome.org>",
+    NULL
+  };
 
-  dialog = GTK_WIDGET (gtk_builder_get_object (builder, "dialog"));
+  static const gchar *documenters[] = {
+    "Heather Ellsworth <heather.ellsworth@puri.sm>",
+    NULL
+  };
 
   window = gtk_application_get_active_window (GTK_APPLICATION (g_application_get_default ()));
-  gtk_window_set_transient_for (GTK_WINDOW(dialog), window);
 
-  gtk_dialog_run (GTK_DIALOG(dialog));
+  git_version = g_strndup (GIT_VERSION, 8);
 
-  gtk_widget_destroy (dialog);
-  g_object_unref (builder);
+  version = g_strdup_printf ("Version: %s - %s",
+                              PACKAGE_VERSION,
+                              git_version);
+
+  gtk_show_about_dialog (GTK_WINDOW(window),
+                         "logo-icon-name", CHATTY_APP_ID,
+                         "program-name", _("Chatty"),
+                         "version", version,
+                         "comments", _("An SMS and XMPP messaging client"),
+                         "website", "https://source.puri.sm/Librem5/chatty",
+                         "copyright", "© 2018 Purism SPC",
+                         "license-type", GTK_LICENSE_GPL_3_0,
+                         "authors", authors,
+                         "artists", artists,
+                         "documenters", documenters,
+                         "translator-credits", _("translator-credits"),
+                         NULL);
+
+  g_free (version);
+  g_free (git_version);
 }
