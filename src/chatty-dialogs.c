@@ -933,9 +933,6 @@ chatty_dialogs_create_dialog_settings (void)
   GtkBuilder    *builder;
   GtkWidget     *dialog;
   GtkWindow     *window;
-  GtkListBox    *list_privacy_prefs;
-  GtkListBox    *list_xmpp_prefs;
-  GtkListBox    *list_editor_prefs;
   GtkSwitch     *switch_prefs_send_receipts;
   GtkSwitch     *switch_prefs_message_carbons;
   GtkSwitch     *switch_prefs_typing_notification;
@@ -957,26 +954,20 @@ chatty_dialogs_create_dialog_settings (void)
 
   chatty_dialog->stack_panes_settings = GTK_STACK (gtk_builder_get_object (builder, "stack_panes_settings"));
   chatty->list_manage_account = GTK_LIST_BOX (gtk_builder_get_object (builder, "list_manage_account"));
-  list_privacy_prefs = GTK_LIST_BOX (gtk_builder_get_object (builder, "privacy_prefs_listbox"));
   switch_prefs_send_receipts = GTK_SWITCH (gtk_builder_get_object (builder, "pref_send_receipts"));
   switch_prefs_message_carbons = GTK_SWITCH (gtk_builder_get_object (builder, "pref_message_carbons"));
   row_pref_message_carbons = HDY_ACTION_ROW (gtk_builder_get_object (builder, "row_pref_message_carbons"));
   switch_prefs_typing_notification = GTK_SWITCH (gtk_builder_get_object (builder, "pref_typing_notification"));
 
-  list_xmpp_prefs = GTK_LIST_BOX (gtk_builder_get_object (builder, "xmpp_prefs_listbox"));
   switch_prefs_show_offline = GTK_SWITCH (gtk_builder_get_object (builder, "pref_show_offline"));
   switch_prefs_indicate_offline = GTK_SWITCH (gtk_builder_get_object (builder, "pref_indicate_offline"));
   switch_prefs_indicate_idle = GTK_SWITCH (gtk_builder_get_object (builder, "pref_indicate_idle"));
   switch_prefs_indicate_unknown = GTK_SWITCH (gtk_builder_get_object (builder, "pref_indicate_unknown"));
 
-  list_editor_prefs = GTK_LIST_BOX (gtk_builder_get_object (builder, "editor_prefs_listbox"));
   switch_prefs_convert_smileys = GTK_SWITCH (gtk_builder_get_object (builder, "pref_convert_smileys"));
   switch_prefs_return_sends = GTK_SWITCH (gtk_builder_get_object (builder, "pref_return_sends"));
 
   gtk_list_box_set_header_func (chatty->list_manage_account, hdy_list_box_separator_header, NULL, NULL);
-  gtk_list_box_set_header_func (list_privacy_prefs, hdy_list_box_separator_header, NULL, NULL);
-  gtk_list_box_set_header_func (list_xmpp_prefs, hdy_list_box_separator_header, NULL, NULL);
-  gtk_list_box_set_header_func (list_editor_prefs, hdy_list_box_separator_header, NULL, NULL);
 
   g_signal_connect (G_OBJECT(dialog),
                     "delete-event",
