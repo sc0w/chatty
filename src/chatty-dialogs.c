@@ -193,7 +193,6 @@ cb_button_delete_account_clicked (GtkButton *sender,
                                   gpointer   data)
 {
   GtkWidget     *dialog;
-  GtkWindow     *window;
   PurpleAccount *account;
   int            response;
 
@@ -203,8 +202,7 @@ cb_button_delete_account_clicked (GtkButton *sender,
 
   account = chatty->selected_account;
 
-  window = gtk_application_get_active_window (GTK_APPLICATION (g_application_get_default ()));
-  dialog = gtk_message_dialog_new (window,
+  dialog = gtk_message_dialog_new ((GtkWindow*)data,
                                    GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
                                    GTK_MESSAGE_WARNING,
                                    GTK_BUTTONS_OK_CANCEL,
@@ -545,7 +543,6 @@ static void
 cb_account_connection_error (PurpleAccount *gc, PurpleConnectionError err, const gchar *desc, gpointer unused)
 {
   GtkWidget     *dialog;
-  GtkWindow     *window;
   PurpleAccount *account;
 
   chatty_data_t *chatty = chatty_get_data ();
@@ -555,8 +552,7 @@ cb_account_connection_error (PurpleAccount *gc, PurpleConnectionError err, const
 
   chatty_disconnect_account_signals (account);
 
-  window = gtk_application_get_active_window (GTK_APPLICATION (g_application_get_default ()));
-  dialog = gtk_message_dialog_new (window,
+  dialog = gtk_message_dialog_new ((GtkWindow*)chatty_dialog->dialog_edit_account,
                                    GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
                                    GTK_MESSAGE_ERROR,
                                    GTK_BUTTONS_OK,
@@ -907,7 +903,7 @@ chatty_dialogs_create_edit_account_view (GtkBuilder *builder)
   g_signal_connect (G_OBJECT(button_delete),
                     "clicked",
                     G_CALLBACK (cb_button_delete_account_clicked),
-                    NULL);
+                    (gpointer)chatty_dialog->dialog_edit_account);
 
   g_signal_connect (G_OBJECT(chatty_dialog->entry_name),
         "changed",
