@@ -115,273 +115,181 @@
                 <property name="vhomogeneous">False</property>
                 <property name="transition_type">slide-left-right</property>
                 <child>
-                  <object class="GtkBox">
-                    <property name="orientation">vertical</property>
+                  <object class="HdyPreferencesPage">
                     <property name="visible">True</property>
                     <child>
-                      <object class="HdyColumn">
+                      <object class="HdyPreferencesGroup">
                         <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="halign">fill</property>
-                        <property name="valign">fill</property>
-                        <property name="margin-bottom">32</property>
-                        <property name="margin-start">12</property>
-                        <property name="margin-end">12</property>
-                        <property name="margin-top">32</property>
-                        <property name="expand">True</property>
-                        <property name="maximum-width">600</property>
+                        <property name="title" translatable="yes">Accounts</property>
                         <child>
-                          <object class="GtkBox">
+                          <object class="GtkListBox" id="list_manage_account">
                             <property name="visible">True</property>
-                            <property name="orientation">vertical</property>
                             <property name="can_focus">False</property>
-                            <property name="valign">start</property>
                             <property name="expand">True</property>
-                            <child>
-                              <object class="GtkLabel">
+                            <property name="selection-mode">none</property>
+                            <style>
+                              <class name="frame"/>
+                            </style>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="HdyPreferencesGroup">
+                        <property name="visible">True</property>
+                        <property name="title" translatable="yes">Privacy</property>
+                        <child>
+                          <object class="HdyActionRow">
+                            <property name="title" translatable="yes">Message Receipts</property>
+                            <property name="subtitle" translatable="yes">Confirm received messages</property>
+                            <property name="visible">True</property>
+                            <property name="selectable">False</property>
+                            <property name="activatable">False</property>
+                            <child type="action">
+                              <object class="GtkSwitch" id="pref_send_receipts">
+                                <property name="can_focus">True</property>
+                                <property name="valign">center</property>
                                 <property name="visible">True</property>
-                                <property name="can_focus">False</property>
-                                <property name="expand">True</property>
-                                <property name="label" translatable="yes">Accounts</property>
-                                <property name="justify">left</property>
-                                <property name="halign">start</property>
-                                <property name="margin-bottom">12</property>
-                                <attributes>
-                                  <attribute name="weight" value="bold"/>
-                                </attributes>
                               </object>
                             </child>
-                            <child>
-                              <object class="GtkListBox" id="list_manage_account">
+                          </object>
+                        </child>
+                        <child>
+                          <object class="HdyActionRow" id="row_pref_message_carbons">
+                            <property name="title" translatable="yes">Message Carbons</property>
+                            <property name="subtitle" translatable="yes">Share chat history among devices</property>
+                            <property name="visible">True</property>
+                            <property name="selectable">False</property>
+                            <property name="activatable">False</property>
+                            <child type="action">
+                              <object class="GtkSwitch" id="pref_message_carbons">
+                                <property name="can_focus">True</property>
+                                <property name="valign">center</property>
                                 <property name="visible">True</property>
-                                <property name="can_focus">False</property>
-                                <property name="expand">True</property>
-                                <property name="selection-mode">none</property>
-                                <style>
-                                  <class name="frame"/>
-                                </style>
                               </object>
                             </child>
-                            <child>
-                              <object class="GtkLabel">
+                          </object>
+                        </child>
+                        <child>
+                          <object class="HdyActionRow">
+                            <property name="title" translatable="yes">Typing Notification</property>
+                            <property name="subtitle" translatable="yes">Send typing messages</property>
+                            <property name="visible">True</property>
+                            <property name="selectable">False</property>
+                            <property name="activatable">False</property>
+                            <child type="action">
+                              <object class="GtkSwitch" id="pref_typing_notification">
+                                <property name="can_focus">True</property>
+                                <property name="valign">center</property>
                                 <property name="visible">True</property>
-                                <property name="can_focus">False</property>
-                                <property name="expand">True</property>
-                                <property name="label" translatable="yes">Privacy</property>
-                                <property name="justify">left</property>
-                                <property name="halign">start</property>
-                                <property name="margin-top">32</property>
-                                <property name="margin-bottom">12</property>
-                                <attributes>
-                                  <attribute name="weight" value="bold"/>
-                                </attributes>
                               </object>
                             </child>
-                            <child>
-                              <object class="GtkListBox" id="privacy_prefs_listbox">
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="HdyPreferencesGroup">
+                        <property name="visible">True</property>
+                        <property name="title" translatable="yes">Chats List</property>
+                        <child>
+                          <object class="HdyActionRow">
+                            <property name="title" translatable="yes">Show Offline Contacts</property>
+                            <property name="subtitle" translatable="yes">Show contacts in the chats list</property>
+                            <property name="visible">True</property>
+                            <property name="selectable">False</property>
+                            <property name="activatable">False</property>
+                            <child type="action">
+                              <object class="GtkSwitch" id="pref_show_offline">
+                                <property name="can_focus">True</property>
+                                <property name="valign">center</property>
                                 <property name="visible">True</property>
-                                <property name="can_focus">False</property>
-                                <property name="expand">True</property>
-                                <property name="selection-mode">none</property>
-                                <style>
-                                  <class name="frame"/>
-                                </style>
-                                <child>
-                                  <object class="HdyActionRow">
-                                    <property name="title" translatable="yes">Message Receipts</property>
-                                    <property name="subtitle" translatable="yes">Confirm received messages</property>
-                                    <property name="visible">True</property>
-                                    <property name="selectable">False</property>
-                                    <property name="activatable">False</property>
-                                    <child type="action">
-                                      <object class="GtkSwitch" id="pref_send_receipts">
-                                        <property name="can_focus">True</property>
-                                        <property name="valign">center</property>
-                                        <property name="visible">True</property>
-                                      </object>
-                                    </child>
-                                  </object>
-                                </child>
-                                <child>
-                                  <object class="HdyActionRow" id="row_pref_message_carbons">
-                                    <property name="title" translatable="yes">Message Carbons</property>
-                                    <property name="subtitle" translatable="yes">Share chat history among devices</property>
-                                    <property name="visible">True</property>
-                                    <property name="selectable">False</property>
-                                    <property name="activatable">False</property>
-                                    <child type="action">
-                                      <object class="GtkSwitch" id="pref_message_carbons">
-                                        <property name="can_focus">True</property>
-                                        <property name="valign">center</property>
-                                        <property name="visible">True</property>
-                                      </object>
-                                    </child>
-                                  </object>
-                                </child>
-                                <child>
-                                  <object class="HdyActionRow">
-                                    <property name="title" translatable="yes">Typing Notification</property>
-                                    <property name="subtitle" translatable="yes">Send typing messages</property>
-                                    <property name="visible">True</property>
-                                    <property name="selectable">False</property>
-                                    <property name="activatable">False</property>
-                                    <child type="action">
-                                      <object class="GtkSwitch" id="pref_typing_notification">
-                                        <property name="can_focus">True</property>
-                                        <property name="valign">center</property>
-                                        <property name="visible">True</property>
-                                      </object>
-                                    </child>
-                                  </object>
-                                </child>
                               </object>
                             </child>
-                            <child>
-                              <object class="GtkLabel">
+                          </object>
+                        </child>
+                        <child>
+                          <object class="HdyActionRow">
+                            <property name="title" translatable="yes">Indicate Offline Contacts</property>
+                            <property name="subtitle" translatable="yes">Grey out avatars from offline contacts</property>
+                            <property name="visible">True</property>
+                            <property name="selectable">False</property>
+                            <property name="activatable">False</property>
+                            <child type="action">
+                              <object class="GtkSwitch" id="pref_indicate_offline">
+                                <property name="can_focus">True</property>
+                                <property name="valign">center</property>
                                 <property name="visible">True</property>
-                                <property name="can_focus">False</property>
-                                <property name="expand">True</property>
-                                <property name="label" translatable="yes">Chats List</property>
-                                <property name="justify">left</property>
-                                <property name="halign">start</property>
-                                <property name="margin-top">32</property>
-                                <property name="margin-bottom">12</property>
-                                <attributes>
-                                  <attribute name="weight" value="bold"/>
-                                </attributes>
                               </object>
                             </child>
-                            <child>
-                              <object class="GtkListBox" id="xmpp_prefs_listbox">
+                          </object>
+                        </child>
+                        <child>
+                          <object class="HdyActionRow">
+                            <property name="title" translatable="yes">Indicate Idle Contacts</property>
+                            <property name="subtitle" translatable="yes">Blur avatars from offline contacts</property>
+                            <property name="visible">True</property>
+                            <property name="selectable">False</property>
+                            <property name="activatable">False</property>
+                            <child type="action">
+                              <object class="GtkSwitch" id="pref_indicate_idle">
+                                <property name="can_focus">True</property>
+                                <property name="valign">center</property>
                                 <property name="visible">True</property>
-                                <property name="can_focus">False</property>
-                                <property name="expand">True</property>
-                                <property name="selection-mode">none</property>
-                                <style>
-                                  <class name="frame"/>
-                                </style>
-                                <child>
-                                  <object class="HdyActionRow">
-                                    <property name="title" translatable="yes">Show Offline Contacts</property>
-                                    <property name="subtitle" translatable="yes">Show contacts in the chats list</property>
-                                    <property name="visible">True</property>
-                                    <property name="selectable">False</property>
-                                    <property name="activatable">False</property>
-                                    <child type="action">
-                                      <object class="GtkSwitch" id="pref_show_offline">
-                                        <property name="can_focus">True</property>
-                                        <property name="valign">center</property>
-                                        <property name="visible">True</property>
-                                      </object>
-                                    </child>
-                                  </object>
-                                </child>
-                                <child>
-                                  <object class="HdyActionRow">
-                                    <property name="title" translatable="yes">Indicate Offline Contacts</property>
-                                    <property name="subtitle" translatable="yes">Grey out avatars from offline contacts</property>
-                                    <property name="visible">True</property>
-                                    <property name="selectable">False</property>
-                                    <property name="activatable">False</property>
-                                    <child type="action">
-                                      <object class="GtkSwitch" id="pref_indicate_offline">
-                                        <property name="can_focus">True</property>
-                                        <property name="valign">center</property>
-                                        <property name="visible">True</property>
-                                      </object>
-                                    </child>
-                                  </object>
-                                </child>
-                                <child>
-                                  <object class="HdyActionRow">
-                                    <property name="title" translatable="yes">Indicate Idle Contacts</property>
-                                    <property name="subtitle" translatable="yes">Blur avatars from offline contacts</property>
-                                    <property name="visible">True</property>
-                                    <property name="selectable">False</property>
-                                    <property name="activatable">False</property>
-                                    <child type="action">
-                                      <object class="GtkSwitch" id="pref_indicate_idle">
-                                        <property name="can_focus">True</property>
-                                        <property name="valign">center</property>
-                                        <property name="visible">True</property>
-                                      </object>
-                                    </child>
-                                  </object>
-                                </child>
-                                <child>
-                                  <object class="HdyActionRow">
-                                    <property name="title" translatable="yes">Indicate Unknown Contacts</property>
-                                    <property name="subtitle" translatable="yes">Color unknown contact ID red</property>
-                                    <property name="visible">True</property>
-                                    <property name="selectable">False</property>
-                                    <property name="activatable">False</property>
-                                    <child type="action">
-                                      <object class="GtkSwitch" id="pref_indicate_unknown">
-                                        <property name="can_focus">True</property>
-                                        <property name="valign">center</property>
-                                        <property name="visible">True</property>
-                                      </object>
-                                    </child>
-                                  </object>
-                                </child>
                               </object>
                             </child>
-                            <child>
-                              <object class="GtkLabel">
+                          </object>
+                        </child>
+                        <child>
+                          <object class="HdyActionRow">
+                            <property name="title" translatable="yes">Indicate Unknown Contacts</property>
+                            <property name="subtitle" translatable="yes">Color unknown contact ID red</property>
+                            <property name="visible">True</property>
+                            <property name="selectable">False</property>
+                            <property name="activatable">False</property>
+                            <child type="action">
+                              <object class="GtkSwitch" id="pref_indicate_unknown">
+                                <property name="can_focus">True</property>
+                                <property name="valign">center</property>
                                 <property name="visible">True</property>
-                                <property name="can_focus">False</property>
-                                <property name="expand">True</property>
-                                <property name="label" translatable="yes">Editor</property>
-                                <property name="justify">left</property>
-                                <property name="halign">start</property>
-                                <property name="margin-top">32</property>
-                                <property name="margin-bottom">12</property>
-                                <attributes>
-                                  <attribute name="weight" value="bold"/>
-                                </attributes>
                               </object>
                             </child>
-                            <child>
-                              <object class="GtkListBox" id="editor_prefs_listbox">
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="HdyPreferencesGroup">
+                        <property name="visible">True</property>
+                        <property name="title" translatable="yes">Editor</property>
+                        <child>
+                          <object class="HdyActionRow">
+                            <property name="title" translatable="yes">Graphical Emoticons</property>
+                            <property name="subtitle" translatable="yes">Convert ASCII emoticons</property>
+                            <property name="visible">True</property>
+                            <property name="selectable">False</property>
+                            <property name="activatable">False</property>
+                            <child type="action">
+                              <object class="GtkSwitch" id="pref_convert_smileys">
+                                <property name="can_focus">True</property>
+                                <property name="valign">center</property>
                                 <property name="visible">True</property>
-                                <property name="can_focus">False</property>
-                                <property name="expand">True</property>
-                                <property name="selection-mode">none</property>
-                                <style>
-                                  <class name="frame"/>
-                                </style>
-                                <child>
-                                  <object class="HdyActionRow">
-                                    <property name="title" translatable="yes">Graphical Emoticons</property>
-                                    <property name="subtitle" translatable="yes">Convert ASCII emoticons</property>
-                                    <property name="visible">True</property>
-                                    <property name="selectable">False</property>
-                                    <property name="activatable">False</property>
-                                    <child type="action">
-                                      <object class="GtkSwitch" id="pref_convert_smileys">
-                                        <property name="can_focus">True</property>
-                                        <property name="valign">center</property>
-                                        <property name="visible">True</property>
-                                      </object>
-                                    </child>
-                                  </object>
-                                </child>
-                                <child>
-                                  <object class="HdyActionRow">
-                                    <property name="title" translatable="yes">Return = Send Message</property>
-                                    <property name="subtitle" translatable="yes">Send message with return key</property>
-                                    <property name="visible">True</property>
-                                    <property name="selectable">False</property>
-                                    <property name="activatable">False</property>
-                                    <child type="action">
-                                      <object class="GtkSwitch" id="pref_return_sends">
-                                        <property name="can_focus">True</property>
-                                        <property name="valign">center</property>
-                                        <property name="visible">True</property>
-                                      </object>
-                                    </child>
-                                  </object>
-                                </child>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="HdyActionRow">
+                            <property name="title" translatable="yes">Return = Send Message</property>
+                            <property name="subtitle" translatable="yes">Send message with return key</property>
+                            <property name="visible">True</property>
+                            <property name="selectable">False</property>
+                            <property name="activatable">False</property>
+                            <child type="action">
+                              <object class="GtkSwitch" id="pref_return_sends">
+                                <property name="can_focus">True</property>
+                                <property name="valign">center</property>
+                                <property name="visible">True</property>
                               </object>
                             </child>
                           </object>
