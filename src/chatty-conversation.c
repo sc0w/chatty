@@ -134,7 +134,7 @@ cb_msg_list_message_added (ChattyMsgList *sender,
   if (chatty_conv->msg_bubble_footer != NULL) {
     gtk_box_pack_start (GTK_BOX(bubble),
                         chatty_conv->msg_bubble_footer,
-                        FALSE, FALSE, 10);
+                        FALSE, FALSE, 3);
   }
 }
 
