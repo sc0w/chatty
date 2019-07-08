@@ -32,7 +32,6 @@ chatty_sources += gnome.compile_resources('chatty-resources',
   c_name: 'chatty'
 )
 
-add_global_arguments(['-include'], ['version.h'], language : 'c')
 
 vcs_tag(command: ['git', 'rev-parse', 'HEAD'],
         input: 'version.h.in',

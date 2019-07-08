@@ -17,6 +17,7 @@
 #include "chatty-dialogs.h"
 #include "chatty-lurch.h"
 #include "chatty-utils.h"
+#include "version.h"
 
 static void chatty_dialogs_reset_settings_dialog (void);
 static void chatty_dialogs_reset_new_contact_dialog (void);
