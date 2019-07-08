@@ -36,8 +36,7 @@ add_global_arguments(['-include'], ['version.h'], language : 'c')
 
 vcs_tag(command: ['git', 'rev-parse', 'HEAD'],
         input: 'version.h.in',
-        output: 'version.h',
-        fallback: '')
+        output: 'version.h')
 
 executable('chatty', chatty_sources,
   dependencies: chatty_deps,

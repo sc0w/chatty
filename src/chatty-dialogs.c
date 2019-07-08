@@ -1408,13 +1408,14 @@ void
 chatty_dialogs_show_dialog_about_chatty (void)
 {
   GtkWindow *window;
+  char      *git_version;
 
   static const gchar *authors[] = {
     "Adrien Plazas <kekun.plazas@laposte.net>",
     "Andrea Schäfer <mosibasu@me.com>",
     "Benedikt Wildenhain <benedikt.wildenhain@hs-bochum.de>",
     "Guido Günther <agx@sigxcpu.org>",
-    "Leland Carlye",
+    "Leland Carlye <leland.carlye@protonmail.com>",
     "Mohammed Sadiq https://www.sadiqpk.org/",
     "Richard Bayerle (OMEMO Plugin) https://github.com/gkdr/lurch",
     "and more...",
@@ -1433,13 +1434,14 @@ chatty_dialogs_show_dialog_about_chatty (void)
 
   window = gtk_application_get_active_window (GTK_APPLICATION (g_application_get_default ()));
 
+  git_version = g_strndup (GIT_VERSION, 8);
+
   gtk_show_about_dialog (GTK_WINDOW(window),
-                         "title", "About Chatty",
                          "logo-icon-name", CHATTY_APP_ID,
-                         "program-name", "Chatty",
+                         "program-name", _("Chatty"),
                          "version", g_strdup_printf ("Version: %s %s",
                                                      PACKAGE_VERSION,
-                                                     g_strndup (GIT_VERSION, 8)),
+                                                     git_version),
                          "comments", "An SMS and XMPP messaging client",
                          "website", "https://source.puri.sm/Librem5/chatty",
                          "copyright", "© 2018 Purism SPC",
@@ -1449,4 +1451,6 @@ chatty_dialogs_show_dialog_about_chatty (void)
                          "documenters", documenters,
                          "translator-credits", _("translator-credits"),
                          NULL);
+
+  g_free (git_version);
 }
