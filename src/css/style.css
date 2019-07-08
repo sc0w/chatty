@@ -67,6 +67,7 @@
 
 .box_message {
   background-color: @theme_base_color;
+  border-bottom: 1px solid @borders;
 }
 
 .list_no_select:selected {
