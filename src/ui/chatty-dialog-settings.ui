@@ -99,6 +99,7 @@
     </child>
     <child internal-child="vbox">
       <object class="GtkBox">
+        <property name="border_width">0</property>
         <property name="expand">True</property>
         <property name="visible">True</property>
         <child>
