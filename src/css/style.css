@@ -1,6 +1,6 @@
 .msg_entry_defocused {
   background-color: @theme_base_color;
-  border-radius: 3px;
+  border-radius: 5px;
   border: 1px solid @borders;
 }
 
