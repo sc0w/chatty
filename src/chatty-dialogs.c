@@ -17,7 +17,6 @@
 #include "chatty-dialogs.h"
 #include "chatty-lurch.h"
 #include "chatty-utils.h"
-#include "version.h"
 
 static void chatty_dialogs_reset_settings_dialog (void);
 static void chatty_dialogs_reset_new_contact_dialog (void);
@@ -1396,8 +1395,6 @@ void
 chatty_dialogs_show_dialog_about_chatty (void)
 {
   GtkWindow *window;
-  char      *version;
-  char      *git_version;
 
   static const gchar *authors[] = {
     "Adrien Plazas <kekun.plazas@laposte.net>",
@@ -1423,16 +1420,10 @@ chatty_dialogs_show_dialog_about_chatty (void)
 
   window = gtk_application_get_active_window (GTK_APPLICATION (g_application_get_default ()));
 
-  git_version = g_strndup (GIT_VERSION, 8);
-
-  version = g_strdup_printf ("Version: %s - %s",
-                              PACKAGE_VERSION,
-                              git_version);
-
   gtk_show_about_dialog (GTK_WINDOW(window),
                          "logo-icon-name", CHATTY_APP_ID,
                          "program-name", _("Chatty"),
-                         "version", version,
+                         "version", PACKAGE_VERSION,
                          "comments", _("An SMS and XMPP messaging client"),
                          "website", "https://source.puri.sm/Librem5/chatty",
                          "copyright", "© 2018 Purism SPC",
@@ -1442,7 +1433,4 @@ chatty_dialogs_show_dialog_about_chatty (void)
                          "documenters", documenters,
                          "translator-credits", _("translator-credits"),
                          NULL);
-
-  g_free (version);
-  g_free (git_version);
 }
