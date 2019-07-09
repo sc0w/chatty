@@ -2146,12 +2146,12 @@ chatty_blist_update_buddy (PurpleBuddyList *list,
                            PurpleBlistNode *node)
 {
   PurpleBuddy             *buddy;
-  g_autofree ChattyLog    *log_data;
+  g_autofree ChattyLog    *log_data = NULL;
   ChattyBlistNode         *ui;
   PurpleAccount           *account;
   const char              *username;
   const char              *who;
-  g_autofree gchar        *iso_timestamp;
+  g_autofree gchar        *iso_timestamp = NULL;
   struct tm               *timeinfo;
   char                     message_exists;
 
