@@ -2184,7 +2184,7 @@ chatty_blist_update_buddy (PurpleBuddyList *list,
     ui->conv.last_message = log_data->msg;
     ui->conv.last_message_name = username;
     ui->conv.last_msg_ts_raw = log_data->epoch;
-    ui->conv.last_msg_timestamp = iso_timestamp;
+    ui->conv.last_msg_timestamp = g_steal_pointer (&iso_timestamp);
 
     chatty_blist_chats_update_node (buddy, node);
   } else {
