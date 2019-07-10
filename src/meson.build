@@ -32,6 +32,11 @@ chatty_sources += gnome.compile_resources('chatty-resources',
   c_name: 'chatty'
 )
 
+
+vcs_tag(command: ['git', 'rev-parse', 'HEAD'],
+        input: 'version.h.in',
+        output: 'version.h')
+
 executable('chatty', chatty_sources,
   dependencies: chatty_deps,
   install: true,
