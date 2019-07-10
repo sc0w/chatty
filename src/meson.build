@@ -1,3 +1,7 @@
+version_h = vcs_tag(command: ['git', 'rev-parse', 'HEAD'],
+		    input: 'version.h.in',
+		    output: 'version.h')
+
 chatty_sources = [
   'main.c',
   'chatty-application.c',
@@ -14,7 +18,8 @@ chatty_sources = [
   'chatty-history.c',
   'chatty-lurch.c',
   'chatty-utils.c',
-  'chatty-popover-actions.c'
+  'chatty-popover-actions.c',
+  version_h,
 ]
 
 chatty_deps = [
@@ -31,11 +36,6 @@ chatty_sources += gnome.compile_resources('chatty-resources',
   'chatty.gresource.xml',
   c_name: 'chatty'
 )
-
-
-vcs_tag(command: ['git', 'rev-parse', 'HEAD'],
-        input: 'version.h.in',
-        output: 'version.h')
 
 executable('chatty', chatty_sources,
   dependencies: chatty_deps,
