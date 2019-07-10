@@ -1425,7 +1425,7 @@ chatty_dialogs_show_dialog_about_chatty (void)
 
   git_version = g_strndup (GIT_VERSION, 8);
 
-  version = g_strdup_printf ("Version: %s - %s",
+  version = g_strdup_printf ("Version: %s git %s",
                               PACKAGE_VERSION,
                               git_version);
 
