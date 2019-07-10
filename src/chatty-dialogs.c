@@ -1396,8 +1396,8 @@ void
 chatty_dialogs_show_dialog_about_chatty (void)
 {
   GtkWindow *window;
-  char      *version;
-  char      *git_version;
+  g_autofree gchar *version = NULL;
+  g_autofree gchar *git_version = NULL;
 
   static const gchar *authors[] = {
     "Adrien Plazas <kekun.plazas@laposte.net>",
@@ -1442,7 +1442,4 @@ chatty_dialogs_show_dialog_about_chatty (void)
                          "documenters", documenters,
                          "translator-credits", _("translator-credits"),
                          NULL);
-
-  g_free (version);
-  g_free (git_version);
 }
