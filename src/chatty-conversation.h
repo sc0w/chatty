@@ -48,7 +48,7 @@ struct chatty_conversation {
   guint     unseen_state;
   gboolean  notifications;
 
-  char     *from_uuid;
+  char     *oldest_message_displayed;
 
   struct {
     GtkWidget     *entry;

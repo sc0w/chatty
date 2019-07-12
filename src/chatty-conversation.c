@@ -1079,10 +1079,9 @@ chatty_conv_get_im_messages_cb (const unsigned char* msg,
 
 
   // TODO: @LELAND: Chechk this memory management, don't like it
-  free(chatty_conv->from_uuid);
-  chatty_conv->from_uuid = g_strdup(uuid);
+  free(chatty_conv->oldest_message_displayed);
+  chatty_conv->oldest_message_displayed = g_strdup(uuid);
 
-  g_debug("@LELAND: UUID: %s", chatty_conv->from_uuid);
   if (direction == 1) {
     msg_dir = MSG_IS_INCOMING;
   } else if(direction == -1){
@@ -1132,8 +1131,8 @@ chatty_conv_get_chat_messages_cb (const unsigned char* msg,
   msg_html = chatty_conv_check_for_links ((const gchar*)msg);
 
   // TODO: @LELAND: Chechk this memory management, don't like it
-  free(chatty_conv->from_uuid);
-  chatty_conv->from_uuid = g_strdup(uuid);
+  free(chatty_conv->oldest_message_displayed);
+  chatty_conv->oldest_message_displayed = g_strdup(uuid);
 
   if (msg_html[0] != '\0') {
 
@@ -1232,9 +1231,9 @@ chatty_conv_add_message_history_to_conv (gpointer data)
     line_split = g_strsplit (conv_name, "/", -1);
     who = g_strdup(line_split[0]);
     
-    chatty_history_get_im_messages (account->username, who, chatty_conv_get_im_messages_cb, chatty_conv, LAZY_LOAD_MSGS_LIMIT, chatty_conv->from_uuid );
+    chatty_history_get_im_messages (account->username, who, chatty_conv_get_im_messages_cb, chatty_conv, LAZY_LOAD_MSGS_LIMIT, chatty_conv->oldest_message_displayed );
   }else{
-    chatty_history_get_chat_messages (account->username, conv_name, chatty_conv_get_chat_messages_cb, chatty_conv, LAZY_LOAD_MSGS_LIMIT, chatty_conv->from_uuid );
+    chatty_history_get_chat_messages (account->username, conv_name, chatty_conv_get_chat_messages_cb, chatty_conv, LAZY_LOAD_MSGS_LIMIT, chatty_conv->oldest_message_displayed );
   }
 
 
@@ -2326,9 +2325,8 @@ chatty_conv_write_conversation (PurpleConversation *conv,
       }
     }
 
-    // TODO: @LELAND: Change field name from_uuid to oldest_message
-    if (chatty_conv->from_uuid == NULL)
-      chatty_conv->from_uuid = g_steal_pointer(&uuid);
+    if (chatty_conv->oldest_message_displayed == NULL)
+      chatty_conv->oldest_message_displayed = g_steal_pointer(&uuid);
 
     g_free(who_no_resource);
     g_free(line_split);
