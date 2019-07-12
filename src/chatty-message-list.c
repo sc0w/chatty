@@ -222,13 +222,6 @@ cb_scroll_edge_reached (GtkScrolledWindow *scrolled_window,
     // until all messages from the chunk were pulled from the db.
     // The user could reach the top again while the messages are being loaded
 
-    /*    chatty_msg_list_add_message_at ((ChattyMsgList *)self,
-                                    MSG_IS_SYSTEM,
-                                    "Loading more messages...",
-                                    NULL,
-                                    NULL,
-                                    ADD_MESSAGE_ON_TOP);*/
-
     g_signal_emit (self,
                    signals[SIGNAL_SCROLL_TOP],
                    0);
@@ -630,7 +623,7 @@ chatty_msg_list_clear (ChattyMsgList *self)
 }
 
  
-void
+GtkWidget *
 chatty_msg_list_add_message_at (ChattyMsgList *self,
                                 guint          message_dir,
                                 const gchar   *message,
@@ -767,17 +760,19 @@ chatty_msg_list_add_message_at (ChattyMsgList *self,
 
   gtk_widget_show_all (GTK_WIDGET(row));
   gtk_revealer_set_reveal_child (revealer, TRUE);
+
+  return GTK_WIDGET(revealer);
 }
 
 
-void
+GtkWidget *
 chatty_msg_list_add_message (ChattyMsgList *self,
                              guint          message_dir,
                              const gchar   *message,
                              const gchar   *footer,
                              GtkWidget     *icon)
 {
-  chatty_msg_list_add_message_at (self, message_dir, message, footer, icon, ADD_MESSAGE_ON_BOTTOM);
+  return chatty_msg_list_add_message_at (self, message_dir, message, footer, icon, ADD_MESSAGE_ON_BOTTOM);
 }
 
 
@@ -806,7 +801,6 @@ chatty_msg_list_constructed (GObject *object)
                            G_CALLBACK (cb_list_focus),
                            (gpointer) self, 0);
 
-  // TODO: @LELAND: Is this the best place to put this?
   g_signal_connect (GTK_SCROLLED_WINDOW (priv->scroll),
                     "edge-reached",
                     G_CALLBACK(cb_scroll_edge_reached),

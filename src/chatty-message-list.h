@@ -65,7 +65,7 @@ enum {
 GtkWidget *chatty_msg_list_new (guint message_type,
                                 gboolean disclaimer);
 
-void chatty_msg_list_add_message (ChattyMsgList *self,
+GtkWidget *chatty_msg_list_add_message (ChattyMsgList *self,
                                   guint message_dir,
                                   const gchar *message,
                                   const gchar *footer,
@@ -82,7 +82,7 @@ void chatty_msg_list_set_msg_type (ChattyMsgList *self,
                                    guint         message_type);
 
 
-void chatty_msg_list_add_message_at (ChattyMsgList *self,
+GtkWidget *chatty_msg_list_add_message_at (ChattyMsgList *self,
                                      guint          message_dir,
                                      const gchar   *message,
                                      const gchar   *footer,

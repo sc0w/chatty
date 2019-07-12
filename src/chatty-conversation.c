@@ -19,7 +19,7 @@
 
 #define MAX_GMT_ISO_SIZE 256
 #define MAX_MSGS 50
-#define LAZY_LOAD_MSGS_LIMIT 10 // TODO: @LELAND: Tune this number
+#define LAZY_LOAD_MSGS_LIMIT 12
 
 static GHashTable *ht_sms_id = NULL;
 static GHashTable *ht_emoticon = NULL;
@@ -1074,13 +1074,14 @@ chatty_conv_get_im_messages_cb (const unsigned char* msg,
                                 const unsigned char* uuid,
                                 ChattyConversation *chatty_conv,
                                 int last_message){
-  gchar   *msg_html;
-  guint    msg_dir;
+  gchar            *msg_html;
+  guint             msg_dir;
+  g_autofree gchar *iso_timestamp = g_malloc0(MAX_GMT_ISO_SIZE * sizeof(char));  
 
 
   // TODO: @LELAND: Chechk this memory management, don't like it
   free(chatty_conv->oldest_message_displayed);
-  chatty_conv->oldest_message_displayed = g_strdup(uuid);
+  chatty_conv->oldest_message_displayed = g_strdup((const gchar *)uuid);
 
   if (direction == 1) {
     msg_dir = MSG_IS_INCOMING;
@@ -1092,11 +1093,17 @@ chatty_conv_get_im_messages_cb (const unsigned char* msg,
 
   msg_html = chatty_conv_check_for_links ((const gchar*)msg);
 
+  
+  strftime (iso_timestamp,
+	    MAX_GMT_ISO_SIZE * sizeof(char),
+	    "%b %d",
+	    localtime(&time_stamp));
+  
   if (msg_html[0] != '\0') {
     chatty_msg_list_add_message_at (chatty_conv->msg_list,
                                     msg_dir,
                                     msg_html,
-                                    last_message ? asctime(localtime(&time_stamp)) : NULL, // last seen message
+                                    last_message ? iso_timestamp : NULL,
                                     NULL,
                                     ADD_MESSAGE_ON_TOP);
   }
@@ -1132,7 +1139,7 @@ chatty_conv_get_chat_messages_cb (const unsigned char* msg,
 
   // TODO: @LELAND: Chechk this memory management, don't like it
   free(chatty_conv->oldest_message_displayed);
-  chatty_conv->oldest_message_displayed = g_strdup(uuid);
+  chatty_conv->oldest_message_displayed = g_strdup((const gchar *)uuid);
 
   if (msg_html[0] != '\0') {
 
@@ -1214,8 +1221,6 @@ chatty_conv_add_message_history_to_conv (gpointer data)
   gboolean            im;
   ChattyConversation *chatty_conv = data;
   gchar              *who;
-  gchar              **line_split;
-
 
   im = (chatty_conv->conv->type == PURPLE_CONV_TYPE_IM);
 
@@ -1228,14 +1233,12 @@ chatty_conv_add_message_history_to_conv (gpointer data)
   if (im) {
     // Remove resource (user could be connecting from different devices/applications)
     // TODO: LELAND: Use the utilities for this.
-    line_split = g_strsplit (conv_name, "/", -1);
-    who = g_strdup(line_split[0]);
+    who = chatty_utils_jabber_id_strip(conv_name);
     
     chatty_history_get_im_messages (account->username, who, chatty_conv_get_im_messages_cb, chatty_conv, LAZY_LOAD_MSGS_LIMIT, chatty_conv->oldest_message_displayed );
   }else{
     chatty_history_get_chat_messages (account->username, conv_name, chatty_conv_get_chat_messages_cb, chatty_conv, LAZY_LOAD_MSGS_LIMIT, chatty_conv->oldest_message_displayed );
   }
-
 
   return FALSE;
 }
@@ -2491,7 +2494,6 @@ chatty_conv_im_with_buddy (PurpleAccount *account,
   chatty_conv_set_unseen (chatty_conv, CHATTY_UNSEEN_NONE);
 }
 
-// TODO: LELAND: Should this go to some utilities file?
 void
 chatty_conv_add_history_since_component(GHashTable *components,
                                         const char *account,
@@ -2499,9 +2501,6 @@ chatty_conv_add_history_since_component(GHashTable *components,
   time_t mtime;
   struct tm * timeinfo;
   g_autofree gchar *iso_timestamp = g_malloc0(MAX_GMT_ISO_SIZE * sizeof(char));
-                               // TODO @LELAND for some reason if freed here,
-                               // writes garbage to blist.xml
-                               // Why cant I use an string?
 
   mtime = chatty_history_get_chat_last_message_time(account, room);
   mtime += 1; // Use the next epoch to exclude the last stored message(s)
