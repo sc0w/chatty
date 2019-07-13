@@ -1072,12 +1072,16 @@ chatty_conv_get_im_messages_cb (const unsigned char* msg,
                                 int direction,
                                 time_t time_stamp,
                                 const unsigned char* uuid,
-                                ChattyConversation *chatty_conv,
+                                gpointer data,
                                 int last_message){
   gchar            *msg_html;
   guint             msg_dir;
-  g_autofree gchar *iso_timestamp = g_malloc0(MAX_GMT_ISO_SIZE * sizeof(char));  
+  ChattyConversation       *chatty_conv;
+  g_autofree gchar *iso_timestamp;
 
+  chatty_conv = (ChattyConversation *)data;
+  
+  iso_timestamp = g_malloc0(MAX_GMT_ISO_SIZE * sizeof(char));  
 
   // TODO: @LELAND: Chechk this memory management, don't like it
   free(chatty_conv->oldest_message_displayed);
@@ -1125,7 +1129,7 @@ chatty_conv_get_chat_messages_cb (const unsigned char* msg,
                                   const char* room,
                                   const unsigned char *who,
                                   const unsigned char *uuid,
-                                  ChattyConversation *chatty_conv){
+                                  gpointer data){
   gchar                    *msg_html;
   PurpleBuddy              *buddy;
   const char               *color;
@@ -1134,6 +1138,9 @@ chatty_conv_get_chat_messages_cb (const unsigned char* msg,
   PurpleAccount            *account;
   gchar                    *alias;
   gchar                    **line_split;
+  ChattyConversation       *chatty_conv;
+
+  chatty_conv = (ChattyConversation *)data;
 
   msg_html = chatty_conv_check_for_links ((const gchar*)msg);
 
@@ -1232,7 +1239,6 @@ chatty_conv_add_message_history_to_conv (gpointer data)
 
   if (im) {
     // Remove resource (user could be connecting from different devices/applications)
-    // TODO: LELAND: Use the utilities for this.
     who = chatty_utils_jabber_id_strip(conv_name);
     
     chatty_history_get_im_messages (account->username, who, chatty_conv_get_im_messages_cb, chatty_conv, LAZY_LOAD_MSGS_LIMIT, chatty_conv->oldest_message_displayed );
@@ -2225,7 +2231,6 @@ chatty_conv_write_conversation (PurpleConversation *conv,
   int                       chat_id;
   const char               *conv_name;
   gchar                    *who_no_resource;
-  gchar                    **line_split;
   g_autofree char          *uuid;
 
   chatty_conv = CHATTY_CONVERSATION (conv);
@@ -2281,10 +2286,10 @@ chatty_conv_write_conversation (PurpleConversation *conv,
   }
 
   if (*message != '\0') {
+     // TODO: LELAND: UID to be implemented by XEP-0313
     chatty_utils_generate_uuid(&uuid);
 
-    line_split = g_strsplit ((const gchar*)who, "/", -1);
-    who_no_resource = g_strdup(line_split[0]);
+    who_no_resource = chatty_utils_jabber_id_strip(who);
 
     if (flags & PURPLE_MESSAGE_RECV) {
       msg_html = chatty_conv_check_for_links (message);
@@ -2295,7 +2300,7 @@ chatty_conv_write_conversation (PurpleConversation *conv,
                                    group_chat ? who : NULL,
                                    icon ? icon : NULL);
       if (type == PURPLE_CONV_TYPE_CHAT){
-        chatty_history_add_chat_message (message, 1, account->username, real_who, uuid, mtime, conv_name);  // TODO: LELAND: UID to be implemented by XEP-0313
+        chatty_history_add_chat_message (message, 1, account->username, real_who, uuid, mtime, conv_name); 
       } else {
         chatty_history_add_im_message (message, 1, account->username, who_no_resource, uuid, mtime);
       }
@@ -2332,7 +2337,6 @@ chatty_conv_write_conversation (PurpleConversation *conv,
       chatty_conv->oldest_message_displayed = g_steal_pointer(&uuid);
 
     g_free(who_no_resource);
-    g_free(line_split);
 
     chatty_conv_set_unseen (chatty_conv, CHATTY_UNSEEN_NONE);
   }

@@ -190,7 +190,7 @@ cb_list_size_allocate (GtkWidget     *sender,
   GtkAdjustment *adj;
   gdouble       upper;
   gdouble       size;
-  gdouble       lower;
+  gdouble       value;
 
   ChattyMsgListPrivate *priv = chatty_msg_list_get_instance_private (self);
 

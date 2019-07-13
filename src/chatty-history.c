@@ -349,8 +349,8 @@ chatty_history_get_chat_messages (const char *account,
                                               const char *room,
                                               const unsigned char *who,
                                               const unsigned char *uuid,
-                                              ChattyConversation *chatty_conv),
-                                  ChattyConversation *chatty_conv,
+                                              gpointer data),
+                                  gpointer    data,
                                   guint       limit,
                                   char        *oldest_message_displayed)
 {
@@ -398,7 +398,7 @@ chatty_history_get_chat_messages (const char *account,
       if (skip){
         skip = g_strcmp0(oldest_message_displayed, (const char *)uuid);
       } else {
-        cb(msg, time_stamp, direction, room, who, uuid, chatty_conv);
+        cb(msg, time_stamp, direction, room, who, uuid, data);
       }
 
   }
@@ -414,12 +414,12 @@ void
 chatty_history_get_im_messages (const char* account,
                                 const char* who,
                                 void (*cb)(const unsigned char* msg,
-                                           int direction,
-                                           time_t time_stamp,
-                                           const unsigned char *uuid,
-                                           ChattyConversation *chatty_conv,
-                                           int last_message),
-                                ChattyConversation *chatty_conv,
+                                           int                  direction,
+                                           time_t               time_stamp,
+                                           const unsigned char  *uuid,
+                                           gpointer             data,
+                                           int                  last_message),
+                                gpointer   data,
                                 guint      limit,
                                 char       *oldest_message_displayed)
 {
@@ -471,7 +471,7 @@ chatty_history_get_im_messages (const char* account,
     if (skip){
       skip = g_strcmp0(oldest_message_displayed, (const char *) uuid);
     } else {
-      cb(msg, direction, time_stamp, uuid, chatty_conv, first);
+      cb(msg, direction, time_stamp, uuid, data, first);
       first = 0;
     }
   }
