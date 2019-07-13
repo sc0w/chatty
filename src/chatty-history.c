@@ -396,7 +396,7 @@ chatty_history_get_chat_messages (const char *account,
       uuid = sqlite3_column_text(stmt, 4);
       
       if (skip){
-        skip = g_strcmp0(oldest_message_displayed, uuid);
+        skip = g_strcmp0(oldest_message_displayed, (const char *)uuid);
       } else {
         cb(msg, time_stamp, direction, room, who, uuid, chatty_conv);
       }
@@ -469,7 +469,7 @@ chatty_history_get_im_messages (const char* account,
     // in case a burst of messages were received for the same epoch
     // If this is an issue, we should use a more fine grain timestamp.
     if (skip){
-      skip = g_strcmp0(oldest_message_displayed, uuid);
+      skip = g_strcmp0(oldest_message_displayed, (const char *) uuid);
     } else {
       cb(msg, direction, time_stamp, uuid, chatty_conv, first);
       first = 0;

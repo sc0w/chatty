@@ -190,6 +190,7 @@ cb_list_size_allocate (GtkWidget     *sender,
   GtkAdjustment *adj;
   gdouble       upper;
   gdouble       size;
+  gdouble       lower;
 
   ChattyMsgListPrivate *priv = chatty_msg_list_get_instance_private (self);
 
@@ -197,7 +198,12 @@ cb_list_size_allocate (GtkWidget     *sender,
 
   size = gtk_adjustment_get_page_size (adj);
   upper = gtk_adjustment_get_upper (adj);
-  gtk_adjustment_set_value (adj, upper - size);
+  value = gtk_adjustment_get_value (adj);
+
+  // Only scroll to the bottom if in the proximity of bottom.
+  if (abs (upper - value) < size * 1.5){
+    gtk_adjustment_set_value (adj, upper - size);
+  }
 }
 
 
@@ -206,26 +212,11 @@ cb_scroll_edge_reached (GtkScrolledWindow *scrolled_window,
                         GtkPositionType     pos,
                         gpointer            self)
 {
-  
-  ChattyMsgListPrivate *priv = chatty_msg_list_get_instance_private (self);
-  
-  if(pos == GTK_POS_TOP){
-    
-    // TODO: @LELAND: I have to unblock the signal again in all reelevant places
-    // or take another approach to this.
-    // disconnect signal
-    g_signal_handlers_block_by_func (GTK_WIDGET (priv->list),
-                                     G_CALLBACK (cb_list_size_allocate),
-                                     (gpointer) self);
-
-    // TODO: @LELAND: I have to block the "edge reached" (or ignore it) signal as well,
-    // until all messages from the chunk were pulled from the db.
-    // The user could reach the top again while the messages are being loaded
-
+   
+  if(pos == GTK_POS_TOP)    
     g_signal_emit (self,
                    signals[SIGNAL_SCROLL_TOP],
                    0);
-  }
 }
 
 
