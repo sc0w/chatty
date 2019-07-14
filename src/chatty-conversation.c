@@ -20,6 +20,7 @@
 #define MAX_GMT_ISO_SIZE 256
 #define MAX_MSGS 50
 #define LAZY_LOAD_MSGS_LIMIT 12
+#define LAZY_LOAD_INITIAL_MSGS_LIMIT 20
 
 static GHashTable *ht_sms_id = NULL;
 static GHashTable *ht_emoticon = NULL;
@@ -1215,13 +1216,13 @@ chatty_conv_get_chat_messages_cb (const unsigned char* msg,
 /**
  * chatty_conv_add_message_history_to_conv:
  * @data: a ChattyConversation
- *
+ * @limit: number of messages to be loaded
  * Get messages from the DB and add
  * them to a message-list
  *
  */
 static gboolean
-chatty_conv_add_message_history_to_conv (gpointer data)
+chatty_conv_add_message_history_to_conv_with_limit (gpointer data, int limit)
 {
   PurpleAccount      *account;
   const gchar        *conv_name;
@@ -1241,12 +1242,29 @@ chatty_conv_add_message_history_to_conv (gpointer data)
     // Remove resource (user could be connecting from different devices/applications)
     who = chatty_utils_jabber_id_strip(conv_name);
     
-    chatty_history_get_im_messages (account->username, who, chatty_conv_get_im_messages_cb, chatty_conv, LAZY_LOAD_MSGS_LIMIT, chatty_conv->oldest_message_displayed );
+    chatty_history_get_im_messages (account->username,
+				    who,
+				    chatty_conv_get_im_messages_cb,
+				    chatty_conv,
+				    limit,
+				    chatty_conv->oldest_message_displayed );
   }else{
-    chatty_history_get_chat_messages (account->username, conv_name, chatty_conv_get_chat_messages_cb, chatty_conv, LAZY_LOAD_MSGS_LIMIT, chatty_conv->oldest_message_displayed );
+    chatty_history_get_chat_messages (account->username,
+				      conv_name,
+				      chatty_conv_get_chat_messages_cb,
+				      chatty_conv,
+				      limit,
+				      chatty_conv->oldest_message_displayed );
   }
 
   return FALSE;
+}
+
+
+static gboolean
+chatty_conv_add_message_history_to_conv (gpointer data)
+{
+  return chatty_conv_add_message_history_to_conv_with_limit (data, LAZY_LOAD_MSGS_LIMIT);
 }
 
 
@@ -2408,6 +2426,7 @@ chatty_conv_switch_conv (ChattyConversation *chatty_conv)
            purple_conversation_get_name (chatty_conv->conv), page_num);
 
   gtk_widget_grab_focus (GTK_WIDGET(chatty_conv->input.entry));
+
 }
 
 
@@ -2454,6 +2473,7 @@ chatty_conv_present_conversation (PurpleConversation *conv)
   g_debug ("chatty_conv_present_conversation conv: %s", purple_conversation_get_name (conv));
 
   chatty_conv_switch_conv (chatty_conv);
+  
 }
 
 
@@ -2704,7 +2724,7 @@ chatty_conv_setup_pane (ChattyConversation *chatty_conv,
                       TRUE, TRUE, 0);
 
   gtk_widget_show_all (msg_view_box);
-
+   
   return msg_view_box;
 }
 
@@ -2804,13 +2824,14 @@ chatty_conv_new (PurpleConversation *conv)
     purple_conversation_set_logging (conv, purple_value_get_boolean (value));
   }
 
-  chatty_conv_add_message_history_to_conv(chatty_conv);
+  chatty_conv_add_message_history_to_conv_with_limit (chatty_conv, LAZY_LOAD_INITIAL_MSGS_LIMIT);
 
   if (CHATTY_IS_CHATTY_CONVERSATION (conv)) {
     purple_signal_emit (chatty_conversations_get_handle (),
                         "conversation-displayed",
                         CHATTY_CONVERSATION (conv));
   }
+
 }
 
 

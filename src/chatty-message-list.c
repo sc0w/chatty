@@ -59,6 +59,7 @@ typedef struct
   guint        height;
   guint        longpress_timeout_handle;
   guint32      refresh_timeout_handle;
+  gboolean     first_scroll_to_bottom;
 } ChattyMsgListPrivate;
 
 
@@ -199,11 +200,13 @@ cb_list_size_allocate (GtkWidget     *sender,
   size = gtk_adjustment_get_page_size (adj);
   upper = gtk_adjustment_get_upper (adj);
   value = gtk_adjustment_get_value (adj);
-
+  
   // Only scroll to the bottom if in the proximity of bottom.
-  if (abs (upper - value) < size * 1.5){
+  if (!priv->first_scroll_to_bottom || abs (upper - value) < size * 1.5){
     gtk_adjustment_set_value (adj, upper - size);
+    priv->first_scroll_to_bottom = TRUE;
   }
+
 }
 
 
@@ -212,9 +215,9 @@ cb_scroll_edge_reached (GtkScrolledWindow *scrolled_window,
                         GtkPositionType     pos,
                         gpointer            self)
 {
-   
-  if(pos == GTK_POS_TOP)    
-    g_signal_emit (self,
+
+    if (pos == GTK_POS_TOP)    
+      g_signal_emit (self,
                    signals[SIGNAL_SCROLL_TOP],
                    0);
 }
@@ -796,6 +799,8 @@ chatty_msg_list_constructed (GObject *object)
                     "edge-reached",
                     G_CALLBACK(cb_scroll_edge_reached),
                     self);
+
+  priv->first_scroll_to_bottom = FALSE;
 
   priv->typing_indicator = NULL;
 
