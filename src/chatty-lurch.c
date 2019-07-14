@@ -303,7 +303,7 @@ chatty_lurch_create_fingerprint_row (const char *fp,
                 "ellipsize", PANGO_ELLIPSIZE_END,
                 "halign", GTK_ALIGN_START,
                 "hexpand", TRUE,
-                "xalign", 0,
+                "xalign", 0.0,
                 NULL);
 
   label_fp = GTK_LABEL(gtk_label_new (NULL));
@@ -315,7 +315,7 @@ chatty_lurch_create_fingerprint_row (const char *fp,
                 "halign", GTK_ALIGN_START,
                 "hexpand", TRUE,
                 "margin_top", 8,
-                "xalign", 0,
+                "xalign", 0.0,
                 NULL);
 
   gtk_box_pack_start (vbox, GTK_WIDGET(label_id), FALSE, FALSE, 0);

@@ -17,7 +17,6 @@
 #include "chatty-history.h"
 #include "chatty-utils.h"
 
-#define MAX_GMT_ISO_SIZE 256
 #define MAX_MSGS 50
 #define LAZY_LOAD_MSGS_LIMIT 12
 #define LAZY_LOAD_INITIAL_MSGS_LIMIT 20
@@ -137,7 +136,7 @@ cb_msg_list_message_added (ChattyMsgList *sender,
   if (chatty_conv->msg_bubble_footer != NULL) {
     gtk_box_pack_start (GTK_BOX(bubble),
                         chatty_conv->msg_bubble_footer,
-                        FALSE, FALSE, 10);
+                        FALSE, FALSE, 3);
   }
 }
 
@@ -337,9 +336,14 @@ cb_textview_key_released (GtkWidget   *widget,
                           GdkEventKey *key_event,
                           gpointer     data)
 {
-  ChattyConversation  *chatty_conv;
+  PurpleAccount      *account;
+  ChattyConversation *chatty_conv;
+  const gchar        *protocol_id;
 
   chatty_conv = (ChattyConversation *)data;
+
+  account = purple_conversation_get_account (chatty_conv->conv);
+  protocol_id = purple_account_get_protocol_id (account);
 
   if (gtk_text_buffer_get_char_count (chatty_conv->input.buffer)) {
     gtk_widget_show (chatty_conv->input.button_send);
@@ -351,7 +355,8 @@ cb_textview_key_released (GtkWidget   *widget,
     chatty_update_typing_status (chatty_conv);
   }
 
-  if (purple_prefs_get_bool (CHATTY_PREFS_ROOT "/conversations/convert_emoticons")) {
+  if (purple_prefs_get_bool (CHATTY_PREFS_ROOT "/conversations/convert_emoticons") &&
+      (g_strcmp0 (protocol_id, "prpl-mm-sms") != 0)) {
     chatty_check_for_emoticon (chatty_conv);
   }
 
@@ -786,7 +791,7 @@ chatty_conv_check_for_command (PurpleConversation *conv)
           if (*spaceslash != '/') {
             purple_conversation_write (conv,
                                        "",
-                                       "Unknown command.",
+                                       "Unknown command. Get a list of available commands with '/chatty help'",
                                        flags,
                                        time(NULL));
             retval = TRUE;
@@ -917,102 +922,6 @@ chatty_conv_find_unseen (ChattyUnseenState  state)
 
 
 /**
- * chatty_conv_parse_message:
- * @msg: a char pointer
- *
- * Parse a chat single chat log message
- *
- */
-static ChattyLog*
-chatty_conv_parse_message (const gchar* msg)
-{
-  ChattyLog     *log;
-  char          *timestamp;
-  g_auto(GStrv)  timesplit = NULL,
-                 accountsplit = NULL,
-                 namesplit = NULL;
-
-  if (msg == NULL)
-    return NULL;
-
-  /* Separate the timestamp from the rest of the message */
-  timesplit = g_strsplit (msg, ") ", 2);
-  /* Format is '(x:y:z' */
-  if (timesplit[0] == NULL || strlen (timesplit[0]) < 6)
-    return NULL;
-
-  timestamp = strchr(timesplit[0], '(');
-  g_return_val_if_fail (timestamp != NULL, NULL);
-
-  log = g_new0 (ChattyLog, 1);
-  log->time_stamp = g_strdup(&timestamp[1]);
-
-  if (timesplit[1] == NULL)
-    return log;
-
-  accountsplit = g_strsplit (timesplit[1], ": ", 2);
-
-  if (accountsplit[0] == NULL)
-    return log;
-
-  namesplit = g_strsplit (accountsplit[0], "/", 2);
-  log->name = g_strdup (namesplit[0]);
-
-  if (accountsplit[1] == NULL)
-    return log;
-
-  log->msg = g_strdup (accountsplit[1]);
-  return log;
-}
-
-
-/**
- * chatty_conv_message_get_last_msg:
- * @buddy: a PurpleBuddy
- *
- * Get the last message from log
- *
- */
-ChattyLog*
-chatty_conv_message_get_last_msg (PurpleBuddy *buddy)
-{
-  GList         *history;
-  ChattyLog     *log_data = NULL;
-  PurpleAccount *account;
-  g_auto(GStrv)  logs = NULL;
-  gchar         *read_log;
-  gchar         *stripped;
-  const gchar   *b_name;
-  int            num_logs;
-
-  account = purple_buddy_get_account (buddy);
-  b_name = purple_buddy_get_name (buddy);
-  history = purple_log_get_logs (PURPLE_LOG_IM, b_name, account);
-
-  if (history == NULL) {
-    g_list_free (history);
-    return NULL;
-  }
-
-  history = g_list_first (history);
-
-  read_log = purple_log_read ((PurpleLog*)history->data, NULL);
-  stripped = purple_markup_strip_html (read_log);
-
-  logs = g_strsplit (stripped, "\n", -1);
-  num_logs = g_strv_length (logs) - 2;
-
-  log_data = chatty_conv_parse_message (logs[num_logs]);
-
-  g_list_free_full (history, (GDestroyNotify)purple_log_free);
-  g_free (read_log);
-  g_free (stripped);
-
-  return log_data;;
-}
-
-
-/**
  * chatty_conv_muc_get_avatar_color:
  * @user_id: a const char
  *
@@ -1030,41 +939,6 @@ chatty_conv_muc_get_avatar_color (const char *user_id)
   color = avatar_colors[hash % G_N_ELEMENTS (avatar_colors)];
 
   return g_strdup (color);
-}
-
-
-/**
- * chatty_conv_delete_message_history:
- * @buddy: a PurpleBuddy
- *
- * Delete all logs from the given buddyname
- *
- */
-// TODO: LELAND: Can I remove this method now?
-gboolean
-chatty_conv_delete_message_history (PurpleBuddy *buddy)
-{
-
-  GList         *history;
-  PurpleAccount *account;
-  const gchar   *b_name;
-
-  account = purple_buddy_get_account (buddy);
-  b_name = purple_buddy_get_name (buddy);
-  history = purple_log_get_logs (PURPLE_LOG_IM, b_name, account);
-
-  if (history == NULL) {
-    g_list_free (history);
-    return FALSE;
-  }
-
-  for (int i = 0; history && i < MAX_MSGS; history = history->next) {
-    purple_log_delete ((PurpleLog*)history->data);
-  }
-
-  g_list_free_full (history, (GDestroyNotify)purple_log_free);
-
-  return TRUE;
 }
 
 
@@ -1231,9 +1105,6 @@ chatty_conv_add_message_history_to_conv_with_limit (gpointer data, int limit)
   gchar              *who;
 
   im = (chatty_conv->conv->type == PURPLE_CONV_TYPE_IM);
-
-  g_source_remove (chatty_conv->attach.timer);
-  chatty_conv->attach.timer = 0;
 
   conv_name = purple_conversation_get_name (chatty_conv->conv);
   account = purple_conversation_get_account (chatty_conv->conv);
@@ -1838,7 +1709,7 @@ chatty_conv_muc_list_update_user (PurpleConversation *conv,
 
   if (!cbuddy) {
     return;
-  } 
+  }
 
   g_debug ("chatty_conv_muc_list_update_user conv: %s user_name: %s",
            purple_conversation_get_name (conv), user);
@@ -2530,7 +2401,7 @@ chatty_conv_add_history_since_component(GHashTable *components,
   mtime += 1; // Use the next epoch to exclude the last stored message(s)
   timeinfo = gmtime (&mtime);
   g_return_if_fail (strftime (iso_timestamp,
-                              MAX_GMT_ISO_SIZE*sizeof(char),
+                              MAX_GMT_ISO_SIZE * sizeof(char),
                               "%Y-%m-%dT%H:%M:%SZ",
                               timeinfo));
 
@@ -2860,10 +2731,6 @@ chatty_conv_destroy (PurpleConversation *conv)
   chatty_conv = CHATTY_CONVERSATION (conv);
 
   chatty_conv_remove_conv (chatty_conv);
-
-  if (chatty_conv->attach.timer) {
-    g_source_remove(chatty_conv->attach.timer);
-  }
 
   g_hash_table_foreach_remove (ht_sms_id,
                                cb_ht_check_items,

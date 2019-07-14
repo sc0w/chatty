@@ -10,6 +10,8 @@
 
 #include <stdio.h>
 
+#define MAX_GMT_ISO_SIZE 256
+
 char *chatty_utils_jabber_id_strip (const char *name);
 
 void chatty_utils_generate_uuid (char **uuid);

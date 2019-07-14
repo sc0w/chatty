@@ -16,6 +16,7 @@
 #include <handy.h>
 #include "purple.h"
 #include "chatty-buddy-list.h"
+#include "chatty-dialogs.h"
 #include "chatty-icons.h"
 #include "chatty-window.h"
 #include "chatty-account.h"
@@ -80,6 +81,7 @@ cb_list_account_select_row_activated (GtkListBox    *box,
   GtkWidget                *prefix_radio;
 
   chatty_data_t *chatty = chatty_get_data ();
+  chatty_dialog_data_t *chatty_dialog = chatty_get_dialog_data ();
 
   account = g_object_get_data (G_OBJECT (row), "row-account");
   prefix_radio = g_object_get_data (G_OBJECT(row), "row-prefix");
@@ -113,8 +115,12 @@ cb_list_account_select_row_activated (GtkListBox    *box,
 
   if (g_strcmp0 (protocol_id, "prpl-mm-sms") == 0) {
     gtk_label_set_text (GTK_LABEL(chatty->label_contact_id), _("SMS Number"));
+    gtk_entry_set_input_purpose (GTK_ENTRY(chatty_dialog->entry_contact_name),
+				 GTK_INPUT_PURPOSE_PHONE);
   } else {
     gtk_label_set_text (GTK_LABEL(chatty->label_contact_id), _("Jabber ID"));
+        gtk_entry_set_input_purpose (GTK_ENTRY(chatty_dialog->entry_contact_name),
+				     GTK_INPUT_PURPOSE_EMAIL);
   }
 }
 
@@ -266,7 +272,7 @@ chatty_account_populate_account_list (GtkListBox *list, guint type)
                        "row-new-account",
                        (gpointer)TRUE);
 
-    hdy_action_row_set_title (row, _("Add new account..."));
+    hdy_action_row_set_title (row, _("Add new account…"));
 
     gtk_container_add (GTK_CONTAINER(chatty->list_manage_account),
                        GTK_WIDGET(row));

@@ -143,7 +143,7 @@ chatty_window_change_view (ChattyWindowState view)
       gtk_widget_show (GTK_WIDGET(chatty->dialog_settings));
       break;
     case CHATTY_VIEW_ABOUT_CHATTY:
-      chatty_dialogs_show_dialog_about_chatty (CHATTY_VERSION);
+      chatty_dialogs_show_dialog_about_chatty ();
       break;
     case CHATTY_VIEW_JOIN_CHAT:
       chatty_dialogs_show_dialog_join_muc ();

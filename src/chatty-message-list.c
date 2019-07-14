@@ -84,78 +84,6 @@ header_strings_t header_strings[3] = {
 };
 
 
-
-
-static void
-init_css (void)
-{
-  GdkScreen       *screen;
-  GtkCssProvider  *cssProvider;
-
-  screen = gdk_screen_get_default ();
-  cssProvider = gtk_css_provider_new ();
-
-  gtk_css_provider_load_from_data (GTK_CSS_PROVIDER (cssProvider),
-                                  " .message_list {\n"
-                                  "   color: black;\n"
-                                  "   background-color: white;\n"
-                                  "}\n"
-                                  " .bubble_green {\n"
-                                  "   font-size: 17px;\n"
-                                  "   background-color: #e0fad0;\n"
-                                  "   box-shadow: 0px 1px 2px 1px rgba(0, 0, 0, 0.3);\n"
-                                  "   border-radius:   6px;\n"
-                                  "   padding-left:   10px;\n"
-                                  "   padding-right:  10px;\n"
-                                  "   padding-top:     8px;\n"
-                                  "   padding-bottom:  8px;\n"
-                                  "}\n"
-                                  " .bubble_blue {\n"
-                                  "   font-size: 17px;\n"
-                                  "   color: black;\n"
-                                  "   background-color: #e4f0fc;\n"
-                                  "   box-shadow: 0px 1px 2px 1px rgba(0, 0, 0, 0.3);\n"
-                                  "   border-radius:   6px;\n"
-                                  "   padding-left:   10px;\n"
-                                  "   padding-right:  10px;\n"
-                                  "   padding-top:     8px;\n"
-                                  "   padding-bottom:  8px;\n"
-                                  "}\n"
-                                  " .bubble_purple {\n"
-                                  "   font-size: 14px;\n"
-                                  "   color: white;\n"
-                                  "   background-color: #862d86;\n"
-                                  "   box-shadow: 0px 1px 2px 1px rgba(0, 0, 0, 0.3);\n"
-                                  "   border-radius:   6px;\n"
-                                  "   padding-left:   10px;\n"
-                                  "   padding-right:  10px;\n"
-                                  "   padding-top:     8px;\n"
-                                  "   padding-bottom:  8px;\n"
-                                  "}\n"
-                                  " .bubble_white {\n"
-                                  "   font-size: 17px;\n"
-                                  "   color: black;\n"
-                                  "   background-color: white;\n"
-                                  "   box-shadow: 0px 1px 2px 1px rgba(0, 0, 0, 0.3);\n"
-                                  "   border-radius:   6px;\n"
-                                  "   padding-left:   10px;\n"
-                                  "   padding-right:  10px;\n"
-                                  "   padding-top:     8px;\n"
-                                  "   padding-bottom:  8px;\n"
-                                  "}\n"
-                                  " .label_disclaim {\n"
-                                  "   font-size:    16px;\n"
-                                  "   font-weight:  bold;\n"
-                                  "   padding-top:  120px;\n"
-                                  "   padding-bottom: 20px;\n"
-                                  "}\n", -1, NULL);
-
-  gtk_style_context_add_provider_for_screen (screen,
-                                             GTK_STYLE_PROVIDER(cssProvider),
-                                             GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
-}
-
-
 static void
 msg_list_cmd_copy (GSimpleAction *action,
                    GVariant      *parameter,
@@ -722,6 +650,7 @@ chatty_msg_list_add_message_at (ChattyMsgList *self,
   }
 
   sc = gtk_widget_get_style_context (GTK_WIDGET(label_msg));
+  gtk_style_context_add_class (sc, "message_bubble");
   gtk_style_context_add_class (sc, style);
 
   gtk_box_pack_start (vbox, GTK_WIDGET(ebox), FALSE, FALSE, 0);
@@ -779,8 +708,6 @@ chatty_msg_list_constructed (GObject *object)
   ChattyMsgList        *self = CHATTY_MSG_LIST (object);
   ChattyMsgListPrivate *priv = chatty_msg_list_get_instance_private (self);
   const gchar          *path;
-
-  init_css();
 
   sc = gtk_widget_get_style_context (GTK_WIDGET(priv->list));
 

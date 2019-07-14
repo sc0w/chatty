@@ -193,7 +193,6 @@ cb_button_delete_account_clicked (GtkButton *sender,
                                   gpointer   data)
 {
   GtkWidget     *dialog;
-  GtkWindow     *window;
   PurpleAccount *account;
   int            response;
 
@@ -203,8 +202,7 @@ cb_button_delete_account_clicked (GtkButton *sender,
 
   account = chatty->selected_account;
 
-  window = gtk_application_get_active_window (GTK_APPLICATION (g_application_get_default ()));
-  dialog = gtk_message_dialog_new (window,
+  dialog = gtk_message_dialog_new ((GtkWindow*)data,
                                    GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
                                    GTK_MESSAGE_WARNING,
                                    GTK_BUTTONS_OK_CANCEL,
@@ -304,7 +302,7 @@ write_account_data_into_dialog (chatty_data_t *chatty, chatty_dialog_data_t *cha
   if (purple_account_is_connected (chatty->selected_account)) {
     gtk_label_set_text (chatty_dialog->label_status, _("connected"));
   } else if (purple_account_is_connecting (chatty->selected_account)) {
-    gtk_label_set_text (chatty_dialog->label_status, _("connecting..."));
+    gtk_label_set_text (chatty_dialog->label_status, _("connecting…"));
   } else if (purple_account_is_disconnected (chatty->selected_account)) {
     gtk_label_set_text (chatty_dialog->label_status, _("disconnected"));
   }
@@ -498,6 +496,9 @@ cb_button_add_contact_clicked (GtkButton *sender,
 
   chatty_blist_add_buddy (who, alias);
 
+  gtk_entry_set_text (GTK_ENTRY(chatty_dialog->entry_contact_name), "");
+  gtk_entry_set_text (GTK_ENTRY(chatty_dialog->entry_contact_nick), "");
+
   gtk_stack_set_visible_child_name (chatty_dialog->stack_panes_new_chat,
                                     "view-new-chat");
 }
@@ -542,7 +543,6 @@ static void
 cb_account_connection_error (PurpleAccount *gc, PurpleConnectionError err, const gchar *desc, gpointer unused)
 {
   GtkWidget     *dialog;
-  GtkWindow     *window;
   PurpleAccount *account;
 
   chatty_data_t *chatty = chatty_get_data ();
@@ -552,8 +552,7 @@ cb_account_connection_error (PurpleAccount *gc, PurpleConnectionError err, const
 
   chatty_disconnect_account_signals (account);
 
-  window = gtk_application_get_active_window (GTK_APPLICATION (g_application_get_default ()));
-  dialog = gtk_message_dialog_new (window,
+  dialog = gtk_message_dialog_new ((GtkWindow*)chatty_dialog->dialog_edit_account,
                                    GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
                                    GTK_MESSAGE_ERROR,
                                    GTK_BUTTONS_OK,
@@ -904,7 +903,7 @@ chatty_dialogs_create_edit_account_view (GtkBuilder *builder)
   g_signal_connect (G_OBJECT(button_delete),
                     "clicked",
                     G_CALLBACK (cb_button_delete_account_clicked),
-                    NULL);
+                    (gpointer)chatty_dialog->dialog_edit_account);
 
   g_signal_connect (G_OBJECT(chatty_dialog->entry_name),
         "changed",
@@ -934,9 +933,6 @@ chatty_dialogs_create_dialog_settings (void)
   GtkBuilder    *builder;
   GtkWidget     *dialog;
   GtkWindow     *window;
-  GtkListBox    *list_privacy_prefs;
-  GtkListBox    *list_xmpp_prefs;
-  GtkListBox    *list_editor_prefs;
   GtkSwitch     *switch_prefs_send_receipts;
   GtkSwitch     *switch_prefs_message_carbons;
   GtkSwitch     *switch_prefs_typing_notification;
@@ -958,26 +954,20 @@ chatty_dialogs_create_dialog_settings (void)
 
   chatty_dialog->stack_panes_settings = GTK_STACK (gtk_builder_get_object (builder, "stack_panes_settings"));
   chatty->list_manage_account = GTK_LIST_BOX (gtk_builder_get_object (builder, "list_manage_account"));
-  list_privacy_prefs = GTK_LIST_BOX (gtk_builder_get_object (builder, "privacy_prefs_listbox"));
   switch_prefs_send_receipts = GTK_SWITCH (gtk_builder_get_object (builder, "pref_send_receipts"));
   switch_prefs_message_carbons = GTK_SWITCH (gtk_builder_get_object (builder, "pref_message_carbons"));
   row_pref_message_carbons = HDY_ACTION_ROW (gtk_builder_get_object (builder, "row_pref_message_carbons"));
   switch_prefs_typing_notification = GTK_SWITCH (gtk_builder_get_object (builder, "pref_typing_notification"));
 
-  list_xmpp_prefs = GTK_LIST_BOX (gtk_builder_get_object (builder, "xmpp_prefs_listbox"));
   switch_prefs_show_offline = GTK_SWITCH (gtk_builder_get_object (builder, "pref_show_offline"));
   switch_prefs_indicate_offline = GTK_SWITCH (gtk_builder_get_object (builder, "pref_indicate_offline"));
   switch_prefs_indicate_idle = GTK_SWITCH (gtk_builder_get_object (builder, "pref_indicate_idle"));
   switch_prefs_indicate_unknown = GTK_SWITCH (gtk_builder_get_object (builder, "pref_indicate_unknown"));
 
-  list_editor_prefs = GTK_LIST_BOX (gtk_builder_get_object (builder, "editor_prefs_listbox"));
   switch_prefs_convert_smileys = GTK_SWITCH (gtk_builder_get_object (builder, "pref_convert_smileys"));
   switch_prefs_return_sends = GTK_SWITCH (gtk_builder_get_object (builder, "pref_return_sends"));
 
   gtk_list_box_set_header_func (chatty->list_manage_account, hdy_list_box_separator_header, NULL, NULL);
-  gtk_list_box_set_header_func (list_privacy_prefs, hdy_list_box_separator_header, NULL, NULL);
-  gtk_list_box_set_header_func (list_xmpp_prefs, hdy_list_box_separator_header, NULL, NULL);
-  gtk_list_box_set_header_func (list_editor_prefs, hdy_list_box_separator_header, NULL, NULL);
 
   g_signal_connect (G_OBJECT(dialog),
                     "delete-event",
@@ -1317,6 +1307,7 @@ chatty_dialogs_show_dialog_user_info (ChattyConversation *chatty_conv)
   GtkWidget     *label_alias;
   GtkWidget     *label_jid;
   GtkWidget     *label_status;
+  GtkWidget     *label_user_id;
   GtkWindow     *window;
   GtkSwitch     *switch_notify;
   GtkListBox    *listbox_prefs;
@@ -1329,6 +1320,7 @@ chatty_dialogs_show_dialog_user_info (ChattyConversation *chatty_conv)
   builder = gtk_builder_new_from_resource ("/sm/puri/chatty/ui/chatty-dialog-user-info.ui");
 
   label_alias = GTK_WIDGET (gtk_builder_get_object (builder, "label_alias"));
+  label_user_id = GTK_WIDGET (gtk_builder_get_object (builder, "label_user_id"));
   label_jid = GTK_WIDGET (gtk_builder_get_object (builder, "label_jid"));
   switch_notify = GTK_SWITCH (gtk_builder_get_object (builder, "switch_notify"));
   listbox_prefs = GTK_LIST_BOX (gtk_builder_get_object (builder, "listbox_prefs"));
@@ -1351,6 +1343,8 @@ chatty_dialogs_show_dialog_user_info (ChattyConversation *chatty_conv)
                                   hdy_list_box_separator_header,
                                   NULL, NULL);
 
+    gtk_label_set_text (GTK_LABEL(label_user_id), "XMPP ID");
+
     chatty_lurch_get_status (chatty_conv->conv);
     chatty_lurch_get_fp_list_contact (chatty_conv->conv);
 
@@ -1360,6 +1354,10 @@ chatty_dialogs_show_dialog_user_info (ChattyConversation *chatty_conv)
                       "state-set",
                       G_CALLBACK(cb_switch_omemo_state_changed),
                       (gpointer)chatty_conv->conv);
+  }
+
+  if (!g_strcmp0 (protocol_id, "prpl-mm-sms")) {
+    gtk_label_set_text (GTK_LABEL(label_user_id), _("Phone Number:"));
   }
 
   gtk_list_box_set_header_func (listbox_prefs,
@@ -1394,25 +1392,45 @@ chatty_dialogs_show_dialog_user_info (ChattyConversation *chatty_conv)
 
 
 void
-chatty_dialogs_show_dialog_about_chatty (const char *version)
+chatty_dialogs_show_dialog_about_chatty (void)
 {
-  GtkBuilder *builder;
-  GtkWidget  *dialog;
-  GtkWidget  *label_version;
-  GtkWindow  *window;
+  GtkWindow *window;
 
-  builder = gtk_builder_new_from_resource ("/sm/puri/chatty/ui/chatty-dialog-info.ui");
+  static const gchar *authors[] = {
+    "Adrien Plazas <kekun.plazas@laposte.net>",
+    "Andrea Schäfer <mosibasu@me.com>",
+    "Benedikt Wildenhain <benedikt.wildenhain@hs-bochum.de>",
+    "Guido Günther <agx@sigxcpu.org>",
+    "Leland Carlye <leland.carlye@protonmail.com>",
+    "Mohammed Sadiq https://www.sadiqpk.org/",
+    "Richard Bayerle (OMEMO Plugin) https://github.com/gkdr/lurch",
+    "and more...",
+    NULL
+  };
 
-  label_version = GTK_WIDGET (gtk_builder_get_object (builder, "label_version"));
-  gtk_label_set_text (GTK_LABEL(label_version), version);
+  static const gchar *artists[] = {
+    "Tobias Bernard <tbernard@gnome.org>",
+    NULL
+  };
 
-  dialog = GTK_WIDGET (gtk_builder_get_object (builder, "dialog"));
+  static const gchar *documenters[] = {
+    "Heather Ellsworth <heather.ellsworth@puri.sm>",
+    NULL
+  };
 
   window = gtk_application_get_active_window (GTK_APPLICATION (g_application_get_default ()));
-  gtk_window_set_transient_for (GTK_WINDOW(dialog), window);
 
-  gtk_dialog_run (GTK_DIALOG(dialog));
-
-  gtk_widget_destroy (dialog);
-  g_object_unref (builder);
+  gtk_show_about_dialog (GTK_WINDOW(window),
+                         "logo-icon-name", CHATTY_APP_ID,
+                         "program-name", _("Chatty"),
+                         "version", PACKAGE_VERSION,
+                         "comments", _("An SMS and XMPP messaging client"),
+                         "website", "https://source.puri.sm/Librem5/chatty",
+                         "copyright", "© 2018 Purism SPC",
+                         "license-type", GTK_LICENSE_GPL_3_0,
+                         "authors", authors,
+                         "artists", artists,
+                         "documenters", documenters,
+                         "translator-credits", _("translator-credits"),
+                         NULL);
 }
