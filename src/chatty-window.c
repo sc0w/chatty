@@ -216,7 +216,12 @@ chatty_window_init_data (void)
 
   libpurple_init ();
 
+  // the settings dialog needs an initialized purple core
   chatty->dialog_settings = chatty_dialogs_create_dialog_settings ();
+
+  // now the account-list widgets are instantiated and we can add
+  // the SMS account if the plugin && ModemManager is present
+  chatty_purple_check_sms_plugin ();
 
   hdy_leaflet_set_visible_child_name (chatty->content_box, "sidebar");
 

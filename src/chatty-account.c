@@ -47,6 +47,10 @@ cb_account_added (PurpleAccount *account,
   chatty_window_welcome_screen_show (FALSE);
 
   chatty_account_populate_account_list (chatty->list_manage_account, LIST_MANAGE_ACCOUNT);
+
+  if (purple_accounts_find ("SMS", "prpl-mm-sms")) {
+    purple_account_set_enabled (account, CHATTY_UI, TRUE);
+  }
 }
 
 
