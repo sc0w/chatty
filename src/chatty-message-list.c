@@ -709,6 +709,7 @@ chatty_msg_list_constructed (GObject *object)
   ChattyMsgListPrivate *priv = chatty_msg_list_get_instance_private (self);
   const gchar          *path;
 
+  gtk_widget_set_valign (GTK_WIDGET(priv->list), GTK_ALIGN_END);
   sc = gtk_widget_get_style_context (GTK_WIDGET(priv->list));
 
   gtk_style_context_add_class (sc, "message_list");
