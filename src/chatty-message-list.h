@@ -56,10 +56,16 @@ enum {
 } e_msg_dir;
 
 
+enum {
+  ADD_MESSAGE_ON_BOTTOM,
+  ADD_MESSAGE_ON_TOP,
+} e_msg_pos;
+
+
 GtkWidget *chatty_msg_list_new (guint message_type,
                                 gboolean disclaimer);
 
-void chatty_msg_list_add_message (ChattyMsgList *self,
+GtkWidget *chatty_msg_list_add_message (ChattyMsgList *self,
                                   guint message_dir,
                                   const gchar *message,
                                   const gchar *footer,
@@ -74,6 +80,14 @@ void chatty_msg_list_hide_typing_indicator (ChattyMsgList *self);
 guint chatty_msg_list_get_msg_type (ChattyMsgList *self);
 void chatty_msg_list_set_msg_type (ChattyMsgList *self,
                                    guint         message_type);
+
+
+GtkWidget *chatty_msg_list_add_message_at (ChattyMsgList *self,
+                                     guint          message_dir,
+                                     const gchar   *message,
+                                     const gchar   *footer,
+                                     GtkWidget     *icon,
+                                     guint position);
 
 G_END_DECLS
 

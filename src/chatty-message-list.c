@@ -33,6 +33,7 @@ static GParamSpec *props[PROP_LAST_PROP];
 
 enum {
   SIGNAL_MESSAGE_ADDED,
+  SIGNAL_SCROLL_TOP,
   SIGNAL_LAST_SIGNAL,
 };
 
@@ -58,6 +59,7 @@ typedef struct
   guint        height;
   guint        longpress_timeout_handle;
   guint32      refresh_timeout_handle;
+  gboolean     first_scroll_to_bottom;
 } ChattyMsgListPrivate;
 
 
@@ -80,6 +82,7 @@ header_strings_t header_strings[3] = {
     .str_2 = N_("and carrier rates may apply."),
   },
 };
+
 
 static void
 msg_list_cmd_copy (GSimpleAction *action,
@@ -116,6 +119,7 @@ cb_list_size_allocate (GtkWidget     *sender,
   GtkAdjustment *adj;
   gdouble       upper;
   gdouble       size;
+  gdouble       value;
 
   ChattyMsgListPrivate *priv = chatty_msg_list_get_instance_private (self);
 
@@ -123,7 +127,27 @@ cb_list_size_allocate (GtkWidget     *sender,
 
   size = gtk_adjustment_get_page_size (adj);
   upper = gtk_adjustment_get_upper (adj);
-  gtk_adjustment_set_value (adj, upper - size);
+  value = gtk_adjustment_get_value (adj);
+  
+  // Only scroll to the bottom if in the proximity of bottom.
+  if (!priv->first_scroll_to_bottom || abs (upper - value) < size * 1.5){
+    gtk_adjustment_set_value (adj, upper - size);
+    priv->first_scroll_to_bottom = TRUE;
+  }
+
+}
+
+
+static void
+cb_scroll_edge_reached (GtkScrolledWindow *scrolled_window,
+                        GtkPositionType     pos,
+                        gpointer            self)
+{
+
+    if (pos == GTK_POS_TOP)    
+      g_signal_emit (self,
+                   signals[SIGNAL_SCROLL_TOP],
+                   0);
 }
 
 
@@ -246,7 +270,10 @@ chatty_msg_list_add_header (ChattyMsgList *self)
 
   gtk_widget_set_size_request (row,
                                1,
-                               320); // TODO: set priv->height instead);
+                               0); // TODO: set priv->height instead);
+                                   // TODO: @LELAND: Talk to Andrea about this header:
+                                   // Adding messages backward leves this space at the bottom (320 to 0 by now)
+
 
   gtk_container_add (GTK_CONTAINER (priv->list), row);
 
@@ -517,14 +544,16 @@ chatty_msg_list_clear (ChattyMsgList *self)
   g_list_free (iter);
 }
 
-
-void
-chatty_msg_list_add_message (ChattyMsgList *self,
-                             guint          message_dir,
-                             const gchar   *message,
-                             const gchar   *footer,
-                             GtkWidget     *icon)
+ 
+GtkWidget *
+chatty_msg_list_add_message_at (ChattyMsgList *self,
+                                guint          message_dir,
+                                const gchar   *message,
+                                const gchar   *footer,
+                                GtkWidget     *icon,
+                                guint          position)
 {
+
   GtkListBoxRow   *row;
   GtkBox          *box;
   GtkBox          *vbox;
@@ -546,7 +575,11 @@ chatty_msg_list_add_message (ChattyMsgList *self,
                 "activatable", FALSE,
                 NULL);
 
-  gtk_container_add (GTK_CONTAINER (priv->list), GTK_WIDGET (row));
+  if (position == ADD_MESSAGE_ON_BOTTOM){
+    gtk_container_add (GTK_CONTAINER (priv->list), GTK_WIDGET (row));
+  } else {
+    gtk_list_box_prepend (GTK_LIST_BOX (priv->list), GTK_WIDGET (row));
+  }
 
   box = GTK_BOX (gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0));
   gtk_container_set_border_width (GTK_CONTAINER (box), 4);
@@ -650,8 +683,20 @@ chatty_msg_list_add_message (ChattyMsgList *self,
 
   gtk_widget_show_all (GTK_WIDGET(row));
   gtk_revealer_set_reveal_child (revealer, TRUE);
+
+  return GTK_WIDGET(revealer);
 }
 
+
+GtkWidget *
+chatty_msg_list_add_message (ChattyMsgList *self,
+                             guint          message_dir,
+                             const gchar   *message,
+                             const gchar   *footer,
+                             GtkWidget     *icon)
+{
+  return chatty_msg_list_add_message_at (self, message_dir, message, footer, icon, ADD_MESSAGE_ON_BOTTOM);
+}
 
 
 static void
@@ -664,6 +709,7 @@ chatty_msg_list_constructed (GObject *object)
   ChattyMsgListPrivate *priv = chatty_msg_list_get_instance_private (self);
   const gchar          *path;
 
+  gtk_widget_set_valign (GTK_WIDGET(priv->list), GTK_ALIGN_END);
   sc = gtk_widget_get_style_context (GTK_WIDGET(priv->list));
 
   gtk_style_context_add_class (sc, "message_list");
@@ -676,6 +722,13 @@ chatty_msg_list_constructed (GObject *object)
                            "focus",
                            G_CALLBACK (cb_list_focus),
                            (gpointer) self, 0);
+
+  g_signal_connect (GTK_SCROLLED_WINDOW (priv->scroll),
+                    "edge-reached",
+                    G_CALLBACK(cb_scroll_edge_reached),
+                    self);
+
+  priv->first_scroll_to_bottom = FALSE;
 
   priv->typing_indicator = NULL;
 
@@ -696,6 +749,7 @@ chatty_msg_list_constructed (GObject *object)
                                   "msg_list",
                                   G_ACTION_GROUP (simple_action_group));
 }
+
 
 static void chatty_msg_list_size_allocate(GtkWidget *widget, GtkAllocation *allocation){
 
@@ -745,6 +799,7 @@ static void chatty_msg_list_size_allocate(GtkWidget *widget, GtkAllocation *allo
 
   GTK_WIDGET_CLASS (chatty_msg_list_parent_class)->size_allocate (widget, allocation);
 }
+
 
 static void
 chatty_msg_list_class_init (ChattyMsgListClass *klass)
@@ -798,6 +853,15 @@ chatty_msg_list_class_init (ChattyMsgListClass *klass)
                   G_TYPE_NONE,
                   1,
                   G_TYPE_OBJECT);
+  
+  signals[SIGNAL_SCROLL_TOP] =
+    g_signal_new ("scroll-top",
+                  G_TYPE_FROM_CLASS (klass),
+                  G_SIGNAL_RUN_LAST,
+                  0,
+                  NULL, NULL, NULL,
+                  G_TYPE_NONE,
+                  0);
 
   gtk_widget_class_set_template_from_resource (widget_class,
     "/sm/puri/chatty/ui/chatty-message-list.ui");

@@ -18,6 +18,8 @@
 #include "chatty-utils.h"
 
 #define MAX_MSGS 50
+#define LAZY_LOAD_MSGS_LIMIT 12
+#define LAZY_LOAD_INITIAL_MSGS_LIMIT 20
 
 static GHashTable *ht_sms_id = NULL;
 static GHashTable *ht_emoticon = NULL;
@@ -944,10 +946,21 @@ static void
 chatty_conv_get_im_messages_cb (const unsigned char* msg,
                                 int direction,
                                 time_t time_stamp,
-                                ChattyConversation *chatty_conv,
+                                const unsigned char* uuid,
+                                gpointer data,
                                 int last_message){
-  gchar   *msg_html;
-  guint    msg_dir;
+  gchar            *msg_html;
+  guint             msg_dir;
+  ChattyConversation       *chatty_conv;
+  g_autofree gchar *iso_timestamp;
+
+  chatty_conv = (ChattyConversation *)data;
+  
+  iso_timestamp = g_malloc0(MAX_GMT_ISO_SIZE * sizeof(char));  
+
+  // TODO: @LELAND: Chechk this memory management, don't like it
+  free(chatty_conv->oldest_message_displayed);
+  chatty_conv->oldest_message_displayed = g_strdup((const gchar *)uuid);
 
   if (direction == 1) {
     msg_dir = MSG_IS_INCOMING;
@@ -959,12 +972,19 @@ chatty_conv_get_im_messages_cb (const unsigned char* msg,
 
   msg_html = chatty_conv_check_for_links ((const gchar*)msg);
 
+  
+  strftime (iso_timestamp,
+	    MAX_GMT_ISO_SIZE * sizeof(char),
+	    "%b %d",
+	    localtime(&time_stamp));
+  
   if (msg_html[0] != '\0') {
-    chatty_msg_list_add_message (chatty_conv->msg_list,
-                                 msg_dir,
-                                 msg_html,
-                                 last_message ? asctime(localtime(&time_stamp)) : NULL, // last seen message
-                                 NULL);
+    chatty_msg_list_add_message_at (chatty_conv->msg_list,
+                                    msg_dir,
+                                    msg_html,
+                                    last_message ? iso_timestamp : NULL,
+                                    NULL,
+                                    ADD_MESSAGE_ON_TOP);
   }
 
   g_free (msg_html);
@@ -983,8 +1003,9 @@ chatty_conv_get_chat_messages_cb (const unsigned char* msg,
                                   int direction,
                                   const char* room,
                                   const unsigned char *who,
-                                  ChattyConversation *chatty_conv){
-  gchar   *msg_html;
+                                  const unsigned char *uuid,
+                                  gpointer data){
+  gchar                    *msg_html;
   PurpleBuddy              *buddy;
   const char               *color;
   GdkPixbuf                *avatar = NULL;
@@ -992,8 +1013,15 @@ chatty_conv_get_chat_messages_cb (const unsigned char* msg,
   PurpleAccount            *account;
   gchar                    *alias;
   gchar                    **line_split;
+  ChattyConversation       *chatty_conv;
+
+  chatty_conv = (ChattyConversation *)data;
 
   msg_html = chatty_conv_check_for_links ((const gchar*)msg);
+
+  // TODO: @LELAND: Chechk this memory management, don't like it
+  free(chatty_conv->oldest_message_displayed);
+  chatty_conv->oldest_message_displayed = g_strdup((const gchar *)uuid);
 
   if (msg_html[0] != '\0') {
 
@@ -1021,26 +1049,29 @@ chatty_conv_get_chat_messages_cb (const unsigned char* msg,
         g_object_unref (avatar);
       }
 
-      chatty_msg_list_add_message (chatty_conv->msg_list,
-                                   MSG_IS_INCOMING,
-                                   msg_html,
-                                   NULL,
-                                   icon ? icon : NULL);
+      chatty_msg_list_add_message_at (chatty_conv->msg_list,
+                                      MSG_IS_INCOMING,
+                                      msg_html,
+                                      NULL,
+                                      icon ? icon : NULL,
+                                      ADD_MESSAGE_ON_TOP);
 
     } else if (direction == -1) {
       msg_html = chatty_conv_check_for_links ((const gchar*)msg);
 
-      chatty_msg_list_add_message (chatty_conv->msg_list,
-                                   MSG_IS_OUTGOING,
-                                   msg_html,
-                                   NULL,
-                                   NULL);
+      chatty_msg_list_add_message_at (chatty_conv->msg_list,
+                                      MSG_IS_OUTGOING,
+                                      msg_html,
+                                      NULL,
+                                      NULL,
+                                      ADD_MESSAGE_ON_TOP);
     } else {
-      chatty_msg_list_add_message (chatty_conv->msg_list,
-                                   MSG_IS_SYSTEM,
-                                   (const gchar*)msg,
-                                   NULL,
-                                   NULL);
+      chatty_msg_list_add_message_at (chatty_conv->msg_list,
+                                      MSG_IS_SYSTEM,
+                                      (const gchar*)msg,
+                                      NULL,
+                                      NULL,
+                                      ADD_MESSAGE_ON_TOP);
     }
 
     chatty_conv_set_unseen (chatty_conv, CHATTY_UNSEEN_NONE);
@@ -1059,20 +1090,19 @@ chatty_conv_get_chat_messages_cb (const unsigned char* msg,
 /**
  * chatty_conv_add_message_history_to_conv:
  * @data: a ChattyConversation
- *
- * Parse the chat log and add the
- * messages to a message-list
+ * @limit: number of messages to be loaded
+ * Get messages from the DB and add
+ * them to a message-list
  *
  */
 static gboolean
-chatty_conv_add_message_history_to_conv (gpointer data)
+chatty_conv_add_message_history_to_conv_with_limit (gpointer data, int limit)
 {
-  PurpleAccount *account;
-  const gchar   *conv_name;
-  gboolean       im;
+  PurpleAccount      *account;
+  const gchar        *conv_name;
+  gboolean            im;
   ChattyConversation *chatty_conv = data;
-  gchar         *who;
-  gchar         **line_split;
+  gchar              *who;
 
   im = (chatty_conv->conv->type == PURPLE_CONV_TYPE_IM);
 
@@ -1081,19 +1111,40 @@ chatty_conv_add_message_history_to_conv (gpointer data)
 
   if (im) {
     // Remove resource (user could be connecting from different devices/applications)
-    // TODO: LELAND: This should be an utility fn. Does libpurple offer a helper for this?
-    line_split = g_strsplit (conv_name, "/", -1);
-    who = g_strdup(line_split[0]);
-
-    chatty_history_get_im_messages (account->username, who, chatty_conv_get_im_messages_cb, chatty_conv);
+    who = chatty_utils_jabber_id_strip(conv_name);
+    
+    chatty_history_get_im_messages (account->username,
+				    who,
+				    chatty_conv_get_im_messages_cb,
+				    chatty_conv,
+				    limit,
+				    chatty_conv->oldest_message_displayed );
   }else{
-    chatty_history_get_chat_messages (account->username, conv_name, chatty_conv_get_chat_messages_cb, chatty_conv);
+    chatty_history_get_chat_messages (account->username,
+				      conv_name,
+				      chatty_conv_get_chat_messages_cb,
+				      chatty_conv,
+				      limit,
+				      chatty_conv->oldest_message_displayed );
   }
 
   return FALSE;
 }
 
 
+static gboolean
+chatty_conv_add_message_history_to_conv (gpointer data)
+{
+  return chatty_conv_add_message_history_to_conv_with_limit (data, LAZY_LOAD_MSGS_LIMIT);
+}
+
+
+static void
+cb_scroll_top(ChattyMsgList *sender,
+              gpointer       data)
+{
+  chatty_conv_add_message_history_to_conv(data);
+}
 
 
 /**
@@ -2069,7 +2120,7 @@ chatty_conv_write_conversation (PurpleConversation *conv,
   int                       chat_id;
   const char               *conv_name;
   gchar                    *who_no_resource;
-  gchar                    **line_split;
+  g_autofree char          *uuid;
 
   chatty_conv = CHATTY_CONVERSATION (conv);
 
@@ -2124,9 +2175,10 @@ chatty_conv_write_conversation (PurpleConversation *conv,
   }
 
   if (*message != '\0') {
+     // TODO: LELAND: UID to be implemented by XEP-0313
+    chatty_utils_generate_uuid(&uuid);
 
-    line_split = g_strsplit ((const gchar*)who, "/", -1);
-    who_no_resource = g_strdup(line_split[0]);
+    who_no_resource = chatty_utils_jabber_id_strip(who);
 
     if (flags & PURPLE_MESSAGE_RECV) {
       msg_html = chatty_conv_check_for_links (message);
@@ -2137,9 +2189,9 @@ chatty_conv_write_conversation (PurpleConversation *conv,
                                    group_chat ? who : NULL,
                                    icon ? icon : NULL);
       if (type == PURPLE_CONV_TYPE_CHAT){
-        chatty_history_add_chat_message (message, 1, account->username, real_who, "UID", mtime, conv_name);  // TODO: LELAND: UID to be implemented by XEP-0313
+        chatty_history_add_chat_message (message, 1, account->username, real_who, uuid, mtime, conv_name); 
       } else {
-        chatty_history_add_im_message (message, 1, account->username, who_no_resource, "UID", mtime);
+        chatty_history_add_im_message (message, 1, account->username, who_no_resource, uuid, mtime);
       }
       g_free (msg_html);
     } else if (flags & PURPLE_MESSAGE_SEND) {
@@ -2151,9 +2203,9 @@ chatty_conv_write_conversation (PurpleConversation *conv,
                                    NULL,
                                    NULL);
       if (type == PURPLE_CONV_TYPE_CHAT){
-        chatty_history_add_chat_message (message, -1, account->username, real_who, "UID", mtime, conv_name);
+        chatty_history_add_chat_message (message, -1, account->username, real_who, uuid, mtime, conv_name);
       } else {
-        chatty_history_add_im_message (message, -1, account->username, who_no_resource, "UID", mtime);
+        chatty_history_add_im_message (message, -1, account->username, who_no_resource, uuid, mtime);
       }
       g_free (msg_html);
     } else if (flags & PURPLE_MESSAGE_SYSTEM) {
@@ -2164,14 +2216,16 @@ chatty_conv_write_conversation (PurpleConversation *conv,
                                    NULL);
       if (type == PURPLE_CONV_TYPE_CHAT){
         // TODO: LELAND: Do not store "The topic is:" or store them but dont show to the user
-        //chatty_history_add_chat_message (chat_id, message, 0, real_who, alias, "UID", mtime, conv_name);
+        //chatty_history_add_chat_message (chat_id, message, 0, real_who, alias, uuid, mtime, conv_name);
       } else {
-        //chatty_history_add_im_message (message, 0, account->username, who, "UID", mtime);
+        //chatty_history_add_im_message (message, 0, account->username, who, uuid , mtime);
       }
     }
 
+    if (chatty_conv->oldest_message_displayed == NULL)
+      chatty_conv->oldest_message_displayed = g_steal_pointer(&uuid);
+
     g_free(who_no_resource);
-    g_free(line_split);
 
     chatty_conv_set_unseen (chatty_conv, CHATTY_UNSEEN_NONE);
   }
@@ -2243,6 +2297,7 @@ chatty_conv_switch_conv (ChattyConversation *chatty_conv)
            purple_conversation_get_name (chatty_conv->conv), page_num);
 
   gtk_widget_grab_focus (GTK_WIDGET(chatty_conv->input.entry));
+
 }
 
 
@@ -2289,6 +2344,7 @@ chatty_conv_present_conversation (PurpleConversation *conv)
   g_debug ("chatty_conv_present_conversation conv: %s", purple_conversation_get_name (conv));
 
   chatty_conv_switch_conv (chatty_conv);
+  
 }
 
 
@@ -2333,7 +2389,6 @@ chatty_conv_im_with_buddy (PurpleAccount *account,
   chatty_conv_set_unseen (chatty_conv, CHATTY_UNSEEN_NONE);
 }
 
-// TODO: LELAND: Should this go to some utilities file?
 void
 chatty_conv_add_history_since_component(GHashTable *components,
                                         const char *account,
@@ -2351,7 +2406,7 @@ chatty_conv_add_history_since_component(GHashTable *components,
                               timeinfo));
 
   g_hash_table_steal (components, "history_since");
-  g_hash_table_insert(components, "history_since", g_steal_pointer (&iso_timestamp));
+  g_hash_table_insert (components, "history_since", g_steal_pointer(&iso_timestamp));
 }
 
 /**
@@ -2530,12 +2585,17 @@ chatty_conv_setup_pane (ChattyConversation *chatty_conv,
                     G_CALLBACK(cb_msg_list_message_added),
                     (gpointer) chatty_conv);
 
+  g_signal_connect (chatty_conv->msg_list,
+                    "scroll-top",
+                    G_CALLBACK(cb_scroll_top),
+                    (gpointer) chatty_conv);
+  
   gtk_box_pack_start (GTK_BOX (msg_view_list),
                       GTK_WIDGET (chatty_conv->msg_list),
                       TRUE, TRUE, 0);
 
   gtk_widget_show_all (msg_view_box);
-
+   
   return msg_view_box;
 }
 
@@ -2635,13 +2695,14 @@ chatty_conv_new (PurpleConversation *conv)
     purple_conversation_set_logging (conv, purple_value_get_boolean (value));
   }
 
-  chatty_conv_add_message_history_to_conv(chatty_conv);
+  chatty_conv_add_message_history_to_conv_with_limit (chatty_conv, LAZY_LOAD_INITIAL_MSGS_LIMIT);
 
   if (CHATTY_IS_CHATTY_CONVERSATION (conv)) {
     purple_signal_emit (chatty_conversations_get_handle (),
                         "conversation-displayed",
                         CHATTY_CONVERSATION (conv));
   }
+
 }
 
 

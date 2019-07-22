@@ -49,6 +49,8 @@ struct chatty_conversation {
   guint     unseen_state;
   gboolean  notifications;
 
+  char     *oldest_message_displayed;
+
   struct {
     GtkWidget     *entry;
     GtkTextBuffer *buffer;
