@@ -71,6 +71,8 @@ add_project_arguments(
   language: 'c'
 )
 
+libebook_dep = dependency('libebook-contacts-1.2')
+
 subdir('data')
 subdir('src')
 subdir('po')

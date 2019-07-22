@@ -27,7 +27,8 @@ chatty_deps = [
   dependency('gtk+-3.0', version: '>= 3.22'),
   dependency('purple'),
   dependency('libhandy-0.0', version: '>= 0.0.10'),
-  dependency('sqlite3', version: '>=3.0.0')
+  dependency('sqlite3', version: '>=3.0.0'),
+  libebook_dep,
 ]
 
 gnome = import('gnome')
