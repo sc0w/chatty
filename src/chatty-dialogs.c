@@ -486,11 +486,39 @@ cb_button_show_add_contact_clicked (GtkButton *sender,
 
 
 static void
+chatty_dialog_phonnumber_not_valid (const char *number,
+                                    const char *err_msg)
+{
+  GtkWidget  *dialog;
+  GtkWindow  *window;
+
+  window = gtk_application_get_active_window (GTK_APPLICATION (g_application_get_default ()));
+  dialog = gtk_message_dialog_new (window,
+                                   GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+                                   GTK_MESSAGE_WARNING,
+                                   GTK_BUTTONS_OK,
+                                   _("Phonenumber validation"));
+
+  gtk_message_dialog_format_secondary_text (GTK_MESSAGE_DIALOG(dialog),
+                                            ("%s: %s"),
+                                            number,
+                                            err_msg);
+
+  gtk_dialog_set_default_response (GTK_DIALOG(dialog), GTK_RESPONSE_CANCEL);
+  gtk_window_set_position (GTK_WINDOW(dialog), GTK_WIN_POS_CENTER_ON_PARENT);
+
+  gtk_dialog_run (GTK_DIALOG(dialog));
+
+  gtk_widget_destroy (dialog);
+}
+
+
+static void
 cb_button_add_contact_clicked (GtkButton *sender,
                                gpointer   data)
 {
   GtkInputPurpose    ip;
-  const char        *who;
+  char              *who;
   const char        *alias;
   EPhoneNumber      *number;
   gchar             *region;
@@ -498,24 +526,28 @@ cb_button_add_contact_clicked (GtkButton *sender,
 
   chatty_dialog_data_t *chatty_dialog = chatty_get_dialog_data ();
 
-  who = gtk_entry_get_text (GTK_ENTRY(chatty_dialog->entry_contact_name));
+  who = g_strdup (gtk_entry_get_text (GTK_ENTRY(chatty_dialog->entry_contact_name)));
   alias = gtk_entry_get_text (GTK_ENTRY(chatty_dialog->entry_contact_nick));
 
   ip = gtk_entry_get_input_purpose (GTK_ENTRY(chatty_dialog->entry_contact_name));
 
   if (ip == GTK_INPUT_PURPOSE_PHONE) {
-    region = e_phone_number_get_default_region(NULL);
+    region = e_phone_number_get_default_region (NULL);
 
     number = e_phone_number_from_string (who, region, &err);
 
     if (!number) {
       g_warning ("failed to parse %s: %s", who, err->message);
+      chatty_dialog_phonnumber_not_valid (who, err->message);
+      return;
     } else {
       who = e_phone_number_to_string (number, E_PHONE_NUMBER_FORMAT_E164);
     }
   }
 
   chatty_blist_add_buddy (who, alias);
+
+  g_free (who);
 
   gtk_entry_set_text (GTK_ENTRY(chatty_dialog->entry_contact_name), "");
   gtk_entry_set_text (GTK_ENTRY(chatty_dialog->entry_contact_nick), "");
