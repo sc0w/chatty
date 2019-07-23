@@ -548,6 +548,8 @@ cb_button_add_contact_clicked (GtkButton *sender,
   chatty_blist_add_buddy (who, alias);
 
   g_free (who);
+  g_free (region);
+  e_phone_number_free (number);
 
   gtk_entry_set_text (GTK_ENTRY(chatty_dialog->entry_contact_name), "");
   gtk_entry_set_text (GTK_ENTRY(chatty_dialog->entry_contact_nick), "");
