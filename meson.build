@@ -31,7 +31,7 @@ test_c_args = [
   '-Werror=overflow',
   '-Werror=return-type',
   '-Werror=shift-count-overflow',
-  '-Werror=shift-overflow=2',
+  '-Werror=shift-overflow=1',
   '-Werror=implicit-fallthrough=3',
   '-Wfloat-equal',
   '-Wformat-nonliteral',
@@ -70,6 +70,8 @@ add_project_arguments(
   global_c_args,
   language: 'c'
 )
+
+libebook_dep = dependency('libebook-contacts-1.2')
 
 subdir('data')
 subdir('src')
