@@ -491,6 +491,8 @@ chatty_conv_init_emoticon_translations (void)
   g_hash_table_insert (ht_emoticon, ":'D", "😂");
   g_hash_table_insert (ht_emoticon, ";P", "😜");
   g_hash_table_insert (ht_emoticon, ":P", "😛");
+  g_hash_table_insert (ht_emoticon, ";p", "😜");
+  g_hash_table_insert (ht_emoticon, ":p", "😛");
   g_hash_table_insert (ht_emoticon, ":o", "😮");
   g_hash_table_insert (ht_emoticon, "B)", "😎 ");
   g_hash_table_insert (ht_emoticon, "SANTA", "🎅");
@@ -955,8 +957,8 @@ chatty_conv_get_im_messages_cb (const unsigned char* msg,
   g_autofree gchar *iso_timestamp;
 
   chatty_conv = (ChattyConversation *)data;
-  
-  iso_timestamp = g_malloc0(MAX_GMT_ISO_SIZE * sizeof(char));  
+
+  iso_timestamp = g_malloc0(MAX_GMT_ISO_SIZE * sizeof(char));
 
   // TODO: @LELAND: Chechk this memory management, don't like it
   free(chatty_conv->oldest_message_displayed);
@@ -972,12 +974,12 @@ chatty_conv_get_im_messages_cb (const unsigned char* msg,
 
   msg_html = chatty_conv_check_for_links ((const gchar*)msg);
 
-  
+
   strftime (iso_timestamp,
 	    MAX_GMT_ISO_SIZE * sizeof(char),
 	    "%b %d",
 	    localtime(&time_stamp));
-  
+
   if (msg_html[0] != '\0') {
     chatty_msg_list_add_message_at (chatty_conv->msg_list,
                                     msg_dir,
@@ -1112,7 +1114,7 @@ chatty_conv_add_message_history_to_conv_with_limit (gpointer data, int limit)
   if (im) {
     // Remove resource (user could be connecting from different devices/applications)
     who = chatty_utils_jabber_id_strip(conv_name);
-    
+
     chatty_history_get_im_messages (account->username,
 				    who,
 				    chatty_conv_get_im_messages_cb,
@@ -2189,7 +2191,7 @@ chatty_conv_write_conversation (PurpleConversation *conv,
                                    group_chat ? who : NULL,
                                    icon ? icon : NULL);
       if (type == PURPLE_CONV_TYPE_CHAT){
-        chatty_history_add_chat_message (message, 1, account->username, real_who, uuid, mtime, conv_name); 
+        chatty_history_add_chat_message (message, 1, account->username, real_who, uuid, mtime, conv_name);
       } else {
         chatty_history_add_im_message (message, 1, account->username, who_no_resource, uuid, mtime);
       }
@@ -2344,7 +2346,7 @@ chatty_conv_present_conversation (PurpleConversation *conv)
   g_debug ("chatty_conv_present_conversation conv: %s", purple_conversation_get_name (conv));
 
   chatty_conv_switch_conv (chatty_conv);
-  
+
 }
 
 
@@ -2589,13 +2591,13 @@ chatty_conv_setup_pane (ChattyConversation *chatty_conv,
                     "scroll-top",
                     G_CALLBACK(cb_scroll_top),
                     (gpointer) chatty_conv);
-  
+
   gtk_box_pack_start (GTK_BOX (msg_view_list),
                       GTK_WIDGET (chatty_conv->msg_list),
                       TRUE, TRUE, 0);
 
   gtk_widget_show_all (msg_view_box);
-   
+
   return msg_view_box;
 }
 
