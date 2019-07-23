@@ -155,6 +155,20 @@
                           </packing>
                         </child>
                         <child>
+                          <object class="GtkLabel">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="expand">True</property>
+                            <property name="label" translatable="yes">Room topic</property>
+                            <property name="justify">left</property>
+                            <property name="halign">start</property>
+                            <property name="margin-bottom">12</property>
+                            <attributes>
+                              <attribute name="weight" value="bold"/>
+                            </attributes>
+                          </object>
+                        </child>
+                        <child>
                           <object class="GtkBox" id="muc.box_topic_editor">
                             <property name="orientation">horizontal</property>
                             <property name="visible">False</property>
