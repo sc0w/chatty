@@ -19,6 +19,8 @@
 #include "chatty-utils.h"
 #include "version.h"
 
+#include <libebook-contacts/libebook-contacts.h>
+
 static void chatty_dialogs_reset_settings_dialog (void);
 static void chatty_dialogs_reset_new_contact_dialog (void);
 static void chatty_dialogs_reset_invite_contact_dialog (void);
@@ -487,13 +489,31 @@ static void
 cb_button_add_contact_clicked (GtkButton *sender,
                                gpointer   data)
 {
-  const char *who;
-  const char *alias;
+  GtkInputPurpose    ip;
+  const char        *who;
+  const char        *alias;
+  EPhoneNumber      *number;
+  gchar             *region;
+  g_autoptr(GError)  err = NULL;
 
   chatty_dialog_data_t *chatty_dialog = chatty_get_dialog_data ();
 
   who = gtk_entry_get_text (GTK_ENTRY(chatty_dialog->entry_contact_name));
   alias = gtk_entry_get_text (GTK_ENTRY(chatty_dialog->entry_contact_nick));
+
+  ip = gtk_entry_get_input_purpose (GTK_ENTRY(chatty_dialog->entry_contact_name));
+
+  if (ip == GTK_INPUT_PURPOSE_PHONE) {
+    region = e_phone_number_get_default_region(NULL);
+
+    number = e_phone_number_from_string (who, region, &err);
+
+    if (!number) {
+      g_warning ("failed to parse %s: %s", who, err->message);
+    } else {
+      who = e_phone_number_to_string (number, E_PHONE_NUMBER_FORMAT_E164);
+    }
+  }
 
   chatty_blist_add_buddy (who, alias);
 

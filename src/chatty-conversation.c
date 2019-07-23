@@ -17,8 +17,6 @@
 #include "chatty-history.h"
 #include "chatty-utils.h"
 
-#include <libebook-contacts/libebook-contacts.h>
-
 #define MAX_MSGS 50
 
 static GHashTable *ht_sms_id = NULL;
