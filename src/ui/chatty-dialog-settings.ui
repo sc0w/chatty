@@ -718,6 +718,7 @@
                               <object class="GtkEntry" id="entry_add_server_url">
                                 <property name="hexpand">True</property>
                                 <property name="text">https://talk.puri.sm</property>
+                                <property name="input_purpose">url</property>
                                 <property name="visible" bind-source="radio_button_matrix" bind-property="active" bind-flags="sync-create"/>
                               </object>
                               <packing>
