@@ -531,7 +531,7 @@ cb_button_add_contact_clicked (GtkButton *sender,
 
   ip = gtk_entry_get_input_purpose (GTK_ENTRY(chatty_dialog->entry_contact_name));
 
-  if (ip == GTK_INPUT_PURPOSE_PHONE) {
+  if (ip == GTK_INPUT_PURPOSE_PHONE && e_phone_number_is_supported ()) {
     region = e_phone_number_get_default_region (NULL);
 
     number = e_phone_number_from_string (who, region, &err);
@@ -541,6 +541,7 @@ cb_button_add_contact_clicked (GtkButton *sender,
       chatty_dialog_phonnumber_not_valid (who, err->message);
       return;
     } else {
+      g_free (who);
       who = e_phone_number_to_string (number, E_PHONE_NUMBER_FORMAT_E164);
     }
 
