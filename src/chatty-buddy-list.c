@@ -1904,7 +1904,7 @@ chatty_blist_chats_update_node (PurpleBuddy     *buddy,
   }
 
   if (!purple_prefs_get_bool (CHATTY_PREFS_ROOT "/status/first_start")) {
-     chatty_window_welcome_screen_show (FALSE);
+     chatty_window_welcome_screen_show (CHATTY_OVERLAY_MODE_HIDE, FALSE);
      purple_prefs_set_bool (CHATTY_PREFS_ROOT "/status/first_start", FALSE);
   }
 
@@ -2048,6 +2048,11 @@ chatty_blist_chats_update_group_chat (PurpleBlistNode *node)
 
   if(!purple_account_is_connected (chat->account)) {
     return;
+  }
+
+  if (!purple_prefs_get_bool (CHATTY_PREFS_ROOT "/status/first_start")) {
+     chatty_window_welcome_screen_show (CHATTY_OVERLAY_MODE_HIDE, FALSE);
+     purple_prefs_set_bool (CHATTY_PREFS_ROOT "/status/first_start", FALSE);
   }
 
   avatar = chatty_icon_get_buddy_icon (node,

@@ -35,6 +35,34 @@ static void chatty_add_contact_action (GSimpleAction *action,
                                        gpointer       user_data);
 
 
+overlay_content_t OverlayContent[4] = {
+  {.title      = N_("Start chatting"),
+   .text_1     = N_("<b>SMS Chat</b> is set up by default. Start a chat with the \"+\" button in the titlebar."),
+   .text_2     = N_("Add <b>Instant Messaging</b> by selecting <i>\"Add new account\"</i> in the preferences."),
+   .icon_name  = "sm.puri.Chatty-symbolic",
+   .icon_size  = 128,
+  },
+  {.title      = N_("Start chatting"),
+   .text_1     = N_("placeholder"),
+   .text_2     = N_("placeholder"),
+   .icon_name  = "sm.puri.Chatty-symbolic",
+   .icon_size  = 128,
+  },
+  {.title      = N_("Start chatting"),
+   .text_1     = N_("placeholder"),
+   .text_2     = N_("placeholder"),
+   .icon_name  = "sm.puri.Chatty-symbolic",
+   .icon_size  = 128,
+  },
+  {.title      = N_("Start chatting"),
+   .text_1     = N_("placeholder"),
+   .text_2     = N_("placeholder"),
+   .icon_name  = "sm.puri.Chatty-symbolic",
+   .icon_size  = 128,
+  }
+};
+
+
 static const GActionEntry window_action_entries [] = {
   { "add", chatty_new_chat_action },
   { "add-contact", chatty_add_contact_action },
@@ -183,7 +211,8 @@ chatty_window_update_sub_header_titlebar (GdkPixbuf  *icon,
 
 
 void
-chatty_window_welcome_screen_show (gboolean show)
+chatty_window_welcome_screen_show (guint    mode,
+                                   gboolean show)
 {
   chatty_data_t *chatty = chatty_get_data ();
 
@@ -193,10 +222,28 @@ chatty_window_welcome_screen_show (gboolean show)
     gtk_widget_hide (GTK_WIDGET(chatty->box_welcome_overlay));
   }
 
+  gtk_image_set_from_icon_name (chatty->icon_welcome_overlay,
+                                OverlayContent[mode].icon_name,
+                                0);
+
+  gtk_image_set_pixel_size (chatty->icon_welcome_overlay,
+                            OverlayContent[mode].icon_size);
+
+  gtk_label_set_text (GTK_LABEL(chatty->label_welcome_overlay_1),
+                      gettext (OverlayContent[mode].title));
+  gtk_label_set_text (GTK_LABEL(chatty->label_welcome_overlay_2),
+                      gettext (OverlayContent[mode].text_1));
+  gtk_label_set_text (GTK_LABEL(chatty->label_welcome_overlay_3),
+                      gettext (OverlayContent[mode].text_2));
+
+  gtk_label_set_use_markup (GTK_LABEL(chatty->label_welcome_overlay_1), TRUE);
+  gtk_label_set_use_markup (GTK_LABEL(chatty->label_welcome_overlay_2), TRUE);
+  gtk_label_set_use_markup (GTK_LABEL(chatty->label_welcome_overlay_3), TRUE);
+
   if (purple_accounts_find ("SMS", "prpl-mm-sms")) {
-    gtk_widget_show (GTK_WIDGET(chatty->label_welcome_overlay_sms));
+    gtk_widget_show (GTK_WIDGET(chatty->label_welcome_overlay_1));
   } else {
-    gtk_widget_hide (GTK_WIDGET(chatty->label_welcome_overlay_sms));
+    gtk_widget_hide (GTK_WIDGET(chatty->label_welcome_overlay_1));
   }
 }
 
@@ -229,7 +276,7 @@ chatty_window_init_data (void)
                                 chatty->search_entry_chats);
 
   if (purple_prefs_get_bool (CHATTY_PREFS_ROOT "/status/first_start")) {
-    chatty_window_welcome_screen_show (TRUE);
+    chatty_window_welcome_screen_show (CHATTY_OVERLAY_MODE_WELCOME, TRUE);
     purple_prefs_set_bool (CHATTY_PREFS_ROOT "/status/first_start", FALSE);
   }
 }
@@ -276,7 +323,10 @@ chatty_window_activate (GtkApplication *app,
   chatty->header_group = HDY_HEADER_GROUP (gtk_builder_get_object (builder, "header_group"));
 
   chatty->box_welcome_overlay = GTK_BOX (gtk_builder_get_object (builder, "welcome_overlay"));
-  chatty->label_welcome_overlay_sms = GTK_WIDGET (gtk_builder_get_object (builder, "label_sms"));
+  chatty->icon_welcome_overlay = GTK_IMAGE (gtk_builder_get_object (builder, "icon"));
+  chatty->label_welcome_overlay_1 = GTK_WIDGET (gtk_builder_get_object (builder, "label_1"));
+  chatty->label_welcome_overlay_2 = GTK_WIDGET (gtk_builder_get_object (builder, "label_2"));
+  chatty->label_welcome_overlay_3 = GTK_WIDGET (gtk_builder_get_object (builder, "label_3"));
 
   chatty->pane_view_message_list = GTK_WIDGET (gtk_builder_get_object (builder, "pane_view_message_list"));
   chatty->pane_view_chat_list = GTK_BOX (gtk_builder_get_object (builder, "pane_view_chat_list"));

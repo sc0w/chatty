@@ -57,7 +57,10 @@ typedef struct {
   GtkWidget         *label_contact_id;
 
   GtkBox            *box_welcome_overlay;
-  GtkWidget         *label_welcome_overlay_sms;
+  GtkImage          *icon_welcome_overlay;
+  GtkWidget         *label_welcome_overlay_1;
+  GtkWidget         *label_welcome_overlay_2;
+  GtkWidget         *label_welcome_overlay_3;
 
   ChattyCmlOptions   cml_options;
 
@@ -75,6 +78,16 @@ typedef struct {
 } chatty_data_t;
 
 chatty_data_t *chatty_get_data(void);
+
+
+typedef struct {
+  const char  *title;
+  const char  *text_1;
+  const char  *text_2;
+  const char  *icon_name;
+  int          icon_size;
+} overlay_content_t;
+
 
 #define CHATTY_COLOR_GREEN     "6BBA3D"
 #define CHATTY_COLOR_BLUE      "4A8FD9"
@@ -100,6 +113,15 @@ enum {
 } ChattyPreferences;
 
 
+enum {
+  CHATTY_OVERLAY_MODE_WELCOME,
+  CHATTY_OVERLAY_MODE_EMPTY_IM_SMS,
+  CHATTY_OVERLAY_MODE_EMPTY_IM,
+  CHATTY_OVERLAY_MODE_EMPTY_SMS,
+  CHATTY_OVERLAY_MODE_HIDE
+} ChattyOverlayMode;
+
+
 typedef enum {
   CHATTY_VIEW_NEW_CHAT,
   CHATTY_VIEW_CHAT_LIST,
@@ -117,7 +139,7 @@ typedef enum {
 } ChattyWindowMessageMode;
 
 void chatty_window_change_view (guint state);
-void chatty_window_welcome_screen_show (gboolean show);
+void chatty_window_welcome_screen_show (guint mode, gboolean show);
 void chatty_window_activate (GtkApplication* app, gpointer user_data);
 void chatty_window_update_sub_header_titlebar (GdkPixbuf  *icon, const char *title);
 
