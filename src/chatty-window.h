@@ -56,13 +56,13 @@ typedef struct {
   GtkWidget         *dummy_prefix_radio;
   GtkWidget         *label_contact_id;
 
-  GtkBox            *box_welcome_overlay;
-  GtkImage          *icon_welcome_overlay;
-  GtkWidget         *label_welcome_overlay_1;
-  GtkWidget         *label_welcome_overlay_2;
-  GtkWidget         *label_welcome_overlay_3;
+  GtkBox            *box_overlay;
+  GtkImage          *icon_overlay;
+  GtkWidget         *label_overlay_1;
+  GtkWidget         *label_overlay_2;
+  GtkWidget         *label_overlay_3;
 
-  ChattyCmlOptions   cml_options;
+  ChattyCmlOptions     cml_options;
 
   struct {
     GtkWidget     *label_chat_id;
@@ -114,12 +114,29 @@ enum {
 
 
 enum {
-  CHATTY_OVERLAY_MODE_WELCOME,
-  CHATTY_OVERLAY_MODE_EMPTY_IM_SMS,
-  CHATTY_OVERLAY_MODE_EMPTY_IM,
-  CHATTY_OVERLAY_MODE_EMPTY_SMS,
-  CHATTY_OVERLAY_MODE_HIDE
+  CHATTY_OVERLAY_WELCOME,
+  CHATTY_OVERLAY_WELCOME_NO_SMS,
+  CHATTY_OVERLAY_EMPTY_CHAT,
+  CHATTY_OVERLAY_EMPTY_CHAT_NO_SMS,
+  CHATTY_OVERLAY_EMPTY_CHAT_NO_IM,
+  CHATTY_OVERLAY_EMPTY_CHAT_NO_SMS_IM,
+  CHATTY_OVERLAY_HIDE
 } ChattyOverlayMode;
+
+
+enum {
+  CHATTY_LIST_CHATS,
+  CHATTY_LIST_CONTACTS,
+  CHATTY_LIST_MUC
+} ChattyListType;
+
+
+enum {
+  CHATTY_ACCOUNTS_NONE   = 0,
+  CHATTY_ACCOUNTS_SMS    = 1 << 0,
+  CHATTY_ACCOUNTS_IM     = 1 << 1,
+  CHATTY_ACCOUNTS_IM_SMS = 3
+} ChattyActiveAccounts;
 
 
 typedef enum {
@@ -139,7 +156,7 @@ typedef enum {
 } ChattyWindowMessageMode;
 
 void chatty_window_change_view (guint state);
-void chatty_window_welcome_screen_show (guint mode, gboolean show);
+void chatty_window_overlay_show (gboolean show);
 void chatty_window_activate (GtkApplication* app, gpointer user_data);
 void chatty_window_update_sub_header_titlebar (GdkPixbuf  *icon, const char *title);
 

@@ -675,6 +675,28 @@ chatty_blist_buddy_is_displayable (PurpleBuddy *buddy)
 
 
 /**
+ * chatty_blist_list_has_children:
+ *
+ * Returns 0 if chats list is empty
+ *
+ */
+gboolean
+chatty_blist_list_has_children (int list_type)
+{
+  GtkTreeIter iter;
+  gboolean    result;
+
+  if (list_type == CHATTY_LIST_CHATS) {
+    result = gtk_tree_model_get_iter_first (GTK_TREE_MODEL(_chatty_blist->treemodel_chats), &iter);
+  } else if (list_type == CHATTY_LIST_CONTACTS) {
+    result = gtk_tree_model_get_iter_first (GTK_TREE_MODEL(_chatty_blist->treemodel_contacts), &iter);
+  }
+
+  return result;
+}
+
+
+/**
  * chatty_blist_chat_list_set_row:
  *
  * Activate the first entry in the chats list
@@ -1904,7 +1926,7 @@ chatty_blist_chats_update_node (PurpleBuddy     *buddy,
   }
 
   if (!purple_prefs_get_bool (CHATTY_PREFS_ROOT "/status/first_start")) {
-     chatty_window_welcome_screen_show (CHATTY_OVERLAY_MODE_HIDE, FALSE);
+     chatty_window_overlay_show (FALSE);
      purple_prefs_set_bool (CHATTY_PREFS_ROOT "/status/first_start", FALSE);
   }
 
@@ -2051,7 +2073,7 @@ chatty_blist_chats_update_group_chat (PurpleBlistNode *node)
   }
 
   if (!purple_prefs_get_bool (CHATTY_PREFS_ROOT "/status/first_start")) {
-     chatty_window_welcome_screen_show (CHATTY_OVERLAY_MODE_HIDE, FALSE);
+     chatty_window_overlay_show (FALSE);
      purple_prefs_set_bool (CHATTY_PREFS_ROOT "/status/first_start", FALSE);
   }
 
