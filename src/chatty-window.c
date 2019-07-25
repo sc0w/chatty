@@ -35,6 +35,46 @@ static void chatty_add_contact_action (GSimpleAction *action,
                                        gpointer       user_data);
 
 
+overlay_content_t OverlayContent[6] = {
+  {.title      = N_("Start chatting"),
+   .text_1     = N_("<b>SMS</b> Chat is set up by default. Start a chat with the \"+\" button in the titlebar."),
+   .text_2     = N_("Add <b>Instant Messaging</b> by selecting \n<i>\"Add new account\"</i> in <i>\"preferences\"</i>."),
+   .icon_name  = "sm.puri.Chatty-symbolic",
+   .icon_size  = 128,
+  },
+  {.title      = N_("Start chatting"),
+   .text_1     = N_("Add <b>Instant Messaging</b> by selecting \n<i>\"Add new account\"</i> in <i>\"preferences\"</i>."),
+   .text_2     = NULL,
+   .icon_name  = "sm.puri.Chatty-symbolic",
+   .icon_size  = 128,
+  },
+  {.title      = N_("Choose a contact"),
+   .text_1     = N_("Select an <b>SMS</b> or <b>Instant Message</b> contact with the <b>\"+\"</b> button in the titlebar."),
+   .text_2     = NULL,
+   .icon_name  = "system-users-symbolic",
+   .icon_size  = 128,
+  },
+  {.title      = N_("Choose a contact"),
+   .text_1     = N_("Select an <b>Instant Message</b> contact with the \"+\" button in the titlebar."),
+   .text_2     = NULL,
+   .icon_name  = "system-users-symbolic",
+   .icon_size  = 128,
+  },
+  {.title      = N_("Choose a contact"),
+   .text_1     = N_("Start a <b>SMS</b> chat with with the \"+\" button in the titlebar."),
+   .text_2     = N_("For <b>Instant Messaging</b> add or activate an account in <i>\"preferences\"</i>."),
+   .icon_name  = "system-users-symbolic",
+   .icon_size  = 128,
+  },
+  {.title      = N_("Choose a contact"),
+   .text_1     = N_("For <b>Instant Messaging</b> add or activate an account in <i>\"preferences\"</i>."),
+   .text_2     = NULL,
+   .icon_name  = "system-users-symbolic",
+   .icon_size  = 128,
+  }
+};
+
+
 static const GActionEntry window_action_entries [] = {
   { "add", chatty_new_chat_action },
   { "add-contact", chatty_add_contact_action },
@@ -158,6 +198,12 @@ chatty_window_change_view (ChattyWindowState view)
       hdy_leaflet_set_visible_child_name (chatty->content_box, "content");
       break;
     case CHATTY_VIEW_CHAT_LIST:
+      if (!chatty_blist_list_has_children (CHATTY_LIST_CHATS) &&
+          !gtk_widget_get_visible (GTK_WIDGET(chatty->box_overlay))) {
+
+        chatty_window_overlay_show (TRUE);
+      }
+
       hdy_leaflet_set_visible_child_name (chatty->content_box, "sidebar");
       break;
     default:
@@ -183,21 +229,67 @@ chatty_window_update_sub_header_titlebar (GdkPixbuf  *icon,
 
 
 void
-chatty_window_welcome_screen_show (gboolean show)
+chatty_window_overlay_show (gboolean show)
 {
+  gint   mode;
+  guint8 accounts = 0;
+
   chatty_data_t *chatty = chatty_get_data ();
 
   if (show) {
-    gtk_widget_show (GTK_WIDGET(chatty->box_welcome_overlay));
+    gtk_widget_show (GTK_WIDGET(chatty->box_overlay));
   } else {
-    gtk_widget_hide (GTK_WIDGET(chatty->box_welcome_overlay));
+    gtk_widget_hide (GTK_WIDGET(chatty->box_overlay));
+    return;
   }
 
   if (purple_accounts_find ("SMS", "prpl-mm-sms")) {
-    gtk_widget_show (GTK_WIDGET(chatty->label_welcome_overlay_sms));
-  } else {
-    gtk_widget_hide (GTK_WIDGET(chatty->label_welcome_overlay_sms));
+    accounts |= CHATTY_ACCOUNTS_SMS;
   }
+
+  if (accounts & CHATTY_ACCOUNTS_SMS && (g_list_length (purple_accounts_get_all ()) > 1)) {
+    accounts |= CHATTY_ACCOUNTS_IM;
+  }
+
+  // First start = welcome screen
+  if (purple_prefs_get_bool (CHATTY_PREFS_ROOT "/status/first_start")) {
+    purple_prefs_set_bool (CHATTY_PREFS_ROOT "/status/first_start", FALSE);
+
+    if (accounts & CHATTY_ACCOUNTS_SMS) {
+      mode = CHATTY_OVERLAY_WELCOME;
+    } else {
+      mode = CHATTY_OVERLAY_WELCOME_NO_SMS;
+    }
+  } else {
+    // No chat-list entries = empty-state placeholder
+    if (accounts == CHATTY_ACCOUNTS_IM_SMS) {
+      mode = CHATTY_OVERLAY_EMPTY_CHAT;
+    } else if (accounts == CHATTY_ACCOUNTS_SMS) {
+      mode = CHATTY_OVERLAY_EMPTY_CHAT_NO_IM;
+    } else if (accounts ^ CHATTY_ACCOUNTS_IM) {
+      mode = CHATTY_OVERLAY_EMPTY_CHAT_NO_SMS;
+    } else {
+      mode = CHATTY_OVERLAY_EMPTY_CHAT_NO_SMS_IM;
+    }
+  }
+
+  gtk_image_set_from_icon_name (chatty->icon_overlay,
+                                OverlayContent[mode].icon_name,
+                                0);
+
+  gtk_image_set_pixel_size (chatty->icon_overlay,
+                            OverlayContent[mode].icon_size);
+
+  gtk_label_set_text (GTK_LABEL(chatty->label_overlay_1),
+                      gettext (OverlayContent[mode].title));
+  gtk_label_set_text (GTK_LABEL(chatty->label_overlay_2),
+                      gettext (OverlayContent[mode].text_1));
+  gtk_label_set_text (GTK_LABEL(chatty->label_overlay_3),
+                      gettext (OverlayContent[mode].text_2));
+
+  gtk_label_set_use_markup (GTK_LABEL(chatty->label_overlay_1), TRUE);
+  gtk_label_set_use_markup (GTK_LABEL(chatty->label_overlay_2), TRUE);
+  gtk_label_set_use_markup (GTK_LABEL(chatty->label_overlay_3), TRUE);
 }
 
 
@@ -207,8 +299,6 @@ chatty_window_init_data (void)
   chatty_data_t *chatty = chatty_get_data ();
 
   chatty->dummy_prefix_radio = gtk_radio_button_new_from_widget (GTK_RADIO_BUTTON (NULL));
-
-  chatty_window_change_view (CHATTY_VIEW_CHAT_LIST);
 
   // These dialogs need to be created before purple_blist_show()
   chatty->dialog_new_chat = chatty_dialogs_create_dialog_new_chat ();
@@ -228,9 +318,10 @@ chatty_window_init_data (void)
   hdy_search_bar_connect_entry (chatty->search_bar_chats,
                                 chatty->search_entry_chats);
 
+  chatty_window_change_view (CHATTY_VIEW_CHAT_LIST);
+
   if (purple_prefs_get_bool (CHATTY_PREFS_ROOT "/status/first_start")) {
-    chatty_window_welcome_screen_show (TRUE);
-    purple_prefs_set_bool (CHATTY_PREFS_ROOT "/status/first_start", FALSE);
+    chatty_window_overlay_show (TRUE);
   }
 }
 
@@ -275,8 +366,11 @@ chatty_window_activate (GtkApplication *app,
   chatty->header_box = HDY_LEAFLET (gtk_builder_get_object (builder, "header_box"));
   chatty->header_group = HDY_HEADER_GROUP (gtk_builder_get_object (builder, "header_group"));
 
-  chatty->box_welcome_overlay = GTK_BOX (gtk_builder_get_object (builder, "welcome_overlay"));
-  chatty->label_welcome_overlay_sms = GTK_WIDGET (gtk_builder_get_object (builder, "label_sms"));
+  chatty->box_overlay = GTK_BOX (gtk_builder_get_object (builder, "welcome_overlay"));
+  chatty->icon_overlay = GTK_IMAGE (gtk_builder_get_object (builder, "icon"));
+  chatty->label_overlay_1 = GTK_WIDGET (gtk_builder_get_object (builder, "label_1"));
+  chatty->label_overlay_2 = GTK_WIDGET (gtk_builder_get_object (builder, "label_2"));
+  chatty->label_overlay_3 = GTK_WIDGET (gtk_builder_get_object (builder, "label_3"));
 
   chatty->pane_view_message_list = GTK_WIDGET (gtk_builder_get_object (builder, "pane_view_message_list"));
   chatty->pane_view_chat_list = GTK_BOX (gtk_builder_get_object (builder, "pane_view_chat_list"));

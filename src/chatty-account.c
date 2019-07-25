@@ -44,7 +44,7 @@ cb_account_added (PurpleAccount *account,
 {
   chatty_data_t *chatty = chatty_get_data ();
 
-  chatty_window_welcome_screen_show (FALSE);
+  chatty_window_overlay_show (FALSE);
 
   chatty_account_populate_account_list (chatty->list_manage_account, LIST_MANAGE_ACCOUNT);
 

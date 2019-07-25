@@ -386,15 +386,12 @@
                     <property name="expand">True</property>
                     <property name="orientation">vertical</property>
                     <child>
-                      <object class="GtkImage">
+                      <object class="GtkImage" id="icon">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="valign">center</property>
                         <property name="margin_top">60</property>
                         <property name="margin_bottom">36</property>
-                        <property name="pixel_size">128</property>
-                        <property name="icon_name">sm.puri.Chatty-symbolic</property>
-                        <property name="icon_size">0</property>
                         <style>
                           <class name="dim-label"/>
                         </style>
@@ -414,13 +411,12 @@
                         <property name="margin_end">36</property>
                         <property name="expand">True</property>
                         <child>
-                          <object class="GtkLabel">
+                          <object class="GtkLabel" id="label_1">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <property name="opacity">0.5</property>
                             <property name="halign">center</property>
                             <property name="margin_bottom">12</property>
-                            <property name="label" translatable="yes">Start chatting</property>
                             <property name="justify">center</property>
                             <property name="wrap">True</property>
                             <attributes>
@@ -435,16 +431,14 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkLabel" id="label_sms">
-                            <property name="visible">False</property>
+                          <object class="GtkLabel" id="label_2">
+                            <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <property name="opacity">0.5</property>
                             <property name="margin_top">24</property>
-                            <property name="label" translatable="yes">&lt;b&gt;SMS Chat&lt;/b&gt; is set up by default. Start a chat with the "+" button in the titlebar.</property>
                             <property name="xalign">0</property>
                             <property name="justify">left</property>
                             <property name="wrap">True</property>
-                            <property name="use_markup">True</property>
                           </object>
                           <packing>
                             <property name="expand">False</property>
@@ -453,17 +447,15 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkLabel">
+                          <object class="GtkLabel" id="label_3">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <property name="opacity">0.5</property>
                             <property name="margin_top">24</property>
                             <property name="margin_bottom">64</property>
-                            <property name="label" translatable="yes">Add &lt;b&gt;Instant Messaging&lt;/b&gt; by selecting &lt;i&gt;"Add new account"&lt;/i&gt; in the preferences.</property>
                             <property name="xalign">0</property>
                             <property name="justify">left</property>
                             <property name="wrap">True</property>
-                            <property name="use_markup">True</property>
                           </object>
                           <packing>
                             <property name="expand">False</property>
