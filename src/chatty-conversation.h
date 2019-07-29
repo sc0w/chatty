@@ -31,10 +31,11 @@ struct chatty_conv_view_header {
 };
 
 struct chatty_log {
-  char *time_stamp;
+  char    *time_stamp;
   time_t   epoch;  // TODO: @LELAND: Once log-parsing functions are cleaned, review this
-  char *name;
-  char *msg;
+  char    *name;
+  char    *msg;
+  int      dir;
 };
 
 struct chatty_conversation {

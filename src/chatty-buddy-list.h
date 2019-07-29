@@ -47,7 +47,7 @@ typedef struct _chatty_blist_node {
     char                 *last_msg_timestamp;
     time_t                last_msg_ts_raw;
     const char           *last_message;
-    const char           *last_message_name;
+    int                   last_message_dir;
     ChattyBlistNodeFlags  flags;
   } conv;
 } ChattyBlistNode;
