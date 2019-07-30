@@ -1950,7 +1950,7 @@ chatty_blist_chats_update_node (PurpleBuddy     *buddy,
     chatty_icon_do_alphashift (avatar, 77);
   }
 
-  if ((g_strcmp0 (chatty_node->conv.last_message_name, alias)) == 0) {
+  if (chatty_node->conv.last_message_dir == MSG_IS_INCOMING) {
     tag = "";
   } else {
     tag = _("Me: ");
@@ -2209,7 +2209,7 @@ chatty_blist_update_buddy (PurpleBuddyList *list,
 
     ui = node->ui_data;
     ui->conv.last_message = log_data->msg;
-    ui->conv.last_message_name = username;
+    ui->conv.last_message_dir = log_data->dir;
     ui->conv.last_msg_ts_raw = log_data->epoch;
     ui->conv.last_msg_timestamp = g_steal_pointer (&iso_timestamp);
 

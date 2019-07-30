@@ -348,7 +348,7 @@ chatty_history_get_im_last_message (const char *account,
   int           rc;
   sqlite3_stmt *stmt;
 
-  rc = sqlite3_prepare_v2(db, "SELECT message,max(timestamp) FROM chatty_im WHERE account=(?) AND who=(?)", -1, &stmt, NULL);
+  rc = sqlite3_prepare_v2(db, "SELECT message,direction,max(timestamp) FROM chatty_im WHERE account=(?) AND who=(?)", -1, &stmt, NULL);
   if (rc != SQLITE_OK)
     g_debug("Error preparing when getting chat last message. errno: %d, desc: %s", rc, sqlite3_errmsg(db));
 
@@ -362,7 +362,8 @@ chatty_history_get_im_last_message (const char *account,
 
   while ((sqlite3_step(stmt)) == SQLITE_ROW) {
     chatty_log->msg = (char *) g_strdup((const gchar *) sqlite3_column_text(stmt, 0));
-    chatty_log->epoch = sqlite3_column_int(stmt, 1);
+    chatty_log->dir = sqlite3_column_int(stmt, 1);
+    chatty_log->epoch = sqlite3_column_int(stmt, 2);
   }
 
   rc = sqlite3_finalize(stmt);
@@ -418,7 +419,7 @@ chatty_history_get_chat_messages (const char *account,
   rc = sqlite3_bind_int(stmt, 3, from_timestamp);
   if (rc != SQLITE_OK)
     g_debug("Error binding values when querying CHAT messages. errno: %d, desc: %s", rc, sqlite3_errmsg(db));
-  
+
   rc = sqlite3_bind_int(stmt, 4, limit);
   if (rc != SQLITE_OK)
     g_debug("Error binding values when querying CHAT messages. errno: %d, desc: %s", rc, sqlite3_errmsg(db));
@@ -430,7 +431,7 @@ chatty_history_get_chat_messages (const char *account,
       msg = sqlite3_column_text(stmt, 2);
       who = sqlite3_column_text(stmt, 3);
       uuid = sqlite3_column_text(stmt, 4);
-      
+
       if (skip){
         skip = g_strcmp0(oldest_message_displayed, (const char *)uuid);
       } else {
@@ -492,7 +493,7 @@ chatty_history_get_im_messages (const char* account,
   rc = sqlite3_bind_int(stmt, 4, limit);
   if (rc != SQLITE_OK)
     g_debug("Error binding when querying IM messages. errno: %d, desc: %s", rc, sqlite3_errmsg(db));
-  
+
   skip = oldest_message_displayed != NULL;
   first = 1;
   while ((sqlite3_step(stmt)) == SQLITE_ROW) {
@@ -575,5 +576,3 @@ chatty_history_delete_im (const char *account,
       g_debug("Error finalizing when deleting IM messages. errno: %d, desc: %s", rc, sqlite3_errmsg(db));
 
 }
-                                   
-
