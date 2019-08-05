@@ -71,18 +71,18 @@
 }
 
 .list_no_select:selected {
-  background-color: white;
+  background-color: @theme_base_color;
 }
 
 .list_select:selected {
-  background-color: #f5f5f5;
+  background-color: #c0bfbc;
 }
 
 
 /* MESSAGE LIST AND BUBBLES */
 .message_list {
   color: black;
-  background-color: white;
+  background-color: @theme_base_color;
 }
 
 .message_bubble {
