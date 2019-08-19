@@ -81,7 +81,7 @@ cb_get_fp_list_own (int         err,
       row = chatty_lurch_create_fingerprint_row (fp, *((guint32 *) curr_p->data));
 
       if (row) {
-        if (curr_p == g_list_last (filtered_list)) {
+        if (curr_p == g_list_first (filtered_list)) {
           gtk_container_add (GTK_CONTAINER(chatty_dialog->omemo.listbox_fp_own), row);
         } else {
           gtk_container_add (GTK_CONTAINER(chatty_dialog->omemo.listbox_fp_own_dev), row);
