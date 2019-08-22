@@ -11,6 +11,7 @@
 #include "chatty-application.h"
 #include "chatty-purple-init.h"
 #include "chatty-history.h"
+#include <libnotify/notify.h>
 
 
 int
@@ -18,6 +19,8 @@ main (int   argc,
       char *argv[])
 {
   int status;
+
+  notify_init ("Chatty");
 
   g_autoptr(ChattyApplication) application = NULL;
 
