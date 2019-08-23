@@ -150,7 +150,7 @@
                     </child>
                     <child>
                       <object class="HdyActionRow" id="row_pref_message_carbons">
-                        <property name="title" translatable="yes">Message Carbons</property>
+                        <property name="title" translatable="yes">Message Carbon Copies</property>
                         <property name="subtitle" translatable="yes">Share chat history among devices</property>
                         <property name="visible">True</property>
                         <property name="selectable">False</property>
