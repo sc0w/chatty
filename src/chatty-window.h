@@ -30,7 +30,6 @@ typedef struct {
   GtkHeaderBar      *sub_header_bar;
   GtkWidget         *sub_header_icon;
   GtkWidget         *sub_header_label;
-  GtkWidget         *header_spinner;
 
   GtkWidget         *dialog_settings;
   GtkWidget         *dialog_new_chat;

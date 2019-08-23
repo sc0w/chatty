@@ -154,6 +154,7 @@ chatty_account_add_to_accounts_list (PurpleAccount *account,
   GtkWidget      *switch_account_enabled;
   const gchar    *protocol_id;
   GtkWidget      *prefix_radio_button;
+  GtkWidget      *spinner;
 
   chatty_data_t *chatty = chatty_get_data ();
 
@@ -175,6 +176,9 @@ chatty_account_add_to_accounts_list (PurpleAccount *account,
   }
 
   if (list_type == LIST_MANAGE_ACCOUNT) {
+    spinner = gtk_spinner_new ();
+    gtk_widget_show (GTK_WIDGET(spinner));
+
     switch_account_enabled = gtk_switch_new ();
     gtk_widget_show (GTK_WIDGET(switch_account_enabled));
 
@@ -191,6 +195,12 @@ chatty_account_add_to_accounts_list (PurpleAccount *account,
                              G_CALLBACK(cb_switch_on_off_state_changed),
                              (gpointer) row,
                              0);
+
+    hdy_action_row_add_prefix (row, GTK_WIDGET(spinner));
+
+    g_object_set_data (G_OBJECT(row),
+                       "row-prefix",
+                       (gpointer)spinner);
 
     hdy_action_row_set_title (row, purple_account_get_username (account));
     hdy_action_row_set_subtitle (row, purple_account_get_protocol_name (account));

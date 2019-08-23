@@ -20,9 +20,9 @@ main (int   argc,
 {
   int status;
 
-  notify_init ("Chatty");
-
   g_autoptr(ChattyApplication) application = NULL;
+
+  notify_init ("Chatty");
 
   g_set_prgname (CHATTY_APP_ID);
   application = chatty_application_new ();
