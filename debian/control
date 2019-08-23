@@ -10,6 +10,7 @@ Build-Depends:
  libhandy-0.0-dev (>= 0.0.10),
  libebook-contacts1.2-dev,
  libpurple-dev,
+ libnotify-dev,
  libsqlite3-dev,
  meson,
 Standards-Version: 4.2.1
