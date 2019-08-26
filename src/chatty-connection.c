@@ -124,7 +124,7 @@ chatty_connection_connected (PurpleConnection *gc)
   if (g_hash_table_contains (auto_reconns, account)) {
     message = g_strdup_printf ("Account %s reconnected", user_name);
 
-    chatty_notify_show_notification (message, CHATTY_NOTIFY_TYPE_ACCOUNT, NULL);
+    chatty_notify_show_notification (message, CHATTY_NOTIFY_TYPE_GENERIC, NULL);
 
     g_free (message);
   }

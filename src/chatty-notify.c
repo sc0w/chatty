@@ -9,103 +9,99 @@
 #include <glib.h>
 #include <glib/gi18n.h>
 #include "purple.h"
-#include <libnotify/notify.h>
 #include "chatty-window.h"
 #include "chatty-notify.h"
 
 
 static void
-cb_open_message (NotifyNotification *notification,
-                 const char         *action,
-                 PurpleBlistNode    *node)
+cb_open_message (GSimpleAction *action,
+                 GVariant      *parameter,
+                 gpointer       user_data)
 {
   // TODO: switch to the conversation view
-
-  notify_notification_close (notification, NULL);
 }
 
 
 static void
-cb_open_settings (NotifyNotification *notification,
-                  const char         *action,
-                  gpointer            user_data)
+cb_open_settings (GSimpleAction *action,
+                  GVariant      *parameter,
+                  gpointer       user_data)
 {
   chatty_window_change_view (CHATTY_VIEW_SETTINGS);
-
-  notify_notification_close (notification, NULL);
 }
 
 
-static void
-cb_notification_closed (NotifyNotification *notification)
-{
-  g_object_unref (notification);
-}
+static const GActionEntry actions[] = {
+  { "open-message", cb_open_message, "s" },
+  { "open-settings", cb_open_settings }
+};
 
 
 void
-chatty_notify_show_notification (const char      *message,
-                                 guint            notification_type,
-                                 PurpleBlistNode *node)
+chatty_notify_show_notification (const char *message,
+                                 guint       notification_type,
+                                 const char *buddy_name)
 {
-  NotifyNotification *notification;
+  GApplication  *application;
+  GNotification *notification;
+  GIcon         *icon;
 
   if (!message) {
     return;
   }
 
-  notification = notify_notification_new (_("Chatty"), message, "sm.puri.Chatty-symbolic");
+  application = g_application_get_default ();
 
-  g_signal_connect (notification,
-                    "closed",
-                    G_CALLBACK (cb_notification_closed),
-                    NULL);
+  notification = g_notification_new (_("Chatty"));
 
-  notify_notification_set_category (notification, "messaging");
-  notify_notification_set_hint (notification, "transient", g_variant_new_boolean (TRUE));
-  notify_notification_set_hint (notification, "desktop-entry", g_variant_new_string (_("Chatty")));
+  g_notification_set_body (notification, message);
+
+  icon = g_icon_new_for_string ("sm.puri.Chatty-symbolic", NULL);
+
+  if (icon) {
+    g_notification_set_icon (notification, icon);
+  }
 
   switch (notification_type) {
     case CHATTY_NOTIFY_TYPE_MESSAGE:
-      notify_notification_set_urgency (notification, NOTIFY_URGENCY_LOW);
-      notify_notification_set_timeout (notification, NOTIFY_EXPIRES_DEFAULT);
+      g_notification_add_button_with_target (notification,
+                                             _("Open Message"),
+                                             "app.open-message",
+                                             "s",
+                                             buddy_name);
 
-      notify_notification_add_action (notification,
-                                      "open-message",
-                                      _("Open Message"),
-                                      (NotifyActionCallback) cb_open_message,
-                                      PURPLE_BLIST_NODE(node),
-                                      g_free);
+      g_notification_set_priority (notification, G_NOTIFICATION_PRIORITY_LOW);
+      g_application_send_notification (application, "conversation-message", notification);
       break;
 
     case CHATTY_NOTIFY_TYPE_ACCOUNT:
-      notify_notification_set_urgency (notification, NOTIFY_URGENCY_NORMAL);
-      notify_notification_set_timeout (notification, NOTIFY_EXPIRES_DEFAULT);
+      g_notification_add_button (notification,
+                                 _("Open Account Settings"),
+                                 "app.open-settings");
 
-      notify_notification_add_action (notification,
-                                      "open-settings",
-                                      _("Open Account Settings"),
-                                      (NotifyActionCallback) cb_open_settings,
-                                      NULL,
-                                      g_free);
+      g_notification_set_priority (notification, G_NOTIFICATION_PRIORITY_HIGH);
+      g_application_send_notification (application, "account-message", notification);
       break;
 
     case CHATTY_NOTIFY_TYPE_GENERIC:
-      notify_notification_set_urgency (notification, NOTIFY_URGENCY_LOW);
-      notify_notification_set_timeout (notification, NOTIFY_EXPIRES_DEFAULT);
+      g_notification_set_priority (notification, G_NOTIFICATION_PRIORITY_NORMAL);
+      g_application_send_notification (application, "generic-message", notification);
       break;
 
     case CHATTY_NOTIFY_TYPE_ERROR:
-      notify_notification_set_urgency (notification, NOTIFY_URGENCY_CRITICAL);
-      notify_notification_set_timeout (notification, NOTIFY_EXPIRES_DEFAULT);
+      g_notification_set_priority (notification, G_NOTIFICATION_PRIORITY_URGENT);
+      g_application_send_notification (application, "error-message", notification);
       break;
 
     default:
-      notify_notification_set_urgency (notification, NOTIFY_URGENCY_LOW);
-      notify_notification_set_timeout (notification, NOTIFY_EXPIRES_DEFAULT);
+      g_notification_set_priority (notification, G_NOTIFICATION_PRIORITY_LOW);
+      g_application_send_notification (application, "undefined-message", notification);
   }
 
-  if (!notify_notification_show (notification, NULL)) {
-    g_debug ("%s: Failed to show notification", __func__);
-  }
+  g_action_map_add_action_entries (G_ACTION_MAP (application),
+                                   actions,
+                                   G_N_ELEMENTS (actions),
+                                   application);
+
+  g_object_unref (notification);
 }

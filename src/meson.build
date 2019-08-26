@@ -29,7 +29,6 @@ chatty_deps = [
   dependency('purple'),
   dependency('libhandy-0.0'),
   dependency('sqlite3', version: '>=3.0.0'),
-	dependency('libnotify', version: '>= 0.7.3'),
   libebook_dep,
 ]
 

@@ -20,6 +20,6 @@ enum {
 
 void chatty_notify_show_notification (const char      *message,
                                       guint            notification_type,
-                                      PurpleBlistNode *node);
+                                      const char     *buddy_name);
 
 #endif
