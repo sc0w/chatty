@@ -19,7 +19,8 @@ enum {
 } ChattyNotifyType;
 
 
-void chatty_notify_show_notification (const char *message,
+void chatty_notify_show_notification (const char *title,
+                                      const char *message,
                                       guint       notification_type,
                                       const char *buddy_name);
 

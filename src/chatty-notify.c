@@ -33,12 +33,13 @@ cb_open_settings (GSimpleAction *action,
 
 static const GActionEntry actions[] = {
   { "open-message", cb_open_message, "s" },
-  { "open-settings", cb_open_settings }
+  { "open-settings", cb_open_settings },
 };
 
 
 void
-chatty_notify_show_notification (const char *message,
+chatty_notify_show_notification (const char *title,
+                                 const char *message,
                                  guint       notification_type,
                                  const char *buddy_name)
 {
@@ -52,7 +53,7 @@ chatty_notify_show_notification (const char *message,
 
   application = g_application_get_default ();
 
-  notification = g_notification_new (_("Chatty"));
+  notification = g_notification_new ("chatty");
 
   g_notification_set_body (notification, message);
 
@@ -70,21 +71,25 @@ chatty_notify_show_notification (const char *message,
                                              "s",
                                              buddy_name);
 
+      g_notification_set_title (notification, title ? title : _("Message Received"));
       g_notification_set_priority (notification, G_NOTIFICATION_PRIORITY_HIGH);
       g_application_send_notification (application, "x-chatty.im.received", notification);
       break;
 
     case CHATTY_NOTIFY_MESSAGE_ERROR:
+      g_notification_set_title (notification, title ? title : _("Message Error"));
       g_notification_set_priority (notification, G_NOTIFICATION_PRIORITY_URGENT);
       g_application_send_notification (application, "x-chatty.im.error", notification);
       break;
 
     case CHATTY_NOTIFY_ACCOUNT_GENERIC:
+      g_notification_set_title (notification, title ? title : _("Account Info"));
       g_notification_set_priority (notification, G_NOTIFICATION_PRIORITY_NORMAL);
       g_application_send_notification (application, "x-chatty.network", notification);
       break;
 
     case CHATTY_NOTIFY_ACCOUNT_CONNECTED:
+      g_notification_set_title (notification, title ? title : _("Account Connected"));
       g_notification_set_priority (notification, G_NOTIFICATION_PRIORITY_HIGH);
       g_application_send_notification (application, "x-chatty.network.connected", notification);
       break;
@@ -94,6 +99,7 @@ chatty_notify_show_notification (const char *message,
                                  _("Open Account Settings"),
                                  "app.open-settings");
 
+      g_notification_set_title (notification, title ? title : _("Account Disconnected"));
       g_notification_set_priority (notification, G_NOTIFICATION_PRIORITY_URGENT);
       g_application_send_notification (application, "x-chatty.network.disconnected", notification);
       break;
