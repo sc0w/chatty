@@ -10,16 +10,17 @@
 
 
 enum {
-  CHATTY_NOTIFY_TYPE_MESSAGE,
-  CHATTY_NOTIFY_TYPE_ACCOUNT,
-  CHATTY_NOTIFY_TYPE_PLUGIN,
-  CHATTY_NOTIFY_TYPE_GENERIC,
-  CHATTY_NOTIFY_TYPE_ERROR
+  CHATTY_NOTIFY_MESSAGE_RECEIVED,
+  CHATTY_NOTIFY_MESSAGE_ERROR,
+  CHATTY_NOTIFY_ACCOUNT_GENERIC,
+  CHATTY_NOTIFY_ACCOUNT_CONNECTED,
+  CHATTY_NOTIFY_ACCOUNT_DISCONNECTED,
+  CHATTY_NOTIFY_ACCOUNT_ERROR
 } ChattyNotifyType;
 
 
-void chatty_notify_show_notification (const char      *message,
-                                      guint            notification_type,
-                                      const char     *buddy_name);
+void chatty_notify_show_notification (const char *message,
+                                      guint       notification_type,
+                                      const char *buddy_name);
 
 #endif

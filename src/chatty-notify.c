@@ -63,39 +63,43 @@ chatty_notify_show_notification (const char *message,
   }
 
   switch (notification_type) {
-    case CHATTY_NOTIFY_TYPE_MESSAGE:
+    case CHATTY_NOTIFY_MESSAGE_RECEIVED:
       g_notification_add_button_with_target (notification,
                                              _("Open Message"),
                                              "app.open-message",
                                              "s",
                                              buddy_name);
 
-      g_notification_set_priority (notification, G_NOTIFICATION_PRIORITY_LOW);
-      g_application_send_notification (application, "conversation-message", notification);
+      g_notification_set_priority (notification, G_NOTIFICATION_PRIORITY_HIGH);
+      g_application_send_notification (application, "x-chatty.im.received", notification);
       break;
 
-    case CHATTY_NOTIFY_TYPE_ACCOUNT:
+    case CHATTY_NOTIFY_MESSAGE_ERROR:
+      g_notification_set_priority (notification, G_NOTIFICATION_PRIORITY_URGENT);
+      g_application_send_notification (application, "x-chatty.im.error", notification);
+      break;
+
+    case CHATTY_NOTIFY_ACCOUNT_GENERIC:
+      g_notification_set_priority (notification, G_NOTIFICATION_PRIORITY_NORMAL);
+      g_application_send_notification (application, "x-chatty.network", notification);
+      break;
+
+    case CHATTY_NOTIFY_ACCOUNT_CONNECTED:
+      g_notification_set_priority (notification, G_NOTIFICATION_PRIORITY_HIGH);
+      g_application_send_notification (application, "x-chatty.network.connected", notification);
+      break;
+
+    case CHATTY_NOTIFY_ACCOUNT_DISCONNECTED:
       g_notification_add_button (notification,
                                  _("Open Account Settings"),
                                  "app.open-settings");
 
-      g_notification_set_priority (notification, G_NOTIFICATION_PRIORITY_HIGH);
-      g_application_send_notification (application, "account-message", notification);
-      break;
-
-    case CHATTY_NOTIFY_TYPE_GENERIC:
-      g_notification_set_priority (notification, G_NOTIFICATION_PRIORITY_NORMAL);
-      g_application_send_notification (application, "generic-message", notification);
-      break;
-
-    case CHATTY_NOTIFY_TYPE_ERROR:
       g_notification_set_priority (notification, G_NOTIFICATION_PRIORITY_URGENT);
-      g_application_send_notification (application, "error-message", notification);
+      g_application_send_notification (application, "x-chatty.network.disconnected", notification);
       break;
 
     default:
-      g_notification_set_priority (notification, G_NOTIFICATION_PRIORITY_LOW);
-      g_application_send_notification (application, "undefined-message", notification);
+      g_debug ("%s: Unknown notification category", __func__);
   }
 
   g_action_map_add_action_entries (G_ACTION_MAP (application),
