@@ -21,6 +21,7 @@
 static GHashTable *auto_reconns = NULL;
 
 static gboolean chatty_connection_sign_on (gpointer data);
+static void chatty_connection_account_spinner (PurpleAccount *account, gboolean spin);
 
 
 static void
@@ -60,20 +61,26 @@ cb_account_removed (PurpleAccount *account,
   g_hash_table_remove (auto_reconns, account);
 }
 
+static void
+cb_account_disabled (PurpleAccount *account,
+                     gpointer       user_data)
+{
+  if (account) {
+    chatty_connection_account_spinner (account, FALSE);
+  }
+}
+
 
 static void
-chatty_connection_account_spinner (PurpleConnection *gc,
-                                   gboolean          spin)
+chatty_connection_account_spinner (PurpleAccount *account,
+                                   gboolean       spin)
 {
-  PurpleAccount *account;
   GList         *children;
   GList         *iter;
   GtkWidget     *spinner;
   HdyActionRow  *row;
 
   chatty_data_t *chatty = chatty_get_data ();
-
-  account = purple_connection_get_account (gc);
 
   children = gtk_container_get_children (GTK_CONTAINER(chatty->list_manage_account));
 
@@ -103,8 +110,12 @@ chatty_connection_connect_progress (PurpleConnection *gc,
                                     size_t            step,
                                     size_t            step_count)
 {
+  PurpleAccount *account;
+
+  account = purple_connection_get_account (gc);
+
   if ((int)step == 2) {
-    chatty_connection_account_spinner (gc, TRUE);
+    chatty_connection_account_spinner (account, TRUE);
   }
 }
 
@@ -113,13 +124,13 @@ static void
 chatty_connection_connected (PurpleConnection *gc)
 {
   PurpleAccount *account;
-  char            *message;
-  const char      *user_name;
+  char          *message;
+  const char    *user_name;
 
   account = purple_connection_get_account (gc);
   user_name = purple_account_get_username (account),
 
-  chatty_connection_account_spinner (gc, FALSE);
+  chatty_connection_account_spinner (account, FALSE);
 
   if (g_hash_table_contains (auto_reconns, account)) {
     message = g_strdup_printf ("Account %s reconnected", user_name);
@@ -248,7 +259,7 @@ chatty_connection_report_disconnect_reason (PurpleConnection     *gc,
     return;
   }
 
-  chatty_connection_account_spinner (gc, TRUE);
+  chatty_connection_account_spinner (account, TRUE);
 
   info = g_hash_table_lookup (auto_reconns, account);
 
@@ -355,6 +366,11 @@ chatty_connection_init (void)
                          "account-removed",
                          chatty_connection_get_handle(),
                          PURPLE_CALLBACK (cb_account_removed), NULL);
+
+  purple_signal_connect (purple_accounts_get_handle(),
+                         "account-disabled",
+                         chatty_connection_get_handle(),
+                         PURPLE_CALLBACK (cb_account_disabled), NULL);
 }
 
 
