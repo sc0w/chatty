@@ -10,7 +10,7 @@
 
 
 typedef struct {
-   int delay;
+   int   delay;
    guint timeout;
 } ChattyAutoRecon;
 

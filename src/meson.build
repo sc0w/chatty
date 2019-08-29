@@ -18,6 +18,7 @@ chatty_sources = [
   'chatty-history.c',
   'chatty-lurch.c',
   'chatty-utils.c',
+  'chatty-notify.c',
   'chatty-popover-actions.c',
   version_h,
 ]

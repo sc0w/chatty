@@ -233,16 +233,6 @@
                     <property name="pack_type">end</property>
                   </packing>
                 </child>
-                <child>
-                  <object class="GtkSpinner" id="header_spinner">
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="receives_default">False</property>
-                  </object>
-                  <packing>
-                    <property name="pack_type">end</property>
-                  </packing>
-                </child>
               </object>
               <packing>
                 <property name="name">sidebar</property>

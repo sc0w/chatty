@@ -10,14 +10,48 @@
 #include "chatty-window.h"
 #include "chatty-connection.h"
 #include "chatty-purple-init.h"
+#include "chatty-notify.h"
 
 
-#define INITIAL_RECON_DELAY_MIN   8
-#define INITIAL_RECON_DELAY_MAX  60
-#define MAX_RECON_DELAY         600
+#define INITIAL_RECON_DELAY_MIN  5
+#define INITIAL_RECON_DELAY_MAX  30
+#define MAX_RECON_DELAY          300
 
 
 static GHashTable *auto_reconns = NULL;
+
+static gboolean chatty_connection_sign_on (gpointer data);
+static void chatty_connection_account_spinner (PurpleAccount *account, gboolean spin);
+
+
+static void
+cb_sms_modem_added (int status)
+{
+  PurpleAccount   *account;
+  ChattyAutoRecon *info;
+
+  account = purple_accounts_find ("SMS", "prpl-mm-sms");
+
+  if (purple_account_is_disconnected (account)) {
+    info = g_hash_table_lookup (auto_reconns, account);
+
+    if (info == NULL) {
+      info = g_new0 (ChattyAutoRecon, 1);
+
+      g_hash_table_insert (auto_reconns, account, info);
+
+    }
+
+    info->delay = g_random_int_range (INITIAL_RECON_DELAY_MIN,
+                                      INITIAL_RECON_DELAY_MAX);
+
+    info->timeout = g_timeout_add_seconds (info->delay,
+                                           chatty_connection_sign_on,
+                                           account);
+  }
+
+  g_debug ("%s modem state: %i", __func__, status);
+}
 
 
 static void
@@ -27,6 +61,48 @@ cb_account_removed (PurpleAccount *account,
   g_hash_table_remove (auto_reconns, account);
 }
 
+static void
+cb_account_disabled (PurpleAccount *account,
+                     gpointer       user_data)
+{
+  if (account) {
+    chatty_connection_account_spinner (account, FALSE);
+  }
+}
+
+
+static void
+chatty_connection_account_spinner (PurpleAccount *account,
+                                   gboolean       spin)
+{
+  GList         *children;
+  GList         *iter;
+  GtkWidget     *spinner;
+  HdyActionRow  *row;
+
+  chatty_data_t *chatty = chatty_get_data ();
+
+  children = gtk_container_get_children (GTK_CONTAINER(chatty->list_manage_account));
+
+  for (iter = children; iter != NULL; iter = g_list_next (iter)) {
+    row = HDY_ACTION_ROW(iter->data);
+
+    if (g_object_get_data (G_OBJECT (row), "row-account") == account) {
+      spinner = g_object_get_data (G_OBJECT(row), "row-prefix");
+
+      if (spinner && spin) {
+        gtk_spinner_start (GTK_SPINNER(spinner));
+      } else if (spinner && !spin) {
+        gtk_spinner_stop (GTK_SPINNER(spinner));
+      }
+
+      break;
+    }
+  }
+
+  g_list_free (children);
+}
+
 
 static void
 chatty_connection_connect_progress (PurpleConnection *gc,
@@ -34,9 +110,13 @@ chatty_connection_connect_progress (PurpleConnection *gc,
                                     size_t            step,
                                     size_t            step_count)
 {
-  chatty_data_t *chatty = chatty_get_data ();
+  PurpleAccount *account;
 
-  gtk_spinner_start (GTK_SPINNER(chatty->header_spinner));
+  account = purple_connection_get_account (gc);
+
+  if ((int)step == 2) {
+    chatty_connection_account_spinner (account, TRUE);
+  }
 }
 
 
@@ -44,18 +124,25 @@ static void
 chatty_connection_connected (PurpleConnection *gc)
 {
   PurpleAccount *account;
+  char          *message;
+  const char    *user_name;
 
-  chatty_data_t *chatty = chatty_get_data ();
+  account = purple_connection_get_account (gc);
+  user_name = purple_account_get_username (account),
 
-  account  = purple_connection_get_account (gc);
+  chatty_connection_account_spinner (account, FALSE);
 
-  g_debug ("chatty_connection_connected");
+  if (g_hash_table_contains (auto_reconns, account)) {
+    message = g_strdup_printf ("Account %s reconnected", user_name);
 
-  if (purple_connections_get_connecting () == NULL) {
-    gtk_spinner_stop (GTK_SPINNER(chatty->header_spinner));
+    chatty_notify_show_notification (NULL, message, CHATTY_NOTIFY_ACCOUNT_CONNECTED, NULL);
+
+    g_free (message);
   }
 
   g_hash_table_remove (auto_reconns, account);
+
+  g_debug ("%s account: %s", __func__, purple_account_get_username (account));
 }
 
 
@@ -84,7 +171,7 @@ chatty_connection_sign_on (gpointer data)
   status = purple_account_get_active_status (account);
 
   if (purple_status_is_online (status)) {
-    g_debug ("Connect account");
+    g_debug ("%s: Connect %s", __func__, purple_account_get_username (account));
     purple_account_connect (account);
   }
 
@@ -99,7 +186,7 @@ chatty_connection_network_connected (void)
 
   l = list = purple_accounts_get_all_active ();
 
-  g_debug ("chatty_connection_network_connected");
+  g_debug ("%s", __func__);
 
   while (l) {
     PurpleAccount *account = (PurpleAccount*)l->data;
@@ -123,7 +210,7 @@ chatty_connection_network_disconnected (void)
 
   l = list = purple_accounts_get_all_active();
 
-  g_debug ("chatty_connection_network_disconnected");
+  g_debug ("%s", __func__);
 
   while (l) {
     PurpleAccount *a = (PurpleAccount*)l->data;
@@ -149,11 +236,30 @@ chatty_connection_report_disconnect_reason (PurpleConnection     *gc,
                                             PurpleConnectionError reason,
                                             const char           *text)
 {
-
   PurpleAccount   *account;
   ChattyAutoRecon *info;
+  char            *message;
+  const char      *user_name;
+  const char      *protocol_id;
 
   account = purple_connection_get_account (gc);
+  user_name = purple_account_get_username (account);
+  protocol_id = purple_account_get_protocol_id (account);
+
+  g_debug ("Disconnected: \"%s\" (%s)\nError: %d\nReason: %s",
+           user_name, protocol_id, reason, text);
+
+  if (!g_strcmp0 (protocol_id, "prpl-mm-sms")) {
+    // the SMS account gets included in auto_reconns
+    // in the 'cb_sms_modem_added' callback
+    message = g_strdup_printf ("SMS disconnected: %s", text);
+    chatty_notify_show_notification (user_name, message, CHATTY_NOTIFY_ACCOUNT_GENERIC, NULL);
+    g_free (message);
+
+    return;
+  }
+
+  chatty_connection_account_spinner (account, TRUE);
 
   info = g_hash_table_lookup (auto_reconns, account);
 
@@ -184,10 +290,17 @@ chatty_connection_report_disconnect_reason (PurpleConnection     *gc,
     purple_account_set_enabled (account, CHATTY_UI, FALSE);
   }
 
-  g_debug ("Disconnected: \"%s\" (%s)\n  >Error: %d\n  >Reason: %s",
-                                purple_account_get_username (account),
-                                purple_account_get_protocol_id (account),
-                                reason, text);
+  message = g_strdup_printf ("Account %s disconnected: %s", user_name, text);
+  chatty_notify_show_notification (NULL, message, CHATTY_NOTIFY_ACCOUNT_DISCONNECTED, NULL);
+  g_free (message);
+}
+
+
+static void
+chatty_connection_info (PurpleConnection *gc,
+                        const char       *text)
+{
+  g_debug ("%s: %s", __func__, text);
 }
 
 
@@ -196,7 +309,7 @@ static PurpleConnectionUiOps connection_ui_ops =
   chatty_connection_connect_progress,
   chatty_connection_connected,
   chatty_connection_disconnected,
-  NULL,
+  chatty_connection_info,
   NULL,
   chatty_connection_network_connected,
   chatty_connection_network_disconnected,
@@ -244,10 +357,20 @@ chatty_connection_init (void)
                                         NULL,
                                         chatty_connection_free_auto_recon);
 
+  purple_signal_connect (purple_plugins_get_handle (),
+                         "mm-sms-modem-added",
+                         chatty_connection_get_handle (),
+                         PURPLE_CALLBACK (cb_sms_modem_added), NULL);
+
   purple_signal_connect (purple_accounts_get_handle(),
                          "account-removed",
                          chatty_connection_get_handle(),
                          PURPLE_CALLBACK (cb_account_removed), NULL);
+
+  purple_signal_connect (purple_accounts_get_handle(),
+                         "account-disabled",
+                         chatty_connection_get_handle(),
+                         PURPLE_CALLBACK (cb_account_disabled), NULL);
 }
 
 
