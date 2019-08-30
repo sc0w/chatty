@@ -1107,6 +1107,7 @@ chatty_dialogs_create_dialog_settings (void)
 
   window = gtk_application_get_active_window (GTK_APPLICATION (g_application_get_default ()));
   gtk_window_set_transient_for (GTK_WINDOW(dialog), window);
+  gtk_window_set_position (GTK_WINDOW(dialog), GTK_WIN_POS_CENTER_ON_PARENT);
 
   g_object_unref (builder);
 
