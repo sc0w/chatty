@@ -1,6 +1,4 @@
-# kai <kai.klingenhagen@kabelmail.de>, 2018. #zanata
-# Max Schmidt <grell.robin@gmail.com>, 2019. #zanata
-# Mike Ballmann <mikeballmann@web.de>, 2019. #zanata
+# JR-Fi <juho@reivo.fi>, 2019. #zanata
 msgid ""
 msgstr ""
 "Project-Id-Version: purism-chatty\n"
@@ -9,10 +7,10 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2019-07-06 09:37+0000\n"
-"Last-Translator: Mike Ballmann <mikeballmann@web.de>\n"
-"Language-Team: German (Germany)\n"
-"Language: de_DE\n"
+"PO-Revision-Date: 2019-08-04 04:41+0000\n"
+"Last-Translator: JR-Fi <juho@reivo.fi>\n"
+"Language-Team: Finnish\n"
+"Language: fi\n"
 "X-Generator: Zanata 4.6.2\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
 
@@ -22,15 +20,17 @@ msgstr "Chatty"
 
 #: data/sm.puri.Chatty.appdata.xml.in:7
 msgid "A messaging application"
-msgstr "Messenger-Dienst"
+msgstr "Viestitysohjelma"
 
 #: data/sm.puri.Chatty.appdata.xml.in:8
 msgid "Chatty is a messaging application supporting XMPP and SMS."
-msgstr "Chatty ist ein Messenger-Dienst, der XMPP und SMS unterstützt."
+msgstr ""
+"Chatty on viestitysohjelma joka tukee tekstiviestejä (SMS) sekä XMPP "
+"protokollaa."
 
 #: data/sm.puri.Chatty.appdata.xml.in:16
 msgid "Chatty's message window"
-msgstr "Chatty's Nachrichten Fenster"
+msgstr "Chattyn viesti-ikkuna"
 
 #: data/sm.puri.Chatty.desktop.in:5
 msgid "sm.puri.Chatty"
@@ -38,431 +38,434 @@ msgstr "sm.puri.Chatty"
 
 #: data/sm.puri.Chatty.desktop.in:6
 msgid "SMS and XMPP chat application"
-msgstr "SMS und XMPP Chat Programm"
+msgstr "Tekstiviesti (SMS) ja XMPP viestitysohjelma"
 
 #: data/sm.puri.Chatty.desktop.in:7
 msgid "XMPP;SMS;chat;jabber;messaging;modem"
-msgstr "XMPP;SMS;chat;jabber;messaging;modem;chatten"
+msgstr "XMPP;SMS;chat;jabber;messaging;modem"
 
 #: src/chatty-application.c:50
 msgid "Show release version"
-msgstr ""
+msgstr "Näytä julkaisuversio"
 
 #: src/chatty-application.c:51
 msgid "Disable all accounts"
-msgstr "Alle Konten deaktivieren"
+msgstr "Poista käytöstä kaikki tilit"
 
 #: src/chatty-application.c:52
 msgid "Enable libpurple debug messages"
-msgstr ""
+msgstr "Mahdollista libpurple virheenetsinnän viestit"
 
 #: src/chatty-application.c:53
 msgid "Enable verbose libpurple debug messages"
-msgstr ""
+msgstr "Mahdollista laajennetut libpurple virheenetsinnän viestit"
 
 #: src/chatty-account.c:117
 msgid "SMS Number"
-msgstr "SMS Nummer"
+msgstr "Tekstiviestinumero"
 
 #: src/chatty-account.c:121
 msgid "Jabber ID"
-msgstr "Jabber ID"
+msgstr "Jabber tunnus"
 
 #: src/chatty-account.c:275
 msgid "Add new account..."
-msgstr "Account hinzufügen"
+msgstr "Lisää uusi tili..."
 
 #: src/chatty-account.c:302
 msgid "Contact added"
-msgstr "Kontakt hinzugefügt"
+msgstr "Yhteystieto lisätty"
 
 #: src/chatty-account.c:306
 #, c-format
 msgid "User %s has added %s to the contacts"
-msgstr "Nutzer %s hat %s den Kontakten hinzugefügt"
+msgstr "Käyttäjä %s on lisännyt %sn yhteystietoihin"
 
 #: src/chatty-account.c:367
 #, c-format
 msgid "Authorize %s?"
-msgstr "Autorisiere %s?"
+msgstr "Salli %s?"
 
 #: src/chatty-account.c:371
 msgid "Reject"
-msgstr "Ablehnen"
+msgstr "Hylkää"
 
 #: src/chatty-account.c:373
 msgid "Accept"
-msgstr "Annehmen"
+msgstr "Hyväksy"
 
 #: src/chatty-account.c:378
 #, c-format
 msgid "Add %s to contact list"
-msgstr "%s den Kontakten hinzufügen"
+msgstr "Lisää %s yhteystietoihin"
 
 #: src/chatty-buddy-list.c:830
 msgid "Disconnect group chat"
-msgstr "Gruppenchat beenden"
+msgstr "Katkaise ryhmä-keskustelu"
 
 #: src/chatty-buddy-list.c:831
 msgid "This removes chat from chats list"
-msgstr "Dies entfernt den Chat von der Chatliste"
+msgstr "Tämä poistaa keskustelun keskustelulistalta"
 
 #: src/chatty-buddy-list.c:835
 msgid "Delete chat with"
-msgstr "Lösche den Chat mit"
+msgstr "Poista keskustelu jossa"
 
 #: src/chatty-buddy-list.c:836
 msgid "This deletes the conversation history"
-msgstr "Vergangene Unterhaltung löschen"
+msgstr "Tämä poistaa keskusteluhistorian"
 
 #: src/chatty-buddy-list.c:848 src/ui/chatty-dialog-join-muc.ui:16
 #: src/ui/chatty-dialog-muc-info.ui:54 src/ui/chatty-dialog-new-chat.ui:54
 #: src/ui/chatty-dialog-settings.ui:37 src/ui/chatty-dialog-settings.ui:70
 msgid "Cancel"
-msgstr "Abbrechen"
+msgstr "Peruuta"
 
 #: src/chatty-buddy-list.c:850
 msgid "Delete"
-msgstr "Löschen"
+msgstr "Poista"
 
 #: src/chatty-buddy-list.c:1935
 msgid "Me: "
-msgstr "Ich:"
+msgstr "Minä:"
 
 #: src/chatty-conversation.c:1480
 msgid "Owner"
-msgstr "Besitzer"
+msgstr "Omistaja"
 
 #: src/chatty-conversation.c:1483
 msgid "Moderator"
-msgstr "Moderator"
+msgstr "Moderaattori"
 
 #: src/chatty-conversation.c:1486
 msgid "Member"
-msgstr "Mitglied"
+msgstr "Osallistuja"
 
 #: src/chatty-conversation.c:1939
 msgid "members"
-msgstr "Mitglieder"
+msgstr "Osallistujat"
 
 #: src/chatty-dialogs.c:211 src/ui/chatty-dialog-settings.ui:583
 msgid "Delete Account"
-msgstr "Account löschen"
+msgstr "Poista tili"
 
 #: src/chatty-dialogs.c:214
 #, c-format
 msgid "Delete account %s?"
-msgstr "Lösche Account %s?"
+msgstr "Poista tili %s?"
 
 #: src/chatty-dialogs.c:305
 msgid "connected"
-msgstr "Verbunden"
+msgstr "Yhteys muodostettu"
 
 #: src/chatty-dialogs.c:307
 msgid "connecting..."
-msgstr "Verbinde..."
+msgstr "Muodostetaan yhteyttä..."
 
 #: src/chatty-dialogs.c:309
 msgid "disconnected"
-msgstr "Verbindung getrennt"
+msgstr "Yhteys katkaistu"
 
 #: src/chatty-dialogs.c:563
 msgid "Cannot login"
-msgstr ""
+msgstr "Sisäänkirjautuminen ei onnistu"
 
 #: src/chatty-dialogs.c:566
 #, c-format
 msgid "Failed to login as %s:\n"
 "%s"
-msgstr ""
+msgstr "Sisäänkirjautuminen epäonnistui tunnuksella %s:\n"
+"%s"
 
 #: src/chatty-dialogs.c:1373
 msgid "Phone Number:"
-msgstr "Telefonnummer:"
+msgstr "Puhelinnumero:"
 
 #: src/chatty-lurch.c:116
 msgid "Encryption not available"
-msgstr "Verschlüsselung nicht verfügbar"
+msgstr "Salaus ei ole tarjolla"
 
 #: src/chatty-lurch.c:209 src/chatty-lurch.c:215
 msgid "This chat is not encrypted"
-msgstr "Dieser Chat ist nicht verschlüsselt"
+msgstr "Tämä keskustelu ei ole salattu"
 
 #: src/chatty-lurch.c:212
 msgid "Encryption is not available"
-msgstr "Verschlüsselung ist nicht verfügbar"
+msgstr "Salausta ei ole tarjolla"
 
 #: src/chatty-lurch.c:219
 msgid "This chat is encrypted"
-msgstr "Dieser Chat ist verschlüsselt"
+msgstr "Tämä keskustelu on salattu"
 
 #: src/chatty-message-list.c:68 src/chatty-message-list.c:73
 msgid "This is a IM conversation."
-msgstr "Dies ist eine IM Konversation."
+msgstr "Tämä on pikaviestikeskustelu (IM)."
 
 #: src/chatty-message-list.c:69 src/chatty-message-list.c:79
 msgid "Your messages are not encrypted,"
-msgstr "Deine Nachrichten sind nicht verschlüsselt,"
+msgstr "Viestisi eivät ole salattuja,"
 
 #: src/chatty-message-list.c:70
 msgid "ask your counterpart to use E2EE."
-msgstr "Bitten Sie Ihren Gesprächspartner E2EE zu verwenden."
+msgstr "pyydä vastapuoltasi käyttämään päästä-päähän salausta."
 
 #: src/chatty-message-list.c:74
 msgid "Your messages are secured"
-msgstr "Deine Nachrichten sind abgesichert"
+msgstr "Viestinvälityksesi on suojattu"
 
 #: src/chatty-message-list.c:75
 msgid "by end-to-end encryption."
-msgstr "durch End-zu-End-Verschlüsselung."
+msgstr "päästä-päähän salauksella."
 
 #: src/chatty-message-list.c:78
 msgid "This is a SMS conversation."
-msgstr "Dies ist eine SMS Konversation."
+msgstr "Tämä on tekstiviestikeskustelu "
 
 #: src/chatty-message-list.c:80
 msgid "and carrier rates may apply."
-msgstr "und kann Kosten Ihres Mobilfunkanbieters verursachen."
+msgstr ", joten huomioithan mahdolliset operaattorimaksut."
 
 #: src/ui/chatty-dialog-info.ui:11 src/ui/chatty-window.ui:70
 msgid "About Chatty"
-msgstr "Über Chatty"
+msgstr "Tietoja Chattystä"
 
 #: src/ui/chatty-dialog-info.ui:92
 msgid "An SMS and XMPP messaging client"
-msgstr "Ein SMS und XMPP Messaging-Client"
+msgstr ""
+"Tämä on ohjelma tekstiviesti (SMS) ja XMPP viestitysprotokollien "
+"käyttämiseen"
 
 #: src/ui/chatty-dialog-join-muc.ui:12 src/ui/chatty-window.ui:19
 msgid "New Group Chat"
-msgstr "Neuer Gruppenchat"
+msgstr "Uusi ryhmäkeskustelu"
 
 #: src/ui/chatty-dialog-join-muc.ui:28
 msgid "Join Chat"
-msgstr "Chat beitreten"
+msgstr "Liity keskusteluun"
 
 #: src/ui/chatty-dialog-join-muc.ui:80 src/ui/chatty-dialog-new-chat.ui:199
 msgid "Select chat account"
-msgstr "Wähle Chat-Account"
+msgstr "Valitse keskustelutili"
 
 #: src/ui/chatty-dialog-join-muc.ui:130
 msgid "Password (optional)"
-msgstr "Passwort (optional)"
+msgstr "Salasana (valinnainen)"
 
 #: src/ui/chatty-dialog-join-muc.ui:180
 msgid "Autojoin"
-msgstr "Automatisches Beitreten"
+msgstr "Automaattinen liittyminen"
 
 #: src/ui/chatty-dialog-join-muc.ui:181
 msgid "Join group chat at startup"
-msgstr "Trete Gruppenchats beim Start bei"
+msgstr "Liity ryhmäkeskusteluun käynnistyksessä"
 
 #: src/ui/chatty-dialog-muc-info.ui:25
 msgid "Group Details"
-msgstr "Gruppendetails"
+msgstr "Ryhmän tiedot"
 
 #: src/ui/chatty-dialog-muc-info.ui:50
 msgid "Invite Contact"
-msgstr "Kontakt einladen"
+msgstr "Kutsu kontakti"
 
 #: src/ui/chatty-dialog-muc-info.ui:66
 msgid "Invite"
-msgstr "Einladen"
+msgstr "Kutsu"
 
 #: src/ui/chatty-dialog-muc-info.ui:205
 msgid "Room settings"
-msgstr "Raumeinstellungen"
+msgstr "Tämän keskustelun asetukset"
 
 #: src/ui/chatty-dialog-muc-info.ui:228 src/ui/chatty-dialog-user-info.ui:178
 msgid "Notifications"
-msgstr "Benachrichtigungen"
+msgstr "Ilmoitukset"
 
 #: src/ui/chatty-dialog-muc-info.ui:229
 msgid "Show notification badge"
-msgstr ""
+msgstr "Näytä ilmoituskuvake"
 
 #: src/ui/chatty-dialog-muc-info.ui:244
 msgid "Edit topic"
-msgstr "Thema ändern"
+msgstr "Muuta otsikkoa"
 
 #: src/ui/chatty-dialog-muc-info.ui:245
 msgid "Users may change the topic"
-msgstr "Nutzer können das Thema ändern"
+msgstr "Käyttäjät voivat muuttaa otsikkoa"
 
 #: src/ui/chatty-dialog-muc-info.ui:260
 msgid "Persistent"
-msgstr "Dauerhaft"
+msgstr "Pysyvä"
 
 #: src/ui/chatty-dialog-muc-info.ui:261
 msgid "Room persists after the last user left"
-msgstr "Raum besteht weiterhin, nachdem der letzte Nutzer ihn verlässt"
+msgstr "Huone pysyy vaikka viimeinen käyttäjä poistuu"
 
 #: src/ui/chatty-dialog-muc-info.ui:276
 msgid "Auto-join"
-msgstr "Automatisches Beitreten"
+msgstr "Automaattinen liittyminen"
 
 #: src/ui/chatty-dialog-muc-info.ui:277
 msgid "Join chat at startup"
-msgstr "Betrete Chat beim Start"
+msgstr "Liity keskusteluun ohjelman käynnistyessä"
 
 #: src/ui/chatty-dialog-muc-info.ui:299
 msgid "0 members"
-msgstr "0 Mitglieder"
+msgstr "0 osallistujaa"
 
 #: src/ui/chatty-dialog-muc-info.ui:395
 msgid "Invite Message"
-msgstr "Einladungsnachricht"
+msgstr "Kutsuviesti"
 
 #: src/ui/chatty-dialog-new-chat.ui:25
 msgid "Start Chat"
-msgstr "Starte Chat"
+msgstr "Aloita keskustelu"
 
 #: src/ui/chatty-dialog-new-chat.ui:50
 msgid "New Contact"
-msgstr "Neuer Kontakt"
+msgstr "Uusi yhteystieto"
 
 #: src/ui/chatty-dialog-new-chat.ui:66 src/ui/chatty-window.ui:112
 msgid "Add Contact"
-msgstr "Kontakt hinzufügen"
+msgstr "Lisää yhteystieto"
 
 #: src/ui/chatty-dialog-new-chat.ui:249
 msgid "Alias (optional)"
-msgstr "Alias (optional)"
+msgstr "Alias (valinnainen)"
 
 #: src/ui/chatty-dialog-settings.ui:22 src/ui/chatty-window.ui:57
 msgid "Preferences"
-msgstr "Einstellungen"
+msgstr "Asetukset"
 
 #: src/ui/chatty-dialog-settings.ui:32
 msgid "Edit Account"
-msgstr "Konto bearbeiten"
+msgstr "Muokkaa tiliä"
 
 #: src/ui/chatty-dialog-settings.ui:47
 msgid "Save"
-msgstr "Speichern"
+msgstr "Tallenna"
 
 #: src/ui/chatty-dialog-settings.ui:65
 msgid "Add Account"
-msgstr "Konto hinzufügen"
+msgstr "Lisää tili"
 
 #: src/ui/chatty-dialog-settings.ui:80
 msgid "Add"
-msgstr "Hinzufügen"
+msgstr "Lisää"
 
 #: src/ui/chatty-dialog-settings.ui:145
 msgid "Accounts"
-msgstr "Konten"
+msgstr "Tilit"
 
 #: src/ui/chatty-dialog-settings.ui:170
 msgid "Privacy"
-msgstr "Privatsphäre"
+msgstr "Yksityisyys"
 
 #: src/ui/chatty-dialog-settings.ui:191
 msgid "Message Receipts"
-msgstr ""
+msgstr "Viestien kuittaus"
 
 #: src/ui/chatty-dialog-settings.ui:192
 msgid "Confirm received messages"
-msgstr "Bestätige erhaltene Nachrichten"
+msgstr "Kuittaa saadu viestit"
 
 #: src/ui/chatty-dialog-settings.ui:207
 msgid "Message Carbons"
-msgstr ""
+msgstr "Viestien kopiot"
 
 #: src/ui/chatty-dialog-settings.ui:208
 msgid "Share chat history among devices"
-msgstr ""
+msgstr "Jaa keskusteluhistoria laitteiden välillä"
 
 #: src/ui/chatty-dialog-settings.ui:223
 msgid "Typing Notification"
-msgstr ""
+msgstr "Tieto viestin kirjoittamisesta"
 
 #: src/ui/chatty-dialog-settings.ui:224
 msgid "Send typing messages"
-msgstr ""
+msgstr "Lähetä tieto kirjoittamisesta"
 
 #: src/ui/chatty-dialog-settings.ui:244
 msgid "Chats List"
-msgstr "Chatliste"
+msgstr "Keskusteluiden listaus"
 
 #: src/ui/chatty-dialog-settings.ui:265
 msgid "Show Offline Contacts"
-msgstr ""
+msgstr "Näytä offline-kontaktit"
 
 #: src/ui/chatty-dialog-settings.ui:266
 msgid "Show contacts in the chats list"
-msgstr ""
+msgstr "Näytä kontaktit keskusteluiden listassa"
 
 #: src/ui/chatty-dialog-settings.ui:281
 msgid "Indicate Offline Contacts"
-msgstr ""
+msgstr "Merkitse offline-kontaktit"
 
 #: src/ui/chatty-dialog-settings.ui:282
 msgid "Grey out avatars from offline contacts"
-msgstr ""
+msgstr "Häivytä offline-kontaktien kuvakkeet harmaiksi"
 
 #: src/ui/chatty-dialog-settings.ui:297
 msgid "Indicate Idle Contacts"
-msgstr ""
+msgstr "Merkitse passiiviset kontaktit"
 
 #: src/ui/chatty-dialog-settings.ui:298
 msgid "Blur avatars from offline contacts"
-msgstr ""
+msgstr "Häivytä offline-kontaktien kuvakkeet sumeiksi"
 
 #: src/ui/chatty-dialog-settings.ui:313
 msgid "Indicate Unknown Contacts"
-msgstr ""
+msgstr "Merkitse tuntemattomat kontaktit"
 
 #: src/ui/chatty-dialog-settings.ui:314
 msgid "Color unknown contact ID red"
-msgstr ""
+msgstr "Värjää tuntemattoman kontaktin tunnus punaiseksi"
 
 #: src/ui/chatty-dialog-settings.ui:334
 msgid "Editor"
-msgstr "Editor"
+msgstr "Editori"
 
 #: src/ui/chatty-dialog-settings.ui:355
 msgid "Graphical Emoticons"
-msgstr "Grafische Emoticons"
+msgstr "Hymiökuvakkeet"
 
 #: src/ui/chatty-dialog-settings.ui:356
 msgid "Convert ASCII emoticons"
-msgstr "Konvertiere ASCII Emoticons"
+msgstr "Muuta ASCII-tekstikuvakkeet"
 
 #: src/ui/chatty-dialog-settings.ui:371
 msgid "Return = Send Message"
-msgstr ""
+msgstr "Enter-nappi lähettää viestin"
 
 #: src/ui/chatty-dialog-settings.ui:372
 msgid "Send message with return key"
-msgstr ""
+msgstr "Lähetä viesti painamalla enter-nappia"
 
 #: src/ui/chatty-dialog-settings.ui:440
 msgid "Account ID"
-msgstr ""
+msgstr "Tilin tunnus"
 
 #: src/ui/chatty-dialog-settings.ui:473
 msgid "Protocol"
-msgstr "Protokoll"
+msgstr "Yhteysprotokolla"
 
 #: src/ui/chatty-dialog-settings.ui:502
 msgid "Status"
-msgstr "Status"
+msgstr "Tila"
 
 #: src/ui/chatty-dialog-settings.ui:531 src/ui/chatty-dialog-settings.ui:786
 msgid "Password"
-msgstr "Passwort"
+msgstr "Salasana"
 
 #: src/ui/chatty-dialog-settings.ui:599
 msgid "Own Fingerprint"
-msgstr ""
+msgstr "Oma sormenjälki"
 
 #: src/ui/chatty-dialog-settings.ui:626
 msgid "Other Devices"
-msgstr ""
+msgstr "Muut laitteet"
 
 #: src/ui/chatty-dialog-settings.ui:689
 msgid "Select Protocol"
-msgstr "Protokoll auswählen"
+msgstr "Valitse yhteysprotokolla"
 
 #: src/ui/chatty-dialog-settings.ui:710
 msgid "XMPP"
@@ -478,68 +481,68 @@ msgstr "Telegram"
 
 #: src/ui/chatty-dialog-settings.ui:813
 msgid "Server"
-msgstr "Server"
+msgstr "Palvelin"
 
 #: src/ui/chatty-dialog-user-info.ui:12 src/ui/chatty-window.ui:98
 msgid "Chat Details"
-msgstr "Chatdetails"
+msgstr "Keskustelun tiedot"
 
 #: src/ui/chatty-dialog-user-info.ui:94
 msgid "XMPP ID"
-msgstr ""
+msgstr "XMPP tunnus"
 
 #: src/ui/chatty-dialog-user-info.ui:109 src/ui/chatty-dialog-user-info.ui:193
 msgid "Encryption"
-msgstr "Verschlüsselung"
+msgstr "Salaus"
 
 #: src/ui/chatty-dialog-user-info.ui:194
 msgid "Secure messaging using OMEMO"
-msgstr ""
+msgstr "Turvaa viestinvälitys OMEMO-protokollalla"
 
 #: src/ui/chatty-dialog-user-info.ui:215
 msgid "Fingerprints"
-msgstr ""
+msgstr "Sormenjäljet"
 
 #: src/ui/chatty-message-list-popover.ui:18
 msgid "Copy"
-msgstr "Kopieren"
+msgstr "Kopioi"
 
 #: src/ui/chatty-pane-msg-view.ui:14
 msgid "Unencrypted"
-msgstr "Unverschlüsselt"
+msgstr "Salaamaton"
 
 #: src/ui/chatty-window.ui:32
 msgid "New Direct Chat"
-msgstr "Neuer Einzelchat"
+msgstr "Uusi suora keskustelu"
 
 #: src/ui/chatty-window.ui:137
 msgid "Leave Chat"
-msgstr "Chat verlassen"
+msgstr "Poistu keskustelusta"
 
 #: src/ui/chatty-window.ui:150
 msgid "Delete Chat"
-msgstr "Chat löschen"
+msgstr "Poista keskustelu"
 
 #: src/ui/chatty-window.ui:184
 msgid "Chats"
-msgstr "Chats"
+msgstr "Keskustelut"
 
 #: src/ui/chatty-window.ui:423
 msgid "Start chatting"
-msgstr "Starte Chat"
+msgstr "Aloita keskustelu"
 
 #: src/ui/chatty-window.ui:443
 msgid ""
 "<b>SMS Chat</b> is set up by default. Start a chat with the \"+\" button in "
 "the titlebar."
 msgstr ""
-"<b>SMS Chat</b> ist standardmäßig aktiviert. Starte einen Chat mit der \"+\" "
-"Taste in der Titelleiste."
+"<b>Tekstiviestitys</b> (SMS) on valmiiksi käytettävissä. Aloita keskustelu "
+"\"+\" painikkeesta."
 
 #: src/ui/chatty-window.ui:462
 msgid ""
 "Add <b>Instant Messaging</b> by selecting <i>\"Add new account\"</i> in the "
 "preferences."
 msgstr ""
-"Füge <b>Instant Messaging</b> mithilfe von <i>\"Account hinzufügen\"</i> in "
-"den Einstellungen hinzu ."
+"Lisää <b>pikaviestipalvelut</b> valitsemalla <i>\"Lisää uusi tili\"</i> "
+"asetusvalikossa."
