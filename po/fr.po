@@ -8,7 +8,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2019-05-03 10:45+0000\n"
+"PO-Revision-Date: 2019-07-04 03:20+0000\n"
 "Last-Translator: Valéry Febvre <vfebvre@easter-eggs.com>\n"
 "Language-Team: French\n"
 "Language: fr\n"
@@ -45,19 +45,19 @@ msgstr "XMPP;SMS;discussion;jabber;messagerie;modem"
 
 #: src/chatty-application.c:50
 msgid "Show release version"
-msgstr ""
+msgstr "Afficher la version"
 
 #: src/chatty-application.c:51
 msgid "Disable all accounts"
-msgstr ""
+msgstr "Désactiver tous les comptes"
 
 #: src/chatty-application.c:52
 msgid "Enable libpurple debug messages"
-msgstr ""
+msgstr "Activer les messages de débogage libpurple"
 
 #: src/chatty-application.c:53
 msgid "Enable verbose libpurple debug messages"
-msgstr ""
+msgstr "Activer les messages de débogage libpurple détaillés"
 
 #: src/chatty-account.c:117
 msgid "SMS Number"
@@ -167,33 +167,33 @@ msgstr "déconnecté"
 
 #: src/chatty-dialogs.c:563
 msgid "Cannot login"
-msgstr ""
+msgstr "Connexion impossible"
 
 #: src/chatty-dialogs.c:566
 #, c-format
 msgid "Failed to login as %s:\n"
 "%s"
-msgstr ""
+msgstr "Échec de la connexion en tant que %s : %s"
 
 #: src/chatty-dialogs.c:1373
 msgid "Phone Number:"
-msgstr ""
+msgstr "Numéro de téléphone :"
 
 #: src/chatty-lurch.c:116
 msgid "Encryption not available"
-msgstr ""
+msgstr "Chiffrement non disponible"
 
 #: src/chatty-lurch.c:209 src/chatty-lurch.c:215
 msgid "This chat is not encrypted"
-msgstr ""
+msgstr "Cette discussion n'est pas chiffrée"
 
 #: src/chatty-lurch.c:212
 msgid "Encryption is not available"
-msgstr ""
+msgstr "Le chiffrement n'est pas disponible"
 
 #: src/chatty-lurch.c:219
 msgid "This chat is encrypted"
-msgstr ""
+msgstr "Cette discussion est chiffrée"
 
 #: src/chatty-message-list.c:68 src/chatty-message-list.c:73
 msgid "This is a IM conversation."
@@ -365,7 +365,7 @@ msgstr "Confirmer les messages reçus"
 
 #: src/ui/chatty-dialog-settings.ui:207
 msgid "Message Carbons"
-msgstr ""
+msgstr "Synchronisation des messages sur tous les appareils"
 
 #: src/ui/chatty-dialog-settings.ui:208
 msgid "Share chat history among devices"
@@ -437,15 +437,15 @@ msgstr "Envoyer le message avec la touche Entrée"
 
 #: src/ui/chatty-dialog-settings.ui:440
 msgid "Account ID"
-msgstr ""
+msgstr "ID du compte"
 
 #: src/ui/chatty-dialog-settings.ui:473
 msgid "Protocol"
-msgstr ""
+msgstr "Protocole"
 
 #: src/ui/chatty-dialog-settings.ui:502
 msgid "Status"
-msgstr ""
+msgstr "État"
 
 #: src/ui/chatty-dialog-settings.ui:531 src/ui/chatty-dialog-settings.ui:786
 msgid "Password"
@@ -453,11 +453,11 @@ msgstr "Mot de passe"
 
 #: src/ui/chatty-dialog-settings.ui:599
 msgid "Own Fingerprint"
-msgstr ""
+msgstr "Propre empreinte digitale"
 
 #: src/ui/chatty-dialog-settings.ui:626
 msgid "Other Devices"
-msgstr ""
+msgstr "Autres appareils"
 
 #: src/ui/chatty-dialog-settings.ui:689
 msgid "Select Protocol"
@@ -485,19 +485,19 @@ msgstr "Détails de la discussion"
 
 #: src/ui/chatty-dialog-user-info.ui:94
 msgid "XMPP ID"
-msgstr ""
+msgstr "ID XMPP"
 
 #: src/ui/chatty-dialog-user-info.ui:109 src/ui/chatty-dialog-user-info.ui:193
 msgid "Encryption"
-msgstr ""
+msgstr "Chiffrement"
 
 #: src/ui/chatty-dialog-user-info.ui:194
 msgid "Secure messaging using OMEMO"
-msgstr ""
+msgstr "Messagerie sécurisée avec OMEMO"
 
 #: src/ui/chatty-dialog-user-info.ui:215
 msgid "Fingerprints"
-msgstr ""
+msgstr "Empreintes"
 
 #: src/ui/chatty-message-list-popover.ui:18
 msgid "Copy"

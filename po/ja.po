@@ -10,8 +10,8 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2019-04-14 06:46+0000\n"
-"Last-Translator: Punleuk Oum <punleuk.oum@gmail.com>\n"
+"PO-Revision-Date: 2019-08-24 04:31+0000\n"
+"Last-Translator: Scott Anecito <scott.anecito@linux.com>\n"
 "Language-Team: Japanese\n"
 "Language: ja\n"
 "X-Generator: Zanata 4.6.2\n"
@@ -47,7 +47,7 @@ msgstr "XMPP;SMS;chat;jabber;messaging;modem"
 
 #: src/chatty-application.c:50
 msgid "Show release version"
-msgstr ""
+msgstr "リリースバージョンを見せて"
 
 #: src/chatty-application.c:51
 msgid "Disable all accounts"
@@ -132,19 +132,19 @@ msgstr "私："
 
 #: src/chatty-conversation.c:1480
 msgid "Owner"
-msgstr ""
+msgstr "所有者"
 
 #: src/chatty-conversation.c:1483
 msgid "Moderator"
-msgstr ""
+msgstr "モデレーター"
 
 #: src/chatty-conversation.c:1486
 msgid "Member"
-msgstr ""
+msgstr "メンバー"
 
 #: src/chatty-conversation.c:1939
 msgid "members"
-msgstr ""
+msgstr "メンバーズ"
 
 #: src/chatty-dialogs.c:211 src/ui/chatty-dialog-settings.ui:583
 msgid "Delete Account"
@@ -169,7 +169,7 @@ msgstr "切断されました"
 
 #: src/chatty-dialogs.c:563
 msgid "Cannot login"
-msgstr ""
+msgstr "ログインできません"
 
 #: src/chatty-dialogs.c:566
 #, c-format
@@ -179,7 +179,7 @@ msgstr ""
 
 #: src/chatty-dialogs.c:1373
 msgid "Phone Number:"
-msgstr ""
+msgstr "電話番号:"
 
 #: src/chatty-lurch.c:116
 msgid "Encryption not available"
@@ -235,7 +235,7 @@ msgstr ""
 
 #: src/ui/chatty-dialog-join-muc.ui:12 src/ui/chatty-window.ui:19
 msgid "New Group Chat"
-msgstr ""
+msgstr "新しいグループチャット"
 
 #: src/ui/chatty-dialog-join-muc.ui:28
 msgid "Join Chat"
@@ -243,7 +243,7 @@ msgstr ""
 
 #: src/ui/chatty-dialog-join-muc.ui:80 src/ui/chatty-dialog-new-chat.ui:199
 msgid "Select chat account"
-msgstr ""
+msgstr "チャットアカウントを選択してください"
 
 #: src/ui/chatty-dialog-join-muc.ui:130
 msgid "Password (optional)"
@@ -251,15 +251,15 @@ msgstr ""
 
 #: src/ui/chatty-dialog-join-muc.ui:180
 msgid "Autojoin"
-msgstr ""
+msgstr "自動で参加"
 
 #: src/ui/chatty-dialog-join-muc.ui:181
 msgid "Join group chat at startup"
-msgstr ""
+msgstr "起動時にグループチャットの参加"
 
 #: src/ui/chatty-dialog-muc-info.ui:25
 msgid "Group Details"
-msgstr ""
+msgstr "グループ詳細"
 
 #: src/ui/chatty-dialog-muc-info.ui:50
 msgid "Invite Contact"
@@ -267,15 +267,15 @@ msgstr ""
 
 #: src/ui/chatty-dialog-muc-info.ui:66
 msgid "Invite"
-msgstr ""
+msgstr "招請"
 
 #: src/ui/chatty-dialog-muc-info.ui:205
 msgid "Room settings"
-msgstr ""
+msgstr "ルームのセッティング"
 
 #: src/ui/chatty-dialog-muc-info.ui:228 src/ui/chatty-dialog-user-info.ui:178
 msgid "Notifications"
-msgstr ""
+msgstr "通知"
 
 #: src/ui/chatty-dialog-muc-info.ui:229
 msgid "Show notification badge"
@@ -283,7 +283,7 @@ msgstr ""
 
 #: src/ui/chatty-dialog-muc-info.ui:244
 msgid "Edit topic"
-msgstr ""
+msgstr "トピックの編集"
 
 #: src/ui/chatty-dialog-muc-info.ui:245
 msgid "Users may change the topic"
@@ -291,7 +291,7 @@ msgstr ""
 
 #: src/ui/chatty-dialog-muc-info.ui:260
 msgid "Persistent"
-msgstr ""
+msgstr "永続的"
 
 #: src/ui/chatty-dialog-muc-info.ui:261
 msgid "Room persists after the last user left"
