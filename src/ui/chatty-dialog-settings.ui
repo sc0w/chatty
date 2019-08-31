@@ -34,13 +34,22 @@
                 <property name="visible">True</property>
                 <child>
                   <object class="GtkButton" id="button_edit_account_back">
-                    <property name="label" translatable="yes">Cancel</property>
-                    <property name="sensitive">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="receives_default">False</property>
                     <property name="visible">True</property>
+                    <property name="valign">center</property>
+                    <style>
+                      <class name="image-button"/>
+                    </style>
+                    <child>
+                      <object class="GtkImage">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="icon_name">go-previous-symbolic</property>
+                        <property name="icon_size">1</property>
+                      </object>
+                    </child>
                   </object>
-                  <packing>
-                    <property name="pack_type">start</property>
-                  </packing>
                 </child>
                 <child>
                   <object class="GtkButton" id="button_save_account">
@@ -67,13 +76,22 @@
                 <property name="visible">True</property>
                 <child>
                   <object class="GtkButton" id="button_add_account_back">
-                    <property name="label" translatable="yes">Cancel</property>
-                    <property name="sensitive">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="receives_default">False</property>
                     <property name="visible">True</property>
+                    <property name="valign">center</property>
+                    <style>
+                      <class name="image-button"/>
+                    </style>
+                    <child>
+                      <object class="GtkImage">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="icon_name">go-previous-symbolic</property>
+                        <property name="icon_size">1</property>
+                      </object>
+                    </child>
                   </object>
-                  <packing>
-                    <property name="pack_type">start</property>
-                  </packing>
                 </child>
                 <child>
                   <object class="GtkButton" id="button_add_account">
@@ -351,9 +369,9 @@
                                 <property name="hexpand">True</property>
                                 <property name="visible">True</property>
                                 <property name="sensitive">False</property>
-                                 <style>
-                                   <class name="entry_hide"/>
-                                 </style>
+                                <style>
+                                  <class name="entry_hide"/>
+                                </style>
                               </object>
                               <packing>
                                 <property name="left_attach">1</property>
