@@ -77,12 +77,12 @@ msgstr "Contatto aggiunto"
 #: src/chatty-account.c:306
 #, c-format
 msgid "User %s has added %s to the contacts"
-msgstr "Utente %s ha aggiunto%s ai contatti"
+msgstr "Utente %s ha aggiunto %s ai contatti"
 
 #: src/chatty-account.c:367
 #, c-format
 msgid "Authorize %s?"
-msgstr "Autorizzi%s?"
+msgstr "Autorizzi %s?"
 
 #: src/chatty-account.c:371
 msgid "Reject"
@@ -172,7 +172,8 @@ msgstr "Non posso autenticarmi"
 #, c-format
 msgid "Failed to login as %s:\n"
 "%s"
-msgstr "Fallito accesso come %s: %s"
+msgstr "Fallito accesso come %s:\n"
+"%s"
 
 #: src/chatty-dialogs.c:1373
 msgid "Phone Number:"
@@ -539,6 +540,6 @@ msgid ""
 "Add <b>Instant Messaging</b> by selecting <i>\"Add new account\"</i> in the "
 "preferences."
 msgstr ""
-"Aggiungi <b>Messaggio istantaneo</b> selezionando <i>\"Aggiungi nuovo "
-"account\"</i> nelle preferenze."
+"Aggiungi <b>Messaggio istantaneo</b> selezionando <i>\"Aggiungi nuovo account\"</i> nelle "
+"preferenze."
 
