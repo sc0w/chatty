@@ -172,7 +172,8 @@ msgstr "Non posso autenticarmi"
 #, c-format
 msgid "Failed to login as %s:\n"
 "%s"
-msgstr "Fallito accesso come %s: %s"
+msgstr "Fallito accesso come %s:\n"
+"%s"
 
 #: src/chatty-dialogs.c:1373
 msgid "Phone Number:"
