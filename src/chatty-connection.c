@@ -6,11 +6,14 @@
 
 #define G_LOG_DOMAIN "chatty-connection"
 
+#include <glib.h>
+#include <glib/gi18n.h>
 #include "purple.h"
 #include "chatty-window.h"
 #include "chatty-connection.h"
 #include "chatty-purple-init.h"
 #include "chatty-notify.h"
+#include "chatty-dialogs.h"
 
 
 #define INITIAL_RECON_DELAY_MIN  5
@@ -114,9 +117,40 @@ chatty_connection_connect_progress (PurpleConnection *gc,
 
   account = purple_connection_get_account (gc);
 
+  chatty_dialogs_update_connection_status ();
+
   if ((int)step == 2) {
     chatty_connection_account_spinner (account, TRUE);
   }
+}
+
+
+static void
+chatty_connection_error_dialog (PurpleAccount *account,
+                                const gchar   *error)
+{
+  GtkWidget *dialog;
+
+  chatty_dialog_data_t *chatty_dialog = chatty_get_dialog_data ();
+
+  dialog = gtk_message_dialog_new ((GtkWindow*)chatty_dialog->dialog_edit_account,
+                                   GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+                                   GTK_MESSAGE_ERROR,
+                                   GTK_BUTTONS_OK,
+                                   _("Login failed"));
+
+  gtk_message_dialog_format_secondary_text (GTK_MESSAGE_DIALOG(dialog),
+                                            _("%s: %s\n\n%s"),
+                                            error,
+                                            purple_account_get_username (account),
+                                            _("Please check ID and password"));
+
+  gtk_dialog_set_default_response (GTK_DIALOG(dialog), GTK_RESPONSE_CANCEL);
+  gtk_window_set_position (GTK_WINDOW(dialog), GTK_WIN_POS_CENTER_ON_PARENT);
+
+  gtk_dialog_run (GTK_DIALOG(dialog));
+
+  gtk_widget_destroy (dialog);
 }
 
 
@@ -140,6 +174,8 @@ chatty_connection_connected (PurpleConnection *gc)
     g_free (message);
   }
 
+  chatty_dialogs_update_connection_status ();
+
   g_hash_table_remove (auto_reconns, account);
 
   g_debug ("%s account: %s", __func__, purple_account_get_username (account));
@@ -149,6 +185,8 @@ chatty_connection_connected (PurpleConnection *gc)
 static void
 chatty_connection_disconnected (PurpleConnection *gc)
 {
+  chatty_dialogs_update_connection_status ();
+
   g_debug ("chatty_connection_disconnected");
 }
 
@@ -287,8 +325,12 @@ chatty_connection_report_disconnect_reason (PurpleConnection     *gc,
       g_hash_table_remove (auto_reconns, account);
     }
 
+    chatty_connection_error_dialog (account, text);
+
     purple_account_set_enabled (account, CHATTY_UI, FALSE);
   }
+
+  chatty_dialogs_update_connection_status ();
 
   message = g_strdup_printf ("Account %s disconnected: %s", user_name, text);
   chatty_notify_show_notification (NULL, message, CHATTY_NOTIFY_ACCOUNT_DISCONNECTED, NULL);
