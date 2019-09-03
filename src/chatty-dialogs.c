@@ -657,6 +657,9 @@ cb_button_add_account_clicked (GtkButton *sender,
   purple_accounts_add (account);
 
   chatty_dialogs_reset_settings_dialog ();
+
+  gtk_stack_set_visible_child_name (chatty_dialog->stack_panes_settings,
+                                    "view-settings");
 }
 
 
