@@ -75,6 +75,9 @@ cb_switch_prefs_state_changed (GtkSwitch *widget,
     case CHATTY_PREF_MUC_NOTIFICATIONS:
       chatty_conv_set_muc_prefs (CHATTY_PREF_MUC_NOTIFICATIONS, state);
       break;
+    case CHATTY_PREF_MUC_STATUS_MSG:
+      chatty_conv_set_muc_prefs (CHATTY_PREF_MUC_STATUS_MSG, state);
+      break;
     case CHATTY_PREF_MUC_PERSISTANT:
       chatty_conv_set_muc_prefs (CHATTY_PREF_MUC_PERSISTANT, state);
       break;
@@ -1125,6 +1128,7 @@ chatty_dialogs_create_dialog_muc_info (void)
   chatty->muc.button_edit_topic = GTK_WIDGET (gtk_builder_get_object (builder, "muc.button_edit_topic"));
   chatty->muc.box_topic_editor = GTK_WIDGET (gtk_builder_get_object (builder, "muc.box_topic_editor"));
   chatty->muc.switch_prefs_notifications = GTK_SWITCH (gtk_builder_get_object (builder, "pref_muc_notifications"));
+  chatty->muc.switch_prefs_status_msg = GTK_SWITCH (gtk_builder_get_object (builder, "pref_muc_status_msg"));
   chatty->muc.switch_prefs_persistant = GTK_SWITCH (gtk_builder_get_object (builder, "pref_muc_persistant"));
   chatty->muc.switch_prefs_autojoin = GTK_SWITCH (gtk_builder_get_object (builder, "pref_muc_autojoin"));
   chatty_dialog->box_topic_frame = GTK_WIDGET (gtk_builder_get_object (builder, "box_topic_frame"));
@@ -1157,6 +1161,11 @@ chatty_dialogs_create_dialog_muc_info (void)
                     "state-set",
                     G_CALLBACK(cb_switch_prefs_state_changed),
                     (gpointer)CHATTY_PREF_MUC_NOTIFICATIONS);
+
+  g_signal_connect (chatty->muc.switch_prefs_status_msg,
+                    "state-set",
+                    G_CALLBACK(cb_switch_prefs_state_changed),
+                    (gpointer)CHATTY_PREF_MUC_STATUS_MSG);
 
   g_signal_connect (chatty->muc.switch_prefs_persistant,
                     "state-set",

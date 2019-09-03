@@ -71,6 +71,7 @@ typedef struct {
     GtkWidget     *box_topic_editor;
     GtkTextBuffer *msg_buffer_topic;
     GtkSwitch     *switch_prefs_notifications;
+    GtkSwitch     *switch_prefs_status_msg;
     GtkSwitch     *switch_prefs_persistant;
     GtkSwitch     *switch_prefs_autojoin;
   } muc;
@@ -106,6 +107,7 @@ enum {
   CHATTY_PREF_CONVERT_SMILEY,
   CHATTY_PREF_RETURN_SENDS,
   CHATTY_PREF_MUC_NOTIFICATIONS,
+  CHATTY_PREF_MUC_STATUS_MSG,
   CHATTY_PREF_MUC_AUTOJOIN,
   CHATTY_PREF_MUC_PERSISTANT,
   CHATTY_PREF_LAST

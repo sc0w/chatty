@@ -254,6 +254,22 @@
                                   </object>
                                 </child>
                                 <child>
+                                  <object class="HdyActionRow">
+                                    <property name="title" translatable="yes">Status Messages</property>
+                                    <property name="subtitle" translatable="yes">Show status messages in chat</property>
+                                    <property name="visible">True</property>
+                                    <property name="selectable">False</property>
+                                    <property name="activatable">False</property>
+                                    <child type="action">
+                                      <object class="GtkSwitch" id="pref_muc_status_msg">
+                                        <property name="can_focus">True</property>
+                                        <property name="valign">center</property>
+                                        <property name="visible">True</property>
+                                      </object>
+                                    </child>
+                                  </object>
+                                </child>
+                                <child>
                                   <object class="HdyActionRow" id="row_settings_change_subject">
                                     <property name="title" translatable="yes">Edit topic</property>
                                     <property name="subtitle" translatable="yes">Users may change the topic</property>
