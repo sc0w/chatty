@@ -24,6 +24,7 @@
 #include "chatty-utils.h"
 #define HANDY_USE_UNSTABLE_API
 #include <handy.h>
+#include <libebook-contacts/libebook-contacts.h>
 
 
 static ChattyBuddyList *_chatty_blist = NULL;
@@ -750,6 +751,75 @@ chatty_blist_chat_list_selection (gboolean select)
 
   gtk_style_context_remove_class (sc, select ? "list_no_select" : "list_select");
   gtk_style_context_add_class (sc, select ? "list_select" : "list_no_select");
+}
+
+
+/**
+ * chatty_blist_add_buddy_from_uri:
+ *
+ * @uri: a const char
+ *
+ * called from chatty_application_open()
+ * in chatty-application.c
+ *
+ */
+void
+chatty_blist_add_buddy_from_uri (const char *uri)
+{
+  PurpleAccount     *account;
+  PurpleBuddy       *buddy;
+  GdkPixbuf         *avatar;
+  EPhoneNumber      *number;
+  char              *region;
+  char              *who;
+  g_autoptr(GError)  err = NULL;
+
+  account = purple_accounts_find ("SMS", "prpl-mm-sms");
+
+  if (!purple_account_is_connected (account)) {
+    return;
+  }
+
+  region = e_phone_number_get_default_region (NULL);
+  number = e_phone_number_from_string (uri, region, &err);
+
+  if (!number || !e_phone_number_is_supported ()) {
+    g_warning ("failed to parse %s: %s", uri, err->message);
+
+    return;
+  } else {
+    who = e_phone_number_to_string (number, E_PHONE_NUMBER_FORMAT_E164);
+  }
+
+  g_free (region);
+  e_phone_number_free (number);
+
+  buddy = purple_find_buddy (account, who);
+
+  if (!buddy) {
+    buddy = purple_buddy_new (account, who, NULL);
+
+    purple_blist_add_buddy (buddy, NULL, NULL, NULL);
+  }
+
+  avatar = chatty_icon_get_buddy_icon (PURPLE_BLIST_NODE(buddy),
+                                       who,
+                                       CHATTY_ICON_SIZE_MEDIUM,
+                                       CHATTY_COLOR_GREEN,
+                                       FALSE);
+
+  chatty_conv_im_with_buddy (account, g_strdup (who));
+
+  if (avatar) {
+    chatty_window_update_sub_header_titlebar (avatar,
+                                              who);
+  }
+
+  chatty_window_change_view (CHATTY_VIEW_MESSAGE_LIST);
+
+  g_free (who);
+
+  g_object_unref (avatar);
 }
 
 
