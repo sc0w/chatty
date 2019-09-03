@@ -1,0 +1,12 @@
+[Desktop Entry]
+Name=Chatty (daemon)
+Exec=chatty --daemon
+Icon=sm.puri.Chatty
+Comment=SMS and XMPP chat application (daemon mode)
+Keywords=XMPP;SMS;chat;jabber;messaging;modem
+Terminal=false
+Type=Application
+Categories=GNOME;GTK;Chat;InstantMessaging
+StartupNotify=true
+NoDisplay=true
+X-GNOME-AutoRestart=true

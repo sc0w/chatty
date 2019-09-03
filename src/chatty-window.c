@@ -391,6 +391,6 @@ chatty_window_activate (GtkApplication *app,
   gtk_builder_connect_signals (builder, NULL);
 
   g_object_unref (builder);
-  gtk_widget_show (GTK_WIDGET (window));
+
   chatty_window_init_data ();
 }

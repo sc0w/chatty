@@ -7,6 +7,15 @@ desktop_file = i18n.merge_file(
   install_dir: join_paths(get_option('datadir'), 'applications')
 )
 
+desktop_file = i18n.merge_file(
+  input: 'sm.puri.Chatty-daemon.desktop.in',
+  output: 'sm.puri.Chatty-daemon.desktop',
+  type: 'desktop',
+  po_dir: '../po',
+  install: true,
+  install_dir: join_paths(get_option('sysconfdir'), 'xdg/autostart')
+)
+
 iconsdir = join_paths(get_option('datadir'), 'icons', 'hicolor')
 foreach size: ['scalable', 'symbolic']
   install_subdir('icons/hicolor/' + size, install_dir: iconsdir)
