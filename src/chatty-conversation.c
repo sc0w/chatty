@@ -1833,8 +1833,8 @@ static void
 chatty_conv_update_muc_info (PurpleConversation *conv)
 {
   ChattyConversation       *chatty_conv;
-  PurplePluginProtocolInfo *prpl_info;
-  PurpleConnection         *gc;
+  PurpleConvChat           *chat;
+	PurpleConvChatBuddyFlags 	flags;
   PurpleBlistNode          *node;
   GtkWidget                *child;
   GList                    *children;
@@ -1847,11 +1847,9 @@ chatty_conv_update_muc_info (PurpleConversation *conv)
 
   chatty_conv = CHATTY_CONVERSATION(conv);
 
-  gc = purple_conversation_get_gc (conv);
+  chat = PURPLE_CONV_CHAT(conv);
 
   node = PURPLE_BLIST_NODE(purple_blist_find_chat (conv->account, conv->name));
-
-  prpl_info = PURPLE_PLUGIN_PROTOCOL_INFO(gc->prpl);
 
   chat_name = purple_conversation_get_title (conv);
 
@@ -1864,16 +1862,20 @@ chatty_conv_update_muc_info (PurpleConversation *conv)
   topic = purple_conv_chat_get_topic (PURPLE_CONV_CHAT(conv));
   topic = chatty_conv_check_for_links (topic);
 
-  if (prpl_info->set_chat_topic == NULL) {
-    gtk_label_set_text (GTK_LABEL(chatty->muc.label_topic), topic);
+  flags = purple_conv_chat_user_get_flags	(chat, chat->nick);
 
-    gtk_widget_show (GTK_WIDGET(chatty->muc.label_topic));
-    gtk_widget_hide (GTK_WIDGET(chatty->muc.box_topic_editor));
-  } else {
+  if (flags & PURPLE_CBFLAGS_FOUNDER) {
     gtk_text_buffer_set_text (chatty->muc.msg_buffer_topic, topic, strlen (topic));
 
     gtk_widget_show (GTK_WIDGET(chatty->muc.box_topic_editor));
     gtk_widget_hide (GTK_WIDGET(chatty->muc.label_topic));
+    gtk_widget_show (GTK_WIDGET(chatty->muc.label_title));
+  } else {
+    gtk_label_set_text (GTK_LABEL(chatty->muc.label_topic), topic);
+
+    gtk_widget_show (GTK_WIDGET(chatty->muc.label_topic));
+    gtk_widget_hide (GTK_WIDGET(chatty->muc.box_topic_editor));
+    gtk_widget_hide (GTK_WIDGET(chatty->muc.label_title));
   }
 
   gtk_switch_set_state (chatty->muc.switch_prefs_notifications,
