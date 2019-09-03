@@ -2188,8 +2188,12 @@ chatty_conv_write_conversation (PurpleConversation *conv,
     group_chat = FALSE;
   }
 
-  timestamp  = g_malloc0(MAX_TIMESTAMP_SIZE * sizeof(char));
-  strftime(timestamp, MAX_TIMESTAMP_SIZE, "%R", localtime(&mtime));
+  timestamp  = g_malloc0 (MAX_TIMESTAMP_SIZE * sizeof(char));
+  if (!strftime (timestamp, MAX_TIMESTAMP_SIZE * sizeof(char), "%R", localtime(&mtime))) {
+    timestamp = "";
+  }
+    
+  
   if (*message != '\0') {
      // TODO: LELAND: UID to be implemented by XEP-0313
     chatty_utils_generate_uuid(&uuid);
