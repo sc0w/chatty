@@ -42,6 +42,7 @@ void chatty_conv_new (PurpleConversation *conv);
 static gboolean chatty_conv_check_for_command (PurpleConversation *conv);
 static void chatty_update_typing_status (ChattyConversation *chatty_conv);
 static void chatty_check_for_emoticon (ChattyConversation *chatty_conv);
+static PurpleBlistNode *chatty_get_conv_blist_node (PurpleConversation *conv);
 
 
 // *** callbacks
@@ -1808,6 +1809,9 @@ chatty_conv_set_muc_prefs (gint     pref,
     case CHATTY_PREF_MUC_NOTIFICATIONS:
       purple_blist_node_set_bool (node, "chatty-notifications", value);
       break;
+    case CHATTY_PREF_MUC_STATUS_MSG:
+      purple_blist_node_set_bool (node, "chatty-status-msg", value);
+      break;
     case CHATTY_PREF_MUC_PERSISTANT:
       purple_blist_node_set_bool (node, "chatty-persistant", value);
       break;
@@ -1833,8 +1837,8 @@ static void
 chatty_conv_update_muc_info (PurpleConversation *conv)
 {
   ChattyConversation       *chatty_conv;
-  PurplePluginProtocolInfo *prpl_info;
-  PurpleConnection         *gc;
+  PurpleConvChat           *chat;
+	PurpleConvChatBuddyFlags 	flags;
   PurpleBlistNode          *node;
   GtkWidget                *child;
   GList                    *children;
@@ -1847,11 +1851,9 @@ chatty_conv_update_muc_info (PurpleConversation *conv)
 
   chatty_conv = CHATTY_CONVERSATION(conv);
 
-  gc = purple_conversation_get_gc (conv);
+  chat = PURPLE_CONV_CHAT(conv);
 
   node = PURPLE_BLIST_NODE(purple_blist_find_chat (conv->account, conv->name));
-
-  prpl_info = PURPLE_PLUGIN_PROTOCOL_INFO(gc->prpl);
 
   chat_name = purple_conversation_get_title (conv);
 
@@ -1864,20 +1866,27 @@ chatty_conv_update_muc_info (PurpleConversation *conv)
   topic = purple_conv_chat_get_topic (PURPLE_CONV_CHAT(conv));
   topic = chatty_conv_check_for_links (topic);
 
-  if (prpl_info->set_chat_topic == NULL) {
-    gtk_label_set_text (GTK_LABEL(chatty->muc.label_topic), topic);
+  flags = purple_conv_chat_user_get_flags	(chat, chat->nick);
 
-    gtk_widget_show (GTK_WIDGET(chatty->muc.label_topic));
-    gtk_widget_hide (GTK_WIDGET(chatty->muc.box_topic_editor));
-  } else {
+  if (flags & PURPLE_CBFLAGS_FOUNDER) {
     gtk_text_buffer_set_text (chatty->muc.msg_buffer_topic, topic, strlen (topic));
 
     gtk_widget_show (GTK_WIDGET(chatty->muc.box_topic_editor));
     gtk_widget_hide (GTK_WIDGET(chatty->muc.label_topic));
+    gtk_widget_show (GTK_WIDGET(chatty->muc.label_title));
+  } else {
+    gtk_label_set_text (GTK_LABEL(chatty->muc.label_topic), topic);
+
+    gtk_widget_show (GTK_WIDGET(chatty->muc.label_topic));
+    gtk_widget_hide (GTK_WIDGET(chatty->muc.box_topic_editor));
+    gtk_widget_hide (GTK_WIDGET(chatty->muc.label_title));
   }
 
   gtk_switch_set_state (chatty->muc.switch_prefs_notifications,
                         purple_blist_node_get_bool (node, "chatty-notifications"));
+
+  gtk_switch_set_state (chatty->muc.switch_prefs_status_msg,
+                        purple_blist_node_get_bool (node, "chatty-status-msg"));
 
   gtk_switch_set_state (chatty->muc.switch_prefs_persistant,
                         purple_blist_node_get_bool (node, "chatty-persistant"));
@@ -2132,7 +2141,9 @@ chatty_conv_write_conversation (PurpleConversation *conv,
     flags &= ~(PURPLE_MESSAGE_SEND | PURPLE_MESSAGE_RECV);
   }
 
-  conv_name = purple_conversation_get_name (chatty_conv->conv);
+  conv_name = purple_conversation_get_name (conv);
+
+  node = chatty_get_conv_blist_node (conv);
 
   account = purple_conversation_get_account (conv);
   g_return_if_fail (account != NULL);
@@ -2166,8 +2177,6 @@ chatty_conv_write_conversation (PurpleConversation *conv,
       }
     }
   } else {
-    buddy = purple_find_buddy (account, who);
-    node = (PurpleBlistNode*)buddy;
 
     if (node) {
       purple_blist_node_set_bool (node, "chatty-autojoin", TRUE);
@@ -2195,6 +2204,7 @@ chatty_conv_write_conversation (PurpleConversation *conv,
       } else {
         chatty_history_add_im_message (message, 1, account->username, who_no_resource, uuid, mtime);
       }
+
       g_free (msg_html);
     } else if (flags & PURPLE_MESSAGE_SEND) {
       msg_html = chatty_conv_check_for_links (message);
@@ -2209,13 +2219,17 @@ chatty_conv_write_conversation (PurpleConversation *conv,
       } else {
         chatty_history_add_im_message (message, -1, account->username, who_no_resource, uuid, mtime);
       }
+
       g_free (msg_html);
     } else if (flags & PURPLE_MESSAGE_SYSTEM) {
-      chatty_msg_list_add_message (chatty_conv->msg_list,
-                                   MSG_IS_SYSTEM,
-                                   message,
-                                   NULL,
-                                   NULL);
+      if (purple_blist_node_get_bool (node, "chatty-status-msg")) {
+        chatty_msg_list_add_message (chatty_conv->msg_list,
+                                     MSG_IS_SYSTEM,
+                                     message,
+                                     NULL,
+                                     NULL);
+      }
+
       if (type == PURPLE_CONV_TYPE_CHAT){
         // TODO: LELAND: Do not store "The topic is:" or store them but dont show to the user
         //chatty_history_add_chat_message (chat_id, message, 0, real_who, alias, uuid, mtime, conv_name);
@@ -2285,9 +2299,12 @@ chatty_get_conv_blist_node (PurpleConversation *conv)
 static void
 chatty_conv_switch_conv (ChattyConversation *chatty_conv)
 {
-  gint page_num;
+  PurpleConversationType conv_type;
+  gint                   page_num;
 
   chatty_data_t *chatty = chatty_get_data();
+
+  conv_type = purple_conversation_get_type (chatty_conv->conv);
 
   page_num = gtk_notebook_page_num (GTK_NOTEBOOK(chatty->pane_view_message_list),
                                     chatty_conv->tab_cont);
@@ -2298,8 +2315,11 @@ chatty_conv_switch_conv (ChattyConversation *chatty_conv)
   g_debug ("chatty_conv_switch_conv active_conv: %s   page_num %i",
            purple_conversation_get_name (chatty_conv->conv), page_num);
 
-  gtk_widget_grab_focus (GTK_WIDGET(chatty_conv->input.entry));
+  if (conv_type == PURPLE_CONV_TYPE_CHAT) {
+    gtk_widget_show (chatty->button_header_chat_info);
+  }
 
+  gtk_widget_grab_focus (GTK_WIDGET(chatty_conv->input.entry));
 }
 
 
@@ -2346,7 +2366,6 @@ chatty_conv_present_conversation (PurpleConversation *conv)
   g_debug ("chatty_conv_present_conversation conv: %s", purple_conversation_get_name (conv));
 
   chatty_conv_switch_conv (chatty_conv);
-
 }
 
 

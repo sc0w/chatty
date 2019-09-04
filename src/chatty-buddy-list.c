@@ -137,7 +137,6 @@ cb_tree_view_row_activated (GtkTreeView       *treeview,
 
     _chatty_blist->selected_node = node;
 
-    gtk_widget_show (chatty->button_header_chat_info);
     gtk_widget_hide (chatty->button_menu_add_contact);
 
     chatty_conv_join_chat (chat);

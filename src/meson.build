@@ -19,6 +19,8 @@ chatty_sources = [
   'chatty-lurch.c',
   'chatty-utils.c',
   'chatty-notify.c',
+  'chatty-purple-request.c',
+  'chatty-purple-notify.c',
   'chatty-popover-actions.c',
   version_h,
 ]

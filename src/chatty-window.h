@@ -69,11 +69,13 @@ typedef struct {
   struct {
     GtkWidget     *label_chat_id;
     GtkWidget     *label_topic;
+    GtkWidget     *label_title;
     GtkWidget     *label_num_user;
     GtkWidget     *button_edit_topic;
     GtkWidget     *box_topic_editor;
     GtkTextBuffer *msg_buffer_topic;
     GtkSwitch     *switch_prefs_notifications;
+    GtkSwitch     *switch_prefs_status_msg;
     GtkSwitch     *switch_prefs_persistant;
     GtkSwitch     *switch_prefs_autojoin;
   } muc;
@@ -109,6 +111,7 @@ enum {
   CHATTY_PREF_CONVERT_SMILEY,
   CHATTY_PREF_RETURN_SENDS,
   CHATTY_PREF_MUC_NOTIFICATIONS,
+  CHATTY_PREF_MUC_STATUS_MSG,
   CHATTY_PREF_MUC_AUTOJOIN,
   CHATTY_PREF_MUC_PERSISTANT,
   CHATTY_PREF_LAST

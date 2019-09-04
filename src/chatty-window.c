@@ -112,6 +112,21 @@ cb_leaflet_notify_fold (GObject       *sender,
 }
 
 
+static gboolean
+cb_show_overlay_timeout (gpointer data)
+{
+  chatty_data_t *chatty = chatty_get_data ();
+
+  if (!chatty_blist_list_has_children (CHATTY_LIST_CHATS) &&
+     !gtk_widget_get_visible (GTK_WIDGET(chatty->box_overlay))) {
+
+   chatty_window_overlay_show (TRUE);
+  }
+
+  return FALSE;
+}
+
+
 static void
 chatty_update_header (void)
 {
@@ -198,11 +213,7 @@ chatty_window_change_view (ChattyWindowState view)
       hdy_leaflet_set_visible_child_name (chatty->content_box, "content");
       break;
     case CHATTY_VIEW_CHAT_LIST:
-      if (!chatty_blist_list_has_children (CHATTY_LIST_CHATS) &&
-          !gtk_widget_get_visible (GTK_WIDGET(chatty->box_overlay))) {
-
-        chatty_window_overlay_show (TRUE);
-      }
+      g_timeout_add_seconds (2, cb_show_overlay_timeout, NULL);
 
       hdy_leaflet_set_visible_child_name (chatty->content_box, "sidebar");
       break;

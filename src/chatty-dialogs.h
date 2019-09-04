@@ -56,5 +56,6 @@ void chatty_dialogs_show_dialog_new_contact (void);
 void chatty_dialogs_show_dialog_join_muc (void);
 void chatty_dialogs_show_dialog_user_info (ChattyConversation *chatty_conv);
 void chatty_dialogs_show_dialog_about_chatty (void);
+void chatty_dialogs_update_connection_status (void);
 
 #endif
