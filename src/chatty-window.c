@@ -334,6 +334,13 @@ chatty_window_init_data (void)
   if (purple_prefs_get_bool (CHATTY_PREFS_ROOT "/status/first_start")) {
     chatty_window_overlay_show (TRUE);
   }
+
+  // we are ready to open URI links now
+  if (chatty->uri) {
+    chatty_blist_add_buddy_from_uri (chatty->uri);
+  }
+
+  chatty->app_running = TRUE;
 }
 
 

@@ -29,6 +29,7 @@
 #include "chatty-window.h"
 #include "chatty-application.h"
 #include "chatty-purple-init.h"
+#include "chatty-buddy-list.h"
 
 /**
  * SECTION: chatty-application
@@ -68,43 +69,45 @@ static gint
 chatty_application_handle_local_options (GApplication *application,
                                          GVariantDict *options)
 {
-  if (g_variant_dict_contains (options, "version"))
-    {
-      g_print ("%s %s\n", PACKAGE_NAME, PACKAGE_VERSION);
-      return 0;
-    }
+  g_autoptr(GError) error = NULL;
+  gboolean          result;
+
+  chatty_data_t *chatty = chatty_get_data ();
+
+  chatty->cml_options = CHATTY_CML_OPT_NONE;
+
+  result = g_application_register (application, NULL, &error);
+
+  if (!result) {
+    g_debug ("Application register failed: %s", error->message);
+  }
+
+  if (g_variant_dict_contains (options, "disable")) {
+    chatty->cml_options |= CHATTY_CML_OPT_DISABLE;
+  } else if (g_variant_dict_contains (options, "debug")) {
+    chatty->cml_options |= CHATTY_CML_OPT_DEBUG;
+  } else if (g_variant_dict_contains (options, "verbose")) {
+    chatty->cml_options |= CHATTY_CML_OPT_VERBOSE;
+  } else if (g_variant_dict_contains (options, "version")) {
+    g_print ("%s %s\n", PACKAGE_NAME, PACKAGE_VERSION);
+    return 0;
+  }
+
+  g_application_activate (application);
 
   return -1;
 }
 
-static gint
-chatty_application_command_line (GApplication            *application,
-                                 GApplicationCommandLine *command_line)
-{
-  GVariantDict *options;
-
-  chatty_data_t *chatty = chatty_get_data ();
-
-  options = g_application_command_line_get_options_dict (command_line);
-
-  chatty->cml_options = CHATTY_CML_OPT_NONE;
-
-  if (g_variant_dict_contains (options, "disable"))
-    chatty->cml_options |= CHATTY_CML_OPT_DISABLE;
-  else if (g_variant_dict_contains (options, "debug"))
-    chatty->cml_options |= CHATTY_CML_OPT_DEBUG;
-  else if (g_variant_dict_contains (options, "verbose"))
-    chatty->cml_options |= CHATTY_CML_OPT_VERBOSE;
-
-  g_application_activate (application);
-
-  return EXIT_SUCCESS;
-}
 
 static void
 chatty_application_startup (GApplication *application)
 {
   ChattyApplication *self = (ChattyApplication *)application;
+
+  chatty_data_t *chatty = chatty_get_data ();
+
+  chatty->uri = NULL;
+  chatty->app_running = FALSE;
 
   G_APPLICATION_CLASS (chatty_application_parent_class)->startup (application);
 
@@ -138,6 +141,37 @@ chatty_application_activate (GApplication *application)
   gtk_window_present (window);
 }
 
+
+static void
+chatty_application_open (GApplication  *application,
+                         GFile        **files,
+                         gint           n_files,
+                         const gchar   *hint)
+{
+  gint i;
+
+  chatty_data_t *chatty = chatty_get_data ();
+
+  for (i = 0; i < n_files; i++) {
+    char *uri = g_file_get_uri (files[i]);
+
+    if (g_file_has_uri_scheme (files[i], "sms")) {
+      uri = g_file_get_uri (files[i]);
+
+      if (chatty->app_running) {
+        chatty_blist_add_buddy_from_uri (uri);
+      } else {
+        chatty->uri = g_strdup (uri);
+      }
+
+      g_free (uri);
+    }
+  }
+
+  g_application_activate (application);
+}
+
+
 static void
 chatty_application_class_init (ChattyApplicationClass *klass)
 {
@@ -147,10 +181,11 @@ chatty_application_class_init (ChattyApplicationClass *klass)
   object_class->finalize = chatty_application_finalize;
 
   application_class->handle_local_options = chatty_application_handle_local_options;
-  application_class->command_line = chatty_application_command_line;
   application_class->startup = chatty_application_startup;
   application_class->activate = chatty_application_activate;
+  application_class->open = chatty_application_open;
 }
+
 
 static void
 chatty_application_init (ChattyApplication *self)
@@ -158,11 +193,12 @@ chatty_application_init (ChattyApplication *self)
   g_application_add_main_option_entries (G_APPLICATION (self), cmd_options);
 }
 
+
 ChattyApplication *
 chatty_application_new (void)
 {
   return g_object_new (CHATTY_TYPE_APPLICATION,
                        "application-id", CHATTY_APP_ID,
-                       "flags", G_APPLICATION_HANDLES_COMMAND_LINE,
+                       "flags", G_APPLICATION_HANDLES_OPEN,
                        NULL);
 }

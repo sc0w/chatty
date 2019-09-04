@@ -495,8 +495,8 @@ cb_button_show_add_contact_clicked (GtkButton *sender,
 
 
 static void
-chatty_dialog_phonnumber_not_valid (const char *number,
-                                    const char *err_msg)
+chatty_dialog_phonenumber_not_valid (const char *number,
+                                     const char *err_msg)
 {
   GtkWidget  *dialog;
   GtkWindow  *window;
@@ -547,7 +547,7 @@ cb_button_add_contact_clicked (GtkButton *sender,
 
     if (!number) {
       g_warning ("failed to parse %s: %s", who, err->message);
-      chatty_dialog_phonnumber_not_valid (who, err->message);
+      chatty_dialog_phonenumber_not_valid (who, err->message);
       return;
     } else {
       g_free (who);
