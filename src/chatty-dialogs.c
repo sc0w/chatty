@@ -1125,6 +1125,7 @@ chatty_dialogs_create_dialog_muc_info (void)
   chatty->muc.label_chat_id = GTK_WIDGET (gtk_builder_get_object (builder, "muc.label_chat_id"));
   chatty->muc.label_num_user = GTK_WIDGET (gtk_builder_get_object (builder, "muc.label_num_user"));
   chatty->muc.label_topic = GTK_WIDGET (gtk_builder_get_object (builder, "muc.label_topic"));
+  chatty->muc.label_title = GTK_WIDGET (gtk_builder_get_object (builder, "muc.label_title"));
   chatty->muc.button_edit_topic = GTK_WIDGET (gtk_builder_get_object (builder, "muc.button_edit_topic"));
   chatty->muc.box_topic_editor = GTK_WIDGET (gtk_builder_get_object (builder, "muc.box_topic_editor"));
   chatty->muc.switch_prefs_notifications = GTK_SWITCH (gtk_builder_get_object (builder, "pref_muc_notifications"));

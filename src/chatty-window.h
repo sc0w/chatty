@@ -66,6 +66,7 @@ typedef struct {
   struct {
     GtkWidget     *label_chat_id;
     GtkWidget     *label_topic;
+    GtkWidget     *label_title;
     GtkWidget     *label_num_user;
     GtkWidget     *button_edit_topic;
     GtkWidget     *box_topic_editor;
