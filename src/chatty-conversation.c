@@ -42,6 +42,7 @@ void chatty_conv_new (PurpleConversation *conv);
 static gboolean chatty_conv_check_for_command (PurpleConversation *conv);
 static void chatty_update_typing_status (ChattyConversation *chatty_conv);
 static void chatty_check_for_emoticon (ChattyConversation *chatty_conv);
+static PurpleBlistNode *chatty_get_conv_blist_node (PurpleConversation *conv);
 
 
 // *** callbacks
@@ -1808,6 +1809,9 @@ chatty_conv_set_muc_prefs (gint     pref,
     case CHATTY_PREF_MUC_NOTIFICATIONS:
       purple_blist_node_set_bool (node, "chatty-notifications", value);
       break;
+    case CHATTY_PREF_MUC_STATUS_MSG:
+      purple_blist_node_set_bool (node, "chatty-status-msg", value);
+      break;
     case CHATTY_PREF_MUC_PERSISTANT:
       purple_blist_node_set_bool (node, "chatty-persistant", value);
       break;
@@ -1878,6 +1882,9 @@ chatty_conv_update_muc_info (PurpleConversation *conv)
 
   gtk_switch_set_state (chatty->muc.switch_prefs_notifications,
                         purple_blist_node_get_bool (node, "chatty-notifications"));
+
+  gtk_switch_set_state (chatty->muc.switch_prefs_status_msg,
+                        purple_blist_node_get_bool (node, "chatty-status-msg"));
 
   gtk_switch_set_state (chatty->muc.switch_prefs_persistant,
                         purple_blist_node_get_bool (node, "chatty-persistant"));
@@ -2132,7 +2139,9 @@ chatty_conv_write_conversation (PurpleConversation *conv,
     flags &= ~(PURPLE_MESSAGE_SEND | PURPLE_MESSAGE_RECV);
   }
 
-  conv_name = purple_conversation_get_name (chatty_conv->conv);
+  conv_name = purple_conversation_get_name (conv);
+
+  node = chatty_get_conv_blist_node (conv);
 
   account = purple_conversation_get_account (conv);
   g_return_if_fail (account != NULL);
@@ -2166,8 +2175,6 @@ chatty_conv_write_conversation (PurpleConversation *conv,
       }
     }
   } else {
-    buddy = purple_find_buddy (account, who);
-    node = (PurpleBlistNode*)buddy;
 
     if (node) {
       purple_blist_node_set_bool (node, "chatty-autojoin", TRUE);
@@ -2195,6 +2202,7 @@ chatty_conv_write_conversation (PurpleConversation *conv,
       } else {
         chatty_history_add_im_message (message, 1, account->username, who_no_resource, uuid, mtime);
       }
+
       g_free (msg_html);
     } else if (flags & PURPLE_MESSAGE_SEND) {
       msg_html = chatty_conv_check_for_links (message);
@@ -2209,13 +2217,17 @@ chatty_conv_write_conversation (PurpleConversation *conv,
       } else {
         chatty_history_add_im_message (message, -1, account->username, who_no_resource, uuid, mtime);
       }
+
       g_free (msg_html);
     } else if (flags & PURPLE_MESSAGE_SYSTEM) {
-      chatty_msg_list_add_message (chatty_conv->msg_list,
-                                   MSG_IS_SYSTEM,
-                                   message,
-                                   NULL,
-                                   NULL);
+      if (purple_blist_node_get_bool (node, "chatty-status-msg")) {
+        chatty_msg_list_add_message (chatty_conv->msg_list,
+                                     MSG_IS_SYSTEM,
+                                     message,
+                                     NULL,
+                                     NULL);
+      }
+
       if (type == PURPLE_CONV_TYPE_CHAT){
         // TODO: LELAND: Do not store "The topic is:" or store them but dont show to the user
         //chatty_history_add_chat_message (chat_id, message, 0, real_who, alias, uuid, mtime, conv_name);
