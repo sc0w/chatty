@@ -2177,6 +2177,8 @@ chatty_conv_write_conversation (PurpleConversation *conv,
       }
     }
   } else {
+    buddy = purple_find_buddy (account, who);
+    node = (PurpleBlistNode*)buddy;
 
     if (node) {
       purple_blist_node_set_bool (node, "chatty-autojoin", TRUE);
