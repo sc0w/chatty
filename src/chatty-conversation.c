@@ -2299,9 +2299,12 @@ chatty_get_conv_blist_node (PurpleConversation *conv)
 static void
 chatty_conv_switch_conv (ChattyConversation *chatty_conv)
 {
-  gint page_num;
+  PurpleConversationType conv_type;
+  gint                   page_num;
 
   chatty_data_t *chatty = chatty_get_data();
+
+  conv_type = purple_conversation_get_type (chatty_conv->conv);
 
   page_num = gtk_notebook_page_num (GTK_NOTEBOOK(chatty->pane_view_message_list),
                                     chatty_conv->tab_cont);
@@ -2312,8 +2315,11 @@ chatty_conv_switch_conv (ChattyConversation *chatty_conv)
   g_debug ("chatty_conv_switch_conv active_conv: %s   page_num %i",
            purple_conversation_get_name (chatty_conv->conv), page_num);
 
-  gtk_widget_grab_focus (GTK_WIDGET(chatty_conv->input.entry));
+  if (conv_type == PURPLE_CONV_TYPE_CHAT) {
+    gtk_widget_show (chatty->button_header_chat_info);
+  }
 
+  gtk_widget_grab_focus (GTK_WIDGET(chatty_conv->input.entry));
 }
 
 
@@ -2360,7 +2366,6 @@ chatty_conv_present_conversation (PurpleConversation *conv)
   g_debug ("chatty_conv_present_conversation conv: %s", purple_conversation_get_name (conv));
 
   chatty_conv_switch_conv (chatty_conv);
-
 }
 
 
