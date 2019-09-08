@@ -2190,7 +2190,7 @@ chatty_conv_write_conversation (PurpleConversation *conv,
 
   timestamp  = g_malloc0 (MAX_TIMESTAMP_SIZE * sizeof(char));
   if (!strftime (timestamp, MAX_TIMESTAMP_SIZE * sizeof(char), "%R", localtime(&mtime))) {
-    timestamp = "";
+    timestamp = g_strdup("00:00");
   }
     
   
