@@ -245,7 +245,7 @@ cb_button_send_clicked (GtkButton *sender,
   time = g_date_time_new_now_local ();
   footer_str = g_date_time_format (time, "%R");
   g_date_time_unref (time);
-  
+
   footer_str = g_strconcat ("<small>",
 			    "<span color='grey'>",
 			    footer_str,
@@ -465,8 +465,10 @@ cb_msg_input_vadjust (GObject     *sender,
 
   if (upper > (gdouble)max_height) {
     gtk_widget_set_visible (vscroll, TRUE);
+    gtk_widget_hide (GTK_WIDGET(chatty_conv->omemo.symbol_encrypt));
   } else {
     gtk_widget_set_visible (vscroll, FALSE);
+    gtk_widget_show (GTK_WIDGET(chatty_conv->omemo.symbol_encrypt));
   }
 
   gtk_widget_queue_draw (chatty_conv->input.frame);
@@ -2203,8 +2205,8 @@ chatty_conv_write_conversation (PurpleConversation *conv,
   if (!strftime (timestamp, MAX_TIMESTAMP_SIZE * sizeof(char), "%R", localtime(&mtime))) {
     timestamp = g_strdup("00:00");
   }
-    
-  
+
+
   if (*message != '\0') {
      // TODO: LELAND: UID to be implemented by XEP-0313
     chatty_utils_generate_uuid(&uuid);
