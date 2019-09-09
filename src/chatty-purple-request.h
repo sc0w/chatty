@@ -10,6 +10,7 @@
 
 #include <gtk/gtk.h>
 #include <gtk/gtkwidget.h>
+#include "chatty-purple-init.h"
 #include "request.h"
 
 typedef struct
@@ -22,6 +23,10 @@ typedef struct
 	gpointer          *user_data;
 	size_t             cb_count;
 	GCallback         *cbs;
+
+  gboolean           save_dialog;
+  gchar             *file_name;
+
 } ChattyRequestData;
 
 PurpleRequestUiOps *chatty_request_get_ui_ops (void);

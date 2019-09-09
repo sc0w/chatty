@@ -22,6 +22,45 @@ cb_action_response (GtkDialog         *dialog,
 }
 
 
+static void
+cb_file_exists (GtkWidget         *widget,
+                gint               response,
+                ChattyRequestData *data)
+{
+  gchar *current_folder;
+
+  if (response != GTK_RESPONSE_ACCEPT) {
+    if (data->cbs[0] != NULL) {
+      ((PurpleRequestFileCb)data->cbs[0])(data->user_data, NULL);
+    }
+
+    purple_request_close (data->type, data);
+
+    return;
+  }
+
+  data->file_name = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER(data->dialog));
+
+  current_folder = gtk_file_chooser_get_current_folder (GTK_FILE_CHOOSER(data->dialog));
+
+  if (current_folder != NULL) {
+    if (data->save_dialog) {
+      purple_prefs_set_path (CHATTY_PREFS_ROOT "/filelocations/last_save_folder", current_folder);
+    } else {
+      purple_prefs_set_path (CHATTY_PREFS_ROOT "/filelocations/last_open_folder", current_folder);
+    }
+
+    g_free (current_folder);
+  }
+
+  if (data->cbs[1] != NULL) {
+    ((PurpleRequestFileCb)data->cbs[1])(data->user_data, data->file_name);
+  }
+
+  purple_request_close (data->type, data);
+}
+
+
 static void *
 chatty_request_action (const char         *title,
                        const char         *primary,
@@ -98,7 +137,7 @@ chatty_request_action (const char         *title,
 
 
 static void
-chatty_close_request (PurpleRequestType  type,
+chatty_request_close (PurpleRequestType  type,
                       void              *ui_handle)
 {
   ChattyRequestData *data = (ChattyRequestData *)ui_handle;
@@ -111,14 +150,93 @@ chatty_close_request (PurpleRequestType  type,
 }
 
 
+static void *
+chatty_request_file (const char         *title,
+                     const char         *filename,
+                     gboolean            save_dialog,
+                     GCallback           ok_cb,
+                     GCallback           cancel_cb,
+                     PurpleAccount      *account,
+                     const char         *who,
+                     PurpleConversation *conv,
+                     void               *user_data)
+{
+  ChattyRequestData *data;
+  GtkWindow         *window;
+  GtkWidget         *dialog;
+  const gchar       *current_folder;
+  gboolean           folder_set = FALSE;
+
+  data = g_new0 (ChattyRequestData, 1);
+  data->type = PURPLE_REQUEST_FILE;
+  data->user_data = user_data;
+  data->cb_count = 2;
+  data->cbs = g_new0 (GCallback, 2);
+  data->cbs[0] = cancel_cb;
+  data->cbs[1] = ok_cb;
+  data->save_dialog = save_dialog;
+
+  window = gtk_application_get_active_window (GTK_APPLICATION (g_application_get_default ()));
+
+  dialog = gtk_file_chooser_dialog_new (title ? title : (save_dialog ? _("Save File...") :
+                                          _("Open File...")),
+                                        window,
+                                        save_dialog ? GTK_FILE_CHOOSER_ACTION_SAVE :
+                                          GTK_FILE_CHOOSER_ACTION_OPEN,
+                                        _("Cancel"),
+                                        GTK_RESPONSE_CANCEL,
+                                        save_dialog ? _("Save") : _("Open"),
+                                        GTK_RESPONSE_ACCEPT,
+                                        NULL);
+
+  gtk_dialog_set_default_response (GTK_DIALOG(dialog), GTK_RESPONSE_ACCEPT);
+
+  if (save_dialog) {
+    current_folder = purple_prefs_get_path(CHATTY_PREFS_ROOT "/filelocations/last_save_folder");
+  } else {
+    current_folder = purple_prefs_get_path(CHATTY_PREFS_ROOT "/filelocations/last_open_folder");
+  }
+
+  if ((filename != NULL) && (*filename != '\0')) {
+    if (save_dialog) {
+      gtk_file_chooser_set_current_name (GTK_FILE_CHOOSER(dialog), filename);
+    } else if (g_file_test(filename, G_FILE_TEST_EXISTS)) {
+      gtk_file_chooser_set_filename (GTK_FILE_CHOOSER(dialog), filename);
+    }
+  }
+
+  if ((filename == NULL || *filename == '\0' || !g_file_test(filename, G_FILE_TEST_EXISTS)) &&
+      (current_folder != NULL) && (*current_folder != '\0')) {
+
+    folder_set = gtk_file_chooser_set_current_folder (GTK_FILE_CHOOSER(dialog), current_folder);
+  }
+
+  (void) folder_set;
+
+  g_signal_connect (G_OBJECT(GTK_FILE_CHOOSER(dialog)),
+                    "response",
+                    G_CALLBACK(cb_file_exists),
+                    data);
+
+  window = gtk_application_get_active_window (GTK_APPLICATION (g_application_get_default ()));
+  gtk_window_set_transient_for (GTK_WINDOW(dialog), window);
+
+  data->dialog = dialog;
+
+  gtk_widget_show (dialog);
+
+  return (void *)data;
+}
+
+
 static PurpleRequestUiOps ops =
 {
   NULL,
   NULL,
   chatty_request_action,
   NULL,
-  NULL,
-  chatty_close_request,
+  chatty_request_file,
+  chatty_request_close,
   NULL,
   NULL,
   NULL,

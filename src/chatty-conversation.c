@@ -197,6 +197,23 @@ cb_sms_show_send_receipt (const char *sms_id,
 
 
 static void
+cb_button_send_file_clicked (GtkButton *sender,
+                             gpointer   node)
+{
+  gpointer data;
+
+  void (*callback)(gpointer, gpointer);
+
+  callback = g_object_get_data (G_OBJECT(sender), "callback");
+  data = g_object_get_data (G_OBJECT(sender), "callback-data");
+
+  if (callback) {
+    callback(node, data);
+  }
+}
+
+
+static void
 cb_button_send_clicked (GtkButton *sender,
                         gpointer   data)
 {
@@ -977,9 +994,9 @@ chatty_conv_get_im_messages_cb (const unsigned char* msg,
 
 
   strftime (iso_timestamp,
-	    MAX_GMT_ISO_SIZE * sizeof(char),
-	    "%b %d",
-	    localtime(&time_stamp));
+            MAX_GMT_ISO_SIZE * sizeof(char),
+            "%b %d",
+            localtime(&time_stamp));
 
   if (msg_html[0] != '\0') {
     chatty_msg_list_add_message_at (chatty_conv->msg_list,
@@ -1117,18 +1134,18 @@ chatty_conv_add_message_history_to_conv_with_limit (gpointer data, int limit)
     who = chatty_utils_jabber_id_strip(conv_name);
 
     chatty_history_get_im_messages (account->username,
-				    who,
-				    chatty_conv_get_im_messages_cb,
-				    chatty_conv,
-				    limit,
-				    chatty_conv->oldest_message_displayed );
+                                    who,
+                                    chatty_conv_get_im_messages_cb,
+                                    chatty_conv,
+                                    limit,
+                                    chatty_conv->oldest_message_displayed );
   }else{
     chatty_history_get_chat_messages (account->username,
-				      conv_name,
-				      chatty_conv_get_chat_messages_cb,
-				      chatty_conv,
-				      limit,
-				      chatty_conv->oldest_message_displayed );
+                                      conv_name,
+                                      chatty_conv_get_chat_messages_cb,
+                                      chatty_conv,
+                                      limit,
+                                      chatty_conv->oldest_message_displayed );
   }
 
   return FALSE;
@@ -1838,7 +1855,7 @@ chatty_conv_update_muc_info (PurpleConversation *conv)
 {
   ChattyConversation       *chatty_conv;
   PurpleConvChat           *chat;
-	PurpleConvChatBuddyFlags 	flags;
+  PurpleConvChatBuddyFlags  flags;
   PurpleBlistNode          *node;
   GtkWidget                *child;
   GList                    *children;
@@ -1866,7 +1883,7 @@ chatty_conv_update_muc_info (PurpleConversation *conv)
   topic = purple_conv_chat_get_topic (PURPLE_CONV_CHAT(conv));
   topic = chatty_conv_check_for_links (topic);
 
-  flags = purple_conv_chat_user_get_flags	(chat, chat->nick);
+  flags = purple_conv_chat_user_get_flags (chat, chat->nick);
 
   if (flags & PURPLE_CBFLAGS_FOUNDER) {
     gtk_text_buffer_set_text (chatty->muc.msg_buffer_topic, topic, strlen (topic));
@@ -2272,7 +2289,6 @@ chatty_get_conv_blist_node (PurpleConversation *conv)
     case PURPLE_CONV_TYPE_IM:
       node = PURPLE_BLIST_NODE (purple_find_buddy (conv->account,
                                                    conv->name));
-      node = node ? node->parent : NULL;
       break;
     case PURPLE_CONV_TYPE_CHAT:
       node = PURPLE_BLIST_NODE (purple_blist_find_chat (conv->account,
@@ -2511,13 +2527,15 @@ chatty_conv_setup_pane (ChattyConversation *chatty_conv,
                         guint               msg_type)
 {
   PurpleConversationType  type;
+  const char             *protocol_id;
+  GtkBuilder             *builder;
+  GtkWidget              *scrolled;
+  GtkAdjustment          *vadjust;
+  GtkWidget              *msg_view_box;
+  GtkWidget              *msg_view_list;
+  GtkStyleContext        *sc;
 
-  GtkBuilder      *builder;
-  GtkWidget       *scrolled;
-  GtkAdjustment   *vadjust;
-  GtkWidget       *msg_view_box;
-  GtkWidget       *msg_view_list;
-  GtkStyleContext *sc;
+  chatty_purple_data_t *chatty_purple = chatty_get_purple_data ();
 
   gtk_icon_theme_add_resource_path (gtk_icon_theme_get_default (),
                                     "/sm/puri/chatty/icons/ui/");
@@ -2531,7 +2549,52 @@ chatty_conv_setup_pane (ChattyConversation *chatty_conv,
   scrolled = GTK_WIDGET(gtk_builder_get_object (builder, "scrolled"));
   chatty_conv->input.frame = GTK_WIDGET(gtk_builder_get_object (builder, "frame"));
   chatty_conv->input.button_send = GTK_WIDGET(gtk_builder_get_object (builder, "button_send"));
+  chatty_conv->input.button_file_send = GTK_WIDGET(gtk_builder_get_object (builder, "button_file_send"));
   chatty_conv->omemo.symbol_encrypt = GTK_IMAGE(gtk_builder_get_object (builder, "symbol_encrypt"));
+
+  protocol_id = purple_account_get_protocol_id (purple_conversation_get_account (chatty_conv->conv));
+
+  if (chatty_purple->plugin_file_upload_available && !g_strcmp0 (protocol_id, "prpl-jabber")) {
+    PurplePluginProtocolInfo *prpl_info;
+    PurpleConnection         *gc;
+    PurpleBlistNode          *node;
+    PurpleMenuAction         *act;
+    GtkWidget                *button;
+    GList                    *l, *ll;
+
+    gc = purple_conversation_get_gc (chatty_conv->conv);
+
+    prpl_info = PURPLE_PLUGIN_PROTOCOL_INFO(gc->prpl);
+
+    node = chatty_get_conv_blist_node (chatty_conv->conv);
+
+    button = chatty_conv->input.button_file_send;
+
+    gtk_widget_show (GTK_WIDGET(chatty_conv->input.button_file_send));
+
+    if (prpl_info->blist_node_menu) {
+      for (l = ll = prpl_info->blist_node_menu(node); l; l = l->next) {
+        act = (PurpleMenuAction *) l->data;
+
+        if (!g_strcmp0 (act->label, _("HTTP File Upload"))) {
+          g_object_set_data (G_OBJECT(button),
+                             "callback", act->callback);
+
+          g_object_set_data (G_OBJECT(button),
+                             "callback-data", act->data);
+
+          g_signal_connect (G_OBJECT(button),
+                            "clicked",
+                            G_CALLBACK(cb_button_send_file_clicked),
+                            node);
+        }
+      }
+    }
+
+    purple_menu_action_free (act);
+
+    g_list_free (ll);
+  }
 
   type = purple_conversation_get_type (chatty_conv->conv);
 

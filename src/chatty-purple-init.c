@@ -356,7 +356,14 @@ libpurple_init (void)
     chatty_purple->plugin_carbons_loaded = chatty_purple_load_plugin ("core-riba-carbons");
   }
 
+  if (purple_plugins_find_with_id ("xep-http-file-upload") != NULL) {
+    chatty_purple->plugin_file_upload_available = TRUE;
+  } else {
+    chatty_purple->plugin_file_upload_available = FALSE;
+  }
+
   chatty_purple->plugin_lurch_loaded = chatty_purple_load_plugin ("core-riba-lurch");
+  chatty_purple->plugin_file_upload_loaded = chatty_purple_load_plugin ("xep-http-file-upload");
 
   purple_plugins_init ();
   purple_network_force_online();
