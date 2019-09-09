@@ -20,6 +20,7 @@
 #define MAX_MSGS 50
 #define LAZY_LOAD_MSGS_LIMIT 12
 #define LAZY_LOAD_INITIAL_MSGS_LIMIT 20
+#define MAX_TIMESTAMP_SIZE 256
 
 static GHashTable *ht_sms_id = NULL;
 static GHashTable *ht_emoticon = NULL;
@@ -180,7 +181,9 @@ cb_sms_show_send_receipt (const char *sms_id,
   bubble_footer = (GtkWidget*) g_hash_table_lookup (ht_sms_id, sms_id);
 
   footer_str = g_strconcat ("<small>",
-                            footer_str,
+			    "<span color='grey'>",
+			    footer_str,
+			    "</span>",
                             color,
                             symbol,
                             "</span></small>",
@@ -209,6 +212,7 @@ cb_button_send_clicked (GtkButton *sender,
   const gchar         *protocol_id;
   gchar               *sms_id_str;
   guint                sms_id;
+  GDateTime           *time;
 
   chatty_conv  = (ChattyConversation *)data;
   conv = chatty_conv->conv;
@@ -238,7 +242,14 @@ cb_button_send_clicked (GtkButton *sender,
                                       &end,
                                       FALSE);
 
+  time = g_date_time_new_now_local ();
+  footer_str = g_date_time_format (time, "%R");
+  g_date_time_unref (time);
+  
   footer_str = g_strconcat ("<small>",
+			    "<span color='grey'>",
+			    footer_str,
+			    "</span>",
                             "<span color='grey'>",
                             " ✓",
                             "</span></small>",
@@ -2132,6 +2143,7 @@ chatty_conv_write_conversation (PurpleConversation *conv,
   const char               *conv_name;
   gchar                    *who_no_resource;
   g_autofree char          *uuid;
+  g_autofree gchar          *timestamp;
 
   chatty_conv = CHATTY_CONVERSATION (conv);
 
@@ -2187,6 +2199,12 @@ chatty_conv_write_conversation (PurpleConversation *conv,
     group_chat = FALSE;
   }
 
+  timestamp  = g_malloc0 (MAX_TIMESTAMP_SIZE * sizeof(char));
+  if (!strftime (timestamp, MAX_TIMESTAMP_SIZE * sizeof(char), "%R", localtime(&mtime))) {
+    timestamp = g_strdup("00:00");
+  }
+    
+  
   if (*message != '\0') {
      // TODO: LELAND: UID to be implemented by XEP-0313
     chatty_utils_generate_uuid(&uuid);
@@ -2199,7 +2217,7 @@ chatty_conv_write_conversation (PurpleConversation *conv,
       chatty_msg_list_add_message (chatty_conv->msg_list,
                                    MSG_IS_INCOMING,
                                    msg_html,
-                                   group_chat ? who : NULL,
+                                   group_chat ? who : timestamp,
                                    icon ? icon : NULL);
       if (type == PURPLE_CONV_TYPE_CHAT){
         chatty_history_add_chat_message (message, 1, account->username, real_who, uuid, mtime, conv_name);
