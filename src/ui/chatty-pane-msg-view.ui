@@ -82,7 +82,6 @@
               <object class="GtkBox">
                 <property name="orientation">horizontal</property>
                 <property name="visible">True</property>
-                <property name="spacing">6</property>
                 <child>
                   <object class="GtkBox" id="frame">
                     <property name="orientation">horizontal</property>
@@ -139,6 +138,7 @@
                         <property name="no-show-all">True</property>
                         <property name="visible">False</property>
                         <property name="focus_on_click">False</property>
+                        <property name="margin-left">6</property>
                         <child>
                           <object class="GtkImage">
                             <property name="icon-name">mail-send-symbolic</property>
