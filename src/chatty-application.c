@@ -41,7 +41,7 @@
 struct _ChattyApplication
 {
   GtkApplication  parent_instance;
-
+  gboolean        daemon;
   GtkCssProvider *css_provider;
 };
 
@@ -49,7 +49,8 @@ G_DEFINE_TYPE (ChattyApplication, chatty_application, GTK_TYPE_APPLICATION)
 
 static GOptionEntry cmd_options[] = {
   { "version", 'v', G_OPTION_FLAG_NONE, G_OPTION_ARG_NONE, NULL, N_("Show release version"), NULL },
-  { "disable", 'D', G_OPTION_FLAG_NONE, G_OPTION_ARG_NONE, NULL, N_("Disable all accounts"), NULL },
+  { "daemon", 'D', G_OPTION_FLAG_NONE, G_OPTION_ARG_NONE, NULL, N_("Start in daemon mode"), NULL },
+  { "nologin", 'n', G_OPTION_FLAG_NONE, G_OPTION_ARG_NONE, NULL, N_("Disable all accounts"), NULL },
   { "debug", 'd', G_OPTION_FLAG_NONE, G_OPTION_ARG_NONE, NULL, N_("Enable libpurple debug messages"), NULL },
   { "verbose", 'V', G_OPTION_FLAG_NONE, G_OPTION_ARG_NONE, NULL, N_("Enable verbose libpurple debug messages"), NULL },
   { NULL }
@@ -72,6 +73,8 @@ chatty_application_handle_local_options (GApplication *application,
   g_autoptr(GError) error = NULL;
   gboolean          result;
 
+  ChattyApplication *self = (ChattyApplication *)application;
+
   chatty_data_t *chatty = chatty_get_data ();
 
   chatty->cml_options = CHATTY_CML_OPT_NONE;
@@ -82,7 +85,13 @@ chatty_application_handle_local_options (GApplication *application,
     g_debug ("Application register failed: %s", error->message);
   }
 
-  if (g_variant_dict_contains (options, "disable")) {
+  if (g_variant_dict_contains (options, "daemon")) {
+    if (chatty->app_running == FALSE) {
+      self->daemon = TRUE;
+    } else {
+      g_debug ("Daemon mode not possible, application is already running");
+    }
+  } else if (g_variant_dict_contains (options, "nologin")) {
     chatty->cml_options |= CHATTY_CML_OPT_DISABLE;
   } else if (g_variant_dict_contains (options, "debug")) {
     chatty->cml_options |= CHATTY_CML_OPT_DEBUG;
@@ -92,8 +101,6 @@ chatty_application_handle_local_options (GApplication *application,
     g_print ("%s %s\n", PACKAGE_NAME, PACKAGE_VERSION);
     return 0;
   }
-
-  g_application_activate (application);
 
   return -1;
 }
@@ -105,6 +112,8 @@ chatty_application_startup (GApplication *application)
   ChattyApplication *self = (ChattyApplication *)application;
 
   chatty_data_t *chatty = chatty_get_data ();
+
+  self->daemon = FALSE;
 
   chatty->uri = NULL;
   chatty->app_running = FALSE;
@@ -122,23 +131,33 @@ chatty_application_startup (GApplication *application)
                                              GTK_STYLE_PROVIDER_PRIORITY_USER);
 }
 
+
 static void
 chatty_application_activate (GApplication *application)
 {
   GtkApplication *app = (GtkApplication *)application;
-  GtkWindow *window;
+  GtkWindow      *window;
+  gboolean        show_win;
+
+  ChattyApplication *self = (ChattyApplication *)application;
 
   g_assert (GTK_IS_APPLICATION (app));
 
   window = gtk_application_get_active_window (app);
 
-  if (window == NULL)
-    {
-      chatty_window_activate (app, NULL);
-      window = gtk_application_get_active_window (app);
-    }
+  if (window) {
+    show_win = TRUE;
+  } else {
+    chatty_window_activate (app, NULL);
 
-  gtk_window_present (window);
+    show_win = !self->daemon;
+  }
+
+  if (show_win) {
+    window = gtk_application_get_active_window (app);
+
+    gtk_window_present (window);
+  }
 }
 
 
@@ -200,5 +219,6 @@ chatty_application_new (void)
   return g_object_new (CHATTY_TYPE_APPLICATION,
                        "application-id", CHATTY_APP_ID,
                        "flags", G_APPLICATION_HANDLES_OPEN,
+                       "register-session", TRUE,
                        NULL);
 }
