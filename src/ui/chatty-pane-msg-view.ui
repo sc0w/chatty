@@ -82,7 +82,6 @@
               <object class="GtkBox">
                 <property name="orientation">horizontal</property>
                 <property name="visible">True</property>
-                <property name="spacing">6</property>
                 <child>
                   <object class="GtkButton" id="button_file_send">
                     <property name="can-focus">False</property>
@@ -121,32 +120,55 @@
                       </object>
                     </child>
                     <child>
-                      <object class="GtkImage" id="symbol_encrypt">
-                        <property name="can_focus">False</property>
-                        <property name="icon_name">changes-allow-symbolic</property>
-                        <property name="no-show-all">True</property>
-                        <property name="visible">False</property>
+                      <object class="GtkBox">
+                        <property name="orientation">vertical</property>
                         <property name="margin-right">6</property>
-                        <style>
-                          <class name="encrypt"/>
-                        </style>
+                        <property name="margin-bottom">6</property>
+                        <property name="can_focus">False</property>
+                        <property name="visible">True</property>
+                        <child>
+                          <object class="GtkImage" id="symbol_encrypt">
+                            <property name="can_focus">False</property>
+                            <property name="icon_name">changes-allow-symbolic</property>
+                            <property name="icon-size">1</property>
+                            <property name="no-show-all">True</property>
+                            <property name="visible">False</property>
+                            <style>
+                              <class name="encrypt"/>
+                            </style>
+                          </object>
+                          <packing>
+                            <property name="pack_type">end</property>
+                          </packing>
+                        </child>
                       </object>
                     </child>
                   </object>
                 </child>
                 <child>
-                  <object class="GtkButton" id="button_send">
-                    <property name="can-focus">False</property>
-                    <property name="valign">center</property>
-                    <property name="no-show-all">True</property>
-                    <property name="visible">False</property>
-                    <property name="focus_on_click">False</property>
+                  <object class="GtkBox">
+                    <property name="orientation">vertical</property>
+                    <property name="can_focus">False</property>
+                    <property name="visible">True</property>
                     <child>
-                      <object class="GtkImage">
-                        <property name="icon-name">mail-send-symbolic</property>
-                        <property name="icon-size">1</property>
-                        <property name="visible">True</property>
+                      <object class="GtkButton" id="button_send">
+                        <property name="can-focus">False</property>
+                        <property name="valign">center</property>
+                        <property name="no-show-all">True</property>
+                        <property name="visible">False</property>
+                        <property name="focus_on_click">False</property>
+                        <property name="margin-left">6</property>
+                        <child>
+                          <object class="GtkImage">
+                            <property name="icon-name">mail-send-symbolic</property>
+                            <property name="icon-size">1</property>
+                            <property name="visible">True</property>
+                          </object>
+                        </child>
                       </object>
+                      <packing>
+                        <property name="pack_type">end</property>
+                      </packing>
                     </child>
                   </object>
                 </child>
