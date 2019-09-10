@@ -15,6 +15,11 @@ Libhandy (libhandy-0.0-dev) is available in [PureOS][0] and  Debian's
 [experimental distribution][1].  If you don't want to fetch it from there you
 can [build it from souce][2].
 
+
+### GNOME keyring plugin
+If you install the 'pidgin-gnome-keyring' plugin, whenever an account signs on, its password will automatically be saved to the keyring and removed from the plaintext accounts.xml file. If you use also Pidgin, you need to enable the 'Password Keyring' plugin in the extensions menu, otherwise Pidgin can't log in the accounts automatically.
+
+
 ### Build and install the SMS plugin
 ``` bash
 git clone git@source.puri.sm:Librem5/purple-mm-sms.git
