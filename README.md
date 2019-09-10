@@ -8,7 +8,7 @@ A libpurple messaging client
 ### Install dependencies
 
 ``` bash
-sudo apt install git meson libgtk-3-dev libpurple-dev modemmanager libmxml-dev libxml2-dev libsqlite3-dev libgcrypt20-dev libhandy-0.0-dev libebook-contacts1.2-dev
+sudo apt install git meson libgtk-3-dev libpurple-dev modemmanager libmxml-dev libxml2-dev libsqlite3-dev libgcrypt20-dev libhandy-0.0-dev libebook-contacts1.2-dev pidgin-gnome-keyring
 ```
 
 Libhandy (libhandy-0.0-dev) is available in [PureOS][0] and  Debian's
