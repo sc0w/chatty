@@ -352,8 +352,6 @@ libpurple_init (void)
     chatty_purple->plugin_carbons_available = FALSE;
   }
 
-  chatty_purple_load_plugin ("core-gnome-keyring");
-
   if (purple_prefs_get_bool (CHATTY_PREFS_ROOT "/plugins/message_carbons")) {
     chatty_purple->plugin_carbons_loaded = chatty_purple_load_plugin ("core-riba-carbons");
   }

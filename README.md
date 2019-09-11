@@ -8,17 +8,12 @@ A libpurple messaging client
 ### Install dependencies
 
 ``` bash
-sudo apt install git meson libgtk-3-dev libpurple-dev modemmanager libmxml-dev libxml2-dev libsqlite3-dev libgcrypt20-dev libhandy-0.0-dev libebook-contacts1.2-dev pidgin-gnome-keyring
+sudo apt install git meson libgtk-3-dev libpurple-dev modemmanager libmxml-dev libxml2-dev libsqlite3-dev libgcrypt20-dev libhandy-0.0-dev libebook-contacts1.2-dev
 ```
 
 Libhandy (libhandy-0.0-dev) is available in [PureOS][0] and  Debian's
 [experimental distribution][1].  If you don't want to fetch it from there you
 can [build it from souce][2].
-
-
-### GNOME keyring plugin
-If you install the 'pidgin-gnome-keyring' plugin, whenever an account signs on, its password will automatically be saved to the keyring and removed from the plaintext accounts.xml file. If you use also Pidgin, you need to enable the 'Password Keyring' plugin in the extensions menu, otherwise Pidgin can't log in the accounts automatically.
-
 
 ### Build and install the SMS plugin
 ``` bash
