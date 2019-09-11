@@ -2210,7 +2210,7 @@ chatty_conv_write_conversation (PurpleConversation *conv,
     timestamp = g_strdup("00:00");
   }
 
-  if (buddy) {
+  if (buddy && purple_blist_node_get_bool (node, "chatty-notifications")) {
     buddy_name = purple_buddy_get_name (buddy);
 
     titel = g_strdup_printf (_("New message from %s"), buddy_name);
