@@ -2058,7 +2058,7 @@ chatty_blist_chats_update_node (PurpleBuddy     *buddy,
                         "</span>",
                         "\n",
                         "<small>",
-                        last_msg_text,
+                        g_strdelimit (last_msg_text, "\n", ' '),
                         "</small>",
                         NULL);
   } else {
@@ -2066,7 +2066,7 @@ chatty_blist_chats_update_node (PurpleBuddy     *buddy,
                         alias,
                         "\n",
                         "<small>",
-                        last_msg_text,
+                        g_strdelimit (last_msg_text, "\n", ' '),
                         "</small>",
                         "</span>",
                         NULL);
