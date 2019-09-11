@@ -292,6 +292,12 @@ chatty_account_populate_account_list (GtkListBox *list, guint type)
                        GTK_WIDGET(row));
 
     gtk_widget_show (GTK_WIDGET(row));
+  } else if (type == LIST_SELECT_CHAT_ACCOUNT) {
+    row = HDY_ACTION_ROW(gtk_list_box_get_row_at_index (list, 0));
+
+    if (row) {
+      cb_list_account_select_row_activated (list, GTK_LIST_BOX_ROW(row), NULL);
+    }
   }
 
   return ret;

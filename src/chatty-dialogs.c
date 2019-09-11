@@ -776,6 +776,9 @@ chatty_dialogs_reset_new_contact_dialog (void)
 {
   chatty_dialog_data_t *chatty_dialog = chatty_get_dialog_data ();
 
+  gtk_entry_set_text (GTK_ENTRY(chatty_dialog->entry_contact_name), "");
+  gtk_entry_set_text (GTK_ENTRY(chatty_dialog->entry_contact_nick), "");
+
   chatty_account_populate_account_list (chatty_dialog->list_select_account,
                                         LIST_SELECT_CHAT_ACCOUNT);
 }
