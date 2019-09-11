@@ -16,6 +16,7 @@
 #include "chatty-conversation.h"
 #include "chatty-history.h"
 #include "chatty-utils.h"
+#include "chatty-notify.h"
 
 #define MAX_MSGS 50
 #define LAZY_LOAD_MSGS_LIMIT 12
@@ -2051,6 +2052,7 @@ chatty_conv_find_conv (PurpleConversation * conv)
   return NULL;
 }
 
+
 /**
  * chatty_conv_write_chat:
  * @conv:     a PurpleConversation
@@ -2143,6 +2145,8 @@ chatty_conv_write_conversation (PurpleConversation *conv,
   GtkWidget                *icon = NULL;
   int                       chat_id;
   const char               *conv_name;
+  const char               *buddy_name;
+  gchar                    *titel;
   gchar                    *who_no_resource;
   g_autofree char          *uuid;
   g_autofree gchar          *timestamp;
@@ -2206,6 +2210,15 @@ chatty_conv_write_conversation (PurpleConversation *conv,
     timestamp = g_strdup("00:00");
   }
 
+  if (buddy) {
+    buddy_name = purple_buddy_get_name (buddy);
+
+    titel = g_strdup_printf (_("New message from %s"), buddy_name);
+
+    chatty_notify_show_notification (titel, message, CHATTY_NOTIFY_MESSAGE_RECEIVED, conv);
+
+    g_free (titel);
+  }
 
   if (*message != '\0') {
      // TODO: LELAND: UID to be implemented by XEP-0313
@@ -2269,7 +2282,6 @@ chatty_conv_write_conversation (PurpleConversation *conv,
   }
 
   g_free (real_who);
-
 }
 
 
@@ -2431,6 +2443,66 @@ chatty_conv_im_with_buddy (PurpleAccount *account,
 
   chatty_conv_set_unseen (chatty_conv, CHATTY_UNSEEN_NONE);
 }
+
+
+/**
+ * chatty_conv_show_conversation:
+ * @conv: a PurpleConversation
+ *
+ * Shows a conversation after a notification
+ *
+ * Called from cb_open_message in chatty-notify.c
+ *
+ */
+void
+chatty_conv_show_conversation (PurpleConversation *conv)
+{
+  PurpleAccount      *account;
+  PurpleBuddy        *buddy;
+  GdkPixbuf          *avatar;
+  ChattyConversation *chatty_conv;
+  GtkWindow          *window;
+  const gchar        *protocol_id;
+  const char         *color;
+  const char         *name;
+
+  if (!conv) {
+    return;
+  }
+
+  chatty_conv = CHATTY_CONVERSATION (conv);
+  account = purple_conversation_get_account (conv);
+  protocol_id = purple_account_get_protocol_id (account);
+  name = chatty_utils_jabber_id_strip (purple_conversation_get_name (conv));
+  buddy = purple_find_buddy (account, name);
+
+  chatty_conv_present_conversation (conv);
+  chatty_conv_set_unseen (chatty_conv, CHATTY_UNSEEN_NONE);
+
+  if (g_strcmp0 (protocol_id, "prpl-mm-sms") == 0) {
+    color = CHATTY_COLOR_GREEN;
+  } else {
+    color = CHATTY_COLOR_BLUE;
+  }
+
+  avatar = chatty_icon_get_buddy_icon (PURPLE_BLIST_NODE(buddy),
+                                       name,
+                                       CHATTY_ICON_SIZE_MEDIUM,
+                                       color,
+                                       FALSE);
+
+  if (avatar) {
+    chatty_window_update_sub_header_titlebar (avatar,
+                                              name);
+  }
+
+  chatty_window_change_view (CHATTY_VIEW_MESSAGE_LIST);
+
+  window = gtk_application_get_active_window (GTK_APPLICATION (g_application_get_default ()));
+
+  gtk_window_present (window);
+}
+
 
 void
 chatty_conv_add_history_since_component(GHashTable *components,

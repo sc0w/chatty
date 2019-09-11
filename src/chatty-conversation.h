@@ -113,6 +113,7 @@ enum
 PurpleConversationUiOps *chatty_conversations_get_conv_ui_ops(void);
 
 void chatty_conv_im_with_buddy (PurpleAccount *account, const char *username);
+void chatty_conv_show_conversation (PurpleConversation *conv);
 void chatty_conv_join_chat (PurpleChat *chat);
 void chatty_conv_set_muc_topic (const char *topic_text);
 void chatty_conv_set_muc_prefs (gint pref, gboolean value);
