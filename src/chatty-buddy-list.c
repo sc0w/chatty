@@ -769,6 +769,7 @@ chatty_blist_add_buddy_from_uri (const char *uri)
   PurpleBuddy       *buddy;
   GdkPixbuf         *avatar;
   EPhoneNumber      *number;
+  GtkWindow         *window;
   char              *region;
   char              *who;
   g_autoptr(GError)  err = NULL;
@@ -815,6 +816,10 @@ chatty_blist_add_buddy_from_uri (const char *uri)
   }
 
   chatty_window_change_view (CHATTY_VIEW_MESSAGE_LIST);
+
+  window = gtk_application_get_active_window (GTK_APPLICATION (g_application_get_default ()));
+
+  gtk_window_present (window);
 
   g_free (who);
 

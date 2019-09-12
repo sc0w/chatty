@@ -11,14 +11,18 @@
 #include "purple.h"
 #include "chatty-window.h"
 #include "chatty-notify.h"
+#include "chatty-conversation.h"
 
+static PurpleConversation *conv_notify = NULL;
 
 static void
 cb_open_message (GSimpleAction *action,
                  GVariant      *parameter,
                  gpointer       user_data)
 {
-  // TODO: switch to the conversation view
+  if (conv_notify) {
+    chatty_conv_show_conversation (conv_notify);
+  }
 }
 
 
@@ -32,16 +36,16 @@ cb_open_settings (GSimpleAction *action,
 
 
 static const GActionEntry actions[] = {
-  { "open-message", cb_open_message, "s" },
+  { "open-message", cb_open_message },
   { "open-settings", cb_open_settings },
 };
 
 
 void
-chatty_notify_show_notification (const char *title,
-                                 const char *message,
-                                 guint       notification_type,
-                                 const char *buddy_name)
+chatty_notify_show_notification (const char         *title,
+                                 const char         *message,
+                                 guint               notification_type,
+                                 PurpleConversation *conv)
 {
   GApplication  *application;
   GNotification *notification;
@@ -65,11 +69,11 @@ chatty_notify_show_notification (const char *title,
 
   switch (notification_type) {
     case CHATTY_NOTIFY_MESSAGE_RECEIVED:
-      g_notification_add_button_with_target (notification,
-                                             _("Open Message"),
-                                             "app.open-message",
-                                             "s",
-                                             buddy_name);
+      g_notification_add_button (notification,
+                                 _("Open Message"),
+                                 "app.open-message");
+
+      conv_notify = conv;
 
       g_notification_set_title (notification, title ? title : _("Message Received"));
       g_notification_set_priority (notification, G_NOTIFICATION_PRIORITY_HIGH);
