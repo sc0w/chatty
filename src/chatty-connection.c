@@ -23,6 +23,8 @@
 
 static GHashTable *auto_reconns = NULL;
 
+static gboolean sms_notifications = FALSE;
+
 static gboolean chatty_connection_sign_on (gpointer data);
 static void chatty_connection_account_spinner (PurpleAccount *account, gboolean spin);
 
@@ -42,7 +44,6 @@ cb_sms_modem_added (int status)
       info = g_new0 (ChattyAutoRecon, 1);
 
       g_hash_table_insert (auto_reconns, account, info);
-
     }
 
     info->delay = g_random_int_range (INITIAL_RECON_DELAY_MIN,
@@ -160,18 +161,29 @@ chatty_connection_connected (PurpleConnection *gc)
   PurpleAccount *account;
   char          *message;
   const char    *user_name;
+  const char    *protocol_id;
+  int            sms_match;
 
   account = purple_connection_get_account (gc);
   user_name = purple_account_get_username (account),
+  protocol_id = purple_account_get_protocol_id (account);
+
+  sms_match = !g_strcmp0 (protocol_id, "prpl-mm-sms");
 
   chatty_connection_account_spinner (account, FALSE);
 
   if (g_hash_table_contains (auto_reconns, account)) {
     message = g_strdup_printf ("Account %s reconnected", user_name);
 
-    chatty_notify_show_notification (NULL, message, CHATTY_NOTIFY_ACCOUNT_CONNECTED, NULL);
+    if (!sms_match || (sms_match && sms_notifications)) {
+      chatty_notify_show_notification (NULL, message, CHATTY_NOTIFY_ACCOUNT_CONNECTED, NULL);
+    }
 
     g_free (message);
+  }
+
+  if (sms_match) {
+    sms_notifications = TRUE;
   }
 
   chatty_dialogs_update_connection_status ();
@@ -290,9 +302,11 @@ chatty_connection_report_disconnect_reason (PurpleConnection     *gc,
   if (!g_strcmp0 (protocol_id, "prpl-mm-sms")) {
     // the SMS account gets included in auto_reconns
     // in the 'cb_sms_modem_added' callback
-    message = g_strdup_printf ("SMS disconnected: %s", text);
-    chatty_notify_show_notification (user_name, message, CHATTY_NOTIFY_ACCOUNT_GENERIC, NULL);
-    g_free (message);
+    if (sms_notifications) {
+      message = g_strdup_printf ("SMS disconnected: %s", text);
+      chatty_notify_show_notification (user_name, message, CHATTY_NOTIFY_ACCOUNT_GENERIC, NULL);
+      g_free (message);
+    }
 
     return;
   }

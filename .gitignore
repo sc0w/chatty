@@ -5,4 +5,5 @@ build
 arm
 arm-build
 .zanata-cache/
+.vscode
 .#*
