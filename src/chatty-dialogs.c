@@ -533,6 +533,8 @@ cb_button_add_contact_clicked (GtkButton *sender,
   gchar             *region;
   g_autoptr(GError)  err = NULL;
 
+  chatty_data_t        *chatty = chatty_get_data ();
+
   chatty_dialog_data_t *chatty_dialog = chatty_get_dialog_data ();
 
   who = g_strdup (gtk_entry_get_text (GTK_ENTRY(chatty_dialog->entry_contact_name)));
@@ -560,13 +562,14 @@ cb_button_add_contact_clicked (GtkButton *sender,
 
   chatty_blist_add_buddy (who, alias);
 
+  chatty_conv_im_with_buddy (chatty->selected_account, g_strdup (who));
+
+  gtk_widget_hide (GTK_WIDGET(chatty->dialog_new_chat));
+
   g_free (who);
 
   gtk_entry_set_text (GTK_ENTRY(chatty_dialog->entry_contact_name), "");
   gtk_entry_set_text (GTK_ENTRY(chatty_dialog->entry_contact_nick), "");
-
-  gtk_stack_set_visible_child_name (chatty_dialog->stack_panes_new_chat,
-                                    "view-new-chat");
 }
 
 
