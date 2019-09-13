@@ -58,6 +58,7 @@ struct chatty_conversation {
     GtkWidget     *scrolled;
     GtkWidget     *frame;
     GtkWidget     *button_send;
+    GtkWidget     *button_file_send;
   } input;
 
   struct {

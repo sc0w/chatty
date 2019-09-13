@@ -22,6 +22,8 @@
 typedef struct {
   gboolean plugin_carbons_loaded;
   gboolean plugin_carbons_available;
+  gboolean plugin_file_upload_loaded;
+  gboolean plugin_file_upload_available;
   gboolean plugin_lurch_loaded;
   gboolean plugin_mm_sms_loaded;
 } chatty_purple_data_t;
