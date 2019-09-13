@@ -2304,7 +2304,6 @@ chatty_get_conv_blist_node (PurpleConversation *conv)
     case PURPLE_CONV_TYPE_IM:
       node = PURPLE_BLIST_NODE (purple_find_buddy (conv->account,
                                                    conv->name));
-      node = node ? node->parent : NULL;
       break;
     case PURPLE_CONV_TYPE_CHAT:
       node = PURPLE_BLIST_NODE (purple_blist_find_chat (conv->account,
