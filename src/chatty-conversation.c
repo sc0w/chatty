@@ -2304,7 +2304,6 @@ chatty_get_conv_blist_node (PurpleConversation *conv)
     case PURPLE_CONV_TYPE_IM:
       node = PURPLE_BLIST_NODE (purple_find_buddy (conv->account,
                                                    conv->name));
-      node = node ? node->parent : NULL;
       break;
     case PURPLE_CONV_TYPE_CHAT:
       node = PURPLE_BLIST_NODE (purple_blist_find_chat (conv->account,
@@ -2418,7 +2417,6 @@ chatty_conv_im_with_buddy (PurpleAccount *account,
                            const char    *name)
 {
   PurpleConversation *conv;
-  ChattyConversation *chatty_conv;
 
   g_return_if_fail (account != NULL);
   g_return_if_fail (name != NULL);
@@ -2439,9 +2437,7 @@ chatty_conv_im_with_buddy (PurpleAccount *account,
 
   chatty_conv_present_conversation (conv);
 
-  chatty_conv = CHATTY_CONVERSATION (conv);
-
-  chatty_conv_set_unseen (chatty_conv, CHATTY_UNSEEN_NONE);
+  chatty_conv_show_conversation (conv);
 }
 
 
@@ -2465,6 +2461,7 @@ chatty_conv_show_conversation (PurpleConversation *conv)
   const gchar        *protocol_id;
   const char         *color;
   const char         *name;
+  const char         *buddy_alias;
 
   if (!conv) {
     return;
@@ -2475,6 +2472,7 @@ chatty_conv_show_conversation (PurpleConversation *conv)
   protocol_id = purple_account_get_protocol_id (account);
   name = chatty_utils_jabber_id_strip (purple_conversation_get_name (conv));
   buddy = purple_find_buddy (account, name);
+  buddy_alias = purple_buddy_get_alias (buddy);
 
   chatty_conv_present_conversation (conv);
   chatty_conv_set_unseen (chatty_conv, CHATTY_UNSEEN_NONE);
@@ -2491,25 +2489,25 @@ chatty_conv_show_conversation (PurpleConversation *conv)
                                        color,
                                        FALSE);
 
-  if (avatar) {
-    chatty_window_update_sub_header_titlebar (avatar,
-                                              name);
-  }
+  chatty_window_update_sub_header_titlebar (avatar, buddy_alias);
 
   chatty_window_change_view (CHATTY_VIEW_MESSAGE_LIST);
 
   window = gtk_application_get_active_window (GTK_APPLICATION (g_application_get_default ()));
 
   gtk_window_present (window);
+
+  g_object_unref (avatar);
 }
 
 
 void
-chatty_conv_add_history_since_component(GHashTable *components,
-                                        const char *account,
-                                        const char *room){
+chatty_conv_add_history_since_component (GHashTable *components,
+                                         const char *account,
+                                         const char *room){
   time_t mtime;
   struct tm * timeinfo;
+
   g_autofree gchar *iso_timestamp = g_malloc0(MAX_GMT_ISO_SIZE * sizeof(char));
 
   mtime = chatty_history_get_chat_last_message_time(account, room);
@@ -2523,6 +2521,7 @@ chatty_conv_add_history_since_component(GHashTable *components,
   g_hash_table_steal (components, "history_since");
   g_hash_table_insert (components, "history_since", g_steal_pointer(&iso_timestamp));
 }
+
 
 /**
  * chatty_conv_join_chat:
