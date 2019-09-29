@@ -17,7 +17,7 @@
 #include "chatty-config.h"
 #include "chatty-icons.h"
 #include "chatty-account.h"
-#include "./xeps/chatty-xep-0184.h"
+#include "./xeps/xeps.h"
 #include "chatty-message-list.h"
 #include "chatty-purple-request.h"
 #include "chatty-purple-notify.h"

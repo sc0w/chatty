@@ -15,6 +15,7 @@
 #include "version.h"
 #include "prpl.h"
 #include "xmlnode.h"
+#include "xeps.h"
 #include "chatty-xep-0184.h"
 #include "chatty-message-list.h"
 #include "chatty-conversation.h"
@@ -261,51 +262,36 @@ cb_chatty_xeps_xmlnode_send (PurpleConnection  *gc,
 }
 
 
-static void *
-chatty_xeps_get_handle (void)
-{
-  static int handle;
-
-  return &handle;
-}
-
-
 /**
- * chatty_xeps_close:
+ * chatty_0184_close:
  *
  * Unref node hashtable
  */
 void
-chatty_xeps_close (void)
+chatty_0184_close (void)
 {
   g_hash_table_destroy (ht_bubble_node);
 }
 
 
 /**
- * chatty_xeps_init:
+ * chatty_0184_init:
  *
  * Sets purple XEP functions
  * and defines libpurple signal callbacks
  *
  */
 void
-chatty_xeps_init (void)
+chatty_0184_init (void)
 {
-  PurplePlugin *jabber;
+  PurplePlugin *jabber = chatty_xeps_get_jabber ();
+  void *handle = chatty_xeps_get_handle ();
   gboolean      ok;
 
-  void *handle = chatty_xeps_get_handle ();
 
   void *conv_handle = purple_conversations_get_handle();
 
   jabber = purple_find_prpl ("prpl-jabber");
-
-  if (!jabber) {
-    g_debug ("plugin prpl-jabber not loaded");
-
-    return;
-  }
 
   purple_plugin_ipc_call (jabber, "add_feature", &ok, "urn:xmpp:receipts");
 

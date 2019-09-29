@@ -5,3 +5,5 @@ export DEB_BUILD_MAINT_OPTIONS = hardening=+all
 %:
 	dh $@ --builddirectory=_build
 
+override_dh_shlibdeps:
+	dh_shlibdeps -l/usr/lib/purple-2

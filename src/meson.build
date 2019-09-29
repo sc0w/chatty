@@ -17,6 +17,7 @@ chatty_sources = [
   'chatty-conversation.c',
   'chatty-connection.c',
   'chatty-buddy-list.c',
+  './xeps/xeps.c',
   './xeps/chatty-xep-0184.c',
   'chatty-purple-init.c',
   'chatty-icons.c',
@@ -32,10 +33,15 @@ chatty_sources = [
   version_h,
 ]
 
+purple = dependency('purple')
+purple_plugdir = purple.get_pkgconfig_variable('plugindir')
+jabber = meson.get_compiler('c').find_library('jabber', dirs: purple_plugdir)
+jabber_incdir = include_directories('xeps/prpl/jabber')
+
 chatty_deps = [
   dependency('gio-2.0', version: '>= 2.50'),
   dependency('gtk+-3.0', version: '>= 3.22'),
-  dependency('purple'),
+  purple, jabber,
   dependency('libhandy-0.0'),
   dependency('sqlite3', version: '>=3.0.0'),
   dependency('gee-0.8'),
@@ -58,6 +64,7 @@ libchatty = static_library(
 )
 
 executable('chatty', chatty_sources,
+  include_directories: jabber_incdir,
   dependencies: chatty_deps,
   link_with: libchatty,
   install: true,
