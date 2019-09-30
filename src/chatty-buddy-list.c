@@ -220,18 +220,9 @@ cb_buddy_signed_on_off (PurpleBuddy *buddy)
 }
 
 
-static gboolean
-cb_chatty_blist_refresh_timer (PurpleBuddyList *list)
-{
-  chatty_blist_refresh (purple_get_blist());
-
-  return TRUE;
-}
-
-
 static void
 cb_sign_on_off (PurpleConnection  *gc,
-                PurpleBuddyList   *blist)
+                gpointer   *data)
 {
   // TODO ...
 }
@@ -444,7 +435,20 @@ cb_chatty_prefs_change_update_list (const char     *name,
                                     gconstpointer   val,
                                     gpointer        data)
 {
-  chatty_blist_refresh (purple_get_blist ());
+  PurpleBlistNode *node;
+  PurpleBuddyList *list;
+
+  list = purple_get_blist ();
+  node = list->root;
+
+  while (node)
+  {
+    if (PURPLE_BLIST_NODE_IS_BUDDY (node) || PURPLE_BLIST_NODE_IS_CHAT (node)) {
+      chatty_blist_update (list, node);
+    }
+
+    node = purple_blist_node_next (node, FALSE);
+  }
 }
 
 
@@ -862,37 +866,6 @@ chatty_blist_returned_from_chat (void)
 
 
 /**
- * chatty_blist_refresh:
- * @list:  a PurpleBuddyList
- *
- * Refreshs the blist
- *
- */
-void
-chatty_blist_refresh (PurpleBuddyList *list)
-{
-  PurpleBlistNode *node;
-
-  _chatty_blist = CHATTY_BLIST(list);
-
-  if (!_chatty_blist) {
-    return;
-  }
-
-  node = list->root;
-
-  while (node)
-  {
-    if (PURPLE_BLIST_NODE_IS_BUDDY (node) || PURPLE_BLIST_NODE_IS_CHAT (node)) {
-      chatty_blist_update (list, node);
-    }
-
-    node = purple_blist_node_next (node, FALSE);
-  }
-}
-
-
-/**
  * chatty_blist_contacts_remove_node:
  * @list:   a PurpleBuddyList
  * @node:   a PurpleBlistNode
@@ -1016,16 +989,14 @@ chatty_blist_join_group_chat (PurpleAccount *account,
  *
  */
 static void
-chatty_blist_create_chat_list (PurpleBuddyList *list)
+chatty_blist_create_chat_list (void)
 {
   GtkListBox        *listbox;
   chatty_data_t     *chatty = chatty_get_data ();
 
   listbox = GTK_LIST_BOX (gtk_list_box_new ());
 
-  _chatty_blist = CHATTY_BLIST(list);
   _chatty_blist->selected_node = NULL;
-  _chatty_blist->filter_timeout = 0;
   _chatty_blist->listbox_chats = listbox;
 
   g_signal_connect (chatty->search_entry_chats,
@@ -1055,14 +1026,13 @@ chatty_blist_create_chat_list (PurpleBuddyList *list)
  *
  */
 static void
-chatty_blist_create_contact_list (PurpleBuddyList *list)
+chatty_blist_create_contact_list (void)
 {
   GtkListBox        *listbox;
   chatty_data_t     *chatty = chatty_get_data ();
 
   listbox = GTK_LIST_BOX (gtk_list_box_new ());
 
-  _chatty_blist = CHATTY_BLIST(list);
   _chatty_blist->listbox_contacts = listbox;
 
   g_signal_connect (chatty->search_entry_contacts,
@@ -1099,45 +1069,9 @@ chatty_blist_show (PurpleBuddyList *list)
 {
   void  *handle;
 
-  chatty_blist_create_chat_list (list);
-  chatty_blist_create_contact_list (list);
-  chatty_blist_refresh (list);
-
   purple_blist_set_visible (TRUE);
 
-  // TODO deaktivate the timeout when the Phone is going idle
-  // or when the Chatty UI hides
-  _chatty_blist->refresh_timer =
-    purple_timeout_add_seconds (30,
-                                (GSourceFunc)cb_chatty_blist_refresh_timer,
-                                list);
-
-  handle = purple_connections_get_handle ();
-
-  purple_signal_connect (handle, "signed-on", _chatty_blist,
-                        PURPLE_CALLBACK(cb_sign_on_off), list);
-  purple_signal_connect (handle, "signed-off", _chatty_blist,
-                        PURPLE_CALLBACK(cb_sign_on_off), list);
-
-  handle = purple_conversations_get_handle();
-
-  purple_signal_connect (handle, "conversation-updated", _chatty_blist,
-                         PURPLE_CALLBACK(cb_conversation_updated),
-                         _chatty_blist);
-  purple_signal_connect (handle, "deleting-conversation", _chatty_blist,
-                         PURPLE_CALLBACK(cb_conversation_deleting),
-                         _chatty_blist);
-  purple_signal_connect (handle, "conversation-created", _chatty_blist,
-                         PURPLE_CALLBACK(cb_conversation_created),
-                         _chatty_blist);
-  purple_signal_connect (handle,
-                         "chat-joined",
-                         _chatty_blist,
-                         PURPLE_CALLBACK(cb_chat_joined),
-                         _chatty_blist);
-
   handle = chatty_blist_get_handle();
-
   purple_signal_emit (handle, "chatty-blist-created", list);
 }
 
@@ -1718,12 +1652,6 @@ chatty_blist_destroy (PurpleBuddyList *list)
 
   purple_signals_disconnect_by_handle (_chatty_blist);
 
-  if (_chatty_blist->refresh_timer) {
-    purple_timeout_remove (_chatty_blist->refresh_timer);
-  }
-
-  _chatty_blist->refresh_timer = 0;
-
   // TODO: destroy everything
 
   g_free (_chatty_blist);
@@ -1797,11 +1725,7 @@ chatty_blist_new_node (PurpleBlistNode *node)
 static void
 chatty_blist_new_list (PurpleBuddyList *blist)
 {
-  ChattyBuddyList *chatty_blist;
-
-  chatty_blist = g_new0 (ChattyBuddyList, 1);
-
-  blist->ui_data = chatty_blist;
+  blist->ui_data = _chatty_blist;
 }
 
 
@@ -1847,8 +1771,14 @@ chatty_blist_get_ui_ops (void)
 void chatty_blist_init (void)
 {
   static int handle;
+  void *conv_handle;
 
   void *chatty_blist_handle = chatty_blist_get_handle();
+
+  _chatty_blist = g_new0 (ChattyBuddyList, 1);
+
+  chatty_blist_create_chat_list ();
+  chatty_blist_create_contact_list ();
 
   purple_prefs_add_none (CHATTY_PREFS_ROOT "/blist");
   purple_prefs_add_bool (CHATTY_PREFS_ROOT "/blist/show_buddy_icons", TRUE);
@@ -1932,6 +1862,30 @@ void chatty_blist_init (void)
                          &handle,
                          PURPLE_CALLBACK (cb_chatty_blist_update_privacy),
                          NULL);
+
+  conv_handle = purple_connections_get_handle ();
+
+  purple_signal_connect (conv_handle, "signed-on", _chatty_blist,
+                        PURPLE_CALLBACK(cb_sign_on_off), NULL);
+  purple_signal_connect (conv_handle, "signed-off", _chatty_blist,
+                        PURPLE_CALLBACK(cb_sign_on_off), NULL);
+
+  conv_handle = purple_conversations_get_handle();
+
+  purple_signal_connect (conv_handle, "conversation-updated", _chatty_blist,
+                         PURPLE_CALLBACK(cb_conversation_updated),
+                         _chatty_blist);
+  purple_signal_connect (conv_handle, "deleting-conversation", _chatty_blist,
+                         PURPLE_CALLBACK(cb_conversation_deleting),
+                         _chatty_blist);
+  purple_signal_connect (conv_handle, "conversation-created", _chatty_blist,
+                         PURPLE_CALLBACK(cb_conversation_created),
+                         _chatty_blist);
+  purple_signal_connect (conv_handle,
+                         "chat-joined",
+                         _chatty_blist,
+                         PURPLE_CALLBACK(cb_chat_joined),
+                         _chatty_blist);
 }
 
 

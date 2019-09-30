@@ -150,7 +150,6 @@ chatty_back_action (GSimpleAction *action,
                     gpointer       user_data)
 {
   chatty_blist_returned_from_chat ();
-  chatty_blist_refresh (purple_get_blist ());
   chatty_window_change_view (CHATTY_VIEW_CHAT_LIST);
 }
 

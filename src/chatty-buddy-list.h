@@ -13,23 +13,10 @@
 
 
 typedef struct {
-  /* Added for ListBox */
   GtkListBox        *listbox_chats;
   GtkListBox        *listbox_contacts;
 
-  /* Needs to be cleaned */
-  GtkBox            *box;
-  GtkTreeView       *treeview_chats;
-  GtkListStore      *treemodel_chats;
-  GtkTreeView       *treeview_contacts;
-  GtkListStore      *treemodel_contacts;
-  GtkTreeViewColumn *text_column;
-  GList             *blist_nodes;
   PurpleBlistNode   *selected_node;
-  guint             *messaging_mode;
-  guint              refresh_timer;
-  gint               filter_timeout;
-  gpointer           priv;
 } ChattyBuddyList;
 
 
