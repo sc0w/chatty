@@ -9,9 +9,15 @@
 #define __BUDDY_LIST_H_INCLUDE__
 
 #include "purple.h"
+#include "chatty-contact-row.h"
 
 
 typedef struct {
+  /* Added for ListBox */
+  GtkListBox        *listbox_chats;
+  GtkListBox        *listbox_contacts;
+
+  /* Needs to be cleaned */
   GtkBox            *box;
   GtkTreeView       *treeview_chats;
   GtkListStore      *treemodel_chats;
@@ -34,9 +40,8 @@ typedef enum {
 
 
 typedef struct _chatty_blist_node {
-  GtkTreeRowReference *row_chat;
-  GtkTreeRowReference *row_contact;
-  GtkTreeIter          iter;
+  ChattyContactRow *row_chat;
+  ChattyContactRow *row_contact;
   gboolean             contact_expanded;
   gboolean             recent_signonoff;
   gint                 recent_signonoff_timer;

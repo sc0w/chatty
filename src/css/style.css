@@ -120,3 +120,22 @@
   padding-top: 120px;
   padding-bottom: 20px;
 }
+
+.unread-badge {
+  background-color: @theme_selected_bg_color;
+  color: white;
+  font-weight: bold;
+  font-size: 0.8em;
+  border-radius: 10px;
+  min-width: 0.7em; 
+  padding: 2px 5px;
+}
+
+row:selected .unread-badge {
+  background-color: white;
+  color: @theme_selected_bg_color;
+}
+
+.bold-label {
+  font-weight: bold;
+}
