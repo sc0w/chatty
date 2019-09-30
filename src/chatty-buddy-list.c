@@ -28,8 +28,6 @@
 #include <libebook-contacts/libebook-contacts.h>
 
 
-static ChattyBuddyList *_chatty_blist = NULL;
-
 static void chatty_blist_new_node (PurpleBlistNode *node);
 
 static void chatty_blist_update (PurpleBuddyList *list,
@@ -43,6 +41,14 @@ static void chatty_blist_update_buddy (PurpleBuddyList *list,
                                        PurpleBlistNode *node);
 
 static gint chatty_blist_sort (GtkListBoxRow *row1, GtkListBoxRow *row2, gpointer user_data);
+
+static GtkListBox *chatty_get_contacts_list (void) {
+  return chatty_get_data ()->listbox_contacts;
+}
+
+static GtkListBox *chatty_get_chats_list (void) {
+  return chatty_get_data ()->listbox_chats;
+}
 
 // *** callbacks
 static void
@@ -223,7 +229,7 @@ cb_sign_on_off (PurpleConnection  *gc,
 static void
 cb_conversation_updated (PurpleConversation   *conv,
                          PurpleConvUpdateType  type,
-                         ChattyBuddyList      *chatty_blist)
+                         gpointer *data)
 {
   GList *convs = NULL;
   GList *l = NULL;
@@ -271,9 +277,9 @@ cb_conversation_updated (PurpleConversation   *conv,
 
 static void
 cb_conversation_deleting (PurpleConversation  *conv,
-                          ChattyBuddyList     *chatty_blist)
+                          gpointer data)
 {
-  cb_conversation_updated (conv, PURPLE_CONV_UPDATE_UNSEEN, chatty_blist);
+  cb_conversation_updated (conv, PURPLE_CONV_UPDATE_UNSEEN, data);
 }
 
 
@@ -337,7 +343,7 @@ cb_displayed_msg_update_ui (ChattyConversation *chatty_conv,
 
 static void
 cb_conversation_created (PurpleConversation *conv,
-                         ChattyBuddyList    *chatty_blist)
+                         gpointer    data)
 {
   if (conv->type == PURPLE_CONV_TYPE_IM) {
     GSList *buddies = purple_find_buddies (conv->account, conv->name);
@@ -380,7 +386,7 @@ cb_conversation_created (PurpleConversation *conv,
 
 static void
 cb_chat_joined (PurpleConversation *conv,
-                ChattyBuddyList    *chatty_blist)
+                gpointer    data)
 {
   if (conv->type == PURPLE_CONV_TYPE_CHAT) {
     PurpleChat *chat = purple_blist_find_chat(conv->account, conv->name);
@@ -491,7 +497,7 @@ chatty_get_selected_node (void) {
   ChattyContactRow *row;
   PurpleBlistNode *node;
 
-  row = CHATTY_CONTACT_ROW (gtk_list_box_get_selected_row (_chatty_blist->listbox_chats));
+  row = CHATTY_CONTACT_ROW (gtk_list_box_get_selected_row (chatty_get_chats_list()));
   g_return_val_if_fail (row != NULL, NULL);
 
   g_object_get (row, "data", &node, NULL);
@@ -539,9 +545,9 @@ chatty_blist_list_has_children (int list_type)
   gboolean    result;
 
   if (list_type == CHATTY_LIST_CHATS) {
-    result = gtk_list_box_get_row_at_index(GTK_LIST_BOX(_chatty_blist->listbox_chats), 1) != NULL;
+    result = gtk_list_box_get_row_at_index(chatty_get_chats_list (), 1) != NULL;
   } else if (list_type == CHATTY_LIST_CONTACTS) {
-    result = gtk_list_box_get_row_at_index(GTK_LIST_BOX(_chatty_blist->listbox_contacts), 1) != NULL;
+    result = gtk_list_box_get_row_at_index(chatty_get_contacts_list (), 1) != NULL;
   }
 
   return result;
@@ -559,10 +565,10 @@ chatty_blist_chat_list_set_row (void)
 {
   GtkListBoxRow *row;
 
-  row = gtk_list_box_get_row_at_index(GTK_LIST_BOX(_chatty_blist->listbox_chats), 1);
+  row = gtk_list_box_get_row_at_index(chatty_get_chats_list (), 1);
 
   if (row != NULL) {
-    gtk_list_box_select_row (GTK_LIST_BOX(_chatty_blist->listbox_chats), row);
+    gtk_list_box_select_row (chatty_get_chats_list (), row);
   } else {
     // The chats list is empty, go back to initial view
     chatty_window_update_sub_header_titlebar (NULL, NULL);
@@ -861,7 +867,7 @@ chatty_blist_add_buddy (const char *who,
 void
 chatty_blist_returned_from_chat (void)
 {
-  gtk_list_box_unselect_all (_chatty_blist->listbox_chats);
+  gtk_list_box_unselect_all (chatty_get_chats_list ());
 }
 
 
@@ -980,7 +986,8 @@ chatty_blist_create_chat_list (void)
 
   listbox = GTK_LIST_BOX (gtk_list_box_new ());
 
-  _chatty_blist->listbox_chats = listbox;
+
+  chatty_get_data ()->listbox_chats = listbox;
 
   g_signal_connect (chatty->search_entry_chats,
                     "search-changed",
@@ -1016,7 +1023,7 @@ chatty_blist_create_contact_list (void)
 
   listbox = GTK_LIST_BOX (gtk_list_box_new ());
 
-  _chatty_blist->listbox_contacts = listbox;
+  chatty_get_data ()->listbox_contacts = listbox;
 
   g_signal_connect (chatty->search_entry_contacts,
                     "search-changed",
@@ -1193,7 +1200,7 @@ chatty_blist_contacts_update_node (PurpleBuddy     *buddy,
                                                     NULL,
                                                     NULL));
     gtk_widget_show (GTK_WIDGET (chatty_node->row_contact));
-    listbox = _chatty_blist->listbox_contacts;
+    listbox = chatty_get_contacts_list ();
     gtk_container_add (GTK_CONTAINER (listbox), GTK_WIDGET (chatty_node->row_contact));
   } else {
     g_object_set (chatty_node->row_contact,
@@ -1261,7 +1268,7 @@ chatty_blist_contacts_update_group_chat (PurpleBlistNode *node)
                                                     NULL,
                                                     NULL));
     gtk_widget_show (GTK_WIDGET (chatty_node->row_contact));
-    listbox = GTK_LIST_BOX (_chatty_blist->listbox_contacts);
+    listbox = chatty_get_contacts_list ();
     gtk_container_add (GTK_CONTAINER (listbox), GTK_WIDGET (chatty_node->row_contact));
   } else {
     g_object_set (chatty_node->row_contact,
@@ -1388,7 +1395,7 @@ chatty_blist_chats_update_node (PurpleBuddy     *buddy,
                                                     last_msg_ts,
                                                     unread_messages));
     gtk_widget_show (GTK_WIDGET (chatty_node->row_chat));
-    listbox = GTK_WIDGET (_chatty_blist->listbox_chats);
+    listbox = GTK_WIDGET (chatty_get_chats_list ());
     gtk_container_add (GTK_CONTAINER (listbox), GTK_WIDGET (chatty_node->row_chat));
   } else {
     g_object_set (chatty_node->row_chat,
@@ -1486,7 +1493,7 @@ chatty_blist_chats_update_group_chat (PurpleBlistNode *node)
                                                     last_msg_ts,
                                                     unread_messages));
     gtk_widget_show (GTK_WIDGET (chatty_node->row_chat));
-    listbox = GTK_WIDGET (_chatty_blist->listbox_chats);
+    listbox = GTK_WIDGET (chatty_get_chats_list ());
     gtk_container_add (GTK_CONTAINER (listbox), GTK_WIDGET (chatty_node->row_chat));
   } else {
     g_object_set (chatty_node->row_chat,
@@ -1584,11 +1591,7 @@ static void
 chatty_blist_update (PurpleBuddyList *list,
                      PurpleBlistNode *node)
 {
-  if (list) {
-    _chatty_blist = CHATTY_BLIST(list);
-  }
-
-  if (!_chatty_blist || !node) {
+  if (!node) {
     return;
   }
 
@@ -1706,7 +1709,6 @@ chatty_blist_new_node (PurpleBlistNode *node)
 static void
 chatty_blist_new_list (PurpleBuddyList *blist)
 {
-  blist->ui_data = _chatty_blist;
 }
 
 
@@ -1755,8 +1757,6 @@ void chatty_blist_init (void)
   void *conv_handle;
 
   void *chatty_blist_handle = chatty_blist_get_handle();
-
-  _chatty_blist = g_new0 (ChattyBuddyList, 1);
 
   chatty_blist_create_chat_list ();
   chatty_blist_create_contact_list ();
@@ -1844,29 +1844,30 @@ void chatty_blist_init (void)
                          PURPLE_CALLBACK (cb_chatty_blist_update_privacy),
                          NULL);
 
+
   conv_handle = purple_connections_get_handle ();
 
-  purple_signal_connect (conv_handle, "signed-on", _chatty_blist,
+  purple_signal_connect (conv_handle, "signed-on", &handle,
                         PURPLE_CALLBACK(cb_sign_on_off), NULL);
-  purple_signal_connect (conv_handle, "signed-off", _chatty_blist,
+  purple_signal_connect (conv_handle, "signed-off", &handle,
                         PURPLE_CALLBACK(cb_sign_on_off), NULL);
 
   conv_handle = purple_conversations_get_handle();
 
-  purple_signal_connect (conv_handle, "conversation-updated", _chatty_blist,
+  purple_signal_connect (conv_handle, "conversation-updated", &handle,
                          PURPLE_CALLBACK(cb_conversation_updated),
-                         _chatty_blist);
-  purple_signal_connect (conv_handle, "deleting-conversation", _chatty_blist,
+                         NULL);
+  purple_signal_connect (conv_handle, "deleting-conversation", &handle,
                          PURPLE_CALLBACK(cb_conversation_deleting),
-                         _chatty_blist);
-  purple_signal_connect (conv_handle, "conversation-created", _chatty_blist,
+                         NULL);
+  purple_signal_connect (conv_handle, "conversation-created", &handle,
                          PURPLE_CALLBACK(cb_conversation_created),
-                         _chatty_blist);
+                         NULL);
   purple_signal_connect (conv_handle,
                          "chat-joined",
-                         _chatty_blist,
+                         &handle,
                          PURPLE_CALLBACK(cb_chat_joined),
-                         _chatty_blist);
+                         NULL);
 }
 
 

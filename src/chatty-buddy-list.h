@@ -11,13 +11,6 @@
 #include "purple.h"
 #include "chatty-contact-row.h"
 
-
-typedef struct {
-  GtkListBox        *listbox_chats;
-  GtkListBox        *listbox_contacts;
-} ChattyBuddyList;
-
-
 typedef enum {
   CHATTY_BLIST_NODE_HAS_PENDING_MESSAGE            =  1 << 0,
   CHATTY_BLIST_CHAT_HAS_PENDING_MESSAGE_WITH_NICK  =  1 << 1,
@@ -79,7 +72,6 @@ enum {
 } e_list_mode;
 
 
-#define CHATTY_BLIST(list) ((ChattyBuddyList *)purple_blist_get_ui_data())
 #define CHATTY_IS_CHATTY_BLIST(list) \
   (purple_blist_get_ui_ops() == chatty_blist_get_ui_ops())
 

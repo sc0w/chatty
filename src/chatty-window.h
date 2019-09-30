@@ -23,6 +23,10 @@ typedef enum {
 } ChattyCmlOptions;
 
 typedef struct {
+  /* Listboxes for sidebar and contact list */
+  GtkListBox        *listbox_chats;
+  GtkListBox        *listbox_contacts;
+
   HdyLeaflet        *content_box;
   HdyLeaflet        *header_box;
   HdyHeaderGroup    *header_group;
