@@ -35,13 +35,9 @@ static void chatty_blist_new_node (PurpleBlistNode *node);
 static void chatty_blist_update (PurpleBuddyList *list,
                                  PurpleBlistNode *node);
 
-static void chatty_blist_chats_remove_node (PurpleBuddyList *list,
-                                            PurpleBlistNode *node,
-                                            gboolean         update);
+static void chatty_blist_chats_remove_node (PurpleBlistNode *node);
 
-static void chatty_blist_contacts_remove_node (PurpleBuddyList *list,
-                                               PurpleBlistNode *node,
-                                               gboolean         update);
+static void chatty_blist_contacts_remove_node (PurpleBlistNode *node);
 
 static void chatty_blist_update_buddy (PurpleBuddyList *list,
                                        PurpleBlistNode *node);
@@ -704,7 +700,7 @@ chatty_blist_chat_list_leave_chat (void)
   }
 
   if (PURPLE_BLIST_NODE_IS_CHAT(node)) {
-    chatty_blist_chats_remove_node (purple_get_blist(), node, TRUE);
+    chatty_blist_chats_remove_node (node);
   }
 
   chatty_blist_chat_list_set_row ();
@@ -871,21 +867,17 @@ chatty_blist_returned_from_chat (void)
 
 /**
  * chatty_blist_contacts_remove_node:
- * @list:   a PurpleBuddyList
  * @node:   a PurpleBlistNode
- * @update: a gboolean
  *
  * Removes a node in the contacts list
  *
  */
 static void
-chatty_blist_contacts_remove_node (PurpleBuddyList *list,
-                                   PurpleBlistNode *node,
-                                   gboolean         update)
+chatty_blist_contacts_remove_node (PurpleBlistNode *node)
 {
   ChattyBlistNode *chatty_node = node->ui_data;
 
-  if (!chatty_node || !chatty_node->row_contact || !_chatty_blist) {
+  if (!chatty_node || !chatty_node->row_contact) {
     return;
   }
 
@@ -896,21 +888,17 @@ chatty_blist_contacts_remove_node (PurpleBuddyList *list,
 
 /**
  * chatty_blist_chats_remove_node:
- * @list:   a PurpleBuddyList
  * @node:   a PurpleBlistNode
- * @update: a gboolean
  *
  * Removes a node in the chats list
  *
  */
 static void
-chatty_blist_chats_remove_node (PurpleBuddyList *list,
-                                PurpleBlistNode *node,
-                                gboolean         update)
+chatty_blist_chats_remove_node (PurpleBlistNode *node)
 {
   ChattyBlistNode *chatty_node = node->ui_data;
 
-  if (!chatty_node || !chatty_node->row_chat || !_chatty_blist) {
+  if (!chatty_node || !chatty_node->row_chat) {
     return;
   }
 
@@ -1088,8 +1076,8 @@ chatty_blist_remove (PurpleBuddyList *list,
 
   purple_request_close_with_handle (node);
 
-  chatty_blist_chats_remove_node (list, node, TRUE);
-  chatty_blist_contacts_remove_node (list, node, TRUE);
+  chatty_blist_chats_remove_node (node);
+  chatty_blist_contacts_remove_node (node);
 
   if (chatty_node) {
     if (chatty_node->recent_signonoff_timer > 0) {
@@ -1576,7 +1564,7 @@ chatty_blist_update_buddy (PurpleBuddyList *list,
 
     chatty_blist_chats_update_node (buddy, node);
   } else {
-    chatty_blist_chats_remove_node (list, node, FALSE);
+    chatty_blist_chats_remove_node (node);
   }
 
   chatty_blist_contacts_update_node (buddy, node);
@@ -1639,20 +1627,18 @@ chatty_blist_update (PurpleBuddyList *list,
 static void
 chatty_blist_destroy (PurpleBuddyList *list)
 {
-  if (!list || !list->ui_data) {
-    return;
+  PurpleBlistNode *node;
+
+  list = purple_get_blist ();
+  node = list->root;
+
+  while (node)
+  {
+    chatty_blist_contacts_remove_node (node);
+    chatty_blist_chats_remove_node (node);
+    g_free (node->ui_data);
+    node = purple_blist_node_next (node, FALSE);
   }
-
-  g_return_if_fail (list->ui_data == _chatty_blist);
-
-  purple_signals_disconnect_by_handle (_chatty_blist);
-
-  // TODO: destroy everything
-
-  g_free (_chatty_blist);
-
-  _chatty_blist = NULL;
-  purple_prefs_disconnect_by_handle (chatty_blist_get_handle ());
 }
 
 
