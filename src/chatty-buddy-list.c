@@ -72,8 +72,6 @@ row_selected_cb (GtkListBox    *box,
     buddy = (PurpleBuddy*)node;
     account = purple_buddy_get_account (buddy);
 
-    _chatty_blist->selected_node = node;
-
     gtk_widget_hide (chatty->button_header_chat_info);
 
     if (purple_blist_node_get_bool (PURPLE_BLIST_NODE(buddy),
@@ -94,8 +92,6 @@ row_selected_cb (GtkListBox    *box,
   } else if (PURPLE_BLIST_NODE_IS_CHAT(node)) {
     chat = (PurpleChat*)node;
     chat_name = purple_chat_get_name (chat);
-
-    _chatty_blist->selected_node = node;
 
     gtk_widget_hide (chatty->button_menu_add_contact);
 
@@ -491,9 +487,22 @@ cb_do_autojoin (PurpleConnection *gc, gpointer null)
 
   return TRUE;
 }
-
-
 // *** end callbacks
+
+
+static PurpleBlistNode *
+chatty_get_selected_node (void) {
+  ChattyContactRow *row;
+  PurpleBlistNode *node;
+
+  row = CHATTY_CONTACT_ROW (gtk_list_box_get_selected_row (_chatty_blist->listbox_chats));
+  g_return_val_if_fail (row != NULL, NULL);
+
+  g_object_get (row, "data", &node, NULL);
+
+  return node;
+}
+
 
 /**
  * chatty_blist_buddy_is_displayable:
@@ -654,22 +663,19 @@ chatty_blist_contact_list_add_buddy (void)
 {
   PurpleAccount      *account;
   PurpleConversation *conv;
-  PurpleBlistNode    *node;
   PurpleBuddy        *buddy;
-
+  
   chatty_data_t *chatty = chatty_get_data ();
 
-  node = _chatty_blist->selected_node;
-  buddy = (PurpleBuddy*)node;
+  buddy = PURPLE_BUDDY (chatty_get_selected_node ());
+  g_return_if_fail (buddy != NULL);
 
   conv = chatty_conv_container_get_active_purple_conv (GTK_NOTEBOOK(chatty->pane_view_message_list));
 
-  if (buddy) {
-    account = purple_conversation_get_account (conv);
-    purple_account_add_buddy (account, buddy);
-    purple_blist_node_remove_setting (PURPLE_BLIST_NODE(buddy), "chatty-unknown-contact");
-    purple_blist_node_set_bool (node, "chatty-notifications", TRUE);
-  }
+  account = purple_conversation_get_account (conv);
+  purple_account_add_buddy (account, buddy);
+  purple_blist_node_remove_setting (PURPLE_BLIST_NODE(buddy), "chatty-unknown-contact");
+  purple_blist_node_set_bool (PURPLE_BLIST_NODE (buddy), "chatty-notifications", TRUE);
 }
 
 
@@ -688,7 +694,7 @@ chatty_blist_chat_list_leave_chat (void)
   PurpleBlistNode *node;
   ChattyBlistNode *ui;
 
-  node = _chatty_blist->selected_node;
+  node = chatty_get_selected_node ();
 
   if (node) {
     ui = node->ui_data;
@@ -702,7 +708,6 @@ chatty_blist_chat_list_leave_chat (void)
   }
 
   chatty_blist_chat_list_set_row ();
-
 }
 
 
@@ -730,7 +735,7 @@ chatty_blist_chat_list_remove_buddy (void)
   int              response;
   const char      *conv_name;
 
-  node = _chatty_blist->selected_node;
+  node = chatty_get_selected_node ();
 
   ui = node->ui_data;
 
@@ -860,7 +865,6 @@ chatty_blist_add_buddy (const char *who,
 void
 chatty_blist_returned_from_chat (void)
 {
-   _chatty_blist->selected_node = NULL;
   gtk_list_box_unselect_all (_chatty_blist->listbox_chats);
 }
 
@@ -883,10 +887,6 @@ chatty_blist_contacts_remove_node (PurpleBuddyList *list,
 
   if (!chatty_node || !chatty_node->row_contact || !_chatty_blist) {
     return;
-  }
-
-  if (_chatty_blist->selected_node == node) {
-    _chatty_blist->selected_node = NULL;
   }
 
   gtk_widget_destroy (GTK_WIDGET (chatty_node->row_contact));
@@ -912,10 +912,6 @@ chatty_blist_chats_remove_node (PurpleBuddyList *list,
 
   if (!chatty_node || !chatty_node->row_chat || !_chatty_blist) {
     return;
-  }
-
-  if (_chatty_blist->selected_node == node) {
-    _chatty_blist->selected_node = NULL;
   }
 
   gtk_widget_destroy (GTK_WIDGET (chatty_node->row_chat));
@@ -996,7 +992,6 @@ chatty_blist_create_chat_list (void)
 
   listbox = GTK_LIST_BOX (gtk_list_box_new ());
 
-  _chatty_blist->selected_node = NULL;
   _chatty_blist->listbox_chats = listbox;
 
   g_signal_connect (chatty->search_entry_chats,

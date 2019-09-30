@@ -15,8 +15,6 @@
 typedef struct {
   GtkListBox        *listbox_chats;
   GtkListBox        *listbox_contacts;
-
-  PurpleBlistNode   *selected_node;
 } ChattyBuddyList;
 
 
