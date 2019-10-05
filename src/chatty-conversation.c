@@ -2435,7 +2435,7 @@ chatty_conv_im_with_buddy (PurpleAccount *account,
 {
   PurpleConversation *conv;
 
-  g_return_if_fail (account != NULL);
+  g_return_if_fail (purple_account_is_connected (account));
   g_return_if_fail (name != NULL);
 
   conv = purple_find_conversation_with_account (PURPLE_CONV_TYPE_IM,
