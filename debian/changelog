@@ -1,3 +1,31 @@
+chatty (0.0.8) amber-phone; urgency=medium
+
+  * Change app name from Chatty to Chats
+  * Fixed a bug that led to a crash when adding a new contact without an active acount
+  * Added upport for XMPP http file upload plugin
+  * Chats switches directly to the conversation view when a new contact is added
+  * Added conversation notifications
+  * Added notifications for XMPP account and modem (re)connections
+  * Set first account in the 'Add New Chat' dialog as default
+  * Added timestamp to incoming messages
+  * Added daemon mode
+  * Added support for SMS uri scheme
+  * Added handling for libpurple TLS notifications
+  * Added dialog for TLS connection handling
+  * Improved connection handling
+  * Added spinner for connection status to each entry in the accounts list
+  * Reworked connection error dialog
+  * Added OMEMO fingerprints and device IDs to the XMPP account info dialog and the chat details dialog 
+  * Added phone number formatting according to E164
+  * Added lazy-loading for the chat history
+  * Added gtk_about_dialog
+  * Added auto reconnect for SMS and IM accounts
+  * Replaced purple conversation logging by SQLite based logging
+  * Added acount setup verification
+  * Fixed many visual bugs in the UI
+
+ -- Andrea Schaefer <andrea.schaefer@puri.sm>  Sat, 05 Oct 2019 17:37:52 +0200
+
 chatty (0.0.7) purple; urgency=medium
 
   * Added an application info dialog
