@@ -1,4 +1,5 @@
 # Lighting <glighting@gmail.com>, 2019. #zanata
+# Pavel <budanov.pavel@gmail.com>, 2019. #zanata
 msgid ""
 msgstr ""
 "Project-Id-Version: purism-chatty\n"
@@ -7,8 +8,8 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2019-08-21 09:01+0000\n"
-"Last-Translator: Lighting <glighting@gmail.com>\n"
+"PO-Revision-Date: 2019-09-02 04:48+0000\n"
+"Last-Translator: Pavel <budanov.pavel@gmail.com>\n"
 "Language-Team: Russian\n"
 "Language: ru\n"
 "X-Generator: Zanata 4.6.2\n"
@@ -25,7 +26,8 @@ msgstr "Приложение для обмена сообщениями"
 
 #: data/sm.puri.Chatty.appdata.xml.in:8
 msgid "Chatty is a messaging application supporting XMPP and SMS."
-msgstr "Chatty для обмена сообщениями с поддержкой XMPP и СМС"
+msgstr ""
+"Chatty — это приложение для обмена сообщениями с поддержкой XMPP и SMS"
 
 #: data/sm.puri.Chatty.appdata.xml.in:16
 msgid "Chatty's message window"
@@ -37,7 +39,7 @@ msgstr "sm.puri.Chatty"
 
 #: data/sm.puri.Chatty.desktop.in:6
 msgid "SMS and XMPP chat application"
-msgstr "Приложение для СМС и XMPP чата"
+msgstr "Приложение для SMS и XMPP общения"
 
 #: data/sm.puri.Chatty.desktop.in:7
 msgid "XMPP;SMS;chat;jabber;messaging;modem"
@@ -49,7 +51,7 @@ msgstr "Показать версию выпуска"
 
 #: src/chatty-application.c:51
 msgid "Disable all accounts"
-msgstr "Отключить все уч. записи"
+msgstr "Отключить все учётные записи"
 
 #: src/chatty-application.c:52
 msgid "Enable libpurple debug messages"
@@ -61,15 +63,15 @@ msgstr "Включить подробные сообщения отладки li
 
 #: src/chatty-account.c:117
 msgid "SMS Number"
-msgstr "Номер СМС"
+msgstr "Номер SMS"
 
 #: src/chatty-account.c:121
 msgid "Jabber ID"
-msgstr "Jabber ID"
+msgstr "Идентификатор Jabber"
 
 #: src/chatty-account.c:275
 msgid "Add new account..."
-msgstr "Добавить уч. запись..."
+msgstr "Добавление новой учётной записи..."
 
 #: src/chatty-account.c:302
 msgid "Contact added"
@@ -83,7 +85,7 @@ msgstr "Пользователь %s добавил %s в контакты"
 #: src/chatty-account.c:367
 #, c-format
 msgid "Authorize %s?"
-msgstr "Авторизация %s"
+msgstr "Авторизовать %s?"
 
 #: src/chatty-account.c:371
 msgid "Reject"
@@ -112,7 +114,7 @@ msgstr "Удалить чат с"
 
 #: src/chatty-buddy-list.c:836
 msgid "This deletes the conversation history"
-msgstr "Удаляет историю разговоров"
+msgstr "Удаляет историю бесед"
 
 #: src/chatty-buddy-list.c:848 src/ui/chatty-dialog-join-muc.ui:16
 #: src/ui/chatty-dialog-muc-info.ui:54 src/ui/chatty-dialog-new-chat.ui:54
@@ -186,7 +188,7 @@ msgstr "Шифрование недоступно"
 
 #: src/chatty-lurch.c:209 src/chatty-lurch.c:215
 msgid "This chat is not encrypted"
-msgstr "Чат не зашифрован"
+msgstr "Этот чат не зашифрован"
 
 #: src/chatty-lurch.c:212
 msgid "Encryption is not available"
@@ -194,7 +196,7 @@ msgstr "Чат не поддерживает шифрование"
 
 #: src/chatty-lurch.c:219
 msgid "This chat is encrypted"
-msgstr "Чат зашифрован"
+msgstr "Этот чат зашифрован"
 
 #: src/chatty-message-list.c:68 src/chatty-message-list.c:73
 msgid "This is a IM conversation."
@@ -218,7 +220,7 @@ msgstr "сквозным шифрованием."
 
 #: src/chatty-message-list.c:78
 msgid "This is a SMS conversation."
-msgstr "Это беседа СМС сообщениями."
+msgstr "Это SMS-беседа."
 
 #: src/chatty-message-list.c:80
 msgid "and carrier rates may apply."
@@ -230,7 +232,7 @@ msgstr "О Chatty"
 
 #: src/ui/chatty-dialog-info.ui:92
 msgid "An SMS and XMPP messaging client"
-msgstr "Клиент обмена сообщениями СМС и XMPP"
+msgstr "Клиент обмена сообщениями SMS и XMPP"
 
 #: src/ui/chatty-dialog-join-muc.ui:12 src/ui/chatty-window.ui:19
 msgid "New Group Chat"
@@ -374,11 +376,11 @@ msgstr "Обмениваться историей чата между устро
 
 #: src/ui/chatty-dialog-settings.ui:223
 msgid "Typing Notification"
-msgstr "Уведомление набора"
+msgstr "Уведомление о наборе"
 
 #: src/ui/chatty-dialog-settings.ui:224
 msgid "Send typing messages"
-msgstr "Отсылать оповещение набора текста"
+msgstr "Отсылать оповещение о наборе текста"
 
 #: src/ui/chatty-dialog-settings.ui:244
 msgid "Chats List"
@@ -386,11 +388,11 @@ msgstr "Список чатов"
 
 #: src/ui/chatty-dialog-settings.ui:265
 msgid "Show Offline Contacts"
-msgstr "Показать отключённые контакты"
+msgstr "Показать контакты не в сети"
 
 #: src/ui/chatty-dialog-settings.ui:266
 msgid "Show contacts in the chats list"
-msgstr "Показать в списке чатов контакты которые не в сети"
+msgstr "Показать контакты в списке чатов"
 
 #: src/ui/chatty-dialog-settings.ui:281
 msgid "Indicate Offline Contacts"
@@ -398,7 +400,7 @@ msgstr "Помечать отключённые контакты"
 
 #: src/ui/chatty-dialog-settings.ui:282
 msgid "Grey out avatars from offline contacts"
-msgstr "Обесцвечивать аватары контактов которые не в сети"
+msgstr "Обесцвечивать аватары контактов не в сети"
 
 #: src/ui/chatty-dialog-settings.ui:297
 msgid "Indicate Idle Contacts"
@@ -414,7 +416,7 @@ msgstr "Помечать неизвестные контакты"
 
 #: src/ui/chatty-dialog-settings.ui:314
 msgid "Color unknown contact ID red"
-msgstr "Отображать красным идентификатор неизвестных контактов"
+msgstr "Отображать красным идентификатор неизвестного контакта"
 
 #: src/ui/chatty-dialog-settings.ui:334
 msgid "Editor"
@@ -486,7 +488,7 @@ msgstr "Подробности чата"
 
 #: src/ui/chatty-dialog-user-info.ui:94
 msgid "XMPP ID"
-msgstr "XMPP ID"
+msgstr "Идентификатор XMPP"
 
 #: src/ui/chatty-dialog-user-info.ui:109 src/ui/chatty-dialog-user-info.ui:193
 msgid "Encryption"
@@ -526,14 +528,14 @@ msgstr "Чаты"
 
 #: src/ui/chatty-window.ui:423
 msgid "Start chatting"
-msgstr "Начать общаться"
+msgstr "Начать общение"
 
 #: src/ui/chatty-window.ui:443
 msgid ""
 "<b>SMS Chat</b> is set up by default. Start a chat with the \"+\" button in "
 "the titlebar."
 msgstr ""
-"По умолчанию настроен <b>СМС чат</b>. Начните чат с помощью кнопки «+» в "
+"По умолчанию настроен <b>SMS чат</b>. Начните чат с помощью кнопки «+» в "
 "строке заголовка."
 
 #: src/ui/chatty-window.ui:462
