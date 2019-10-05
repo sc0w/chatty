@@ -1418,7 +1418,7 @@ chatty_dialogs_show_dialog_about_chatty (void)
 
   gtk_show_about_dialog (GTK_WINDOW(window),
                          "logo-icon-name", CHATTY_APP_ID,
-                         "program-name", _("Chatty"),
+                         "program-name", _("Chats"),
                          "version", version,
                          "comments", _("An SMS and XMPP messaging client"),
                          "website", "https://source.puri.sm/Librem5/chatty",

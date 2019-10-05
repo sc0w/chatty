@@ -1,5 +1,5 @@
 [Desktop Entry]
-Name=Chatty (daemon)
+Name=Chats (daemon)
 Exec=chatty --daemon
 Icon=sm.puri.Chatty
 Comment=SMS and XMPP chat application (daemon mode)
