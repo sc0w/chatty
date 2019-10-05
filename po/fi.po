@@ -1,4 +1,5 @@
 # JR-Fi <juho@reivo.fi>, 2019. #zanata
+# M J <emjay.accounts+zanata@mailbox.org>, 2019. #zanata
 msgid ""
 msgstr ""
 "Project-Id-Version: purism-chatty\n"
@@ -7,8 +8,8 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2019-08-04 04:41+0000\n"
-"Last-Translator: JR-Fi <juho@reivo.fi>\n"
+"PO-Revision-Date: 2019-09-12 06:43+0000\n"
+"Last-Translator: M J <emjay.accounts+zanata@mailbox.org>\n"
 "Language-Team: Finnish\n"
 "Language: fi\n"
 "X-Generator: Zanata 4.6.2\n"
@@ -183,7 +184,7 @@ msgstr "Puhelinnumero:"
 
 #: src/chatty-lurch.c:116
 msgid "Encryption not available"
-msgstr "Salaus ei ole tarjolla"
+msgstr "Salaus ei ole saatavilla"
 
 #: src/chatty-lurch.c:209 src/chatty-lurch.c:215
 msgid "This chat is not encrypted"
@@ -191,7 +192,7 @@ msgstr "Tämä keskustelu ei ole salattu"
 
 #: src/chatty-lurch.c:212
 msgid "Encryption is not available"
-msgstr "Salausta ei ole tarjolla"
+msgstr "Salausta ei ole saatavilla"
 
 #: src/chatty-lurch.c:219
 msgid "This chat is encrypted"
@@ -285,11 +286,11 @@ msgstr "Näytä ilmoituskuvake"
 
 #: src/ui/chatty-dialog-muc-info.ui:244
 msgid "Edit topic"
-msgstr "Muuta otsikkoa"
+msgstr "Muokkaa aihetta"
 
 #: src/ui/chatty-dialog-muc-info.ui:245
 msgid "Users may change the topic"
-msgstr "Käyttäjät voivat muuttaa otsikkoa"
+msgstr "Käyttäjät voivat muuttaa aihetta"
 
 #: src/ui/chatty-dialog-muc-info.ui:260
 msgid "Persistent"
@@ -365,7 +366,7 @@ msgstr "Viestien kuittaus"
 
 #: src/ui/chatty-dialog-settings.ui:192
 msgid "Confirm received messages"
-msgstr "Kuittaa saadu viestit"
+msgstr "Kuittaa saadut viestit"
 
 #: src/ui/chatty-dialog-settings.ui:207
 msgid "Message Carbons"
@@ -377,7 +378,7 @@ msgstr "Jaa keskusteluhistoria laitteiden välillä"
 
 #: src/ui/chatty-dialog-settings.ui:223
 msgid "Typing Notification"
-msgstr "Tieto viestin kirjoittamisesta"
+msgstr "Kirjoitusilmoitukset"
 
 #: src/ui/chatty-dialog-settings.ui:224
 msgid "Send typing messages"
@@ -409,7 +410,7 @@ msgstr "Merkitse passiiviset kontaktit"
 
 #: src/ui/chatty-dialog-settings.ui:298
 msgid "Blur avatars from offline contacts"
-msgstr "Häivytä offline-kontaktien kuvakkeet sumeiksi"
+msgstr "Sumenna offline-kontaktien kuvakkeet"
 
 #: src/ui/chatty-dialog-settings.ui:313
 msgid "Indicate Unknown Contacts"
@@ -536,8 +537,8 @@ msgid ""
 "<b>SMS Chat</b> is set up by default. Start a chat with the \"+\" button in "
 "the titlebar."
 msgstr ""
-"<b>Tekstiviestitys</b> (SMS) on valmiiksi käytettävissä. Aloita keskustelu "
-"\"+\" painikkeesta."
+"<b>Tekstiviestitys</b> (SMS) on asetettu oletuksena. Aloita keskustelu \"+\" "
+"painikkeesta."
 
 #: src/ui/chatty-window.ui:462
 msgid ""
