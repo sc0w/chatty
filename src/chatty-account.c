@@ -207,6 +207,10 @@ chatty_account_add_to_accounts_list (PurpleAccount *account,
     hdy_action_row_add_action (row, GTK_WIDGET(switch_account_enabled));
     hdy_action_row_set_activatable_widget (row, NULL);
   } else {
+    if (purple_account_is_disconnected (account)) {
+      return;
+    }
+    
     prefix_radio_button = gtk_radio_button_new_from_widget (GTK_RADIO_BUTTON(chatty->dummy_prefix_radio));
     gtk_widget_show (GTK_WIDGET(prefix_radio_button));
 
