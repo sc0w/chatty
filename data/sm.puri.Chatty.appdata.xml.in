@@ -3,10 +3,10 @@
     <id>sm.puri.Chatty</id>
     <metadata_license>CC0-1.0</metadata_license>
     <project_license>GPL-3.0-or-later</project_license>
-    <name>Chatty</name>
+    <name>Chats</name>
     <summary>A messaging application</summary>
     <description>
-        <p>Chatty is a messaging application supporting XMPP and SMS.</p>
+        <p>Chats is a messaging application supporting XMPP and SMS.</p>
     </description>
     <url type="homepage">https://source.puri.sm/Librem5/chatty</url>
     <translation type="gettext">nautilus</translation>
