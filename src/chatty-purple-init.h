@@ -10,7 +10,7 @@
 
 #include "purple.h"
 
-#define CHATTY_APP_NAME     "Chatty"
+#define CHATTY_APP_NAME     "Chats"
 #define CHATTY_APP_ID       "sm.puri.Chatty"
 #define CHATTY_VERSION      "v0.0.7"
 #define CHATTY_UI           "chatty-ui"

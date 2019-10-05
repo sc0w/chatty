@@ -1,23 +1,33 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <component type="desktop">
-	<id>sm.puri.Chatty</id>
-	<metadata_license>CC0-1.0</metadata_license>
-	<project_license>GPL-3.0-or-later</project_license>
-	<name>Chatty</name>
-	<summary>A messaging application</summary>
-	<description>
-	Chatty is a messaging application supporting XMPP and SMS.
-	</description>
-	<url type="homepage">https://source.puri.sm/Librem5/chatty</url>
-	<translation type="gettext">nautilus</translation>
-	<update_contact>librem5-dev@lists.community.puri.sm</update_contact>
-	<screenshots>
-		<screenshot type="default">
-			<caption>Chatty's message window</caption>
-			<image type="source" width="906" height="621">https://source.puri.sm/guido.gunther/chatty/raw/fix-test/data/screenshots/message.png?inline=false</image>
-		</screenshot>
-	</screenshots>
-  <mimetypes>
-    <mimetype>x-scheme-handler/sms</mimetype>
-  </mimetypes>
+    <id>sm.puri.Chatty</id>
+    <metadata_license>CC0-1.0</metadata_license>
+    <project_license>GPL-3.0-or-later</project_license>
+    <name>Chats</name>
+    <summary>A messaging application</summary>
+    <description>
+        <p>Chats is a messaging application supporting XMPP and SMS.</p>
+    </description>
+    <url type="homepage">https://source.puri.sm/Librem5/chatty</url>
+    <translation type="gettext">nautilus</translation>
+    <update_contact>librem5-dev@lists.community.puri.sm</update_contact>
+    <screenshots>
+        <screenshot type="default">
+            <caption>Chats message window</caption>
+            <image type="source" width="906" height="621">https://source.puri.sm/guido.gunther/chatty/raw/fix-test/data/screenshots/message.png?inline=false</image>
+        </screenshot>
+    </screenshots>
+    <mimetypes>
+        <mimetype>x-scheme-handler/sms</mimetype>
+    </mimetypes>
+    <content_rating type="oars-1.1">
+        <content_attribute id="social-chat">intense</content_attribute>
+    </content_rating>
+	<releases>
+		<release version="0.0.1" date="2018-12-04">
+			<description>
+                <p>Development release</p>
+            </description>
+		</release>
+	</releases>
 </component>
