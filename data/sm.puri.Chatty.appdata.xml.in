@@ -23,12 +23,5 @@
     <content_rating type="oars-1.1">
         <content_attribute id="social-chat">intense</content_attribute>
     </content_rating>
-	<releases>
-		<release version="0.0.1" date="2018-12-04">
-			<description>
-                <p>Development release</p>
-            </description>
-		</release>
-	</releases>
 </component>
 
