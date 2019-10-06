@@ -1,4 +1,4 @@
-project('chatty', 'c',        version: '0.0.8',
+project('chatty', 'c',        version: '0.1.0',
   meson_version: '>= 0.41.0',
 )
 

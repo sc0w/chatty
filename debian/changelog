@@ -1,3 +1,9 @@
+chatty (0.1.0) amber-phone; urgency=medium
+
+  * Changed app release description
+
+ -- Andrea Schaefer <andrea.schaefer@puri.sm>  Sun, 06 Oct 2019 15:45:04 +0200
+
 chatty (0.0.8) amber-phone; urgency=medium
 
   * Change app name from Chatty to Chats
