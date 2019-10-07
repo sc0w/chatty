@@ -1326,19 +1326,19 @@ static void
 chatty_blist_chats_update_node (PurpleBuddy     *buddy,
                                 PurpleBlistNode *node)
 {
-  GtkListBox    *listbox;
-  GdkPixbuf     *avatar;
-  gchar         *name = NULL;
-  const gchar   *tag;
-  const gchar   *alias;
-  const gchar   *protocol_id;
-  gchar         *last_msg_text = NULL;
-  gchar         *last_msg_ts = NULL;
-  PurpleAccount *account;
-  const char    *color;
+  PurpleAccount    *account;
+  GtkListBox       *listbox;
+  GdkPixbuf        *avatar;
+  g_autofree gchar *name = NULL;
+  g_autofree gchar *last_msg_text = NULL;
+  g_autofree gchar *last_msg_ts = NULL;
   g_autofree gchar *unread_messages = NULL;
-  gboolean notify;
-  gboolean blur;
+  const gchar      *tag;
+  const gchar      *alias;
+  const gchar      *protocol_id;
+  const char       *color;
+  gboolean          notify;
+  gboolean          blur;
 
   PurplePresence *presence = purple_buddy_get_presence (buddy);
 
@@ -1400,7 +1400,7 @@ chatty_blist_chats_update_node (PurpleBuddy     *buddy,
                                            tag,
                                            chatty_node->conv.last_message);
 
-  last_msg_ts = chatty_node->conv.last_msg_timestamp;
+  last_msg_ts = g_strdup (chatty_node->conv.last_msg_timestamp);
 
   if (purple_blist_node_get_bool (PURPLE_BLIST_NODE(buddy), "chatty-unknown-contact") &&
       purple_prefs_get_bool (CHATTY_PREFS_ROOT "/blist/indicate_unknown_contacts")) {
@@ -1441,10 +1441,6 @@ chatty_blist_chats_update_node (PurpleBuddy     *buddy,
   if (avatar) {
     g_object_unref (avatar);
   }
-
-  g_free (last_msg_text);
-  g_free (last_msg_ts);
-  g_free (name);
 }
 
 
@@ -1461,14 +1457,14 @@ chatty_blist_chats_update_node (PurpleBuddy     *buddy,
 static void
 chatty_blist_chats_update_group_chat (PurpleBlistNode *node)
 {
-  GtkListBox    *listbox;
-  PurpleChat    *chat;
-  GdkPixbuf     *avatar = NULL;
-  gchar         *name = NULL;
-  const gchar   *chat_name;
-  gchar         *last_msg_text = NULL;
-  gchar         *last_msg_ts = NULL;
+  GtkListBox       *listbox;
+  PurpleChat       *chat;
+  GdkPixbuf        *avatar = NULL;
+  g_autofree gchar *name = NULL;
+  g_autofree gchar *last_msg_text = NULL;
+  g_autofree gchar *last_msg_ts = NULL;
   g_autofree gchar *unread_messages = NULL;
+  const gchar      *chat_name;
   gboolean notify;
 
   ChattyBlistNode *chatty_node = node->ui_data;
@@ -1504,11 +1500,7 @@ chatty_blist_chats_update_group_chat (PurpleBlistNode *node)
   last_msg_text = g_markup_printf_escaped ("<span color='#3584e4'>Group Chat: </span>%s",
                                            chatty_node->conv.last_message);
 
-  last_msg_ts = chatty_node->conv.last_msg_timestamp;
-
-
-
-  last_msg_ts = chatty_node->conv.last_msg_timestamp;
+  last_msg_ts = g_strdup (chatty_node->conv.last_msg_timestamp);
 
   notify = purple_blist_node_get_bool (node, "chatty-notifications");
   if (chatty_node->conv.pending_messages && notify) {
@@ -1542,10 +1534,6 @@ chatty_blist_chats_update_group_chat (PurpleBlistNode *node)
   if (avatar) {
     g_object_unref (avatar);
   }
-
-  g_free (last_msg_text);
-  g_free (last_msg_ts);
-  g_free (name);
 }
 
 
