@@ -872,6 +872,30 @@ chatty_blist_returned_from_chat (void)
 
 
 /**
+ * chatty_blist_chat_list_select_first:
+ *
+ * Selectes the first chat in the chat list
+ *
+ * Called from cb_leaflet_notify_fold in
+ * chatty-window.c
+ */
+void
+chatty_blist_chat_list_select_first (void)
+{
+  GtkListBox *listbox = chatty_get_chats_list ();
+  GtkListBoxRow *selected_row = gtk_list_box_get_selected_row (listbox);
+  GtkListBoxRow *row = gtk_list_box_get_row_at_index (listbox, 0);
+
+  if (selected_row != NULL)
+    return;
+
+  if (row != NULL)
+    gtk_list_box_select_row (listbox, row);
+}
+
+
+
+/**
  * chatty_blist_contacts_remove_node:
  * @node:   a PurpleBlistNode
  *

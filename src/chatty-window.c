@@ -102,6 +102,14 @@ cb_leaflet_notify_fold (GObject       *sender,
                         GParamSpec    *pspec,
                         gpointer      *data)
 {
+  chatty_data_t *chatty = chatty_get_data ();
+
+  HdyFold fold = hdy_leaflet_get_fold (chatty->header_box);
+
+  if (fold != HDY_FOLD_FOLDED) {
+    chatty_blist_chat_list_select_first ();
+  }
+
   chatty_update_header ();
 }
 

@@ -79,6 +79,7 @@ PurpleBlistUiOps *chatty_blist_get_ui_ops (void);
 
 void chatty_blist_init (void);
 void chatty_blist_uninit (void);
+void chatty_blist_chat_list_select_first (void);
 void chatty_blist_returned_from_chat (void);
 void chatty_blist_add_buddy (const char *who, const char *whoalias);
 void chatty_blist_refresh (PurpleBuddyList *list);
