@@ -1173,7 +1173,7 @@ chatty_blist_contacts_update_node (PurpleBuddy     *buddy,
   account = purple_buddy_get_account (buddy);
   account_name = purple_account_get_username (account);
 
-  if (!PURPLE_BLIST_NODE_IS_BUDDY (node)) {
+  if (!PURPLE_BLIST_NODE_IS_BUDDY (node) || purple_account_is_disconnected (account)) {
     return;
   }
 
@@ -1577,7 +1577,6 @@ chatty_blist_update_buddy (PurpleBuddyList *list,
   if (purple_blist_node_get_bool (node, "chatty-autojoin") &&
       chatty_blist_buddy_is_displayable (buddy) &&
       message_exists) {
-
 
     timeinfo = localtime (&log_data->epoch);
     g_return_if_fail (strftime (iso_timestamp,
