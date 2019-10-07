@@ -1032,7 +1032,7 @@ chatty_blist_create_contact_list (void)
   gtk_list_box_set_sort_func (GTK_LIST_BOX (listbox), chatty_blist_sort, NULL, NULL);
 
   g_signal_connect (listbox,
-                    "row-selected",
+                    "row-activated",
                     G_CALLBACK (row_selected_cb),
                     NULL);
 
@@ -1199,6 +1199,8 @@ chatty_blist_contacts_update_node (PurpleBuddy     *buddy,
                                                     account_name,
                                                     NULL,
                                                     NULL));
+
+    gtk_list_box_row_set_selectable (GTK_LIST_BOX_ROW (chatty_node->row_contact), FALSE);
     gtk_widget_show (GTK_WIDGET (chatty_node->row_contact));
     gtk_container_add (GTK_CONTAINER (listbox), GTK_WIDGET (chatty_node->row_contact));
   } else {
