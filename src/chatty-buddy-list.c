@@ -969,7 +969,6 @@ chatty_blist_join_group_chat (PurpleAccount *account,
   }
 }
 
-
 /**
  * chatty_blist_create_chat_list:
  * @list:  a PurpleBuddyList
@@ -985,7 +984,6 @@ chatty_blist_create_chat_list (void)
   chatty_data_t     *chatty = chatty_get_data ();
 
   listbox = GTK_LIST_BOX (gtk_list_box_new ());
-
 
   chatty_get_data ()->listbox_chats = listbox;
 
@@ -1191,6 +1189,8 @@ chatty_blist_contacts_update_node (PurpleBuddy     *buddy,
     chatty_icon_do_alphashift (avatar, 77);
   }
 
+  listbox = chatty_get_contacts_list ();
+
   /* Create a new row or update the row if it already exists */
   if (chatty_node->row_contact == NULL) {
     chatty_node->row_contact = CHATTY_CONTACT_ROW (chatty_contact_row_new ((gpointer) node,
@@ -1200,7 +1200,6 @@ chatty_blist_contacts_update_node (PurpleBuddy     *buddy,
                                                     NULL,
                                                     NULL));
     gtk_widget_show (GTK_WIDGET (chatty_node->row_contact));
-    listbox = chatty_get_contacts_list ();
     gtk_container_add (GTK_CONTAINER (listbox), GTK_WIDGET (chatty_node->row_contact));
   } else {
     g_object_set (chatty_node->row_contact,
@@ -1210,7 +1209,7 @@ chatty_blist_contacts_update_node (PurpleBuddy     *buddy,
                   NULL);
   }
 
-
+  gtk_list_box_invalidate_sort (listbox);
 
   if (avatar) {
     g_object_unref (avatar);
@@ -1259,6 +1258,8 @@ chatty_blist_contacts_update_group_chat (PurpleBlistNode *node)
   account_name = purple_account_get_username (chat->account);
   chat_name = purple_chat_get_name (chat);
 
+  listbox = chatty_get_contacts_list ();
+
   /* Create a new row or update the row if it already exists */
   if (chatty_node->row_contact == NULL) {
     chatty_node->row_contact = CHATTY_CONTACT_ROW (chatty_contact_row_new ((gpointer) node,
@@ -1268,7 +1269,6 @@ chatty_blist_contacts_update_group_chat (PurpleBlistNode *node)
                                                     NULL,
                                                     NULL));
     gtk_widget_show (GTK_WIDGET (chatty_node->row_contact));
-    listbox = chatty_get_contacts_list ();
     gtk_container_add (GTK_CONTAINER (listbox), GTK_WIDGET (chatty_node->row_contact));
   } else {
     g_object_set (chatty_node->row_contact,
@@ -1277,6 +1277,8 @@ chatty_blist_contacts_update_group_chat (PurpleBlistNode *node)
                   "description", account_name,
                   NULL);
   }
+
+  gtk_list_box_invalidate_sort (listbox);
 
   if (avatar) {
     g_object_unref (avatar);
@@ -1298,7 +1300,7 @@ static void
 chatty_blist_chats_update_node (PurpleBuddy     *buddy,
                                 PurpleBlistNode *node)
 {
-  GtkWidget     *listbox;
+  GtkListBox    *listbox;
   GdkPixbuf     *avatar;
   gchar         *name = NULL;
   const gchar   *tag;
@@ -1386,6 +1388,8 @@ chatty_blist_chats_update_node (PurpleBuddy     *buddy,
     unread_messages = g_strdup_printf ("%d", chatty_node->conv.pending_messages);
   }
 
+  listbox = chatty_get_chats_list ();
+
   /* Create a new row or update the row if it already exists */
   if (chatty_node->row_chat == NULL) {
     chatty_node->row_chat = CHATTY_CONTACT_ROW (chatty_contact_row_new ((gpointer) node,
@@ -1395,7 +1399,6 @@ chatty_blist_chats_update_node (PurpleBuddy     *buddy,
                                                     last_msg_ts,
                                                     unread_messages));
     gtk_widget_show (GTK_WIDGET (chatty_node->row_chat));
-    listbox = GTK_WIDGET (chatty_get_chats_list ());
     gtk_container_add (GTK_CONTAINER (listbox), GTK_WIDGET (chatty_node->row_chat));
   } else {
     g_object_set (chatty_node->row_chat,
@@ -1406,6 +1409,8 @@ chatty_blist_chats_update_node (PurpleBuddy     *buddy,
                   "message_count", unread_messages,
                   NULL);
   }
+
+  gtk_list_box_invalidate_sort (listbox);
 
   if (avatar) {
     g_object_unref (avatar);
@@ -1430,7 +1435,7 @@ chatty_blist_chats_update_node (PurpleBuddy     *buddy,
 static void
 chatty_blist_chats_update_group_chat (PurpleBlistNode *node)
 {
-  GtkWidget     *listbox;
+  GtkListBox    *listbox;
   PurpleChat    *chat;
   GdkPixbuf     *avatar = NULL;
   gchar         *name = NULL;
@@ -1484,6 +1489,8 @@ chatty_blist_chats_update_group_chat (PurpleBlistNode *node)
     unread_messages = g_strdup_printf ("%d", chatty_node->conv.pending_messages);
   }
 
+  listbox = chatty_get_chats_list ();
+
   /* Create a new row or update the row if it already exists */
   if (chatty_node->row_chat == NULL) {
     chatty_node->row_chat = CHATTY_CONTACT_ROW (chatty_contact_row_new ((gpointer) node,
@@ -1493,7 +1500,6 @@ chatty_blist_chats_update_group_chat (PurpleBlistNode *node)
                                                     last_msg_ts,
                                                     unread_messages));
     gtk_widget_show (GTK_WIDGET (chatty_node->row_chat));
-    listbox = GTK_WIDGET (chatty_get_chats_list ());
     gtk_container_add (GTK_CONTAINER (listbox), GTK_WIDGET (chatty_node->row_chat));
   } else {
     g_object_set (chatty_node->row_chat,
@@ -1504,6 +1510,8 @@ chatty_blist_chats_update_group_chat (PurpleBlistNode *node)
                   "message_count", unread_messages,
                   NULL);
   }
+
+  gtk_list_box_invalidate_sort (listbox);
 
   if (avatar) {
     g_object_unref (avatar);
