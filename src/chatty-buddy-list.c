@@ -50,6 +50,8 @@ static GtkListBox *chatty_get_chats_list (void) {
   return chatty_get_data ()->listbox_chats;
 }
 
+static int list_refresh_timer;
+
 // *** callbacks
 static void
 row_selected_cb (GtkListBox    *box,
@@ -479,6 +481,15 @@ cb_auto_join_chats (gpointer data)
   }
 
   return FALSE;
+}
+
+
+static gboolean
+cb_chatty_blist_refresh_timer (PurpleBuddyList *list)
+{
+  cb_chatty_prefs_change_update_list (NULL, 0, NULL, NULL);
+
+  return TRUE;
 }
 
 
@@ -1081,6 +1092,10 @@ chatty_blist_show (PurpleBuddyList *list)
 {
   void  *handle;
 
+  list_refresh_timer = purple_timeout_add_seconds (30,
+                                                   (GSourceFunc)cb_chatty_blist_refresh_timer,
+                                                   list);
+
   purple_blist_set_visible (TRUE);
 
   handle = chatty_blist_get_handle();
@@ -1400,7 +1415,9 @@ chatty_blist_chats_update_node (PurpleBuddy     *buddy,
                                            tag,
                                            chatty_node->conv.last_message);
 
-  last_msg_ts = g_strdup (chatty_node->conv.last_msg_timestamp);
+  last_msg_ts = chatty_utils_time_ago_in_words (chatty_node->conv.last_msg_ts_raw,
+                                                CHATTY_UTILS_TIME_AGO_VERBOSE |
+                                                CHATTY_UTILS_TIME_AGO_SHOW_DATE);
 
   if (purple_blist_node_get_bool (PURPLE_BLIST_NODE(buddy), "chatty-unknown-contact") &&
       purple_prefs_get_bool (CHATTY_PREFS_ROOT "/blist/indicate_unknown_contacts")) {
@@ -1424,6 +1441,7 @@ chatty_blist_chats_update_node (PurpleBuddy     *buddy,
                                                     last_msg_text,
                                                     last_msg_ts,
                                                     unread_messages));
+                                                    
     gtk_widget_show (GTK_WIDGET (chatty_node->row_chat));
     gtk_container_add (GTK_CONTAINER (listbox), GTK_WIDGET (chatty_node->row_chat));
   } else {
@@ -1500,9 +1518,10 @@ chatty_blist_chats_update_group_chat (PurpleBlistNode *node)
   last_msg_text = g_markup_printf_escaped ("<span color='#3584e4'>Group Chat: </span>%s",
                                            chatty_node->conv.last_message);
 
-  last_msg_ts = g_strdup (chatty_node->conv.last_msg_timestamp);
+  g_strdup (chatty_node->conv.last_msg_timestamp);
 
   notify = purple_blist_node_get_bool (node, "chatty-notifications");
+
   if (chatty_node->conv.pending_messages && notify) {
     unread_messages = g_strdup_printf ("%d", chatty_node->conv.pending_messages);
   }
@@ -1517,6 +1536,7 @@ chatty_blist_chats_update_group_chat (PurpleBlistNode *node)
                                                     last_msg_text,
                                                     last_msg_ts,
                                                     unread_messages));
+
     gtk_widget_show (GTK_WIDGET (chatty_node->row_chat));
     gtk_container_add (GTK_CONTAINER (listbox), GTK_WIDGET (chatty_node->row_chat));
   } else {
@@ -1655,6 +1675,12 @@ chatty_blist_destroy (PurpleBuddyList *list)
 
   list = purple_get_blist ();
   node = list->root;
+
+  if (list_refresh_timer) {
+    purple_timeout_remove (list_refresh_timer);
+
+    list_refresh_timer = 0;
+  }
 
   while (node)
   {
