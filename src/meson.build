@@ -9,6 +9,7 @@ chatty_sources = [
   'chatty-dialogs.c',
   'chatty-account.c',
   'chatty-message-list.c',
+  'chatty-contact-row.c',
   'chatty-conversation.c',
   'chatty-connection.c',
   'chatty-buddy-list.c',

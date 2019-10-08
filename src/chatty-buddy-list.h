@@ -9,23 +9,7 @@
 #define __BUDDY_LIST_H_INCLUDE__
 
 #include "purple.h"
-
-
-typedef struct {
-  GtkBox            *box;
-  GtkTreeView       *treeview_chats;
-  GtkListStore      *treemodel_chats;
-  GtkTreeView       *treeview_contacts;
-  GtkListStore      *treemodel_contacts;
-  GtkTreeViewColumn *text_column;
-  GList             *blist_nodes;
-  PurpleBlistNode   *selected_node;
-  guint             *messaging_mode;
-  guint              refresh_timer;
-  gint               filter_timeout;
-  gpointer           priv;
-} ChattyBuddyList;
-
+#include "chatty-contact-row.h"
 
 typedef enum {
   CHATTY_BLIST_NODE_HAS_PENDING_MESSAGE            =  1 << 0,
@@ -34,9 +18,8 @@ typedef enum {
 
 
 typedef struct _chatty_blist_node {
-  GtkTreeRowReference *row_chat;
-  GtkTreeRowReference *row_contact;
-  GtkTreeIter          iter;
+  ChattyContactRow *row_chat;
+  ChattyContactRow *row_contact;
   gboolean             contact_expanded;
   gboolean             recent_signonoff;
   gint                 recent_signonoff_timer;
@@ -89,7 +72,6 @@ enum {
 } e_list_mode;
 
 
-#define CHATTY_BLIST(list) ((ChattyBuddyList *)purple_blist_get_ui_data())
 #define CHATTY_IS_CHATTY_BLIST(list) \
   (purple_blist_get_ui_ops() == chatty_blist_get_ui_ops())
 
@@ -97,6 +79,7 @@ PurpleBlistUiOps *chatty_blist_get_ui_ops (void);
 
 void chatty_blist_init (void);
 void chatty_blist_uninit (void);
+void chatty_blist_chat_list_select_first (void);
 void chatty_blist_returned_from_chat (void);
 void chatty_blist_add_buddy (const char *who, const char *whoalias);
 void chatty_blist_refresh (PurpleBuddyList *list);

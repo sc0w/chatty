@@ -106,7 +106,9 @@ cb_leaflet_notify_fold (GObject       *sender,
 
   HdyFold fold = hdy_leaflet_get_fold (chatty->header_box);
 
-  chatty_blist_chat_list_selection (fold != HDY_FOLD_FOLDED);
+  if (fold != HDY_FOLD_FOLDED) {
+    chatty_blist_chat_list_select_first ();
+  }
 
   chatty_update_header ();
 }
@@ -156,7 +158,6 @@ chatty_back_action (GSimpleAction *action,
                     gpointer       user_data)
 {
   chatty_blist_returned_from_chat ();
-  chatty_blist_refresh (purple_get_blist ());
   chatty_window_change_view (CHATTY_VIEW_CHAT_LIST);
 }
 
