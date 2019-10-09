@@ -330,6 +330,8 @@ chatty_window_init_data (void)
   hdy_search_bar_connect_entry (chatty->search_bar_chats,
                                 chatty->search_entry_chats);
 
+  gtk_widget_set_sensitive (GTK_WIDGET(chatty->button_header_sub_menu), FALSE);
+
   chatty_window_change_view (CHATTY_VIEW_CHAT_LIST);
 
   if (purple_prefs_get_bool (CHATTY_PREFS_ROOT "/status/first_start")) {
@@ -376,6 +378,7 @@ chatty_window_activate (GtkApplication *app,
   chatty->sub_header_icon = GTK_WIDGET (gtk_builder_get_object (builder, "sub_header_icon"));
   chatty->button_menu_add_contact = GTK_WIDGET (gtk_builder_get_object (builder, "button_menu_add_contact"));
   chatty->button_header_chat_info = GTK_WIDGET (gtk_builder_get_object (builder, "button_header_chat_info"));
+  chatty->button_header_sub_menu = GTK_WIDGET (gtk_builder_get_object (builder, "button_header_sub_menu"));
 
   chatty->search_bar_chats = HDY_SEARCH_BAR (gtk_builder_get_object (builder, "search_bar_chats"));
   chatty->search_entry_chats = GTK_ENTRY (gtk_builder_get_object (builder, "search_entry_chats"));

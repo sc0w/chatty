@@ -545,9 +545,9 @@ chatty_blist_list_has_children (int list_type)
   gboolean    result;
 
   if (list_type == CHATTY_LIST_CHATS) {
-    result = gtk_list_box_get_row_at_index(chatty_get_chats_list (), 1) != NULL;
+    result = gtk_list_box_get_row_at_index(chatty_get_chats_list (), 0) != NULL;
   } else if (list_type == CHATTY_LIST_CONTACTS) {
-    result = gtk_list_box_get_row_at_index(chatty_get_contacts_list (), 1) != NULL;
+    result = gtk_list_box_get_row_at_index(chatty_get_contacts_list (), 0) != NULL;
   }
 
   return result;
@@ -739,6 +739,8 @@ chatty_blist_chat_list_remove_buddy (void)
 
   node = chatty_get_selected_node ();
 
+  g_return_if_fail (node);
+
   ui = node->ui_data;
 
   if (PURPLE_BLIST_NODE_IS_CHAT(node)) {
@@ -872,6 +874,22 @@ chatty_blist_returned_from_chat (void)
 
 
 /**
+ * chatty_blist_set_chat_options:
+ *
+ * Disable chat options if blist is empty
+ *
+ */
+static void
+chatty_blist_set_chat_options (void)
+{
+  chatty_data_t *chatty = chatty_get_data ();
+
+  gtk_widget_set_sensitive (GTK_WIDGET(chatty->button_header_sub_menu), 
+                            chatty_blist_list_has_children (CHATTY_LIST_CHATS) ? TRUE : FALSE);
+}
+
+
+/**
  * chatty_blist_chat_list_select_first:
  *
  * Selectes the first chat in the chat list
@@ -934,6 +952,8 @@ chatty_blist_chats_remove_node (PurpleBlistNode *node)
 
   gtk_widget_destroy (GTK_WIDGET (chatty_node->row_chat));
   chatty_node->row_chat = NULL;
+
+  chatty_blist_set_chat_options ();
 }
 
 
@@ -1426,6 +1446,7 @@ chatty_blist_chats_update_node (PurpleBuddy     *buddy,
                                                     unread_messages));
     gtk_widget_show (GTK_WIDGET (chatty_node->row_chat));
     gtk_container_add (GTK_CONTAINER (listbox), GTK_WIDGET (chatty_node->row_chat));
+    chatty_blist_set_chat_options ();
   } else {
     g_object_set (chatty_node->row_chat,
                   "avatar", avatar,
@@ -1519,6 +1540,7 @@ chatty_blist_chats_update_group_chat (PurpleBlistNode *node)
                                                     unread_messages));
     gtk_widget_show (GTK_WIDGET (chatty_node->row_chat));
     gtk_container_add (GTK_CONTAINER (listbox), GTK_WIDGET (chatty_node->row_chat));
+    chatty_blist_set_chat_options ();
   } else {
     g_object_set (chatty_node->row_chat,
                   "avatar", avatar,
