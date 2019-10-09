@@ -14,7 +14,8 @@
 
 typedef enum {
   CHATTY_UTILS_TIME_AGO_VERBOSE    =  1 << 0,
-  CHATTY_UTILS_TIME_AGO_SHOW_DATE  =  1 << 1
+  CHATTY_UTILS_TIME_AGO_SHOW_DATE  =  1 << 1,
+  CHATTY_UTILS_TIME_AGO_NO_MARKUP  =  1 << 2,
 } ChattyTimeAgoFlags;
 
 char *chatty_utils_jabber_id_strip (const char *name);

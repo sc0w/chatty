@@ -57,8 +57,8 @@ chatty_utils_time_ago_in_words (time_t             time_stamp,
     str_year      = _(" year");
     str_years     = _(" years");
   } else {
-    str_about     = _("~");
-    str_less_than = _("&lt;");
+    str_about     = "~";
+    str_less_than = (flags & CHATTY_UTILS_TIME_AGO_NO_MARKUP) ? "<" : "&lt;";
     str_seconds   = _("s");
     str_minute    = _("m");
     str_minutes   = _("m");
