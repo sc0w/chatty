@@ -1416,7 +1416,6 @@ chatty_blist_chats_update_node (PurpleBuddy     *buddy,
                                            chatty_node->conv.last_message);
 
   last_msg_ts = chatty_utils_time_ago_in_words (chatty_node->conv.last_msg_ts_raw,
-                                                CHATTY_UTILS_TIME_AGO_VERBOSE |
                                                 CHATTY_UTILS_TIME_AGO_SHOW_DATE);
 
   if (purple_blist_node_get_bool (PURPLE_BLIST_NODE(buddy), "chatty-unknown-contact") &&

@@ -24,7 +24,7 @@ test_c_args = [
   '-Wcast-align',
   '-Wdate-time',
   '-Wdeclaration-after-statement',
-  ['-Werror=format-security', '-Werror=format=2'],
+  ['-Werror=format-security', '-Werror=-format-nonliteral'],
   '-Wendif-labels',
   '-Werror=incompatible-pointer-types',
   '-Werror=missing-declarations',

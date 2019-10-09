@@ -43,25 +43,25 @@ chatty_utils_time_ago_in_words (time_t             time_stamp,
   double dist_in_seconds;
 
   if (flags & CHATTY_UTILS_TIME_AGO_VERBOSE) {
-    str_about     = _("About");
-    str_less_than = _("Less than");
-    str_seconds   = _("seconds");
-    str_minute    = _("minute");
-    str_minutes   = _("minutes");
-    str_hour      = _("hour");
-    str_hours     = _("hours");
-    str_day       = _("day");
-    str_days      = _("days");
-    str_month     = _("month");
-    str_months    = _("months");
-    str_year      = _("year");
-    str_years     = _("years");
+    str_about     = _("About ");
+    str_less_than = _("Less than ");
+    str_seconds   = _(" seconds");
+    str_minute    = _(" minute");
+    str_minutes   = _(" minutes");
+    str_hour      = _(" hour");
+    str_hours     = _(" hours");
+    str_day       = _(" day");
+    str_days      = _(" days");
+    str_month     = _(" month");
+    str_months    = _(" months");
+    str_year      = _(" year");
+    str_years     = _(" years");
   } else {
     str_about     = _("~");
-    str_less_than = _("<");
+    str_less_than = _("&lt;");
     str_seconds   = _("s");
-    str_minute    = _("min");
-    str_minutes   = _("min");
+    str_minute    = _("m");
+    str_minutes   = _("m");
     str_hour      = _("h");
     str_hours     = _("h");
     str_day       = _("d");
@@ -80,7 +80,7 @@ chatty_utils_time_ago_in_words (time_t             time_stamp,
 
   strftime (iso_timestamp,
             MAX_GMT_ISO_SIZE * sizeof(char),
-            "%d.%m.%Y",
+            "%d.%m.%y",
             timeinfo);
 
   dist_in_seconds = difftime (time_now, time_stamp);
@@ -97,23 +97,15 @@ chatty_utils_time_ago_in_words (time_t             time_stamp,
       unit = str_seconds;
 
       switch (seconds) {
-        case 0 ... 4:
+        case 0 ... 14:
           prefix = str_less_than;
-          number = 5;
+          number = 15;
           break;
-        case 5 ... 9:
+        case 15 ... 29:
           prefix = str_less_than;
-          number = 10;
-          break;
-        case 10 ... 19:
-          prefix = str_less_than;
-          number = 20;
-          break;
-        case 20 ... 39:
-          prefix = str_about;
           number = 30;
           break;
-        case 40 ... 59:
+        case 30 ... 59:
           prefix = str_less_than;
           number = 1;
           unit = str_minute;
@@ -190,7 +182,7 @@ chatty_utils_time_ago_in_words (time_t             time_stamp,
   }
 
   return show_date ? g_strdup_printf ("%s", iso_timestamp) :
-                     g_strdup_printf ("%s %d %s", prefix, number, unit);
+                     g_strdup_printf ("%s%d%s", prefix, number, unit);
 }
 
 
