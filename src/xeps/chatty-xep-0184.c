@@ -2,6 +2,10 @@
  * Copyright (C) 2018 Purism SPC
  *
  * SPDX-License-Identifier: GPL-3.0-or-later
+ * 
+ * Implementation based on:
+ * https://github.com/noonien-d/pidgin-xmpp-receipts/blob/master/xmpp-receipts.c
+ * 
  */
 
 #define G_LOG_DOMAIN "chatty-xeps"
