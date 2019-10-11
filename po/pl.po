@@ -1,40 +1,39 @@
-# Punleuk Oum <punleuk.oum@gmail.com>, 2018. #zanata
-# Punleuk Oum <punleuk.oum@gmail.com>, 2019. #zanata
-# Scott <xmrscott@protonmail.com>, 2019. #zanata
-# Scott Anecito <scott.anecito@linux.com>, 2019. #zanata
+# Polish translations for purism-chatty package.
+# Copyright (C) 2019 THE purism-chatty'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the purism-chatty package.
+# Automatically generated, 2019.
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: purism-chatty\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-10-11 16:48+0200\n"
-"PO-Revision-Date: 2019-09-25 08:27+0000\n"
-"Last-Translator: Scott Anecito <scott.anecito@linux.com>\n"
-"Language-Team: Japanese\n"
-"Language: ja\n"
+"PO-Revision-Date: 2019-10-11 16:48+0200\n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
+"Language: pl\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Zanata 4.6.2\n"
-"Plural-Forms: nplurals=1; plural=0\n"
+"Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
+"|| n%100>=20) ? 1 : 2);\n"
 
 #: data/sm.puri.Chatty.appdata.xml.in:6 data/sm.puri.Chatty.desktop.in:3
 #: src/chatty-dialogs.c:1421 src/ui/chatty-window.ui:184
 msgid "Chats"
-msgstr "チャット"
+msgstr ""
 
 #: data/sm.puri.Chatty.appdata.xml.in:7
 msgid "A messaging application"
-msgstr "メッセージングアプリ"
+msgstr ""
 
 #: data/sm.puri.Chatty.appdata.xml.in:9
-#, fuzzy
 msgid "Chats is a messaging application supporting XMPP and SMS."
-msgstr "ChattyはXMPPとSMSをサポートするメッセージアプリケーション"
+msgstr ""
 
 #: data/sm.puri.Chatty.appdata.xml.in:16
-#, fuzzy
 msgid "Chats message window"
-msgstr "Chattyのメッセージウィンドウ"
+msgstr ""
 
 #: data/sm.puri.Chatty.appdata.xml.in:29
 msgid "Initial development release of chatty with support for xmpp and sms."
@@ -42,19 +41,19 @@ msgstr ""
 
 #: data/sm.puri.Chatty.desktop.in:5
 msgid "sm.puri.Chatty"
-msgstr "sm.puri.Chatty"
+msgstr ""
 
 #: data/sm.puri.Chatty.desktop.in:6
 msgid "SMS and XMPP chat application"
-msgstr "SMSとXMPPを使うチャット用アプリケーション"
+msgstr ""
 
 #: data/sm.puri.Chatty.desktop.in:7
 msgid "XMPP;SMS;chat;jabber;messaging;modem"
-msgstr "XMPP;SMS;chat;jabber;messaging;modem"
+msgstr ""
 
 #: src/chatty-application.c:51
 msgid "Show release version"
-msgstr "リリースバージョンを見せて"
+msgstr ""
 
 #: src/chatty-application.c:52
 msgid "Start in daemon mode"
@@ -62,84 +61,83 @@ msgstr ""
 
 #: src/chatty-application.c:53
 msgid "Disable all accounts"
-msgstr "すべてのアカウントを無効にする"
+msgstr ""
 
 #: src/chatty-application.c:54
 msgid "Enable libpurple debug messages"
-msgstr "libpurpleのデバッグメッセージを有効化"
+msgstr ""
 
 #: src/chatty-application.c:55
 msgid "Enable verbose libpurple debug messages"
-msgstr "libpurpleの諄いデバッグメッセージを有効化"
+msgstr ""
 
 #: src/chatty-account.c:121
 msgid "SMS Number"
-msgstr "携帯番号"
+msgstr ""
 
 #: src/chatty-account.c:125
 msgid "Jabber ID"
-msgstr "Jabber ID"
+msgstr ""
 
 #: src/chatty-account.c:293
-#, fuzzy
 msgid "Add new account…"
-msgstr "新しいアカウントの追加。。。"
+msgstr ""
 
 #: src/chatty-account.c:326
 msgid "Contact added"
-msgstr "コンタクトが追加されました"
+msgstr ""
 
 #: src/chatty-account.c:330
 #, c-format
 msgid "User %s has added %s to the contacts"
-msgstr "ユーザーの %s はコンタクトに %s が追加されました"
+msgstr ""
 
 #: src/chatty-account.c:391
 #, c-format
 msgid "Authorize %s?"
-msgstr "%s を認証しますか？"
+msgstr ""
 
 #: src/chatty-account.c:395
 msgid "Reject"
-msgstr "拒否"
+msgstr ""
 
 #: src/chatty-account.c:397
 msgid "Accept"
-msgstr "承諾"
+msgstr ""
 
 #: src/chatty-account.c:402
 #, c-format
 msgid "Add %s to contact list"
-msgstr "%s をコンタクトに追加する"
+msgstr ""
 
 #: src/chatty-buddy-list.c:747
 msgid "Disconnect group chat"
-msgstr "グループチャットの切断"
+msgstr ""
 
 #: src/chatty-buddy-list.c:748
 msgid "This removes chat from chats list"
-msgstr "これでチャットリストからチャットを削除します"
+msgstr ""
 
 #: src/chatty-buddy-list.c:752
 msgid "Delete chat with"
-msgstr "会話の削除する人は"
+msgstr ""
 
 #: src/chatty-buddy-list.c:753
 msgid "This deletes the conversation history"
-msgstr "会話の履歴を削除されます"
+msgstr ""
 
 #: src/chatty-buddy-list.c:765 src/chatty-purple-request.c:186
 #: src/ui/chatty-dialog-join-muc.ui:16 src/ui/chatty-dialog-muc-info.ui:54
 msgid "Cancel"
-msgstr "キャンセル"
+msgstr ""
 
 #: src/chatty-buddy-list.c:767
 msgid "Delete"
-msgstr "削除"
+msgstr ""
 
 #: src/chatty-buddy-list.c:1391
 msgid "Me: "
-msgstr "私："
+msgstr ""
 
 #: src/chatty-connection.c:141
 msgid "Login failed"
@@ -159,19 +157,19 @@ msgstr ""
 
 #: src/chatty-conversation.c:1431
 msgid "Owner"
-msgstr "所有者"
+msgstr ""
 
 #: src/chatty-conversation.c:1434
 msgid "Moderator"
-msgstr "モデレーター"
+msgstr ""
 
 #: src/chatty-conversation.c:1437
 msgid "Member"
-msgstr "メンバー"
+msgstr ""
 
 #: src/chatty-conversation.c:1891
 msgid "members"
-msgstr "メンバーズ"
+msgstr ""
 
 #: src/chatty-conversation.c:2233
 #, c-format
@@ -184,25 +182,24 @@ msgstr ""
 
 #: src/chatty-dialogs.c:202 src/ui/chatty-dialog-settings.ui:495
 msgid "Delete Account"
-msgstr "アカウントを削除"
+msgstr ""
 
 #: src/chatty-dialogs.c:205
 #, c-format
 msgid "Delete account %s?"
-msgstr "%s のアカウントを削除しますか？"
+msgstr ""
 
 #: src/chatty-dialogs.c:293 src/chatty-dialogs.c:312
 msgid "connected"
-msgstr "接続されました"
+msgstr ""
 
 #: src/chatty-dialogs.c:295 src/chatty-dialogs.c:314
-#, fuzzy
 msgid "connecting…"
-msgstr "接続中..."
+msgstr ""
 
 #: src/chatty-dialogs.c:297 src/chatty-dialogs.c:316
 msgid "disconnected"
-msgstr "切断されました"
+msgstr ""
 
 #: src/chatty-dialogs.c:509
 msgid "Phonenumber validation"
@@ -210,11 +207,11 @@ msgstr ""
 
 #: src/chatty-dialogs.c:1348
 msgid "Phone Number:"
-msgstr "電話番号:"
+msgstr ""
 
 #: src/chatty-dialogs.c:1423
 msgid "An SMS and XMPP messaging client"
-msgstr "SMSとXMPPを使うチャット用アプリケーション"
+msgstr ""
 
 #: src/chatty-dialogs.c:1430
 msgid "translator-credits"
@@ -222,81 +219,75 @@ msgstr ""
 
 #: src/chatty-lurch.c:116
 msgid "Encryption not available"
-msgstr "暗号化できません"
+msgstr ""
 
 #: src/chatty-lurch.c:209 src/chatty-lurch.c:215
 msgid "This chat is not encrypted"
-msgstr "このチャットは暗号化されていません"
+msgstr ""
 
 #: src/chatty-lurch.c:212
 msgid "Encryption is not available"
-msgstr "暗号化できません"
+msgstr ""
 
 #: src/chatty-lurch.c:219
 msgid "This chat is encrypted"
-msgstr "このチャットは暗号化されています"
+msgstr ""
 
 #: src/chatty-message-list.c:70 src/chatty-message-list.c:75
 msgid "This is a IM conversation."
-msgstr "この会話はIMで通信します。"
+msgstr ""
 
 #: src/chatty-message-list.c:71 src/chatty-message-list.c:81
 msgid "Your messages are not encrypted,"
-msgstr "メッセージは暗号はしてませんので、"
+msgstr ""
 
 #: src/chatty-message-list.c:72
 msgid "ask your counterpart to use E2EE."
-msgstr "他方の送信者にエンドツーエンド暗号化の使用を依頼して下さい。"
+msgstr ""
 
 #: src/chatty-message-list.c:76
 msgid "Your messages are secured"
-msgstr "メッセージはエンドツーエンド暗号化"
+msgstr ""
 
 #: src/chatty-message-list.c:77
 msgid "by end-to-end encryption."
-msgstr "で安全されます。"
+msgstr ""
 
 #: src/chatty-message-list.c:80
 msgid "This is a SMS conversation."
-msgstr "この会話はSMSで通信します。"
+msgstr ""
 
 #: src/chatty-message-list.c:82
 msgid "and carrier rates may apply."
-msgstr "標準メッセージとデータは使用できます。"
+msgstr ""
 
 #: src/chatty-notify.c:73
-#, fuzzy
 msgid "Open Message"
-msgstr "招待メッセージ"
+msgstr ""
 
 #: src/chatty-notify.c:78
-#, fuzzy
 msgid "Message Received"
-msgstr "メッセージ受け取り"
+msgstr ""
 
 #: src/chatty-notify.c:84
-#, fuzzy
 msgid "Message Error"
-msgstr "メッセージのCarbons"
+msgstr ""
 
 #: src/chatty-notify.c:90
-#, fuzzy
 msgid "Account Info"
-msgstr "アカウント ID"
+msgstr ""
 
 #: src/chatty-notify.c:96
-#, fuzzy
 msgid "Account Connected"
-msgstr "接続されました"
+msgstr ""
 
 #: src/chatty-notify.c:103
 msgid "Open Account Settings"
 msgstr ""
 
 #: src/chatty-notify.c:106
-#, fuzzy
 msgid "Account Disconnected"
-msgstr "切断されました"
+msgstr ""
 
 #: src/chatty-purple-notify.c:40
 msgid "Close"
@@ -312,7 +303,7 @@ msgstr ""
 
 #: src/chatty-purple-request.c:188 src/ui/chatty-dialog-settings.ui:56
 msgid "Save"
-msgstr "保存"
+msgstr ""
 
 #: src/chatty-purple-request.c:188
 msgid "Open"
@@ -320,25 +311,19 @@ msgstr ""
 
 #: src/chatty-window.c:39 src/chatty-window.c:45
 msgid "Start chatting"
-msgstr "チャットの開始"
+msgstr ""
 
 #: src/chatty-window.c:40
-#, fuzzy
 msgid ""
 "<b>SMS</b> Chat is set up by default. Start a chat with the \"+\" button in "
 "the titlebar."
 msgstr ""
-"<b>SMSチャット</b> デフォルトで設定されています。タイトルバーの「+」ボタンで"
-"チャットの開始"
 
 #: src/chatty-window.c:41 src/chatty-window.c:46
-#, fuzzy
 msgid ""
 "Add <b>Instant Messaging</b> by selecting \n"
 "<i>\"Add new account\"</i> in <i>\"preferences\"</i>."
 msgstr ""
-"環境設定の<i>「新しいアカウントの追加」</i>で<b>インスタントメッセージング</"
-"b>の追加"
 
 #: src/chatty-window.c:51 src/chatty-window.c:57 src/chatty-window.c:63
 #: src/chatty-window.c:69
@@ -346,96 +331,82 @@ msgid "Choose a contact"
 msgstr ""
 
 #: src/chatty-window.c:52
-#, fuzzy
 msgid ""
 "Select an <b>SMS</b> or <b>Instant Message</b> contact with the <b>\"+\"</b> "
 "button in the titlebar."
 msgstr ""
-"<b>SMSチャット</b> デフォルトで設定されています。タイトルバーの「+」ボタンで"
-"チャットの開始"
 
 #: src/chatty-window.c:58
-#, fuzzy
 msgid ""
 "Select an <b>Instant Message</b> contact with the \"+\" button in the "
 "titlebar."
 msgstr ""
-"<b>SMSチャット</b> デフォルトで設定されています。タイトルバーの「+」ボタンで"
-"チャットの開始"
 
 #: src/chatty-window.c:64
-#, fuzzy
 msgid "Start a <b>SMS</b> chat with with the \"+\" button in the titlebar."
 msgstr ""
-"<b>SMSチャット</b> デフォルトで設定されています。タイトルバーの「+」ボタンで"
-"チャットの開始"
 
 #: src/chatty-window.c:65 src/chatty-window.c:70
-#, fuzzy
 msgid ""
 "For <b>Instant Messaging</b> add or activate an account in <i>\"preferences"
 "\"</i>."
 msgstr ""
-"環境設定の<i>「新しいアカウントの追加」</i>で<b>インスタントメッセージング</"
-"b>の追加"
 
 #: src/ui/chatty-dialog-join-muc.ui:12 src/ui/chatty-window.ui:19
 msgid "New Group Chat"
-msgstr "新しいグループチャット"
+msgstr ""
 
 #: src/ui/chatty-dialog-join-muc.ui:28
 msgid "Join Chat"
-msgstr "チャットに参加"
+msgstr ""
 
 #: src/ui/chatty-dialog-join-muc.ui:80 src/ui/chatty-dialog-new-chat.ui:210
 msgid "Select chat account"
-msgstr "チャットアカウントを選択してください"
+msgstr ""
 
 #: src/ui/chatty-dialog-join-muc.ui:130
 msgid "Password (optional)"
-msgstr "パスワード (オプション)"
+msgstr ""
 
 #: src/ui/chatty-dialog-join-muc.ui:181
 msgid "Autojoin"
-msgstr "自動で参加"
+msgstr ""
 
 #: src/ui/chatty-dialog-join-muc.ui:182
 msgid "Join group chat at startup"
-msgstr "起動時にグループチャットの参加"
+msgstr ""
 
 #: src/ui/chatty-dialog-muc-info.ui:25
 msgid "Group Details"
-msgstr "グループ詳細"
+msgstr ""
 
 #: src/ui/chatty-dialog-muc-info.ui:50
 msgid "Invite Contact"
-msgstr "連絡先を招待"
+msgstr ""
 
 #: src/ui/chatty-dialog-muc-info.ui:66
 msgid "Invite"
-msgstr "招請"
+msgstr ""
 
 #: src/ui/chatty-dialog-muc-info.ui:162
-#, fuzzy
 msgid "Room topic"
-msgstr "ルームのセッティング"
+msgstr ""
 
 #: src/ui/chatty-dialog-muc-info.ui:219
 msgid "Room settings"
-msgstr "ルームのセッティング"
+msgstr ""
 
 #: src/ui/chatty-dialog-muc-info.ui:242 src/ui/chatty-dialog-user-info.ui:178
 msgid "Notifications"
-msgstr "通知"
+msgstr ""
 
 #: src/ui/chatty-dialog-muc-info.ui:243
 msgid "Show notification badge"
-msgstr "通知のバッジを表示"
+msgstr ""
 
 #: src/ui/chatty-dialog-muc-info.ui:258
-#, fuzzy
 msgid "Status Messages"
-msgstr "招待メッセージ"
+msgstr ""
 
 #: src/ui/chatty-dialog-muc-info.ui:259
 msgid "Show status messages in chat"
@@ -443,254 +414,240 @@ msgstr ""
 
 #: src/ui/chatty-dialog-muc-info.ui:274
 msgid "Edit topic"
-msgstr "トピックの編集"
+msgstr ""
 
 #: src/ui/chatty-dialog-muc-info.ui:275
 msgid "Users may change the topic"
-msgstr "ユーザーはトピックを変更できます"
+msgstr ""
 
 #: src/ui/chatty-dialog-muc-info.ui:290
 msgid "Persistent"
-msgstr "永続的"
+msgstr ""
 
 #: src/ui/chatty-dialog-muc-info.ui:291
 msgid "Room persists after the last user left"
-msgstr " 最後の参加者が退会してもルームを残します"
+msgstr ""
 
 #: src/ui/chatty-dialog-muc-info.ui:306
 msgid "Auto-join"
-msgstr "自動加入"
+msgstr ""
 
 #: src/ui/chatty-dialog-muc-info.ui:307
 msgid "Join chat at startup"
-msgstr "起動時にチャットの参加"
+msgstr ""
 
 #: src/ui/chatty-dialog-muc-info.ui:329
 msgid "0 members"
-msgstr "0メンバーズ"
+msgstr ""
 
 #: src/ui/chatty-dialog-muc-info.ui:425
 msgid "Invite Message"
-msgstr "招待メッセージ"
+msgstr ""
 
 #: src/ui/chatty-dialog-new-chat.ui:25
 msgid "Start Chat"
-msgstr "チャットの開始"
+msgstr ""
 
 #: src/ui/chatty-dialog-new-chat.ui:50
 msgid "New Contact"
-msgstr "新規連絡先"
+msgstr ""
 
 #: src/ui/chatty-dialog-new-chat.ui:77 src/ui/chatty-window.ui:112
 msgid "Add Contact"
-msgstr "連絡先の追加"
+msgstr ""
 
 #: src/ui/chatty-dialog-new-chat.ui:260
-#, fuzzy
 msgid "Name (optional)"
-msgstr "別名 （任意）"
+msgstr ""
 
 #: src/ui/chatty-dialog-settings.ui:22 src/ui/chatty-window.ui:57
 msgid "Preferences"
-msgstr "環境設定"
+msgstr ""
 
 #: src/ui/chatty-dialog-settings.ui:32
 msgid "Edit Account"
-msgstr "アカウントの編集"
+msgstr ""
 
 #: src/ui/chatty-dialog-settings.ui:74
 msgid "Add Account"
-msgstr "アカウントの追加"
+msgstr ""
 
 #: src/ui/chatty-dialog-settings.ui:98
 msgid "Add"
-msgstr "追加"
+msgstr ""
 
 #: src/ui/chatty-dialog-settings.ui:135
 msgid "Accounts"
-msgstr "アカウント"
+msgstr ""
 
 #: src/ui/chatty-dialog-settings.ui:152
 msgid "Privacy"
-msgstr " プライバシー "
+msgstr ""
 
 #: src/ui/chatty-dialog-settings.ui:155
 msgid "Message Receipts"
-msgstr "メッセージ受け取り"
+msgstr ""
 
 #: src/ui/chatty-dialog-settings.ui:156
 msgid "Confirm received messages"
-msgstr "受信したメッセージの確認"
+msgstr ""
 
 #: src/ui/chatty-dialog-settings.ui:171
-#, fuzzy
 msgid "Message Carbon Copies"
-msgstr "メッセージのCarbons"
+msgstr ""
 
 #: src/ui/chatty-dialog-settings.ui:172
 msgid "Share chat history among devices"
-msgstr "デバイスでの閲覧履歴の表示"
+msgstr ""
 
 #: src/ui/chatty-dialog-settings.ui:187
 msgid "Typing Notification"
-msgstr "入力中であることの通知"
+msgstr ""
 
 #: src/ui/chatty-dialog-settings.ui:188
 msgid "Send typing messages"
-msgstr "入力通知を送信する"
+msgstr ""
 
 #: src/ui/chatty-dialog-settings.ui:206
 msgid "Chats List"
-msgstr "チャットリスト"
+msgstr ""
 
 #: src/ui/chatty-dialog-settings.ui:209
 msgid "Show Offline Contacts"
-msgstr "オフラインの連絡先の表示"
+msgstr ""
 
 #: src/ui/chatty-dialog-settings.ui:210
 msgid "Show contacts in the chats list"
-msgstr "チャットリストに連絡先の表示"
+msgstr ""
 
 #: src/ui/chatty-dialog-settings.ui:225
 msgid "Indicate Offline Contacts"
-msgstr "オフラインの連絡先を示す"
+msgstr ""
 
 #: src/ui/chatty-dialog-settings.ui:226
 msgid "Grey out avatars from offline contacts"
-msgstr "オフラインの連絡先のアバターを薄い色で表示"
+msgstr ""
 
 #: src/ui/chatty-dialog-settings.ui:241
 msgid "Indicate Idle Contacts"
-msgstr "アイドル状態の連絡先を示す"
+msgstr ""
 
 #: src/ui/chatty-dialog-settings.ui:242
 msgid "Blur avatars from offline contacts"
-msgstr "オフラインの連絡先のアバターをぼかすことで表示"
+msgstr ""
 
 #: src/ui/chatty-dialog-settings.ui:257
 msgid "Indicate Unknown Contacts"
-msgstr "しらない連絡先を示す"
+msgstr ""
 
 #: src/ui/chatty-dialog-settings.ui:258
 msgid "Color unknown contact ID red"
-msgstr "しらない連絡先IDは赤で表示"
+msgstr ""
 
 #: src/ui/chatty-dialog-settings.ui:276
 msgid "Editor"
-msgstr "エディター"
+msgstr ""
 
 #: src/ui/chatty-dialog-settings.ui:279
 msgid "Graphical Emoticons"
-msgstr "顔文字"
+msgstr ""
 
 #: src/ui/chatty-dialog-settings.ui:280
 msgid "Convert ASCII emoticons"
-msgstr "ASCII絵文字の変換"
+msgstr ""
 
 #: src/ui/chatty-dialog-settings.ui:295
 msgid "Return = Send Message"
-msgstr "改行 = メッセージを送る"
+msgstr ""
 
 #: src/ui/chatty-dialog-settings.ui:296
 msgid "Send message with return key"
-msgstr "Enterキーでメッセージの送信"
+msgstr ""
 
 #: src/ui/chatty-dialog-settings.ui:352
 msgid "Account ID"
-msgstr "アカウント ID"
+msgstr ""
 
 #: src/ui/chatty-dialog-settings.ui:385
 msgid "Protocol"
-msgstr "プロトコル"
+msgstr ""
 
 #: src/ui/chatty-dialog-settings.ui:414
 msgid "Status"
-msgstr "ステータス"
+msgstr ""
 
 #: src/ui/chatty-dialog-settings.ui:443 src/ui/chatty-dialog-settings.ui:697
 msgid "Password"
-msgstr "パスワード"
+msgstr ""
 
 #: src/ui/chatty-dialog-settings.ui:511
 msgid "Own Fingerprint"
-msgstr "自分の指紋"
+msgstr ""
 
 #: src/ui/chatty-dialog-settings.ui:538
 msgid "Other Devices"
-msgstr "他のデバイス"
+msgstr ""
 
 #: src/ui/chatty-dialog-settings.ui:600
 msgid "Select Protocol"
-msgstr "プロトコルの選択"
+msgstr ""
 
 #: src/ui/chatty-dialog-settings.ui:621
 msgid "XMPP"
-msgstr "XMPP"
+msgstr ""
 
 #: src/ui/chatty-dialog-settings.ui:634
 msgid "Matrix"
-msgstr "Matrix"
+msgstr ""
 
 #: src/ui/chatty-dialog-settings.ui:648
 msgid "Telegram"
-msgstr "Telegram"
+msgstr ""
 
 #: src/ui/chatty-dialog-settings.ui:724
 msgid "Server"
-msgstr " サーバ "
+msgstr ""
 
 #: src/ui/chatty-dialog-user-info.ui:12 src/ui/chatty-window.ui:98
 msgid "Chat Details"
-msgstr "チャットの詳細"
+msgstr ""
 
 #: src/ui/chatty-dialog-user-info.ui:94
 msgid "XMPP ID"
-msgstr "XMPP ID"
+msgstr ""
 
 #: src/ui/chatty-dialog-user-info.ui:109 src/ui/chatty-dialog-user-info.ui:193
 msgid "Encryption"
-msgstr "暗号化"
+msgstr ""
 
 #: src/ui/chatty-dialog-user-info.ui:194
 msgid "Secure messaging using OMEMO"
-msgstr "OMEMOでセキュアなメッセージング"
+msgstr ""
 
 #: src/ui/chatty-dialog-user-info.ui:215
 msgid "Fingerprints"
-msgstr "指紋"
+msgstr ""
 
 #: src/ui/chatty-message-list-popover.ui:18
 msgid "Copy"
-msgstr "コピー"
+msgstr ""
 
 #: src/ui/chatty-pane-msg-view.ui:14
 msgid "Unencrypted"
-msgstr "非暗号化"
+msgstr ""
 
 #: src/ui/chatty-window.ui:32
 msgid "New Direct Chat"
-msgstr "新しいダイレクトチャット"
+msgstr ""
 
 #: src/ui/chatty-window.ui:70
-#, fuzzy
 msgid "About Chats"
-msgstr "Chattyについて"
+msgstr ""
 
 #: src/ui/chatty-window.ui:137
 msgid "Leave Chat"
-msgstr "チャットから退出"
+msgstr ""
 
 #: src/ui/chatty-window.ui:150
 msgid "Delete Chat"
-msgstr "チャットの削除"
-
-#~ msgid "Chatty"
-#~ msgstr "Chatty"
-
-#~ msgid "Cannot login"
-#~ msgstr "ログインできません"
-
-#~ msgid ""
-#~ "Failed to login as %s:\n"
-#~ "%s"
-#~ msgstr "%s でログインできませんでした: %s"
+msgstr ""
