@@ -51,6 +51,7 @@ typedef struct {
 
   GtkWidget         *button_menu_add_contact;
   GtkWidget         *button_header_chat_info;
+  GtkWidget         *button_header_sub_menu;
 
   PurpleAccount     *selected_account;
   GtkListBox        *list_manage_account;
