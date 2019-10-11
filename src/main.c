@@ -21,6 +21,10 @@ main (int   argc,
 
   g_autoptr(ChattyApplication) application = NULL;
 
+	textdomain (GETTEXT_PACKAGE);
+  bindtextdomain (GETTEXT_PACKAGE, LOCALEDIR);
+	bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
+
   g_set_prgname (CHATTY_APP_ID);
   application = chatty_application_new ();
 
