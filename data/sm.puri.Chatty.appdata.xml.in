@@ -9,7 +9,7 @@
         <p>Chats is a messaging application supporting XMPP and SMS.</p>
     </description>
     <url type="homepage">https://source.puri.sm/Librem5/chatty</url>
-    <translation type="gettext">nautilus</translation>
+    <translation type="gettext">purism-chatty</translation>
     <update_contact>librem5-dev@lists.community.puri.sm</update_contact>
     <screenshots>
         <screenshot type="default">
@@ -32,3 +32,4 @@
     </releases>
 </component>
 
+2
