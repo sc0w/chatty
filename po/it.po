@@ -21,11 +21,11 @@ msgstr "Chats"
 
 #: data/sm.puri.Chatty.appdata.xml.in:7
 msgid "A messaging application"
-msgstr "Una applicazione di messaggistica"
+msgstr "Una_applicazione_di_messaggistica"
 
 #: data/sm.puri.Chatty.appdata.xml.in:9
 msgid "Chats is a messaging application supporting XMPP and SMS."
-msgstr "Chat è una applicazione di messaggistica che supporta XMPP e SMS."
+msgstr "Chat_è_una_applicazione_di_messaggistica_che_supporta_XMPP_e_SMS."
 
 #: data/sm.puri.Chatty.appdata.xml.in:16
 msgid "Chats message window"
@@ -145,10 +145,7 @@ msgid ""
 "%s: %s\n"
 "\n"
 "%s"
-msgstr " "
-"%s: %s\%n"
-"\n"
-"%s"
+msgstr "%s:_%s %s"
 
 #: src/chatty-connection.c:147
 msgid "Please check ID and password"
