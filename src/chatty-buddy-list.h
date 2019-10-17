@@ -20,9 +20,9 @@ typedef enum {
 typedef struct _chatty_blist_node {
   ChattyContactRow *row_chat;
   ChattyContactRow *row_contact;
-  gboolean             contact_expanded;
-  gboolean             recent_signonoff;
-  gint                 recent_signonoff_timer;
+  gboolean          contact_expanded;
+  gboolean          recent_signonoff;
+  gint              recent_signonoff_timer;
 
   struct {
     PurpleConversation   *conv;
