@@ -13,10 +13,18 @@
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <child>
-              <object class="GtkListBox" id="list">
+              <object class="HdyColumn">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="activate_on_single_click">False</property>
+                <property name="maximum-width">640</property>
+                <property name="linear-growth-width">640</property>
+                <child>
+                  <object class="GtkListBox" id="list">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="activate_on_single_click">False</property>
+                  </object>
+                </child>
               </object>
             </child>
           </object>
