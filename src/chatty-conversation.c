@@ -2126,20 +2126,24 @@ chatty_conv_write_conversation (PurpleConversation *conv,
   PurpleConnection         *gc;
   PurplePluginProtocolInfo *prpl_info = NULL;
   PurpleAccount            *account;
-  PurpleBuddy              *buddy;
+  PurpleBuddy              *buddy = NULL;
   PurpleBlistNode          *node;
-  gchar                    *real_who = NULL;
   g_autofree char          *color = NULL;
-  gboolean                  group_chat;
+  gboolean                  group_chat = TRUE;
   GdkPixbuf                *avatar = NULL;
   GtkWidget                *icon = NULL;
   int                       chat_id;
-  const char               *conv_name;
   const char               *buddy_name;
   gchar                    *titel;
-  gchar                    *who_no_resource;
-  g_autofree char          *uuid;
-  g_autofree gchar          *timestamp;
+  g_autofree char          *uuid = NULL;
+  g_autofree char          *timestamp = NULL;
+  PurpleConvMessage        pcm = {
+                            NULL,
+                            NULL,
+                            flags,
+                            mtime,
+                            conv,
+                            NULL};
 
   chatty_conv = CHATTY_CONVERSATION (conv);
 
@@ -2148,8 +2152,6 @@ chatty_conv_write_conversation (PurpleConversation *conv,
   if ((flags & PURPLE_MESSAGE_SYSTEM) && !(flags & PURPLE_MESSAGE_NOTIFY)) {
     flags &= ~(PURPLE_MESSAGE_SEND | PURPLE_MESSAGE_RECV);
   }
-
-  conv_name = purple_conversation_get_name (conv);
 
   node = chatty_get_conv_blist_node (conv);
 
@@ -2167,11 +2169,11 @@ chatty_conv_write_conversation (PurpleConversation *conv,
     if (prpl_info && prpl_info->get_cb_real_name) {
       chat_id = purple_conv_chat_get_id (PURPLE_CONV_CHAT(conv));
 
-      real_who = prpl_info->get_cb_real_name(gc, chat_id, who);
+      pcm.who = prpl_info->get_cb_real_name(gc, chat_id, who);
 
-      if (real_who) {
-        buddy = purple_find_buddy (account, real_who);
-        color = chatty_conv_muc_get_avatar_color (real_who);
+      if (pcm.who) {
+        buddy = purple_find_buddy (account, pcm.who);
+        color = chatty_conv_muc_get_avatar_color (pcm.who);
 
         avatar = chatty_icon_get_buddy_icon ((PurpleBlistNode*)buddy,
                                              alias,
@@ -2193,6 +2195,20 @@ chatty_conv_write_conversation (PurpleConversation *conv,
     }
 
     group_chat = FALSE;
+    pcm.who = chatty_utils_jabber_id_strip(who);
+  }
+
+  // No reason to go further if we ignore system/status
+  if (flags & PURPLE_MESSAGE_SYSTEM &&
+      type == PURPLE_CONV_TYPE_CHAT &&
+      ! purple_blist_node_get_bool (node, "chatty-status-msg"))
+  {
+    g_debug("Skipping status[%d] message[%s] for %s <> %s", flags,
+            message, purple_account_get_username(account), pcm.who);
+    // FIXME: Dunno why but without that it segfaults on first skip :(
+    chatty_conv_set_unseen (chatty_conv, CHATTY_UNSEEN_NONE);
+    g_free(pcm.who);
+    return;
   }
 
   timestamp  = g_malloc0 (MAX_TIMESTAMP_SIZE * sizeof(char));
@@ -2200,13 +2216,25 @@ chatty_conv_write_conversation (PurpleConversation *conv,
     timestamp = g_strdup("00:00");
   }
 
+  pcm.what = g_strdup(message);
+  pcm.alias = g_strdup(purple_conversation_get_name (conv));
+
+  // If anyone wants to suppress archiving - feel free to set NO_LOG flag
+  purple_signal_emit (chatty_conversations_get_handle(),
+                      "conversation-write", account, &pcm, &uuid, type);
+  g_debug("Posting mesage id:%s flags:%d type:%d from:%s",
+                                    uuid, pcm.flags, type, pcm.who);
+
   if (*message != '\0') {
-     // TODO UID to be implemented by XEP-0313
-    chatty_utils_generate_uuid(&uuid);
 
-    who_no_resource = chatty_utils_jabber_id_strip(who);
-
-    if (flags & PURPLE_MESSAGE_RECV) {
+    if (pcm.flags & PURPLE_MESSAGE_SYSTEM) {
+      // System is usually also RECV so should be first to catch
+      chatty_msg_list_add_message (chatty_conv->msg_list,
+                                   MSG_IS_SYSTEM,
+                                   message,
+                                   NULL,
+                                   NULL);
+    } else if (pcm.flags & PURPLE_MESSAGE_RECV) {
       if (buddy && purple_blist_node_get_bool (node, "chatty-notifications")) {
         buddy_name = purple_buddy_get_alias (buddy);
 
@@ -2232,53 +2260,24 @@ chatty_conv_write_conversation (PurpleConversation *conv,
                                    group_chat ? who : timestamp,
                                    icon ? icon : NULL);
 
-      if (type == PURPLE_CONV_TYPE_CHAT){
-        chatty_history_add_chat_message (message, 1, account->username, real_who, uuid, mtime, conv_name);
-      } else {
-        chatty_history_add_im_message (message, 1, account->username, who_no_resource, uuid, mtime);
-      }
-    } else if (flags & PURPLE_MESSAGE_SEND) {
+    } else if (pcm.flags & PURPLE_MESSAGE_SEND) {
       chatty_msg_list_add_message (chatty_conv->msg_list,
                                    MSG_IS_OUTGOING,
                                    message,
                                    NULL,
                                    NULL);
 
-      if (type == PURPLE_CONV_TYPE_CHAT){
-        chatty_history_add_chat_message (message, -1, account->username, real_who, uuid, mtime, conv_name);
-      } else {
-        chatty_history_add_im_message (message, -1, account->username, who_no_resource, uuid, mtime);
-      }
-    } else if (flags & PURPLE_MESSAGE_SYSTEM) {
-      if (type == PURPLE_CONV_TYPE_CHAT) {
-        if (purple_blist_node_get_bool (node, "chatty-status-msg")) {
-          chatty_msg_list_add_message (chatty_conv->msg_list,
-                                      MSG_IS_SYSTEM,
-                                      message,
-                                      NULL,
-                                      NULL);
-        }
-        // TODO: LELAND: Do not store "The topic is:" or store them but dont show to the user
-        //chatty_history_add_chat_message (chat_id, message, 0, real_who, alias, uuid, mtime, conv_name);
-      } else {
-        chatty_msg_list_add_message (chatty_conv->msg_list,
-                                    MSG_IS_SYSTEM,
-                                    message,
-                                    NULL,
-                                    NULL);
-        //chatty_history_add_im_message (message, 0, account->username, who, uuid , mtime);
-      }
     }
 
     if (chatty_conv->oldest_message_displayed == NULL)
       chatty_conv->oldest_message_displayed = g_steal_pointer(&uuid);
 
-    g_free(who_no_resource);
-
     chatty_conv_set_unseen (chatty_conv, CHATTY_UNSEEN_NONE);
   }
 
-  g_free (real_who);
+  g_free (pcm.who);
+  g_free (pcm.what);
+  g_free (pcm.alias);
 }
 
 
@@ -3040,6 +3039,26 @@ chatty_conversations_init (void)
                           purple_marshal_VOID__POINTER, NULL, 1,
                           purple_value_new (PURPLE_TYPE_BOXED,
                           "ChattyConversation *"));
+
+  purple_signal_register (handle, "conversation-write",
+                          purple_marshal_VOID__POINTER_POINTER_POINTER_UINT,
+                          NULL, 4,
+                          purple_value_new(PURPLE_TYPE_SUBTYPE,
+                                  PURPLE_SUBTYPE_ACCOUNT),
+                          purple_value_new (PURPLE_TYPE_BOXED,
+                                  "PurpleConvMessage *"),
+                          purple_value_new(PURPLE_TYPE_POINTER),
+                          purple_value_new(PURPLE_TYPE_ENUM));
+
+  /**
+   * This is default fallback history handler which is called last,
+   * other plugins may intercept and suppress it if they handle history
+   * on their own (eg. MAM)
+   */
+  purple_signal_connect_priority(handle,
+                                "conversation-write", handle,
+                                PURPLE_CALLBACK (chatty_history_add_message),
+                                NULL, PURPLE_SIGNAL_PRIORITY_HIGHEST);
 
   purple_signal_connect (blist_handle, "buddy-status-changed",
                          handle, PURPLE_CALLBACK (cb_update_buddy_status), NULL);

@@ -77,5 +77,27 @@ chatty_history_get_im_last_message (const char*       account,
                                     const char*       who,
                                     ChattyLog*  chatty_log);
 
+/**
+ * Adds history message to persistent storage, acts as a default handler
+ * for "conversation_write" signal.
+ *
+ * @param pa    PurpleAccount under which to store message/event
+ * @param pcm   pointer to PurpleConvMessage object with message payload.
+ *              Its fields could be updated by previous handlers and thus
+ *              must be dynamic object freed after use (or re-allocated)
+ *              The flags field also serves as stop-flag should
+ *              PURPLE_MESSAGE_NO_LOG flag be set by previous handlers.
+ *              The alias field serves as a room name for group-chats.
+ * @param sid   pointer to the (char) string which should carry unique
+ *              message ID. If points to NULL - will be dynamically allocated
+ *              with random UUID.
+ * @param type  Conversation type, if PURPLE_CONV_TYPE_CHAT the message will
+ *              be stored in the MUC archive, otherwise it goes to IM store.
+ * @param data  not used
+ */
+void
+chatty_history_add_message (PurpleAccount *pa, PurpleConvMessage *pcm,
+                            char **sid, PurpleConversationType type,
+                            gpointer data);
 
 #endif

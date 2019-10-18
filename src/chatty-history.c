@@ -24,6 +24,7 @@
 #define IM_MESSAGE_IDX    7
 
 #include "chatty-history.h"
+#include "chatty-utils.h"
 #include <sqlite3.h>
 #include <glib.h>
 #include "stdio.h"
@@ -575,4 +576,33 @@ chatty_history_delete_im (const char *account,
   if (rc != SQLITE_OK)
       g_debug("Error finalizing when deleting IM messages. errno: %d, desc: %s", rc, sqlite3_errmsg(db));
 
+}
+
+
+void
+chatty_history_add_message (PurpleAccount *pa, PurpleConvMessage *pcm,
+                            char **sid, PurpleConversationType type,
+                            gpointer data)
+{
+  // (SYS XOR 1) * (RECV - SEND) - so 1 or -1 for RECV/SEND or zeroed by SYS
+  int dir = ( ((pcm->flags & 4) >> 2) ^ 1 ) 
+          * ( ((pcm->flags & 2) >> 1) - (pcm->flags & 1) );
+
+  // MAM XEP for one should set it to take over the history
+  if(pcm->flags & PURPLE_MESSAGE_NO_LOG)
+    return;
+
+  g_debug ("Add History: ID:%s, Acc:%s, Who:%s, Room:%s, Flags:%d, Dir:%d, Type:%d, TS:%ld, Body:%s",
+              *sid, pa->username, pcm->who, pcm->alias, pcm->flags, dir, type, pcm->when, pcm->what);
+
+  if(sid != NULL && *sid == NULL)
+    chatty_utils_generate_uuid(sid);
+
+  if (type == PURPLE_CONV_TYPE_CHAT) {
+    chatty_history_add_chat_message(pcm->what, dir, pa->username, pcm->who,
+                                    *sid, pcm->when, pcm->alias);
+  } else {
+    chatty_history_add_im_message(pcm->what, dir, pa->username, pcm->who,
+                                  *sid, pcm->when);
+  }
 }
