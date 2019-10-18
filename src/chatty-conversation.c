@@ -1068,7 +1068,10 @@ chatty_conv_get_chat_messages_cb (const unsigned char* msg,
 
       // Extract the alias from 'who' (full_room_address/alias)
       line_split = g_strsplit ((const gchar*)who, "/", -1);
-      alias = g_strdup(line_split[1]);
+      if (line_split)
+        alias = g_strdup(line_split[1]);
+      else
+        alias = g_strdup((const char *)who);
 
       avatar = chatty_icon_get_buddy_icon ((PurpleBlistNode*)buddy,
                                            (const gchar*)alias,
