@@ -39,21 +39,10 @@
           <class name="box_message"/>
         </style>
         <child>
-          <object class="HdyColumn" >
+          <object class="GtkBox" id="msg_view_list">
+            <property name="orientation">vertical</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="maximum-width">640</property>
-            <property name="linear-growth-width">640</property>
-            <child>
-              <object class="GtkBox" id="msg_view_list">
-                <property name="orientation">vertical</property>
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <child>
-                </child>
-                <property name="visible">True</property>
-              </object>
-            </child>
           </object>
           <packing>
             <property name="expand">True</property>

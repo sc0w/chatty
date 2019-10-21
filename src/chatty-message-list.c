@@ -6,6 +6,8 @@
 
 #include <glib.h>
 #include <glib/gi18n.h>
+#define HANDY_USE_UNSTABLE_API
+#include <handy.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
@@ -42,7 +44,6 @@ static guint signals [SIGNAL_LAST_SIGNAL];
 typedef struct
 {
   GtkBox      *disclaimer;
-  GtkBox      *container;
   GtkWidget   *list;
   GtkWidget   *scroll;
   GtkWidget   *button;
@@ -57,6 +58,7 @@ typedef struct
   guint        message_type;
   guint        width;
   guint        height;
+  guint        prev_height;
   guint        longpress_timeout_handle;
   guint32      refresh_timeout_handle;
   gboolean     first_scroll_to_bottom;
@@ -128,13 +130,27 @@ cb_list_size_allocate (GtkWidget     *sender,
   size = gtk_adjustment_get_page_size (adj);
   upper = gtk_adjustment_get_upper (adj);
   value = gtk_adjustment_get_value (adj);
-  
+
   // Only scroll to the bottom if in the proximity of bottom.
   if (!priv->first_scroll_to_bottom || abs (upper - value) < size * 1.5){
     gtk_adjustment_set_value (adj, upper - size);
     priv->first_scroll_to_bottom = TRUE;
   }
+}
 
+
+static void
+cb_cont_size_allocate (GtkWidget     *sender,
+                       GtkAllocation *allocation,
+                       gpointer       self)
+{
+  ChattyMsgListPrivate *priv = chatty_msg_list_get_instance_private (self);
+  
+  if (priv->prev_height > 0 && priv->prev_height != allocation->height) {
+    cb_list_size_allocate (NULL, NULL, self);
+  }
+
+  priv->prev_height = allocation->height;
 }
 
 
@@ -728,9 +744,16 @@ chatty_msg_list_constructed (GObject *object)
                     G_CALLBACK(cb_scroll_edge_reached),
                     self);
 
+  g_signal_connect (GTK_WIDGET (self),
+                    "size-allocate",
+                    G_CALLBACK(cb_cont_size_allocate),
+                    self);
+
   priv->first_scroll_to_bottom = FALSE;
 
   priv->typing_indicator = NULL;
+
+  priv->prev_height = 0;
 
   path = "/sm/puri/chatty/ui/chatty-message-list-popover.ui";
   builder = gtk_builder_new_from_resource (path);
@@ -751,22 +774,25 @@ chatty_msg_list_constructed (GObject *object)
 }
 
 
-static void chatty_msg_list_size_allocate(GtkWidget *widget, GtkAllocation *allocation){
-
+static void 
+chatty_msg_list_size_allocate (GtkWidget *widget, GtkAllocation *allocation)
+{
   GtkScrolledWindow *scroll;
   GtkViewport       *view;
+  HdyColumn         *column;
   GtkListBox        *list;
   GtkListBoxRow     *row;
   GtkRevealer       *revealer;
   GtkBox            *hbox, *vbox;
-  GtkAllocation     hbox_allocation;
+  GtkAllocation      hbox_allocation;
   GList             *children;
 
   children = gtk_container_get_children (GTK_CONTAINER (widget));
   scroll = GTK_SCROLLED_WINDOW (g_list_first(children)->data);
 
   view = GTK_VIEWPORT(gtk_bin_get_child (GTK_BIN(scroll)));
-  list = GTK_LIST_BOX(gtk_bin_get_child (GTK_BIN(view)));
+  column = HDY_COLUMN(gtk_bin_get_child (GTK_BIN(view)));
+  list = GTK_LIST_BOX(gtk_bin_get_child (GTK_BIN(column)));
 
   children = gtk_container_get_children (GTK_CONTAINER (list));
 
