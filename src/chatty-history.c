@@ -163,14 +163,14 @@ int
 chatty_history_open (void)
 {
   int rc;
-  char *db_path;
+  g_autofree char *db_dir = NULL;
+  g_autofree char *db_path = NULL;
 
   if(db == NULL){
-    db_path =  g_build_filename (purple_user_dir(), "chatty", "db", NULL);
-    g_mkdir_with_parents (db_path, S_IRWXU);
-    db_path = g_build_filename(db_path, "chatty-history.db", NULL);
+    db_dir =  g_build_filename (purple_user_dir(), "chatty", "db", NULL);
+    g_mkdir_with_parents (db_dir, S_IRWXU);
+    db_path = g_build_filename (db_dir, "chatty-history.db", NULL);
     rc = sqlite3_open(db_path, &db);
-    g_free(db_path);
 
     if (rc != SQLITE_OK){
       g_debug("Database could not be opened. errno: %d, desc: %s", rc, sqlite3_errmsg(db));
