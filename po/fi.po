@@ -5,13 +5,13 @@ msgstr ""
 "Project-Id-Version: purism-chatty\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-10-11 16:48+0200\n"
-"PO-Revision-Date: 2019-09-12 06:43+0000\n"
-"Last-Translator: M J <emjay.accounts+zanata@mailbox.org>\n"
-"Language-Team: Finnish\n"
-"Language: fi\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"PO-Revision-Date: 2019-10-12 06:24+0000\n"
+"Last-Translator: JR-Fi <juho@reivo.fi>\n"
+"Language-Team: Finnish\n"
+"Language: fi\n"
 "X-Generator: Zanata 4.6.2\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
 
@@ -25,20 +25,18 @@ msgid "A messaging application"
 msgstr "Viestitysohjelma"
 
 #: data/sm.puri.Chatty.appdata.xml.in:9
-#, fuzzy
 msgid "Chats is a messaging application supporting XMPP and SMS."
 msgstr ""
-"Chatty on viestitysohjelma joka tukee tekstiviestejä (SMS) sekä XMPP "
-"protokollaa."
+"Chats on viestitysohjelma, joka tukee XMPP ja SMS (tekstiviesti) protokollia."
+""
 
 #: data/sm.puri.Chatty.appdata.xml.in:16
-#, fuzzy
 msgid "Chats message window"
-msgstr "Chattyn viesti-ikkuna"
+msgstr "Chats viesti-ikkuna"
 
 #: data/sm.puri.Chatty.appdata.xml.in:29
 msgid "Initial development release of chatty with support for xmpp and sms."
-msgstr ""
+msgstr "Ensimmäinen kehitysversio Chatty-ohjelmasta, XMPP- ja SMS-tuella."
 
 #: data/sm.puri.Chatty.desktop.in:5
 msgid "sm.puri.Chatty"
@@ -58,7 +56,7 @@ msgstr "Näytä julkaisuversio"
 
 #: src/chatty-application.c:52
 msgid "Start in daemon mode"
-msgstr ""
+msgstr "Käynnistä taustaprosessina"
 
 #: src/chatty-application.c:53
 msgid "Disable all accounts"
@@ -81,7 +79,6 @@ msgid "Jabber ID"
 msgstr "Jabber tunnus"
 
 #: src/chatty-account.c:293
-#, fuzzy
 msgid "Add new account…"
 msgstr "Lisää uusi tili..."
 
@@ -143,19 +140,20 @@ msgstr "Minä:"
 
 #: src/chatty-connection.c:141
 msgid "Login failed"
-msgstr ""
+msgstr "Kirjautuminen epäonnistui"
 
 #: src/chatty-connection.c:144
 #, c-format
-msgid ""
-"%s: %s\n"
+msgid "%s: %s\n"
 "\n"
 "%s"
-msgstr ""
+msgstr "%s: %s\n"
+"\n"
+"%s"
 
 #: src/chatty-connection.c:147
 msgid "Please check ID and password"
-msgstr ""
+msgstr "Tarkasta tunnus ja salasana"
 
 #: src/chatty-conversation.c:1431
 msgid "Owner"
@@ -176,11 +174,11 @@ msgstr "Osallistujat"
 #: src/chatty-conversation.c:2233
 #, c-format
 msgid "New message from %s"
-msgstr ""
+msgstr "Uusi viesti käyttäjältä %s"
 
 #: src/chatty-conversation.c:2671
 msgid "HTTP File Upload"
-msgstr ""
+msgstr "HTTP tiedoston lataus verkkoon"
 
 #: src/chatty-dialogs.c:202 src/ui/chatty-dialog-settings.ui:495
 msgid "Delete Account"
@@ -196,9 +194,8 @@ msgid "connected"
 msgstr "Yhteys muodostettu"
 
 #: src/chatty-dialogs.c:295 src/chatty-dialogs.c:314
-#, fuzzy
 msgid "connecting…"
-msgstr "Muodostetaan yhteyttä..."
+msgstr "muodostaa yhteyttä..."
 
 #: src/chatty-dialogs.c:297 src/chatty-dialogs.c:316
 msgid "disconnected"
@@ -206,7 +203,7 @@ msgstr "Yhteys katkaistu"
 
 #: src/chatty-dialogs.c:509
 msgid "Phonenumber validation"
-msgstr ""
+msgstr "Puhelinnumeron varmistus"
 
 #: src/chatty-dialogs.c:1348
 msgid "Phone Number:"
@@ -215,11 +212,12 @@ msgstr "Puhelinnumero:"
 #: src/chatty-dialogs.c:1423
 msgid "An SMS and XMPP messaging client"
 msgstr ""
-"Tämä on ohjelma tekstiviesti (SMS) ja XMPP viestitysprotokollien käyttämiseen"
+"Tämä on ohjelma tekstiviesti (SMS) ja XMPP viestitysprotokollien "
+"käyttämiseen"
 
 #: src/chatty-dialogs.c:1430
 msgid "translator-credits"
-msgstr ""
+msgstr "Kääntäjän tiedot"
 
 #: src/chatty-lurch.c:116
 msgid "Encryption not available"
@@ -266,50 +264,44 @@ msgid "and carrier rates may apply."
 msgstr ", joten huomioithan mahdolliset operaattorimaksut."
 
 #: src/chatty-notify.c:73
-#, fuzzy
 msgid "Open Message"
-msgstr "Kutsuviesti"
+msgstr "Avaa viesti"
 
 #: src/chatty-notify.c:78
-#, fuzzy
 msgid "Message Received"
-msgstr "Viestien kuittaus"
+msgstr "Viesti vastaanotettu"
 
 #: src/chatty-notify.c:84
-#, fuzzy
 msgid "Message Error"
-msgstr "Viestien kopiot"
+msgstr "Viesti virhe"
 
 #: src/chatty-notify.c:90
-#, fuzzy
 msgid "Account Info"
-msgstr "Tilin tunnus"
+msgstr "Tilin tiedot"
 
 #: src/chatty-notify.c:96
-#, fuzzy
 msgid "Account Connected"
-msgstr "Yhteys muodostettu"
+msgstr "Tili liitetty"
 
 #: src/chatty-notify.c:103
 msgid "Open Account Settings"
-msgstr ""
+msgstr "Avaa tilin asetukset"
 
 #: src/chatty-notify.c:106
-#, fuzzy
 msgid "Account Disconnected"
-msgstr "Yhteys katkaistu"
+msgstr "Tilin yhteys katkaistu"
 
 #: src/chatty-purple-notify.c:40
 msgid "Close"
-msgstr ""
+msgstr "Sulje"
 
 #: src/chatty-purple-request.c:181
 msgid "Save File..."
-msgstr ""
+msgstr "Tallenna tiedosto..."
 
 #: src/chatty-purple-request.c:182
 msgid "Open File..."
-msgstr ""
+msgstr "Avaa tiedosto..."
 
 #: src/chatty-purple-request.c:188 src/ui/chatty-dialog-settings.ui:56
 msgid "Save"
@@ -317,68 +309,58 @@ msgstr "Tallenna"
 
 #: src/chatty-purple-request.c:188
 msgid "Open"
-msgstr ""
+msgstr "Avaa"
 
 #: src/chatty-window.c:39 src/chatty-window.c:45
 msgid "Start chatting"
 msgstr "Aloita keskustelu"
 
 #: src/chatty-window.c:40
-#, fuzzy
 msgid ""
 "<b>SMS</b> Chat is set up by default. Start a chat with the \"+\" button in "
 "the titlebar."
 msgstr ""
-"<b>Tekstiviestitys</b> (SMS) on asetettu oletuksena. Aloita keskustelu \"+\" "
-"painikkeesta."
+"<b>Tekstiviestitys</b> on käytössä ilman asetusten määrittelyä. Aloita "
+"keskustelu otsikkorivin \"+\" napilla."
 
 #: src/chatty-window.c:41 src/chatty-window.c:46
-#, fuzzy
 msgid ""
 "Add <b>Instant Messaging</b> by selecting \n"
 "<i>\"Add new account\"</i> in <i>\"preferences\"</i>."
 msgstr ""
-"Lisää <b>pikaviestipalvelut</b> valitsemalla <i>\"Lisää uusi tili\"</i> "
-"asetusvalikossa."
+"Lisää <b>pikaviestitys</b> valitsemalla\n"
+"<i>\"Lisää uusi tili\"</i> valikosta <i>\"Asetukset\"</i>."
 
 #: src/chatty-window.c:51 src/chatty-window.c:57 src/chatty-window.c:63
 #: src/chatty-window.c:69
 msgid "Choose a contact"
-msgstr ""
+msgstr "Valitse yhteystieto"
 
 #: src/chatty-window.c:52
-#, fuzzy
 msgid ""
 "Select an <b>SMS</b> or <b>Instant Message</b> contact with the <b>\"+\"</b> "
 "button in the titlebar."
 msgstr ""
-"<b>Tekstiviestitys</b> (SMS) on asetettu oletuksena. Aloita keskustelu \"+\" "
-"painikkeesta."
+"Valitse <b>tekstiviestin</b> tai muun <b>pikaviestin</b> yhteyshenkilö "
+"otsikkorivin<b>\"+\"</b> -napilla."
 
 #: src/chatty-window.c:58
-#, fuzzy
 msgid ""
 "Select an <b>Instant Message</b> contact with the \"+\" button in the "
 "titlebar."
-msgstr ""
-"<b>Tekstiviestitys</b> (SMS) on asetettu oletuksena. Aloita keskustelu \"+\" "
-"painikkeesta."
+msgstr "Valitse <b>pikaviestin</b> yhteyshenkilö otsikkorivin \"+\" -napilla."
 
 #: src/chatty-window.c:64
-#, fuzzy
 msgid "Start a <b>SMS</b> chat with with the \"+\" button in the titlebar."
-msgstr ""
-"<b>Tekstiviestitys</b> (SMS) on asetettu oletuksena. Aloita keskustelu \"+\" "
-"painikkeesta."
+msgstr "Aloita <b>tekstiviesti</b> keskustelu otsikkorivin \"+\" -napilla."
 
 #: src/chatty-window.c:65 src/chatty-window.c:70
-#, fuzzy
 msgid ""
-"For <b>Instant Messaging</b> add or activate an account in <i>\"preferences"
-"\"</i>."
+"For <b>Instant Messaging</b> add or activate an account in "
+"<i>\"preferences\"</i>."
 msgstr ""
-"Lisää <b>pikaviestipalvelut</b> valitsemalla <i>\"Lisää uusi tili\"</i> "
-"asetusvalikossa."
+"Lähettääksesi <b>pikaviestejä</b> lisää tai aktivoi tili <i>\"Asetukset\"</"
+"i> -valikossa."
 
 #: src/ui/chatty-dialog-join-muc.ui:12 src/ui/chatty-window.ui:19
 msgid "New Group Chat"
@@ -417,9 +399,8 @@ msgid "Invite"
 msgstr "Kutsu"
 
 #: src/ui/chatty-dialog-muc-info.ui:162
-#, fuzzy
 msgid "Room topic"
-msgstr "Tämän keskustelun asetukset"
+msgstr "Keskusteluhuoneen aihe"
 
 #: src/ui/chatty-dialog-muc-info.ui:219
 msgid "Room settings"
@@ -434,13 +415,12 @@ msgid "Show notification badge"
 msgstr "Näytä ilmoituskuvake"
 
 #: src/ui/chatty-dialog-muc-info.ui:258
-#, fuzzy
 msgid "Status Messages"
-msgstr "Kutsuviesti"
+msgstr "Tilaviestit"
 
 #: src/ui/chatty-dialog-muc-info.ui:259
 msgid "Show status messages in chat"
-msgstr ""
+msgstr "Näytä tilaviestit keskustelussa"
 
 #: src/ui/chatty-dialog-muc-info.ui:274
 msgid "Edit topic"
@@ -487,9 +467,8 @@ msgid "Add Contact"
 msgstr "Lisää yhteystieto"
 
 #: src/ui/chatty-dialog-new-chat.ui:260
-#, fuzzy
 msgid "Name (optional)"
-msgstr "Alias (valinnainen)"
+msgstr "Nimi (valinnainen)"
 
 #: src/ui/chatty-dialog-settings.ui:22 src/ui/chatty-window.ui:57
 msgid "Preferences"
@@ -524,7 +503,6 @@ msgid "Confirm received messages"
 msgstr "Kuittaa saadut viestit"
 
 #: src/ui/chatty-dialog-settings.ui:171
-#, fuzzy
 msgid "Message Carbon Copies"
 msgstr "Viestien kopiot"
 
@@ -673,9 +651,8 @@ msgid "New Direct Chat"
 msgstr "Uusi suora keskustelu"
 
 #: src/ui/chatty-window.ui:70
-#, fuzzy
 msgid "About Chats"
-msgstr "Tietoja Chattystä"
+msgstr "Tietoja Chats-ohjelmasta"
 
 #: src/ui/chatty-window.ui:137
 msgid "Leave Chat"
@@ -684,16 +661,3 @@ msgstr "Poistu keskustelusta"
 #: src/ui/chatty-window.ui:150
 msgid "Delete Chat"
 msgstr "Poista keskustelu"
-
-#~ msgid "Chatty"
-#~ msgstr "Chatty"
-
-#~ msgid "Cannot login"
-#~ msgstr "Sisäänkirjautuminen ei onnistu"
-
-#~ msgid ""
-#~ "Failed to login as %s:\n"
-#~ "%s"
-#~ msgstr ""
-#~ "Sisäänkirjautuminen epäonnistui tunnuksella %s:\n"
-#~ "%s"

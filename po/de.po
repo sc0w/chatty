@@ -1,4 +1,5 @@
 # Daniel Brunkhorst <daniel.brunkhorst@posteo.de>, 2018. #zanata
+# Andreas Schäfer <andrea.schaefer@puri.sm>, 2019. #zanata
 # John Smith <gfadsgfdgas@posteo.be>, 2019. #zanata
 # Max Schmidt <grell.robin@gmail.com>, 2019. #zanata
 # Mike Ballmann <mikeballmann@web.de>, 2019. #zanata
@@ -8,13 +9,13 @@ msgstr ""
 "Project-Id-Version: purism-chatty\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-10-11 16:48+0200\n"
-"PO-Revision-Date: 2019-08-13 07:15+0000\n"
-"Last-Translator: Schnee Wittchen <fru@fruweb.de>\n"
-"Language-Team: German\n"
-"Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"PO-Revision-Date: 2019-10-13 06:36+0000\n"
+"Last-Translator: Mike Ballmann <mikeballmann@web.de>\n"
+"Language-Team: German\n"
+"Language: de\n"
 "X-Generator: Zanata 4.6.2\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
 
@@ -28,14 +29,12 @@ msgid "A messaging application"
 msgstr "Eine Messaging App"
 
 #: data/sm.puri.Chatty.appdata.xml.in:9
-#, fuzzy
 msgid "Chats is a messaging application supporting XMPP and SMS."
-msgstr "Chatty ist ein Messenger-Dienst, der XMPP und SMS unterstützt."
+msgstr ""
 
 #: data/sm.puri.Chatty.appdata.xml.in:16
-#, fuzzy
 msgid "Chats message window"
-msgstr "Chatty's Nachrichten Fenster"
+msgstr ""
 
 #: data/sm.puri.Chatty.appdata.xml.in:29
 msgid "Initial development release of chatty with support for xmpp and sms."
@@ -82,9 +81,8 @@ msgid "Jabber ID"
 msgstr "Jabber ID"
 
 #: src/chatty-account.c:293
-#, fuzzy
 msgid "Add new account…"
-msgstr "Account hinzufügen"
+msgstr "Neuen Account hinzufügen"
 
 #: src/chatty-account.c:326
 msgid "Contact added"
@@ -144,19 +142,18 @@ msgstr "Ich:"
 
 #: src/chatty-connection.c:141
 msgid "Login failed"
-msgstr ""
+msgstr "Anmeldung fehlgeschlagen"
 
 #: src/chatty-connection.c:144
 #, c-format
-msgid ""
-"%s: %s\n"
+msgid "%s: %s\n"
 "\n"
 "%s"
 msgstr ""
 
 #: src/chatty-connection.c:147
 msgid "Please check ID and password"
-msgstr ""
+msgstr "Bitte überprüfe ID und Passwort"
 
 #: src/chatty-conversation.c:1431
 msgid "Owner"
@@ -177,7 +174,7 @@ msgstr "Mitglieder"
 #: src/chatty-conversation.c:2233
 #, c-format
 msgid "New message from %s"
-msgstr ""
+msgstr "Neue Nachricht von %s"
 
 #: src/chatty-conversation.c:2671
 msgid "HTTP File Upload"
@@ -197,9 +194,8 @@ msgid "connected"
 msgstr "Verbunden"
 
 #: src/chatty-dialogs.c:295 src/chatty-dialogs.c:314
-#, fuzzy
 msgid "connecting…"
-msgstr "Verbinde..."
+msgstr "verbinde..."
 
 #: src/chatty-dialogs.c:297 src/chatty-dialogs.c:316
 msgid "disconnected"
@@ -266,50 +262,44 @@ msgid "and carrier rates may apply."
 msgstr "und kann Kosten Ihres Mobilfunkanbieters verursachen."
 
 #: src/chatty-notify.c:73
-#, fuzzy
 msgid "Open Message"
-msgstr "Einladungsnachricht"
+msgstr "Nachricht öffnen"
 
 #: src/chatty-notify.c:78
-#, fuzzy
 msgid "Message Received"
-msgstr "Empfangsbestätigung"
+msgstr "Nachricht erhalten"
 
 #: src/chatty-notify.c:84
-#, fuzzy
 msgid "Message Error"
-msgstr "Nachrichtenkopien"
+msgstr ""
 
 #: src/chatty-notify.c:90
-#, fuzzy
 msgid "Account Info"
-msgstr "Account ID"
+msgstr ""
 
 #: src/chatty-notify.c:96
-#, fuzzy
 msgid "Account Connected"
-msgstr "Verbunden"
+msgstr ""
 
 #: src/chatty-notify.c:103
 msgid "Open Account Settings"
 msgstr ""
 
 #: src/chatty-notify.c:106
-#, fuzzy
 msgid "Account Disconnected"
-msgstr "Verbindung getrennt"
+msgstr ""
 
 #: src/chatty-purple-notify.c:40
 msgid "Close"
-msgstr ""
+msgstr "Schließen"
 
 #: src/chatty-purple-request.c:181
 msgid "Save File..."
-msgstr ""
+msgstr "Datei speichern..."
 
 #: src/chatty-purple-request.c:182
 msgid "Open File..."
-msgstr ""
+msgstr "Datei öffnen..."
 
 #: src/chatty-purple-request.c:188 src/ui/chatty-dialog-settings.ui:56
 msgid "Save"
@@ -317,68 +307,50 @@ msgstr "Speichern"
 
 #: src/chatty-purple-request.c:188
 msgid "Open"
-msgstr ""
+msgstr "Öffnen"
 
 #: src/chatty-window.c:39 src/chatty-window.c:45
 msgid "Start chatting"
 msgstr "Starte Chat"
 
 #: src/chatty-window.c:40
-#, fuzzy
 msgid ""
 "<b>SMS</b> Chat is set up by default. Start a chat with the \"+\" button in "
 "the titlebar."
 msgstr ""
-"<b>SMS Chat</b> ist standardmäßig aktiviert. Starte einen Chat mit der \"+\" "
-"Taste in der Titelleiste."
 
 #: src/chatty-window.c:41 src/chatty-window.c:46
-#, fuzzy
 msgid ""
 "Add <b>Instant Messaging</b> by selecting \n"
 "<i>\"Add new account\"</i> in <i>\"preferences\"</i>."
 msgstr ""
-"Füge <b>Instant Messaging</b> mithilfe von <i>\"Account hinzufügen\"</i> in "
-"den Einstellungen hinzu ."
 
 #: src/chatty-window.c:51 src/chatty-window.c:57 src/chatty-window.c:63
 #: src/chatty-window.c:69
 msgid "Choose a contact"
-msgstr ""
+msgstr "Wähle einen Kontakt aus"
 
 #: src/chatty-window.c:52
-#, fuzzy
 msgid ""
 "Select an <b>SMS</b> or <b>Instant Message</b> contact with the <b>\"+\"</b> "
 "button in the titlebar."
 msgstr ""
-"<b>SMS Chat</b> ist standardmäßig aktiviert. Starte einen Chat mit der \"+\" "
-"Taste in der Titelleiste."
 
 #: src/chatty-window.c:58
-#, fuzzy
 msgid ""
 "Select an <b>Instant Message</b> contact with the \"+\" button in the "
 "titlebar."
 msgstr ""
-"<b>SMS Chat</b> ist standardmäßig aktiviert. Starte einen Chat mit der \"+\" "
-"Taste in der Titelleiste."
 
 #: src/chatty-window.c:64
-#, fuzzy
 msgid "Start a <b>SMS</b> chat with with the \"+\" button in the titlebar."
 msgstr ""
-"<b>SMS Chat</b> ist standardmäßig aktiviert. Starte einen Chat mit der \"+\" "
-"Taste in der Titelleiste."
 
 #: src/chatty-window.c:65 src/chatty-window.c:70
-#, fuzzy
 msgid ""
-"For <b>Instant Messaging</b> add or activate an account in <i>\"preferences"
-"\"</i>."
+"For <b>Instant Messaging</b> add or activate an account in "
+"<i>\"preferences\"</i>."
 msgstr ""
-"Füge <b>Instant Messaging</b> mithilfe von <i>\"Account hinzufügen\"</i> in "
-"den Einstellungen hinzu ."
 
 #: src/ui/chatty-dialog-join-muc.ui:12 src/ui/chatty-window.ui:19
 msgid "New Group Chat"
@@ -417,9 +389,8 @@ msgid "Invite"
 msgstr "Einladen"
 
 #: src/ui/chatty-dialog-muc-info.ui:162
-#, fuzzy
 msgid "Room topic"
-msgstr "Raumeinstellungen"
+msgstr "Raum-Thema"
 
 #: src/ui/chatty-dialog-muc-info.ui:219
 msgid "Room settings"
@@ -434,9 +405,8 @@ msgid "Show notification badge"
 msgstr "Zeige Benachrichtigungsmarkierung"
 
 #: src/ui/chatty-dialog-muc-info.ui:258
-#, fuzzy
 msgid "Status Messages"
-msgstr "Einladungsnachricht"
+msgstr ""
 
 #: src/ui/chatty-dialog-muc-info.ui:259
 msgid "Show status messages in chat"
@@ -487,9 +457,8 @@ msgid "Add Contact"
 msgstr "Kontakt hinzufügen"
 
 #: src/ui/chatty-dialog-new-chat.ui:260
-#, fuzzy
 msgid "Name (optional)"
-msgstr "Alias (optional)"
+msgstr "Name (optional)"
 
 #: src/ui/chatty-dialog-settings.ui:22 src/ui/chatty-window.ui:57
 msgid "Preferences"
@@ -524,9 +493,8 @@ msgid "Confirm received messages"
 msgstr "Bestätige erhaltene Nachrichten"
 
 #: src/ui/chatty-dialog-settings.ui:171
-#, fuzzy
 msgid "Message Carbon Copies"
-msgstr "Nachrichtenkopien"
+msgstr ""
 
 #: src/ui/chatty-dialog-settings.ui:172
 msgid "Share chat history among devices"
@@ -673,9 +641,8 @@ msgid "New Direct Chat"
 msgstr "Neuer Einzelchat"
 
 #: src/ui/chatty-window.ui:70
-#, fuzzy
 msgid "About Chats"
-msgstr "Über Chatty"
+msgstr ""
 
 #: src/ui/chatty-window.ui:137
 msgid "Leave Chat"
@@ -684,16 +651,3 @@ msgstr "Chat verlassen"
 #: src/ui/chatty-window.ui:150
 msgid "Delete Chat"
 msgstr "Chat löschen"
-
-#~ msgid "Chatty"
-#~ msgstr "Chatty"
-
-#~ msgid "Cannot login"
-#~ msgstr "Anmelden nicht möglich"
-
-#~ msgid ""
-#~ "Failed to login as %s:\n"
-#~ "%s"
-#~ msgstr ""
-#~ "Anmelden als %s fehlgeschlagen:\n"
-#~ "%s"
