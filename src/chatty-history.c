@@ -34,19 +34,23 @@
 static sqlite3 *db;
 
 
-static int
-get_chat_timestamp_for_uuid(char *uuid)
+int
+get_chat_timestamp_for_uuid(const char *uuid, const char *room)
 {
 
   int rc;
   sqlite3_stmt *stmt;
   unsigned int timestamp  = INT_MAX;
 
-  rc = sqlite3_prepare_v2(db, "SELECT timestamp FROM chatty_chat WHERE uid=(?)", -1, &stmt, NULL);
+  rc = sqlite3_prepare_v2(db, "SELECT timestamp FROM chatty_chat WHERE uid=(?) AND room=(?)", -1, &stmt, NULL);
   if (rc != SQLITE_OK)
     g_debug("Error preparing when getting timestamp for uuid (CHAT). errno: %d, desc: %s", rc, sqlite3_errmsg(db));
 
   rc = sqlite3_bind_text(stmt, 1, uuid, -1, SQLITE_TRANSIENT);
+  if (rc != SQLITE_OK)
+    g_debug("Error binding when getting timestamp for uuid (CHAT) errno: %d, desc: %s", rc, sqlite3_errmsg(db));
+
+  rc = sqlite3_bind_text(stmt, 2, room, -1, SQLITE_TRANSIENT);
   if (rc != SQLITE_OK)
     g_debug("Error binding when getting timestamp for uuid (CHAT) errno: %d, desc: %s", rc, sqlite3_errmsg(db));
 
@@ -62,19 +66,23 @@ get_chat_timestamp_for_uuid(char *uuid)
 }
 
 
-static int
-get_im_timestamp_for_uuid(char *uuid)
+int
+get_im_timestamp_for_uuid(const char *uuid, const char *account)
 {
 
   int rc;
   sqlite3_stmt *stmt;
   unsigned int timestamp  = INT_MAX;
 
-  rc = sqlite3_prepare_v2(db, "SELECT timestamp FROM chatty_im WHERE uid=(?)", -1, &stmt, NULL);
+  rc = sqlite3_prepare_v2(db, "SELECT timestamp FROM chatty_im WHERE uid=(?) AND account=(?)", -1, &stmt, NULL);
   if (rc != SQLITE_OK)
     g_debug("Error preparing when getting timestamp for uuid (IM). errno: %d, desc: %s", rc, sqlite3_errmsg(db));
 
   rc = sqlite3_bind_text(stmt, 1, uuid, -1, SQLITE_TRANSIENT);
+  if (rc != SQLITE_OK)
+    g_debug("Error binding when getting timestamp for uuid (IM) errno: %d, desc: %s", rc, sqlite3_errmsg(db));
+
+  rc = sqlite3_bind_text(stmt, 2, account, -1, SQLITE_TRANSIENT);
   if (rc != SQLITE_OK)
     g_debug("Error binding when getting timestamp for uuid (IM) errno: %d, desc: %s", rc, sqlite3_errmsg(db));
 
@@ -108,7 +116,6 @@ chatty_history_create_chat_schema (void)
     "message            TEXT," \
     "UNIQUE (timestamp, message)"
     ");";
-  // TODO: LELAND: 'uid' to be implemented by XEP-0313. By now, using UNIQUE constraint to avoid dups in db
 
   rc = sqlite3_exec(db, sql, NULL, NULL, &zErrMsg);
 
@@ -118,6 +125,13 @@ chatty_history_create_chat_schema (void)
   } else {
     g_debug("chatty_chat table created successfully");
   }
+
+  // The archiving entity is room jid, uid may only be unique within entity scope
+  sql = "CREATE UNIQUE INDEX IF NOT EXISTS chatty_chat_room_uid ON chatty_chat(room, uid);";
+
+  rc = sqlite3_exec(db, sql, NULL, NULL, &zErrMsg);
+
+  g_debug("Create Index chatty_chat_accuid: %s", (rc == SQLITE_OK)? "OK" : zErrMsg);
 
 }
 
@@ -139,7 +153,6 @@ chatty_history_create_im_schema (void)
     "message            TEXT," \
     "UNIQUE (timestamp, message)"
     ");";
-  // TODO: LELAND: 'uid' to be implemented by XEP-0313. By now, using UNIQUE constraint to avoid dups in db
 
   rc = sqlite3_exec(db, sql, NULL, NULL, &zErrMsg);
 
@@ -148,6 +161,13 @@ chatty_history_create_im_schema (void)
   } else {
     g_debug("chatty_im table created successfully");
   }
+
+  // The archiving entity is bare jid, uid may only be unique within entity scope
+  sql = "CREATE UNIQUE INDEX IF NOT EXISTS chatty_im_acc_uid ON chatty_im(account, uid);";
+
+  rc = sqlite3_exec(db, sql, NULL, NULL, &zErrMsg);
+
+  g_debug("Create Index chatty_im_accuid: %s", (rc == SQLITE_OK)? "OK" : zErrMsg);
 
 }
 
@@ -403,7 +423,7 @@ chatty_history_get_chat_messages (const char *account,
   int                  from_timestamp;
   char                 skip;
 
-  from_timestamp = get_chat_timestamp_for_uuid(oldest_message_displayed);
+  from_timestamp = get_chat_timestamp_for_uuid(oldest_message_displayed, room);
 
   rc = sqlite3_prepare_v2(db, "SELECT timestamp,direction,message,who,uid FROM chatty_chat WHERE account=(?) AND room=(?) AND timestamp <= (?) ORDER BY timestamp DESC LIMIT (?)", -1, &stmt, NULL);
   if (rc != SQLITE_OK)
@@ -472,7 +492,7 @@ chatty_history_get_im_messages (const char* account,
   int                  from_timestamp;
   char                 skip;
 
-  from_timestamp = get_im_timestamp_for_uuid(oldest_message_displayed);
+  from_timestamp = get_im_timestamp_for_uuid(oldest_message_displayed, account);
 
    // Then, fetch the result and detect the last row.
   rc = sqlite3_prepare_v2(db, "SELECT timestamp,direction,message,uid FROM chatty_im WHERE account=(?) AND who=(?) AND timestamp <= (?) ORDER BY timestamp DESC LIMIT (?)", -1, &stmt, NULL);

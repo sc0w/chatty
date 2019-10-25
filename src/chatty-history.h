@@ -32,6 +32,18 @@ void chatty_history_add_im_message (const char *stanza,
                                     const char *uid,
                                     time_t      m_time);
 
+/**
+ * Returns the timestamp (time_t) for the message stored under specified ID
+ * for the given account.
+ *
+ * @param uuid    zero terminated string containing message ID
+ * @param account zero terminated string containing account name
+ *
+ * @return  the int representing timestamp (time_t) of the stored message or
+ *          INT_MAX if message not found.
+ */
+int get_im_timestamp_for_uuid(const char *uuid, const char *account);
+int get_chat_timestamp_for_uuid(const char *uuid, const char *room);
 
 void chatty_history_get_im_messages (const char* account,
                                      const char* who,
