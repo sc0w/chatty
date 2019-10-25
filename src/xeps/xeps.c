@@ -14,6 +14,7 @@
 #include "jabber.h"
 #include "xeps.h"
 #include "chatty-xep-0184.h"
+#include "chatty-xep-0313.h"
 
 static PurplePlugin *jabber = NULL;
 
@@ -144,6 +145,7 @@ chatty_xeps_close (void)
     return;
 
   chatty_0184_close ();
+  chatty_0313_close ();
   // garbage collection
   purple_signals_disconnect_by_handle(chatty_xeps_get_handle());
   purple_signals_unregister_by_instance(chatty_xeps_get_handle());
@@ -194,6 +196,7 @@ chatty_xeps_init (void)
                         PURPLE_CALLBACK(cb_chatty_xeps_chat_joined),
                         NULL);
   chatty_0184_init();
+  chatty_0313_init();
 }
 
 inline void *

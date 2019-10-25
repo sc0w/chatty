@@ -19,6 +19,7 @@ chatty_sources = [
   'chatty-buddy-list.c',
   './xeps/xeps.c',
   './xeps/chatty-xep-0184.c',
+  './xeps/chatty-xep-0313.c',
   'chatty-purple-init.c',
   'chatty-icons.c',
   'chatty-history.c',
