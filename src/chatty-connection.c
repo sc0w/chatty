@@ -11,6 +11,7 @@
 #include "purple.h"
 #include "chatty-window.h"
 #include "chatty-connection.h"
+#include "chatty-buddy-list.h"
 #include "chatty-purple-init.h"
 #include "chatty-notify.h"
 #include "chatty-dialogs.h"
@@ -265,13 +266,15 @@ chatty_connection_network_disconnected (void)
   while (l) {
     PurpleAccount *a = (PurpleAccount*)l->data;
 
-    if (!purple_account_is_disconnected (a)) {
-      char *password = g_strdup(purple_account_get_password (a));
+    if (!chatty_blist_protocol_is_sms (a)) {
+      if (!purple_account_is_disconnected (a)) {
+        char *password = g_strdup(purple_account_get_password (a));
 
-      purple_account_disconnect (a);
-      purple_account_set_password (a, password);
+        purple_account_disconnect (a);
+        purple_account_set_password (a, password);
 
-      g_free (password);
+        g_free (password);
+      }
     }
 
     l = l->next;
