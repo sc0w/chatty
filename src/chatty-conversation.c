@@ -17,6 +17,7 @@
 #include "chatty-history.h"
 #include "chatty-utils.h"
 #include "chatty-notify.h"
+#include "chatty-folks.h"
 
 #define MAX_MSGS 50
 #define LAZY_LOAD_MSGS_LIMIT 12
@@ -2800,6 +2801,8 @@ chatty_conv_new (PurpleConversation *conv)
   ChattyConversation *chatty_conv;
   const gchar        *protocol_id;
   const gchar        *conv_name;
+  const gchar        *folks_name;
+  const gchar        *folks_id;
   guint               msg_type;
 
   PurpleConversationType conv_type = purple_conversation_get_type (conv);
@@ -2831,6 +2834,26 @@ chatty_conv_new (PurpleConversation *conv)
     conv_name = purple_conversation_get_name (conv);
     buddy = purple_find_buddy (account, conv_name);
 
+    if (g_strcmp0 (protocol_id, "prpl-mm-sms") == 0) {
+      if (buddy == NULL) {
+        folks_id = chatty_folks_has_individual_with_phonenumber (conv_name);
+
+        if (folks_id) {
+          folks_name = chatty_folks_get_individual_name_by_id (folks_id);
+          
+          buddy = purple_buddy_new (account, conv_name, folks_name);
+
+          purple_blist_add_buddy (buddy, NULL, NULL, NULL);
+
+          chatty_folks_set_purple_buddy_avatar (folks_id, account, conv_name);
+        }
+      }
+
+      msg_type = CHATTY_MSG_TYPE_SMS;
+    } else {
+      msg_type = CHATTY_MSG_TYPE_IM;
+    }
+
     if (buddy == NULL) {
       buddy = purple_buddy_new (account, conv_name, NULL);
       purple_blist_add_buddy (buddy, NULL, NULL, NULL);
@@ -2838,12 +2861,6 @@ chatty_conv_new (PurpleConversation *conv)
       purple_blist_node_set_bool (PURPLE_BLIST_NODE(buddy), "chatty-unknown-contact", TRUE);
 
       g_debug ("Unknown contact %s added to blist", purple_buddy_get_name (buddy));
-    }
-
-    if (g_strcmp0 (protocol_id, "prpl-mm-sms") == 0) {
-      msg_type = CHATTY_MSG_TYPE_SMS;
-    } else {
-      msg_type = CHATTY_MSG_TYPE_IM;
     }
   }
 
