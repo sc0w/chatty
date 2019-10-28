@@ -522,7 +522,7 @@ chatty_blist_protocol_is_sms (PurpleAccount *account)
 {
   const gchar *protocol_id;
 
-  g_return_if_fail (account != NULL);
+  g_return_val_if_fail (account != NULL, FALSE);
 
   protocol_id = purple_account_get_protocol_id (account);
 
