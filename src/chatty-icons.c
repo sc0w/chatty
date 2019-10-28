@@ -211,7 +211,7 @@ chatty_icon_get_buddy_icon (PurpleBlistNode *node,
 
       buf = gtk_icon_theme_load_icon (icon_theme,
                                       symbol,
-                                      48,
+                                      36,
                                       0,
                                       NULL);
     }
@@ -221,8 +221,8 @@ chatty_icon_get_buddy_icon (PurpleBlistNode *node,
   // buddy name if there is no icon available
   if (data == NULL && name != NULL) {
     cairo_text_extents_t te;
-    int                  width = 48;
-    int                  height = 48;
+    int                  width = 36;
+    int                  height = 36;
     double               x_pos, y_pos;
     char                 tmp[4];
     char                *initial_char;
@@ -298,7 +298,7 @@ chatty_icon_get_buddy_icon (PurpleBlistNode *node,
                                       &scale_height);
   }
 
-  scale_size = 16.0 * (float)scale;
+  scale_size = 12.0 * (float)scale;
 
   if (scale) {
     GdkPixbuf *tmpbuf;
@@ -341,7 +341,7 @@ chatty_icon_get_buddy_icon (PurpleBlistNode *node,
     CAIRO_FORMAT_ARGB32 : CAIRO_FORMAT_RGB24;
 
   surface = cairo_image_surface_create (format, scale_size, scale_size);
-  g_assert (surface != NULL);
+  
   cr = cairo_create (surface);
 
   cairo_set_source_rgb (cr, color_r, color_g, color_b);
@@ -441,7 +441,7 @@ chatty_icon_create_prpl_icon_from_prpl (PurplePlugin         *prpl,
   filename =
     g_build_filename ("/usr/share/", "pixmaps", "pidgin", "protocols",
                       size == CHATTY_ICON_SIZE_SMALL ? "16" :
-                      size == CHATTY_ICON_SIZE_MEDIUM ? "22" : "48",
+                      size == CHATTY_ICON_SIZE_MEDIUM ? "22" : "36",
                       tmp, NULL);
 
   g_free (tmp);
