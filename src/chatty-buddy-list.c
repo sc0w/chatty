@@ -517,6 +517,23 @@ chatty_get_selected_node (void) {
 }
 
 
+gboolean
+chatty_blist_protocol_is_sms (PurpleAccount *account) 
+{
+  const gchar *protocol_id;
+
+  g_return_val_if_fail (account != NULL, FALSE);
+
+  protocol_id = purple_account_get_protocol_id (account);
+
+  if (g_strcmp0 (protocol_id, "prpl-mm-sms") == 0) {
+    return TRUE; 
+  } else {
+    return FALSE;
+  }
+}
+
+
 /**
  * chatty_blist_buddy_is_displayable:
  * @buddy:      a PurpleBuddy
