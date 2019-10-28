@@ -12,6 +12,7 @@
 #include <string.h>
 #include <math.h>
 #include <cairo.h>
+#include <purple.h>
 #include "chatty-message-list.h"
 
 #define INDICATOR_WIDTH   60
@@ -561,10 +562,28 @@ chatty_msg_list_clear (ChattyMsgList *self)
 }
 
  
+/* This removes all markup exept for links */
+static gchar *
+chatty_msg_list_escape_message (const gchar *message)
+{
+  g_autofree gchar  *striped;
+  g_autofree gchar  *escaped;
+  g_autofree gchar  *linkified;
+  gchar *result;
+
+  striped = purple_markup_strip_html  (message);
+  escaped = purple_markup_escape_text (striped, -1);
+  linkified = purple_markup_linkify (escaped);
+  // convert all tags to lowercase for GtkLabel markup parser
+  purple_markup_html_to_xhtml (linkified, &result, NULL);
+
+  return result;
+}
+
 GtkWidget *
 chatty_msg_list_add_message_at (ChattyMsgList *self,
                                 guint          message_dir,
-                                const gchar   *message,
+                                const gchar   *html_message,
                                 const gchar   *footer,
                                 GtkWidget     *icon,
                                 guint          position)
@@ -581,8 +600,11 @@ chatty_msg_list_add_message_at (ChattyMsgList *self,
   gchar           *style;
   gchar           *str;
   gint             width, height;
+  gchar *message;
 
   ChattyMsgListPrivate *priv = chatty_msg_list_get_instance_private (self);
+
+  message = chatty_msg_list_escape_message (html_message);
 
   row = GTK_LIST_BOX_ROW (gtk_list_box_row_new ());
 

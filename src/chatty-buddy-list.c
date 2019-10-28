@@ -1372,6 +1372,7 @@ chatty_blist_chats_update_node (PurpleBuddy     *buddy,
   const gchar      *alias;
   const gchar      *protocol_id;
   const char       *color;
+  g_autofree gchar *last_message_striped = NULL;
   gboolean          notify;
   gboolean          blur;
 
@@ -1431,9 +1432,10 @@ chatty_blist_chats_update_node (PurpleBuddy     *buddy,
   }
 
   // FIXME: Don't hard code the color it should read it from the theme
+  last_message_striped = purple_markup_strip_html (chatty_node->conv.last_message);
   last_msg_text = g_markup_printf_escaped ("<span color='#3584e4'>%s</span><span alpha='55%%'>%s</span>",
                                            tag,
-                                           chatty_node->conv.last_message);
+                                           last_message_striped);
 
   last_msg_ts = chatty_utils_time_ago_in_words (chatty_node->conv.last_msg_ts_raw,
                                                 CHATTY_UTILS_TIME_AGO_SHOW_DATE);
@@ -1502,6 +1504,7 @@ chatty_blist_chats_update_group_chat (PurpleBlistNode *node)
   g_autofree gchar *last_msg_text = NULL;
   g_autofree gchar *last_msg_ts = NULL;
   g_autofree gchar *unread_messages = NULL;
+  g_autofree gchar *last_message_striped = NULL;
   const gchar      *chat_name;
   gboolean notify;
 
@@ -1534,9 +1537,10 @@ chatty_blist_chats_update_group_chat (PurpleBlistNode *node)
     chatty_node->conv.last_message = "";
   }
 
+  last_message_striped = purple_markup_strip_html (chatty_node->conv.last_message);
   // FIXME: Don't hard code the color it should read it from the theme
   last_msg_text = g_markup_printf_escaped ("<span color='#3584e4'>Group Chat: </span>%s",
-                                           chatty_node->conv.last_message);
+                                           last_message_striped);
 
   g_strdup (chatty_node->conv.last_msg_timestamp);
 
