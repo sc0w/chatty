@@ -31,9 +31,9 @@ typedef struct
   GtkWidget *timestamp;
   GtkWidget *message_count;
 
-  gpointer     data;
-  const gchar *id;
-  const gchar *number;
+  gpointer   data;
+  gchar     *id;
+  gchar     *number;
 } ChattyContactRowPrivate;
 
 struct _ChattyContactRow
@@ -141,11 +141,13 @@ chatty_contact_row_set_property (GObject      *object,
       break;
 
     case PROP_ID:
-      priv->id = g_strdup(g_value_get_string (value));
+      g_free (priv->id);
+      priv->id = g_value_dup_string (value);
       break;
 
     case PROP_NUMBER:
-      priv->number = g_strdup(g_value_get_string (value));
+      g_free (priv->number);
+      priv->number = g_value_dup_string (value);
       break;
 
     default:
