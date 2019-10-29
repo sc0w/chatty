@@ -624,24 +624,6 @@ chatty_update_typing_status (ChattyConversation *chatty_conv)
   g_free (text);
 }
 
-
-static gchar *
-chatty_conv_check_for_links (const gchar *message)
-{
-  gchar  *msg_html;
-  gchar  *msg_xhtml = NULL;
-
-  msg_html = purple_markup_strip_html  (message);
-  msg_html = purple_markup_linkify (msg_html);
-  // convert all tags to lowercase for GtkLabel markup parser
-  purple_markup_html_to_xhtml (msg_html, &msg_xhtml, NULL);
-
-  g_free (msg_html);
-
-  return msg_xhtml;
-}
-
-
 static PurpleCmdRet
 cb_chatty_cmd (PurpleConversation  *conv,
                const gchar         *cmd,
@@ -984,7 +966,6 @@ chatty_conv_get_im_messages_cb (const unsigned char* msg,
                                 const unsigned char* uuid,
                                 gpointer data,
                                 int last_message){
-  gchar            *msg_html;
   guint             msg_dir;
   ChattyConversation       *chatty_conv;
   g_autofree gchar *iso_timestamp;
@@ -1005,24 +986,19 @@ chatty_conv_get_im_messages_cb (const unsigned char* msg,
     msg_dir = MSG_IS_SYSTEM; // TODO: LELAND: Do we have this case for IMs?
   }
 
-  msg_html = chatty_conv_check_for_links ((const gchar*)msg);
-
-
   strftime (iso_timestamp,
             MAX_GMT_ISO_SIZE * sizeof(char),
             "%b %d",
             localtime(&time_stamp));
 
-  if (msg_html[0] != '\0') {
+  if (msg[0] != '\0') {
     chatty_msg_list_add_message_at (chatty_conv->msg_list,
                                     msg_dir,
-                                    msg_html,
+                                    (const gchar *) msg,
                                     last_message ? iso_timestamp : NULL,
                                     NULL,
                                     ADD_MESSAGE_ON_TOP);
   }
-
-  g_free (msg_html);
 
   g_object_set_data (G_OBJECT (chatty_conv->input.entry),
                      "attach-start-time",
@@ -1040,7 +1016,6 @@ chatty_conv_get_chat_messages_cb (const unsigned char* msg,
                                   const unsigned char *who,
                                   const unsigned char *uuid,
                                   gpointer data){
-  gchar                    *msg_html;
   PurpleBuddy              *buddy;
   const char               *color;
   GdkPixbuf                *avatar = NULL;
@@ -1052,17 +1027,13 @@ chatty_conv_get_chat_messages_cb (const unsigned char* msg,
 
   chatty_conv = (ChattyConversation *)data;
 
-  msg_html = chatty_conv_check_for_links ((const gchar*)msg);
-
   // TODO: @LELAND: Chechk this memory management, don't like it
   free(chatty_conv->oldest_message_displayed);
   chatty_conv->oldest_message_displayed = g_strdup((const gchar *)uuid);
 
-  if (msg_html[0] != '\0') {
+  if (msg[0] != '\0') {
 
     if (direction == 1) {
-      msg_html = chatty_conv_check_for_links ((const gchar*)msg);
-
       account = purple_conversation_get_account (chatty_conv->conv);
       buddy = purple_find_buddy (account, (const gchar*)room);
       color = chatty_conv_muc_get_avatar_color ((const gchar*)room);
@@ -1089,17 +1060,15 @@ chatty_conv_get_chat_messages_cb (const unsigned char* msg,
 
       chatty_msg_list_add_message_at (chatty_conv->msg_list,
                                       MSG_IS_INCOMING,
-                                      msg_html,
+                                      (const gchar *) msg,
                                       NULL,
                                       icon ? icon : NULL,
                                       ADD_MESSAGE_ON_TOP);
 
     } else if (direction == -1) {
-      msg_html = chatty_conv_check_for_links ((const gchar*)msg);
-
       chatty_msg_list_add_message_at (chatty_conv->msg_list,
                                       MSG_IS_OUTGOING,
-                                      msg_html,
+                                      (const gchar *) msg,
                                       NULL,
                                       NULL,
                                       ADD_MESSAGE_ON_TOP);
@@ -1116,12 +1085,9 @@ chatty_conv_get_chat_messages_cb (const unsigned char* msg,
 
   }
 
-  g_free (msg_html);
-
   g_object_set_data (G_OBJECT (chatty_conv->input.entry),
                      "attach-start-time",
                      NULL);
-
 }
 
 
@@ -1899,7 +1865,6 @@ chatty_conv_update_muc_info (PurpleConversation *conv)
   gtk_label_set_text (GTK_LABEL(chatty->muc.label_num_user), user_count_str);
 
   topic = purple_conv_chat_get_topic (PURPLE_CONV_CHAT(conv));
-  topic = chatty_conv_check_for_links (topic);
 
   flags = purple_conv_chat_user_get_flags (chat, chat->nick);
 
@@ -2159,7 +2124,6 @@ chatty_conv_write_conversation (PurpleConversation *conv,
   PurpleBuddy              *buddy;
   PurpleBlistNode          *node;
   gchar                    *real_who = NULL;
-  gchar                    *msg_html;
   const char               *color;
   gboolean                  group_chat;
   GdkPixbuf                *avatar = NULL;
@@ -2248,11 +2212,9 @@ chatty_conv_write_conversation (PurpleConversation *conv,
     who_no_resource = chatty_utils_jabber_id_strip(who);
 
     if (flags & PURPLE_MESSAGE_RECV) {
-      msg_html = chatty_conv_check_for_links (message);
-
       chatty_msg_list_add_message (chatty_conv->msg_list,
                                    MSG_IS_INCOMING,
-                                   msg_html,
+                                   message,
                                    group_chat ? who : timestamp,
                                    icon ? icon : NULL);
       if (type == PURPLE_CONV_TYPE_CHAT){
@@ -2260,14 +2222,10 @@ chatty_conv_write_conversation (PurpleConversation *conv,
       } else {
         chatty_history_add_im_message (message, 1, account->username, who_no_resource, uuid, mtime);
       }
-
-      g_free (msg_html);
     } else if (flags & PURPLE_MESSAGE_SEND) {
-      msg_html = chatty_conv_check_for_links (message);
-
       chatty_msg_list_add_message (chatty_conv->msg_list,
                                    MSG_IS_OUTGOING,
-                                   msg_html,
+                                   message,
                                    NULL,
                                    NULL);
       if (type == PURPLE_CONV_TYPE_CHAT){
@@ -2276,7 +2234,6 @@ chatty_conv_write_conversation (PurpleConversation *conv,
         chatty_history_add_im_message (message, -1, account->username, who_no_resource, uuid, mtime);
       }
 
-      g_free (msg_html);
     } else if (flags & PURPLE_MESSAGE_SYSTEM) {
       if (purple_blist_node_get_bool (node, "chatty-status-msg")) {
         chatty_msg_list_add_message (chatty_conv->msg_list,
