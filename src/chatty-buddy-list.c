@@ -516,18 +516,20 @@ cb_do_autojoin (PurpleConnection *gc, gpointer null)
 static gint
 cb_chatty_blist_sort_contacts (GtkListBoxRow *row1,
                                GtkListBoxRow *row2,
-                               gpointer user_data)
+                               gpointer       user_data)
 {
-  const char *name1, *name2;
+  char *name1, *name2;
+  int   result;
 
   g_object_get (row1, "name", &name1, NULL);
   g_object_get (row2, "name", &name2, NULL);
 
-  if (g_strcmp0 (name1, name2) > 0) {
-    return TRUE;
-  }
+  result = g_strcmp0 (name1, name2);
 
-  return FALSE;
+  g_free (name1);
+  g_free (name2);
+
+  return result;
 }
 // *** end callbacks
 
@@ -1139,6 +1141,8 @@ chatty_blist_create_contact_list (void)
   if (purple_accounts_find ("SMS", "prpl-mm-sms")) {
     chatty_folks_init (chatty_get_contacts_list ());
   }
+
+  
 }
 
 

@@ -71,19 +71,22 @@ cb_update_row (FolksIndividual *individual,
    
   if (gee_map_get (chatty_folks->individuals, id)) {
     for (l = rows; l; l = l->next) {
-      g_object_get (l->data, "id", &row_id, NULL);
+      if (l->data != NULL) {
+        g_object_get (l->data, "id", &row_id, NULL);
 
-      if (!g_strcmp0 (id, row_id )) {
-        gtk_widget_destroy (GTK_WIDGET(l->data));
+        if (!g_strcmp0 (id, row_id )) {
+          gtk_widget_destroy (GTK_WIDGET(l->data));
+        }
       }
     }
+
+    chatty_folks_individual_add_contact_rows (individual);
+
+    gtk_list_box_invalidate_sort (chatty_folks->listbox);
+
+    g_list_free (l);
+    g_list_free (rows);
   }
-
-  chatty_folks_individual_add_contact_rows (individual);
-
-  gtk_list_box_invalidate_sort (chatty_folks->listbox);
-
-  g_list_free (l);
 }
 
 
@@ -104,7 +107,17 @@ cb_aggregator_notify (FolksIndividualAggregator *aggregator,
     individual = gee_map_iterator_get_value (iter);
 
     g_signal_connect (G_OBJECT(individual), 
-                      "notify",
+                      "notify::avatar",
+                      G_CALLBACK (cb_update_row),
+                      NULL);
+
+    g_signal_connect (G_OBJECT(individual), 
+                      "notify::display-name",
+                      G_CALLBACK (cb_update_row),
+                      NULL);
+
+    g_signal_connect (G_OBJECT(individual), 
+                      "notify::phone-numbers",
                       G_CALLBACK (cb_update_row),
                       NULL);
   }
@@ -122,7 +135,9 @@ cb_aggregator_individuals_changed (FolksIndividualAggregator *aggregator,
   GeeSet        *removed;
   GeeCollection *added;
   GList         *rows, *l;
-  const char    *id, *row_id;
+  const char    *id;
+  char          *row_id;
+
 
   chatty_folks_data_t *chatty_folks = chatty_get_folks_data ();
 
@@ -142,25 +157,22 @@ cb_aggregator_individuals_changed (FolksIndividualAggregator *aggregator,
       continue;
     }
 
-    if (gee_map_get (chatty_folks->individuals,
-                     folks_individual_get_id (individual)) != NULL) {
+    id = folks_individual_get_id (individual);      
 
-      id = folks_individual_get_id (individual);       
+    for (l = rows; l; l = l->next) {
+      g_object_get (l->data, "id", &row_id, NULL);
 
-      for (l = rows; l; l = l->next) {
-        g_object_get (l->data, "id", &row_id, NULL);
-
-        if (!g_strcmp0 (id, row_id )) {
-          gtk_widget_destroy (GTK_WIDGET(l->data));
-
-        }
+      if (!g_strcmp0 (id, row_id ) && l->data != NULL) {
+        gtk_widget_destroy (GTK_WIDGET(l->data));
       }
-    }
-
+    } 
+  
+    g_free (row_id);
     g_list_free (l);
     g_clear_object (&individual);
-  }
+  } 
 
+  g_list_free (rows);
   g_clear_object (&iter);
 
   iter = gee_iterable_iterator (GEE_ITERABLE (added));
