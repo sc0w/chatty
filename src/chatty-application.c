@@ -43,6 +43,9 @@ struct _ChattyApplication
   GtkApplication  parent_instance;
   gboolean        daemon;
   GtkCssProvider *css_provider;
+
+  gboolean enable_debug;
+  gboolean enable_verbose;
 };
 
 G_DEFINE_TYPE (ChattyApplication, chatty_application, GTK_TYPE_APPLICATION)
@@ -70,34 +73,7 @@ static gint
 chatty_application_handle_local_options (GApplication *application,
                                          GVariantDict *options)
 {
-  g_autoptr(GError) error = NULL;
-  gboolean          result;
-
-  ChattyApplication *self = (ChattyApplication *)application;
-
-  chatty_data_t *chatty = chatty_get_data ();
-
-  chatty->cml_options = CHATTY_CML_OPT_NONE;
-
-  result = g_application_register (application, NULL, &error);
-
-  if (!result) {
-    g_debug ("Application register failed: %s", error->message);
-  }
-
-  if (g_variant_dict_contains (options, "daemon")) {
-    if (chatty->app_running == FALSE) {
-      self->daemon = TRUE;
-    } else {
-      g_debug ("Daemon mode not possible, application is already running");
-    }
-  } else if (g_variant_dict_contains (options, "nologin")) {
-    chatty->cml_options |= CHATTY_CML_OPT_DISABLE;
-  } else if (g_variant_dict_contains (options, "debug")) {
-    chatty->cml_options |= CHATTY_CML_OPT_DEBUG;
-  } else if (g_variant_dict_contains (options, "verbose")) {
-    chatty->cml_options |= CHATTY_CML_OPT_VERBOSE;
-  } else if (g_variant_dict_contains (options, "version")) {
+  if (g_variant_dict_contains (options, "version")) {
     g_print ("%s %s\n", PACKAGE_NAME, PACKAGE_VERSION);
     return 0;
   }
@@ -105,6 +81,68 @@ chatty_application_handle_local_options (GApplication *application,
   return -1;
 }
 
+static gint
+chatty_application_command_line (GApplication            *application,
+                                 GApplicationCommandLine *command_line)
+{
+  ChattyApplication *self = (ChattyApplication *)application;
+  GVariantDict  *options;
+  chatty_data_t *chatty;
+  g_auto(GStrv) arguments = NULL;
+  gint argc;
+
+  chatty = chatty_get_data ();
+  options = g_application_command_line_get_options_dict (command_line);
+
+  if (!g_application_command_line_get_is_remote (command_line))
+    chatty->cml_options = CHATTY_CML_OPT_NONE;
+
+  if (g_variant_dict_contains (options, "daemon")) {
+    if (!g_application_command_line_get_is_remote (command_line))
+      self->daemon = TRUE;
+    else
+      g_debug ("Daemon mode not possible, application is already running");
+  }
+
+  if (g_variant_dict_contains (options, "nologin")) {
+    chatty->cml_options |= CHATTY_CML_OPT_DISABLE;
+  } else if (g_variant_dict_contains (options, "debug")) {
+    self->enable_debug = TRUE;
+  } else if (g_variant_dict_contains (options, "verbose")) {
+    self->enable_debug = TRUE;
+    self->enable_verbose = TRUE;
+  }
+
+  purple_debug_set_enabled (self->enable_debug);
+  purple_debug_set_verbose (self->enable_verbose);
+
+  arguments = g_application_command_line_get_arguments (command_line, &argc);
+
+  if (argc <= 1) {
+    g_application_activate (application);
+  } else if (!(g_application_get_flags (application) & G_APPLICATION_HANDLES_OPEN)) {
+    g_critical ("This application can not open files.");
+    return 1;
+  } else {
+    GFile **files;
+    gint n_files;
+    gint i;
+
+    n_files = argc - 1;
+    files = g_new (GFile *, n_files);
+
+    for (i = 0; i < n_files; i++)
+      files[i] = g_file_new_for_commandline_arg (arguments[i + 1]);
+
+    g_application_open (application, files, n_files, "");
+
+    for (i = 0; i < n_files; i++)
+      g_object_unref (files[i]);
+    g_free (files);
+  }
+
+  return 0;
+}
 
 static void
 chatty_application_startup (GApplication *application)
@@ -200,6 +238,7 @@ chatty_application_class_init (ChattyApplicationClass *klass)
   object_class->finalize = chatty_application_finalize;
 
   application_class->handle_local_options = chatty_application_handle_local_options;
+  application_class->command_line = chatty_application_command_line;
   application_class->startup = chatty_application_startup;
   application_class->activate = chatty_application_activate;
   application_class->open = chatty_application_open;
@@ -218,7 +257,7 @@ chatty_application_new (void)
 {
   return g_object_new (CHATTY_TYPE_APPLICATION,
                        "application-id", CHATTY_APP_ID,
-                       "flags", G_APPLICATION_HANDLES_OPEN,
+                       "flags", G_APPLICATION_HANDLES_OPEN | G_APPLICATION_HANDLES_COMMAND_LINE,
                        "register-session", TRUE,
                        NULL);
 }
