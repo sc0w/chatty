@@ -13,10 +13,8 @@
 
 typedef struct {
   FolksIndividualAggregator *aggregator;
-  //GHashTable                *individuals;
   GeeMap                    *individuals;
   GtkListBox                *listbox;
-  GList                     *rows;
   int                        mode;
 } chatty_folks_data_t;
 

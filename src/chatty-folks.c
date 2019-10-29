@@ -54,7 +54,7 @@ cb_update_row (FolksIndividual *individual,
                GParamSpec      *pspec,
                gpointer         user_data)
 {
-  GList      *l;
+  GList      *rows, *l;
   const char *id;
   const char *row_id;
 
@@ -65,10 +65,12 @@ cb_update_row (FolksIndividual *individual,
   // we just recreate the related rows for the time being instead 
   // of updating them
 
-  id = folks_individual_get_id (individual);       
+  id = folks_individual_get_id (individual);    
 
+  rows = gtk_container_get_children (GTK_CONTAINER(chatty_folks->listbox));
+   
   if (gee_map_get (chatty_folks->individuals, id)) {
-    for (l = chatty_folks->rows; l; l = l->next) {
+    for (l = rows; l; l = l->next) {
       g_object_get (l->data, "id", &row_id, NULL);
 
       if (!g_strcmp0 (id, row_id )) {
@@ -119,7 +121,7 @@ cb_aggregator_individuals_changed (FolksIndividualAggregator *aggregator,
   GeeIterator   *iter;
   GeeSet        *removed;
   GeeCollection *added;
-  GList         *l;
+  GList         *rows, *l;
   const char    *id, *row_id;
 
   chatty_folks_data_t *chatty_folks = chatty_get_folks_data ();
@@ -130,6 +132,8 @@ cb_aggregator_individuals_changed (FolksIndividualAggregator *aggregator,
   chatty_folks->individuals = folks_individual_aggregator_get_individuals (aggregator);
 
   iter = gee_iterable_iterator (GEE_ITERABLE (removed));
+
+  rows = gtk_container_get_children (GTK_CONTAINER(chatty_folks->listbox));
 
   while (gee_iterator_next (iter)) {
     FolksIndividual *individual = gee_iterator_get (iter);
@@ -143,7 +147,7 @@ cb_aggregator_individuals_changed (FolksIndividualAggregator *aggregator,
 
       id = folks_individual_get_id (individual);       
 
-      for (l = chatty_folks->rows; l; l = l->next) {
+      for (l = rows; l; l = l->next) {
         g_object_get (l->data, "id", &row_id, NULL);
 
         if (!g_strcmp0 (id, row_id )) {
@@ -417,7 +421,9 @@ chatty_folks_has_individual_with_phonenumber (const char *number)
 
   chatty_folks_data_t *chatty_folks = chatty_get_folks_data ();
 
-  g_return_val_if_fail (chatty_folks->individuals != NULL, NULL);
+  if (chatty_folks->individuals == NULL) {
+    return NULL;
+  }
 
   iter = gee_map_map_iterator (chatty_folks->individuals);
 
@@ -451,7 +457,9 @@ chatty_folks_has_individual_with_name (const char *name)
 
   chatty_folks_data_t *chatty_folks = chatty_get_folks_data ();
 
-  g_return_val_if_fail (chatty_folks->individuals != NULL, NULL);
+  if (chatty_folks->individuals == NULL) {
+    return NULL;
+  }
 
 	iter = gee_map_map_iterator (chatty_folks->individuals);
 
@@ -628,8 +636,6 @@ chatty_folks_individual_add_contact_rows (FolksIndividual *individual)
 
     gtk_container_add (GTK_CONTAINER (chatty_folks->listbox), GTK_WIDGET (row));
 
-    chatty_folks->rows = g_list_prepend (chatty_folks->rows, row);
-    
     gtk_widget_show (GTK_WIDGET (row));
 
     chatty_folks_load_avatar (individual, 
@@ -684,8 +690,6 @@ void
 chatty_folks_close (void)
 {
   chatty_folks_data_t *chatty_folks = chatty_get_folks_data ();
-
-  g_list_free (chatty_folks->rows);
 
   g_clear_object (&chatty_folks->aggregator);
 }
