@@ -527,7 +527,7 @@ cb_chatty_blist_sort_contacts (GtkListBoxRow *row1,
     return TRUE;
   }
 
-  return 0;
+  return FALSE;
 }
 // *** end callbacks
 
@@ -1139,8 +1139,6 @@ chatty_blist_create_contact_list (void)
   if (purple_accounts_find ("SMS", "prpl-mm-sms")) {
     chatty_folks_init (chatty_get_contacts_list ());
   }
-
-  
 }
 
 

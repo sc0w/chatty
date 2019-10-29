@@ -202,7 +202,7 @@ chatty_contact_row_class_init (ChattyContactRowClass *klass)
 
   props[PROP_ID] =
    g_param_spec_string ("id",
-                        "Comntact ID",
+                        "Contact ID",
                         "The ID of a libfolks individual",
                         "",
                         G_PARAM_READWRITE | G_PARAM_EXPLICIT_NOTIFY);
