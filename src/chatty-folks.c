@@ -61,13 +61,13 @@ cb_update_row (FolksIndividual *individual,
   chatty_folks_data_t *chatty_folks = chatty_get_folks_data ();
 
   // since a contact-row is created for each phone-number of 
-  // an individual, and there may will be another approach UI wise,
+  // an individual, and there may well be another approach UI wise,
   // we just recreate the related rows for the time being instead 
   // of updating them
 
   id = folks_individual_get_id (individual);       
 
-  if (g_hash_table_lookup (chatty_folks->individuals, id)) {
+  if (gee_map_get (chatty_folks->individuals, id)) {
     for (l = chatty_folks->rows; l; l = l->next) {
       g_object_get (l->data, "id", &row_id, NULL);
 
@@ -90,22 +90,16 @@ cb_aggregator_notify (FolksIndividualAggregator *aggregator,
                       GParamSpec                *pspec,
                       gpointer                   user_data)
 {
-  GeeMap          *map;
   GeeMapIterator  *iter;
   FolksIndividual *individual;
 
   chatty_folks_data_t *chatty_folks = chatty_get_folks_data ();
 
-
-  map = folks_individual_aggregator_get_individuals (aggregator);
-  iter = gee_map_map_iterator (map);
+  chatty_folks->individuals = folks_individual_aggregator_get_individuals (aggregator);
+  iter = gee_map_map_iterator (chatty_folks->individuals);
 
   while (gee_map_iterator_next (iter)) {
     individual = gee_map_iterator_get_value (iter);
-
-    g_hash_table_insert (chatty_folks->individuals,
-                         g_strdup (folks_individual_get_id (individual)),
-                         g_object_ref (individual));
 
     g_signal_connect (G_OBJECT(individual), 
                       "notify",
@@ -133,6 +127,8 @@ cb_aggregator_individuals_changed (FolksIndividualAggregator *aggregator,
   removed = gee_multi_map_get_keys (changes);
   added = gee_multi_map_get_values (changes);
 
+  chatty_folks->individuals = folks_individual_aggregator_get_individuals (aggregator);
+
   iter = gee_iterable_iterator (GEE_ITERABLE (removed));
 
   while (gee_iterator_next (iter)) {
@@ -142,12 +138,10 @@ cb_aggregator_individuals_changed (FolksIndividualAggregator *aggregator,
       continue;
     }
 
-    if (g_hash_table_lookup (chatty_folks->individuals,
-                             folks_individual_get_id (individual)) != NULL) {
+    if (gee_map_get (chatty_folks->individuals,
+                     folks_individual_get_id (individual)) != NULL) {
 
       id = folks_individual_get_id (individual);       
-
-      g_hash_table_remove (chatty_folks->individuals, id);
 
       for (l = chatty_folks->rows; l; l = l->next) {
         g_object_get (l->data, "id", &row_id, NULL);
@@ -173,10 +167,6 @@ cb_aggregator_individuals_changed (FolksIndividualAggregator *aggregator,
     if (individual == NULL) {
       continue;
     }
-
-    g_hash_table_insert (chatty_folks->individuals,
-                         g_strdup (folks_individual_get_id (individual)),
-                         g_object_ref (individual));
 
     chatty_folks_individual_add_contact_rows (individual);
   
@@ -422,17 +412,20 @@ chatty_folks_individual_has_phonenumber (FolksIndividual *individual,
 const char *
 chatty_folks_has_individual_with_phonenumber (const char *number) 
 { 
-  GHashTableIter iter;
-	gpointer       key, value;
+  FolksIndividual *individual;
+  GeeMapIterator  *iter;
 
   chatty_folks_data_t *chatty_folks = chatty_get_folks_data ();
 
-	g_hash_table_iter_init (&iter, chatty_folks->individuals);
+  g_return_val_if_fail (chatty_folks->individuals != NULL, NULL);
 
-	while (g_hash_table_iter_next (&iter, &key, &value))
-	{
-    if (chatty_folks_individual_has_phonenumber (FOLKS_INDIVIDUAL(value), number)) {
-      return key;
+  iter = gee_map_map_iterator (chatty_folks->individuals);
+
+  while (gee_map_iterator_next (iter)) {
+    individual = gee_map_iterator_get_value (iter);
+
+    if (chatty_folks_individual_has_phonenumber (individual, number)) {
+      return gee_map_iterator_get_key (iter);
     }
   }
 
@@ -452,20 +445,23 @@ chatty_folks_has_individual_with_phonenumber (const char *number)
 const char *
 chatty_folks_has_individual_with_name (const char *name) 
 { 
-  GHashTableIter  iter;
-	gpointer        key, value;
-  const char     *folks_name;
+  FolksIndividual *individual;
+  GeeMapIterator  *iter;
+  const char      *folks_name;
 
   chatty_folks_data_t *chatty_folks = chatty_get_folks_data ();
 
-	g_hash_table_iter_init (&iter, chatty_folks->individuals);
+  g_return_val_if_fail (chatty_folks->individuals != NULL, NULL);
 
-	while (g_hash_table_iter_next (&iter, &key, &value))
-	{
-    folks_name = folks_individual_get_display_name (FOLKS_INDIVIDUAL(value));
+	iter = gee_map_map_iterator (chatty_folks->individuals);
+
+  while (gee_map_iterator_next (iter)) {
+    individual = gee_map_iterator_get_value (iter);
+
+    folks_name = folks_individual_get_display_name (individual);
 
     if (!g_strcmp0 (folks_name, name)) {
-      return key;
+      return gee_map_iterator_get_key (iter);
     }
   }
 
@@ -489,7 +485,7 @@ chatty_folks_get_individual_name_by_id (const char *id)
 
   chatty_folks_data_t *chatty_folks = chatty_get_folks_data ();
 
-  individual = FOLKS_INDIVIDUAL(g_hash_table_lookup (chatty_folks->individuals, id));
+  individual = FOLKS_INDIVIDUAL(gee_map_get (chatty_folks->individuals, id));
 
   if (individual != NULL) {
     return folks_individual_get_display_name (individual);
@@ -518,7 +514,7 @@ chatty_folks_set_purple_buddy_avatar (const char    *folks_id,
 
   chatty_folks_data_t *chatty_folks = chatty_get_folks_data ();
 
-  individual = FOLKS_INDIVIDUAL(g_hash_table_lookup (chatty_folks->individuals, folks_id));
+  individual = FOLKS_INDIVIDUAL(gee_map_get (chatty_folks->individuals, folks_id));
 
   if (individual != NULL) {
     chatty_folks_load_avatar (individual, 
@@ -651,29 +647,6 @@ chatty_folks_individual_add_contact_rows (FolksIndividual *individual)
 
 
 /**
- * chatty_folks_populate_contact_list:
- * 
- * Create contact-rows with names and phonenumbers of
- * folks individuals and add them to the contacts list
- */
-void
-chatty_folks_populate_contact_list (void) 
-{
-  GList *individuals, *l;
-
-  chatty_folks_data_t *chatty_folks = chatty_get_folks_data ();
-
-  individuals = g_hash_table_get_values (chatty_folks->individuals);
-
-  for (l = individuals; l; l = l->next) {
-    chatty_folks_individual_add_contact_rows (FOLKS_INDIVIDUAL (l->data));
-  }
-
-  g_list_free (individuals);
-}
-
-
-/**
  * chatty_folks_init:
  * 
  * @listbox: a GtkListBox contacts will be added to
@@ -688,11 +661,6 @@ chatty_folks_init (GtkListBox *listbox)
   chatty_folks->listbox = listbox;
 
   chatty_folks->aggregator = folks_individual_aggregator_dup ();
-
-  chatty_folks->individuals = g_hash_table_new_full (g_str_hash, 
-                                                     g_str_equal,
-                                                     g_free, 
-                                                     g_object_unref);
 
   g_signal_connect_object (G_OBJECT(chatty_folks->aggregator),
                            "notify::is-quiescent",
@@ -716,8 +684,6 @@ void
 chatty_folks_close (void)
 {
   chatty_folks_data_t *chatty_folks = chatty_get_folks_data ();
-
-  g_hash_table_unref (chatty_folks->individuals);
 
   g_list_free (chatty_folks->rows);
 

@@ -13,7 +13,8 @@
 
 typedef struct {
   FolksIndividualAggregator *aggregator;
-  GHashTable                *individuals;
+  //GHashTable                *individuals;
+  GeeMap                    *individuals;
   GtkListBox                *listbox;
   GList                     *rows;
   int                        mode;
@@ -30,7 +31,6 @@ enum {
 
 void chatty_folks_init (GtkListBox *list);
 void chatty_folks_close (void);
-void chatty_folks_populate_contact_list (void);
 const char *chatty_folks_has_individual_with_name (const char *name);
 const char *chatty_folks_has_individual_with_phonenumber (const char *number);
 const char *chatty_folks_get_individual_name_by_id (const char *id);
