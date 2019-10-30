@@ -33,7 +33,6 @@ chatty_folks_data_t *chatty_get_folks_data (void)
 typedef struct {
   FolksIndividual  *individual;
   ChattyContactRow *row;
-  GInputStream     *stream;
   PurpleAccount    *purple_account;
   const char       *purple_user_name;
   int               mode;
@@ -258,7 +257,6 @@ cb_pixbuf_from_stream_ready (GObject      *source_object,
   }
   
   g_object_unref (pixbuf);
-  g_object_unref (data->stream);
 
   g_slice_free (AvatarData, data);
 }
@@ -271,10 +269,11 @@ cb_icon_load_async_ready (GObject      *source_object,
 {
   GLoadableIcon *icon = G_LOADABLE_ICON (source_object);
   AvatarData    *data = avatar_data;
+  GInputStream  *stream;
 
   g_autoptr(GError) error = NULL;
 
-  data->stream = g_loadable_icon_load_finish (icon, result, NULL, &error);
+  stream = g_loadable_icon_load_finish (icon, result, NULL, &error);
 
   if (error != NULL) {
     g_error ("Could not load icon: %s", error->message);
@@ -284,16 +283,37 @@ cb_icon_load_async_ready (GObject      *source_object,
     return;
   }
 
-  gdk_pixbuf_new_from_stream_at_scale_async (data->stream,
+  gdk_pixbuf_new_from_stream_at_scale_async (stream,
                                              data->size, 
                                              data->size, 
                                              TRUE,
                                              NULL,
                                              cb_pixbuf_from_stream_ready, 
                                              data);
+                                            
+  g_object_unref (stream);
 }
 
 
+/**
+ * chatty_folks_load_avatar:
+ * 
+ * @individual: a folks individual
+ * @row:        a ChattyContactsRow
+ * @account:    a PurpleAccount
+ * @user_name:  a purple buddy name
+ * @mode:       sets the icon target
+ * @size:       the icon size
+ * 
+ * Loads a folks avatar and stores it either
+ * in the given contacts-row or in blist.xml
+ * depending on mode.
+ * 
+ * If no folks avatar is available, a green icon 
+ * with the initial of the contact name will be 
+ * created.
+ * 
+ */
 static void
 chatty_folks_load_avatar (FolksIndividual  *individual,
                           ChattyContactRow *row,
@@ -311,8 +331,6 @@ chatty_folks_load_avatar (FolksIndividual  *individual,
 
   avatar = folks_avatar_details_get_avatar (FOLKS_AVATAR_DETAILS(individual));
 
-  // alternatively, a green icon with the initial 
-  // of the contact name will be created
   if (avatar == NULL && mode == CHATTY_FOLKS_SET_CONTACT_ROW_ICON) {
     g_return_if_fail (row);
 
@@ -344,6 +362,18 @@ chatty_folks_load_avatar (FolksIndividual  *individual,
 }
 
 
+/**
+ * chatty_folks_individual_has_phonenumber:
+ * 
+ * @individual:   a folks individual
+ * @phone_number: a const char with the phone number
+ * 
+ * Check if phone_number matches a number in the
+ * phone-details of the individual
+ *
+ * Returns: TRUE if there is a number match 
+ * 
+ */
 static gboolean
 chatty_folks_individual_has_phonenumber (FolksIndividual *individual,
                                          const char      *phone_number)
