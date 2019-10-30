@@ -2463,7 +2463,7 @@ chatty_conv_show_conversation (PurpleConversation *conv)
 
   avatar = chatty_icon_get_buddy_icon (PURPLE_BLIST_NODE(buddy),
                                        name,
-                                       CHATTY_ICON_SIZE_MEDIUM,
+                                       CHATTY_ICON_SIZE_SMALL,
                                        color,
                                        FALSE);
 

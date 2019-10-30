@@ -13,104 +13,112 @@
 #include "chatty-icons.h"
 
 
-static GObject *
-chatty_icon_pixbuf_from_data_helper (const guchar *buf,
-                                     gsize         count,
-                                     gboolean      animated)
+static GdkPixbuf *
+chatty_icon_pixbuf_from_data (const guchar *buf,
+                              gsize         count)
 {
-  GObject *pixbuf;
+  GdkPixbuf       *pixbuf;
   GdkPixbufLoader *loader;
-  GError *error = NULL;
+
+  g_autoptr(GError) error = NULL;
 
   loader = gdk_pixbuf_loader_new ();
 
-  if (!gdk_pixbuf_loader_write (loader, buf, count, &error) || error) {
-    purple_debug_warning ("gtkutils", "gdk_pixbuf_loader_write() "
-                          "failed with size=%zu: %s\n", count,
-                          error ? error->message : "(no error message)");
-
-    if (error) {
-      g_error_free (error);
-    }
+  if (!gdk_pixbuf_loader_write (loader, buf, count, &error)) {
+    g_error ("%s: pixbuf_loder_write failed: %s", __func__, error->message);
 
     g_object_unref (G_OBJECT(loader));
 
     return NULL;
   }
 
-  if (!gdk_pixbuf_loader_close(loader, &error) || error) {
-    purple_debug_warning ("gtkutils", "gdk_pixbuf_loader_close() "
-                          "failed for image of size %zu: %s\n", count,
-                          error ? error->message : "(no error message)");
-
-    if (error) {
-      g_error_free(error);
-    }
+  if (!gdk_pixbuf_loader_close (loader, &error)) {
+    g_error ("%s: pixbuf_loder_close failed: %s", __func__, error->message);
 
     g_object_unref(G_OBJECT(loader));
 
     return NULL;
   }
 
-  if (animated) {
-    pixbuf = G_OBJECT(gdk_pixbuf_loader_get_animation (loader));
-  } else {
-    pixbuf = G_OBJECT(gdk_pixbuf_loader_get_pixbuf (loader));
-  }
+  pixbuf = gdk_pixbuf_loader_get_pixbuf (loader);
 
   if (!pixbuf) {
-    purple_debug_warning("gtkutils", "%s() returned NULL for image "
-                         "of size %zu\n",
-                         animated ? "gdk_pixbuf_loader_get_animation"
-                        : "gdk_pixbuf_loader_get_pixbuf", count);
+    g_error ("%s: pixbuf creation failed", __func__);
 
-    g_object_unref(G_OBJECT(loader));
+    g_object_unref (G_OBJECT(loader));
 
     return NULL;
   }
 
-  g_object_ref(pixbuf);
-  g_object_unref(G_OBJECT(loader));
+  g_object_ref (pixbuf);
+  g_object_unref (G_OBJECT(loader));
 
   return pixbuf;
 }
 
 
-static GdkPixbuf *
-chatty_icon_pixbuf_from_data (const guchar *buf,
-                              gsize         count)
+GdkPixbuf *
+chatty_icon_shape_pixbuf (GdkPixbuf *pixbuf)
 {
-  return GDK_PIXBUF (chatty_icon_pixbuf_from_data_helper (buf, count, FALSE));
-}
+  cairo_format_t   format;
+  cairo_surface_t *surface;
+  cairo_t         *cr;
+  GdkPixbuf       *ret;
+  int              width, height, size;
 
+  format = CAIRO_FORMAT_ARGB32;
 
-GtkWidget *
-chatty_icon_get_avatar_button (int size)
-{
-  GtkWidget       *image;
-  GtkWidget       *button_avatar;
-  GtkStyleContext *sc;
+  width = gdk_pixbuf_get_width (pixbuf);
+  height = gdk_pixbuf_get_height (pixbuf);
 
-  button_avatar = gtk_menu_button_new ();
+  size = (width >= height) ? width : height;
 
-  gtk_widget_set_hexpand (button_avatar, FALSE);
-  gtk_widget_set_halign (button_avatar, GTK_ALIGN_CENTER);
-  gtk_widget_set_size_request (GTK_WIDGET(button_avatar), size, size);
+  surface = cairo_image_surface_create (format, size, size);
 
-  image = gtk_image_new_from_icon_name ("avatar-default-symbolic", GTK_ICON_SIZE_DIALOG);
+  cr = cairo_create (surface);
 
-  gtk_button_set_image (GTK_BUTTON (button_avatar), image);
-  sc = gtk_widget_get_style_context (button_avatar);
-  gtk_style_context_add_class (sc, "button_avatar");
+  cairo_set_antialias (cr, CAIRO_ANTIALIAS_SUBPIXEL); 
 
-  return button_avatar;
+  cairo_set_source_rgb (cr, 1.0, 1.0, 1.0);
+
+  cairo_arc (cr,
+             size / 2,
+             size / 2,
+             size / 2,
+             0,
+             2 * M_PI);
+
+  cairo_fill (cr);
+
+  gdk_cairo_set_source_pixbuf (cr, pixbuf, 0, 0);
+
+  cairo_arc (cr,
+             size / 2,
+             size / 2,
+             size / 2,
+             0,
+             2 * M_PI);
+
+  cairo_clip (cr);
+  cairo_paint (cr);
+
+  ret = gdk_pixbuf_get_from_surface (surface,
+                                     0,
+                                     0,
+                                     size,
+                                     size);
+
+  cairo_surface_destroy (surface);
+  cairo_destroy (cr);
+
+  return ret;
 }
 
 
 GdkPixbuf *
 chatty_icon_get_buddy_icon (PurpleBlistNode *node,
                             const char      *name,
-                            guint            scale,
+                            guint            size,
                             const char      *color,
                             gboolean         greyed)
 {
@@ -121,7 +129,6 @@ chatty_icon_get_buddy_icon (PurpleBlistNode *node,
   PurpleGroup               *group = NULL;
   const guchar              *data = NULL;
   GdkPixbuf                 *buf = NULL, *ret = NULL;
-  cairo_format_t             format;
   cairo_surface_t           *surface;
   cairo_t                   *cr;
   PurpleBuddyIcon           *icon = NULL;
@@ -139,8 +146,6 @@ chatty_icon_get_buddy_icon (PurpleBlistNode *node,
   gdouble                    color_r;
   gdouble                    color_g;
   gdouble                    color_b;
-
-  //g_debug ("chatty_icon_get_buddy_icon name: %s", name);
 
   // convert colors for drawing the cairo background
   if (color) {
@@ -211,7 +216,7 @@ chatty_icon_get_buddy_icon (PurpleBlistNode *node,
 
       buf = gtk_icon_theme_load_icon (icon_theme,
                                       symbol,
-                                      36,
+                                      size,
                                       0,
                                       NULL);
     }
@@ -221,8 +226,8 @@ chatty_icon_get_buddy_icon (PurpleBlistNode *node,
   // buddy name if there is no icon available
   if (data == NULL && name != NULL) {
     cairo_text_extents_t te;
-    int                  width = 36;
-    int                  height = 36;
+    int                  width = size;
+    int                  height = size;
     double               x_pos, y_pos;
     char                 tmp[4];
     char                *initial_char;
@@ -237,7 +242,7 @@ chatty_icon_get_buddy_icon (PurpleBlistNode *node,
     cairo_paint (cr);
 
     cairo_set_source_rgb (cr, 0.95, 0.95, 0.95);
-    cairo_set_font_size (cr, 24.0);
+    cairo_set_font_size (cr, size / 2);
     cairo_select_font_face (cr,
                             "Sans",
                             CAIRO_FONT_SLANT_NORMAL,
@@ -298,9 +303,9 @@ chatty_icon_get_buddy_icon (PurpleBlistNode *node,
                                       &scale_height);
   }
 
-  scale_size = 12.0 * (float)scale;
+  scale_size = (float)size;
 
-  if (scale) {
+  if (size) {
     GdkPixbuf *tmpbuf;
 
     if (scale_height > scale_width) {
@@ -337,137 +342,9 @@ chatty_icon_get_buddy_icon (PurpleBlistNode *node,
                                    GDK_INTERP_BILINEAR);
   }
 
-  format = (gdk_pixbuf_get_has_alpha (ret)) ?
-    CAIRO_FORMAT_ARGB32 : CAIRO_FORMAT_RGB24;
-
-  surface = cairo_image_surface_create (format, scale_size, scale_size);
-  
-  cr = cairo_create (surface);
-
-  cairo_set_source_rgb (cr, color_r, color_g, color_b);
-
-  // we want a round avatar
-  cairo_arc (cr,
-             scale_size / 2,
-             scale_size / 2,
-             scale_size / 2,
-             0,
-             2 * M_PI);
-
-  cairo_fill (cr);
-
-  gdk_cairo_set_source_pixbuf (cr, ret, 0, 0);
-
-  cairo_arc (cr,
-             scale_size / 2,
-             scale_size / 2,
-             scale_size / 2,
-             0,
-             2 * M_PI);
-
-  cairo_clip (cr);
-  cairo_paint (cr);
-
-  ret = gdk_pixbuf_get_from_surface (surface,
-                                     0,
-                                     0,
-                                     scale_size,
-                                     scale_size);
-
-  cairo_surface_destroy (surface);
-  cairo_destroy (cr);
-
   g_object_unref (G_OBJECT(buf));
 
-  return ret;
-}
-
-
-static GdkPixbuf *
-chatty_icon_pixbuf_new_from_file (const gchar *filename)
-{
-  GdkPixbuf *pixbuf;
-  GError *error = NULL;
-
-  pixbuf = gdk_pixbuf_new_from_file (filename, &error);
-
-  if (!pixbuf || error) {
-    purple_debug_warning ("gtkutils", "gdk_pixbuf_new_from_file() "
-                          "returned %s for file %s: %s\n",
-                          pixbuf ? "something" : "nothing",
-                          filename,
-                          error ? error->message : "(no error message)");
-
-    if (error) {
-      g_error_free(error);
-    }
-
-    if (pixbuf) {
-      g_object_unref (G_OBJECT(pixbuf));
-    }
-
-    return NULL;
-  }
-
-  return pixbuf;
-}
-
-
-static GdkPixbuf *
-chatty_icon_create_prpl_icon_from_prpl (PurplePlugin         *prpl,
-                                        ChattyPurpleIconSize  size,
-                                        PurpleAccount        *account)
-{
-  PurplePluginProtocolInfo  *prpl_info;
-  const gchar               *protoname = NULL;
-  gchar                     *tmp;
-  gchar                     *filename = NULL;
-  GdkPixbuf                 *pixbuf;
-
-  prpl_info = PURPLE_PLUGIN_PROTOCOL_INFO(prpl);
-
-  if (prpl_info->list_icon == NULL) {
-    return NULL;
-  }
-
-  protoname = prpl_info->list_icon(account, NULL);
-
-  if (protoname == NULL) {
-    return NULL;
-  }
-
-  tmp = g_strconcat (protoname, ".png", NULL);
-
-  filename =
-    g_build_filename ("/usr/share/", "pixmaps", "pidgin", "protocols",
-                      size == CHATTY_ICON_SIZE_SMALL ? "16" :
-                      size == CHATTY_ICON_SIZE_MEDIUM ? "22" : "36",
-                      tmp, NULL);
-
-  g_free (tmp);
-
-  pixbuf = chatty_icon_pixbuf_new_from_file (filename);
-  g_free (filename);
-
-  return pixbuf;
-}
-
-
-GdkPixbuf *
-chatty_icon_create_prpl_icon (PurpleAccount        *account,
-                              ChattyPurpleIconSize  size)
-{
-  PurplePlugin *prpl;
-
-  g_return_val_if_fail (account != NULL, NULL);
-
-  prpl = purple_find_prpl ( purple_account_get_protocol_id (account));
-
-  if (prpl == NULL) {
-    return NULL;
-  }
-
-  return chatty_icon_create_prpl_icon_from_prpl (prpl, size, account);
+  return chatty_icon_shape_pixbuf (ret);
 }
 
 

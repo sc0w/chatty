@@ -116,7 +116,7 @@ row_selected_cb (GtkListBox    *box,
 
     avatar = chatty_icon_get_buddy_icon (node,
                                          NULL,
-                                         CHATTY_ICON_SIZE_MEDIUM,
+                                         CHATTY_ICON_SIZE_SMALL,
                                          CHATTY_COLOR_GREY,
                                          FALSE);
  
@@ -677,11 +677,13 @@ chatty_blist_add_buddy_from_uri (const char *uri)
     buddy = purple_buddy_new (account, who, alias);
 
     purple_blist_add_buddy (buddy, NULL, NULL, NULL);
+
+    chatty_folks_set_purple_buddy_avatar (folks_id, account, g_strdup (who));
   }
 
   avatar = chatty_icon_get_buddy_icon (PURPLE_BLIST_NODE(buddy),
                                        who,
-                                       CHATTY_ICON_SIZE_MEDIUM,
+                                       CHATTY_ICON_SIZE_SMALL,
                                        CHATTY_COLOR_GREEN,
                                        FALSE);
 
@@ -1246,9 +1248,7 @@ chatty_blist_contacts_update_node (PurpleBuddy     *buddy,
   gchar         *name = NULL;
   const gchar   *alias;
   const gchar   *account_name;
-  const gchar   *protocol_id;
   PurpleAccount *account;
-  const char    *color;
   gboolean       blur;
 
   PurplePresence *presence = purple_buddy_get_presence (buddy);
@@ -1268,15 +1268,7 @@ chatty_blist_contacts_update_node (PurpleBuddy     *buddy,
     return;
   }
 
-  protocol_id = purple_account_get_protocol_id (account);
-
   alias = purple_buddy_get_alias (buddy);
-
-  if (g_strcmp0 (protocol_id, "prpl-mm-sms") == 0) {
-    color = CHATTY_COLOR_GREEN;
-  } else {
-    color = CHATTY_COLOR_BLUE;
-  }
 
   if (purple_prefs_get_bool (CHATTY_PREFS_ROOT "/blist/greyout_offline_buddies") &&
       !PURPLE_BUDDY_IS_ONLINE(buddy)) {
@@ -1288,8 +1280,9 @@ chatty_blist_contacts_update_node (PurpleBuddy     *buddy,
 
   avatar = chatty_icon_get_buddy_icon ((PurpleBlistNode *)buddy,
                                        alias,
-                                       CHATTY_ICON_SIZE_LARGE,
-                                       color,
+                                       CHATTY_ICON_SIZE_MEDIUM,
+                                       chatty_blist_protocol_is_sms (account) ?
+                                       CHATTY_COLOR_GREEN : CHATTY_COLOR_BLUE,
                                        blur);
 
   if (purple_prefs_get_bool (CHATTY_PREFS_ROOT "/blist/blur_idle_buddies") &&
@@ -1364,7 +1357,7 @@ chatty_blist_contacts_update_group_chat (PurpleBlistNode *node)
 
   avatar = chatty_icon_get_buddy_icon (node,
                                        NULL,
-                                       CHATTY_ICON_SIZE_LARGE,
+                                       CHATTY_ICON_SIZE_MEDIUM,
                                        CHATTY_COLOR_BLUE,
                                        FALSE);
 
@@ -1424,8 +1417,6 @@ chatty_blist_chats_update_node (PurpleBuddy     *buddy,
   g_autofree gchar *unread_messages = NULL;
   const gchar      *tag;
   const gchar      *alias;
-  const gchar      *protocol_id;
-  const char       *color;
   g_autofree gchar *last_message_striped = NULL;
   gboolean          notify;
   gboolean          blur;
@@ -1440,15 +1431,7 @@ chatty_blist_chats_update_node (PurpleBuddy     *buddy,
     return;
   }
 
-  protocol_id = purple_account_get_protocol_id (account);
-
   alias = purple_buddy_get_alias (buddy);
-
-  if (g_strcmp0 (protocol_id, "prpl-mm-sms") == 0) {
-    color = CHATTY_COLOR_GREEN;
-  } else {
-    color = CHATTY_COLOR_BLUE;
-  }
 
   if (!purple_prefs_get_bool (CHATTY_PREFS_ROOT "/status/first_start")) {
      chatty_window_overlay_show (FALSE);
@@ -1465,8 +1448,9 @@ chatty_blist_chats_update_node (PurpleBuddy     *buddy,
 
   avatar = chatty_icon_get_buddy_icon (node,
                                        alias,
-                                       CHATTY_ICON_SIZE_LARGE,
-                                       color,
+                                       CHATTY_ICON_SIZE_MEDIUM,
+                                       chatty_blist_protocol_is_sms (account) ?
+                                       CHATTY_COLOR_GREEN : CHATTY_COLOR_BLUE,
                                        blur);
 
   if (purple_prefs_get_bool (CHATTY_PREFS_ROOT "/blist/blur_idle_buddies") &&
@@ -1583,7 +1567,7 @@ chatty_blist_chats_update_group_chat (PurpleBlistNode *node)
 
   avatar = chatty_icon_get_buddy_icon (node,
                                        NULL,
-                                       CHATTY_ICON_SIZE_LARGE,
+                                       CHATTY_ICON_SIZE_MEDIUM,
                                        CHATTY_COLOR_BLUE,
                                        FALSE);
 

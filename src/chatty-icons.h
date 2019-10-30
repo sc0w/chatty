@@ -12,9 +12,9 @@
 
 typedef enum
 {
-   CHATTY_ICON_SIZE_SMALL = 1,
-   CHATTY_ICON_SIZE_MEDIUM,
-   CHATTY_ICON_SIZE_LARGE
+   CHATTY_ICON_SIZE_SMALL  = 28,
+   CHATTY_ICON_SIZE_MEDIUM = 36,
+   CHATTY_ICON_SIZE_LARGE  = 108
 } ChattyPurpleIconSize;
 
 typedef enum
@@ -25,18 +25,13 @@ typedef enum
    CHATTY_ICON_COLOR_PURPLE
 } ChattyPurpleIconColor;
 
-GdkPixbuf *
-chatty_icon_create_prpl_icon (PurpleAccount        *account,
-                              ChattyPurpleIconSize size);
-
-GdkPixbuf *
-chatty_icon_get_buddy_icon (PurpleBlistNode *node,
-                            const char      *name,
-                            guint            scale,
-                            const char      *color,
-                            gboolean         greyed);
-
 void chatty_icon_do_alphashift (GdkPixbuf *pixbuf, int shift);
-GtkWidget *chatty_icon_get_avatar_button (int size);
+GdkPixbuf *chatty_icon_shape_pixbuf (GdkPixbuf *pixbuf);
+
+GdkPixbuf *chatty_icon_get_buddy_icon (PurpleBlistNode *node,
+                                       const char      *name,
+                                       guint            size,
+                                       const char      *color,
+                                       gboolean         greyed);
 
 #endif

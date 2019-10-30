@@ -17,6 +17,7 @@
 #include "chatty-dialogs.h"
 #include "chatty-lurch.h"
 #include "chatty-utils.h"
+#include "chatty-icons.h"
 #include "version.h"
 
 #include <libebook-contacts/libebook-contacts.h>
@@ -1299,6 +1300,8 @@ chatty_dialogs_show_dialog_user_info (ChattyConversation *chatty_conv)
   GtkWindow     *window;
   GtkSwitch     *switch_notify;
   GtkListBox    *listbox_prefs;
+  GdkPixbuf     *icon;
+  GtkImage      *avatar;
   const char    *protocol_id;
   const char    *alias;
 
@@ -1307,6 +1310,7 @@ chatty_dialogs_show_dialog_user_info (ChattyConversation *chatty_conv)
 
   builder = gtk_builder_new_from_resource ("/sm/puri/chatty/ui/chatty-dialog-user-info.ui");
 
+  avatar = GTK_IMAGE (gtk_builder_get_object (builder, "avatar"));
   label_alias = GTK_WIDGET (gtk_builder_get_object (builder, "label_alias"));
   label_user_id = GTK_WIDGET (gtk_builder_get_object (builder, "label_user_id"));
   label_jid = GTK_WIDGET (gtk_builder_get_object (builder, "label_jid"));
@@ -1354,6 +1358,17 @@ chatty_dialogs_show_dialog_user_info (ChattyConversation *chatty_conv)
 
   buddy = purple_find_buddy (chatty_conv->conv->account, chatty_conv->conv->name);
   alias = purple_buddy_get_alias (buddy);
+
+  icon = chatty_icon_get_buddy_icon (PURPLE_BLIST_NODE(buddy),
+                                     alias,
+                                     CHATTY_ICON_SIZE_LARGE,
+                                     chatty_blist_protocol_is_sms (account) ?
+                                     CHATTY_COLOR_GREEN : CHATTY_COLOR_BLUE,
+                                     FALSE);
+
+  if (icon != NULL) {
+    gtk_image_set_from_pixbuf (GTK_IMAGE(avatar), icon);
+  }
 
   gtk_switch_set_state (switch_notify,
                         purple_blist_node_get_bool (PURPLE_BLIST_NODE(buddy),

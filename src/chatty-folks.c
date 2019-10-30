@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 Purism SPC
+ * Copyright (C) 2019 Purism SPC
  *
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
@@ -17,10 +17,11 @@
 #include "chatty-window.h"
 #include "chatty-contact-row.h"
 #include "chatty-utils.h"
+#include "chatty-icons.h"
+#include "chatty-window.h"
 
 
 static chatty_folks_data_t chatty_folks_data;
-static GdkPixbuf *chatty_folks_shape_pixbuf (GdkPixbuf *pixbuf);
 static void chatty_folks_individual_add_contact_rows (FolksIndividual *individual);
 
 chatty_folks_data_t *chatty_get_folks_data (void)
@@ -202,16 +203,17 @@ cb_pixbuf_from_stream_ready (GObject      *source_object,
                              GAsyncResult *result,
                              gpointer      avatar_data)
 {
-  GdkPixbuf   *pixbuf;
-  AvatarData  *data = avatar_data;
-  PurpleBuddy *buddy;
+  GdkPixbuf     *pixbuf;
+  AvatarData    *data = avatar_data;
+  PurpleContact *contact;
+  PurpleBuddy   *buddy;
 
   g_autoptr(GError) error = NULL;
 
   pixbuf = gdk_pixbuf_new_from_stream_finish (result, &error);
 
   if (error != NULL) {
-    g_debug ("Could not get pixbuf from stream: %s", error->message);
+    g_error ("Could not get pixbuf from stream: %s", error->message);
 
     g_slice_free (AvatarData, data);
 
@@ -223,32 +225,36 @@ cb_pixbuf_from_stream_ready (GObject      *source_object,
 
       g_return_if_fail (data->row != NULL);
       g_object_set (data->row,
-                    "avatar", chatty_folks_shape_pixbuf (pixbuf),
+                    "avatar", chatty_icon_shape_pixbuf (pixbuf),
                     NULL);
       break;
 
     case CHATTY_FOLKS_SET_PURPLE_BUDDY_ICON:
       gdk_pixbuf_save (pixbuf, "/var/tmp/chatty_tmp.jpg", "jpeg", &error, "quality", "100", NULL);
 
-      buddy = purple_find_buddy (data->purple_account, data->purple_user_name);
-
-      purple_buddy_icons_node_set_custom_icon_from_file ((PurpleBlistNode*)buddy,
-                                                         "/var/tmp/chatty_tmp.jpg");
-
       if (error != NULL) {
-        g_debug ("Could not save pixbuf to file: %s", error->message);
+        g_error ("Could not save pixbuf to file: %s", error->message);
 
         g_slice_free (AvatarData, data);
 
         return;
       }
 
-      remove ("/var/tmp/chatty_tmp.jpg");
+      buddy = purple_find_buddy (data->purple_account, data->purple_user_name);
+
+      contact = purple_buddy_get_contact (buddy);
+
+      purple_buddy_icons_node_set_custom_icon_from_file ((PurpleBlistNode*)contact,
+                                                         "/var/tmp/chatty_tmp.jpg");
+
+      if (remove ("/var/tmp/chatty_tmp.jpg")) {
+        g_error ("Could not delete file: %s", "/var/tmp/chatty_tmp.jpg");
+      };
 
       break;
 
     default:
-      g_debug ("Chatty folks icon mode not set");
+      g_warning ("Chatty folks icon mode not set");
   }
   
   g_object_unref (pixbuf);
@@ -271,7 +277,7 @@ cb_icon_load_async_ready (GObject      *source_object,
   data->stream = g_loadable_icon_load_finish (icon, result, NULL, &error);
 
   if (error != NULL) {
-    g_debug ("Could not load icon: %s", error->message);
+    g_error ("Could not load icon: %s", error->message);
 
     g_slice_free (AvatarData, data);
 
@@ -288,62 +294,6 @@ cb_icon_load_async_ready (GObject      *source_object,
 }
 
 
-static GdkPixbuf *
-chatty_folks_shape_pixbuf (GdkPixbuf *pixbuf)
-{
-  cairo_format_t   format;
-  cairo_surface_t *surface;
-  cairo_t         *cr;
-  GdkPixbuf       *ret;
-  int              width, height, size;
-
-  format = CAIRO_FORMAT_ARGB32;
-
-  width = gdk_pixbuf_get_width (pixbuf);
-  height = gdk_pixbuf_get_height (pixbuf);
-
-  size = (width >= height) ? width : height;
-
-  surface = cairo_image_surface_create (format, size, size);
-
-  cr = cairo_create (surface);
-
-  cairo_set_source_rgb (cr, 1.0, 1.0, 1.0);
-
-  cairo_arc (cr,
-             size / 2,
-             size / 2,
-             size / 2,
-             0,
-             2 * M_PI);
-
-  cairo_fill (cr);
-
-  gdk_cairo_set_source_pixbuf (cr, pixbuf, 0, 0);
-
-  cairo_arc (cr,
-             size / 2,
-             size / 2,
-             size / 2,
-             0,
-             2 * M_PI);
-
-  cairo_clip (cr);
-  cairo_paint (cr);
-
-  ret = gdk_pixbuf_get_from_surface (surface,
-                                     0,
-                                     0,
-                                     size,
-                                     size);
-
-  cairo_surface_destroy (surface);
-  cairo_destroy (cr);
-
-  return ret;
-}
-
-
 static void
 chatty_folks_load_avatar (FolksIndividual  *individual,
                           ChattyContactRow *row,
@@ -354,14 +304,32 @@ chatty_folks_load_avatar (FolksIndividual  *individual,
 {
   AvatarData    *data;
   GLoadableIcon *avatar;
+  GdkPixbuf     *pixbuf;
+  const char    *name;
 
   g_return_if_fail (FOLKS_IS_INDIVIDUAL (individual));
 
   avatar = folks_avatar_details_get_avatar (FOLKS_AVATAR_DETAILS(individual));
 
-  if (avatar == NULL) {
-    g_debug ("Could not get folks avatar");
+  // alternatively, a green icon with the initial 
+  // of the contact name will be created
+  if (avatar == NULL && mode == CHATTY_FOLKS_SET_CONTACT_ROW_ICON) {
+    g_return_if_fail (row);
+
+    name = folks_individual_get_display_name (individual);
+
+    pixbuf = chatty_icon_get_buddy_icon (NULL,
+                                         name,
+                                         CHATTY_ICON_SIZE_MEDIUM,
+                                         CHATTY_COLOR_GREEN,
+                                         FALSE);
     
+    g_object_set (row,
+                  "avatar", chatty_icon_shape_pixbuf (pixbuf),
+                  NULL);
+
+    g_object_unref (pixbuf);
+
     return;
   }
 
@@ -542,7 +510,7 @@ chatty_folks_set_purple_buddy_avatar (const char    *folks_id,
                               account, 
                               user_name, 
                               CHATTY_FOLKS_SET_PURPLE_BUDDY_ICON, 
-                              48);
+                              CHATTY_ICON_SIZE_LARGE);
   }
 }
 
@@ -655,7 +623,7 @@ chatty_folks_individual_add_contact_rows (FolksIndividual *individual)
                               NULL,
                               NULL,
                               CHATTY_FOLKS_SET_CONTACT_ROW_ICON, 
-                              36);
+                              CHATTY_ICON_SIZE_MEDIUM);
 
     g_object_unref (field_details);
   }
