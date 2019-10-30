@@ -154,7 +154,6 @@ chatty_application_startup (GApplication *application)
   self->daemon = FALSE;
 
   chatty->uri = NULL;
-  chatty->app_running = FALSE;
 
   G_APPLICATION_CLASS (chatty_application_parent_class)->startup (application);
 
@@ -215,7 +214,7 @@ chatty_application_open (GApplication  *application,
     if (g_file_has_uri_scheme (files[i], "sms")) {
       uri = g_file_get_uri (files[i]);
 
-      if (chatty->app_running) {
+      if (gtk_application_get_active_window (GTK_APPLICATION (application))) {
         chatty_blist_add_buddy_from_uri (uri);
       } else {
         chatty->uri = g_strdup (uri);

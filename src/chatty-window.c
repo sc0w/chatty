@@ -342,8 +342,6 @@ chatty_window_init_data (void)
   if (chatty->uri) {
     chatty_blist_add_buddy_from_uri (chatty->uri);
   }
-
-  chatty->app_running = TRUE;
 }
 
 
