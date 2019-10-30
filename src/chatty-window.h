@@ -66,7 +66,6 @@ typedef struct {
   GtkWidget         *label_overlay_2;
   GtkWidget         *label_overlay_3;
 
-  gboolean           app_running;
   ChattyCmlOptions   cml_options;
 
   const char        *uri;
