@@ -1,15 +1,13 @@
 .msg_entry_defocused {
   background-color: @theme_base_color;
-  border-radius: 5px;
+  border-radius: 3px;
   border: 1px solid @borders;
+  padding: 6px;
 }
 
 .msg_entry_focused {
   border: 2px solid @theme_selected_bg_color;
-}
-
-.msg_input_frame {
-  border-top-width: 1px;
+  padding: 5px;
 }
 
 .topic_no_edit {
@@ -50,19 +48,13 @@
   color: grey;
 }
 
-.button_avatar {
-  border-radius: 50%;
-  border-width: 0px;
-  padding: 0 0;
-  background: grey;
-  color: white;
-}
-
 .button_send_green {
-  border-radius: 5px;
-  border-width: 1px;
   background: #6cba3d;
+  border-color: #6cba3d;
   color: white;
+  outline-color: rgba(255, 255, 255, 0.3);
+  -gtk-icon-shadow: 0 -1px rgba(0, 0, 0, 0.543529);
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.4);
 }
 
 .box_message {

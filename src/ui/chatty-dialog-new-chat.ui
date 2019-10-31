@@ -28,6 +28,9 @@
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="receives_default">False</property>
+                    <style>
+                      <class name="image-button"/>
+                    </style>
                     <child>
                       <object class="GtkImage">
                         <property name="visible">True</property>
