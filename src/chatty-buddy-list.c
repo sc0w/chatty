@@ -537,14 +537,16 @@ cb_chatty_blist_sort_contacts (GtkListBoxRow *row1,
 static PurpleBlistNode *
 chatty_get_selected_node (void) {
   ChattyContactRow *row;
-  PurpleBlistNode *node;
+  PurpleBlistNode  *node;
 
   row = CHATTY_CONTACT_ROW (gtk_list_box_get_selected_row (chatty_get_chats_list()));
-  g_return_val_if_fail (row != NULL, NULL);
 
-  g_object_get (row, "data", &node, NULL);
-
-  return node;
+  if (row != NULL) {
+    g_object_get (row, "data", &node, NULL);
+    return node;
+  } else {
+    return NULL;
+  }
 }
 
 
@@ -694,6 +696,8 @@ chatty_blist_add_buddy_from_uri (const char *uri)
                                               alias ? alias : who);
   }
 
+  purple_blist_node_set_bool (PURPLE_BLIST_NODE(buddy), "chatty-autojoin", TRUE);
+
   chatty_window_change_view (CHATTY_VIEW_MESSAGE_LIST);
 
   gtk_widget_hide (GTK_WIDGET(chatty->dialog_new_chat));
@@ -755,6 +759,12 @@ chatty_blist_chat_list_leave_chat (void)
 
   node = chatty_get_selected_node ();
 
+  if (node == NULL) {
+    chatty_window_change_view (CHATTY_VIEW_CHAT_LIST);
+
+    return;
+  }
+
   if (node) {
     ui = node->ui_data;
 
@@ -796,7 +806,11 @@ chatty_blist_chat_list_remove_buddy (void)
 
   node = chatty_get_selected_node ();
 
-  g_return_if_fail (node);
+  if (node == NULL) {
+    chatty_window_change_view (CHATTY_VIEW_CHAT_LIST);
+    
+    return;
+  }
 
   ui = node->ui_data;
 
