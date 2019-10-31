@@ -1002,7 +1002,7 @@ chatty_conv_get_im_messages_cb (const unsigned char* msg,
             "%b %d",
             localtime(&time_stamp));
 
-  if (msg[0] != '\0') {
+  if (msg != NULL && msg[0] != '\0') {
     chatty_msg_list_add_message_at (chatty_conv->msg_list,
                                     msg_dir,
                                     (const gchar *) msg,
@@ -1042,7 +1042,7 @@ chatty_conv_get_chat_messages_cb (const unsigned char* msg,
   free(chatty_conv->oldest_message_displayed);
   chatty_conv->oldest_message_displayed = g_strdup((const gchar *)uuid);
 
-  if (msg[0] != '\0') {
+  if (msg != NULL && msg[0] != '\0') {
 
     if (direction == 1) {
       account = purple_conversation_get_account (chatty_conv->conv);
