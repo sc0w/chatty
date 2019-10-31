@@ -2212,7 +2212,10 @@ chatty_conv_write_conversation (PurpleConversation *conv,
   }
 
   timestamp  = g_malloc0 (MAX_TIMESTAMP_SIZE * sizeof(char));
-  if (!strftime (timestamp, MAX_TIMESTAMP_SIZE * sizeof(char), "%R", localtime(&mtime))) {
+  if (!strftime (timestamp, MAX_TIMESTAMP_SIZE * sizeof(char),
+                  (time(NULL) - mtime < 86400) ? "%R" : "%c",
+                  localtime(&mtime)))
+  {
     timestamp = g_strdup("00:00");
   }
 
@@ -2260,11 +2263,23 @@ chatty_conv_write_conversation (PurpleConversation *conv,
                                    group_chat ? who : timestamp,
                                    icon ? icon : NULL);
 
-    } else if (pcm.flags & PURPLE_MESSAGE_SEND) {
+    } else if (flags & PURPLE_MESSAGE_SEND && pcm.flags & PURPLE_MESSAGE_SEND) {
+      // normal send
       chatty_msg_list_add_message (chatty_conv->msg_list,
                                    MSG_IS_OUTGOING,
                                    message,
                                    NULL,
+                                   NULL);
+
+    } else if (pcm.flags & PURPLE_MESSAGE_SEND) {
+      // offline send (from MAM)
+      // FIXME: current list_box does not allow ordering rows by timestamp
+      // TODO: Needs proper sort function and timestamp as user_data for rows
+      // FIXME: Alternatively may need to reload history to re-populate rows
+      chatty_msg_list_add_message (chatty_conv->msg_list,
+                                   MSG_IS_OUTGOING,
+                                   message,
+                                   timestamp,
                                    NULL);
 
     }
