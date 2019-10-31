@@ -205,6 +205,24 @@ chatty_utils_strip_blanks (const char *string)
 }
 
 
+char *
+chatty_utils_strip_newlines (const char *string)
+{
+  char *result;
+  char **chunks;
+
+  chunks = g_strsplit (string, "\n", 0);
+
+  result = g_strjoinv(" ", chunks);
+  
+  g_strstrip (result);
+
+  g_strfreev (chunks);
+
+  return result;
+}
+
+
 char* 
 chatty_utils_format_phonenumber (const char *phone_number)
 {
