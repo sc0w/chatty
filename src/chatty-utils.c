@@ -8,6 +8,7 @@
 #include <glib.h>
 #include <glib/gi18n.h>
 #include "chatty-utils.h"
+#include <libebook-contacts/libebook-contacts.h>
 
 
 #define SECONDS_PER_MINUTE 60.0
@@ -183,6 +184,53 @@ chatty_utils_time_ago_in_words (time_t             time_stamp,
 
   return show_date ? g_strdup_printf ("%s", iso_timestamp) :
                      g_strdup_printf ("%s%d%s", prefix, number, unit);
+}
+
+
+char *
+chatty_utils_strip_blanks (const char *string)
+{
+  char *result;
+  char **chunks;
+
+  chunks = g_strsplit (string, "%20", 0);
+
+  result = g_strjoinv(NULL, chunks);
+  
+  g_strstrip (result);
+
+  g_strfreev (chunks);
+
+  return result;
+}
+
+
+char* 
+chatty_utils_format_phonenumber (const char *phone_number)
+{
+  EPhoneNumber      *number;
+  char              *region;
+  char              *stripped;
+  char              *result;
+  g_autoptr(GError)  err = NULL;
+
+  stripped = chatty_utils_strip_blanks (phone_number);
+
+  region = e_phone_number_get_default_region (NULL);
+  number = e_phone_number_from_string (stripped, region, &err);
+
+  if (!number || !e_phone_number_is_supported ()) {
+    g_warning ("failed to parse %s: %s", phone_number, err->message);
+
+    result = NULL;
+  } else {
+    result = e_phone_number_to_string (number, E_PHONE_NUMBER_FORMAT_E164);
+  }
+
+  g_free (region);
+  e_phone_number_free (number);
+
+  return result;
 }
 
 

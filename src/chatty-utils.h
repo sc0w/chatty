@@ -19,9 +19,9 @@ typedef enum {
 } ChattyTimeAgoFlags;
 
 char *chatty_utils_jabber_id_strip (const char *name);
-
+char *chatty_utils_strip_blanks (const char *string);
+char *chatty_utils_format_phonenumber (const char *phone_number);
 void chatty_utils_generate_uuid (char **uuid);
-
 char *chatty_utils_time_ago_in_words (time_t time_stamp, ChattyTimeAgoFlags flags);
 
 #endif

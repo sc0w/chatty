@@ -19,5 +19,7 @@ G_DECLARE_FINAL_TYPE (ChattyContactRow, chatty_contact_row, CHATTY, CONTACT_ROW,
                                        const gchar *name,
                                        const gchar *description,
                                        const gchar *timestamp,
-                                       const gchar *message_count);
+                                       const gchar *message_count,
+                                       const gchar *id,
+                                       const gchar *phone_number);
 #endif

@@ -19,6 +19,7 @@ chatty_sources = [
   'chatty-history.c',
   'chatty-lurch.c',
   'chatty-utils.c',
+  'chatty-folks.c',
   'chatty-notify.c',
   'chatty-purple-request.c',
   'chatty-purple-notify.c',
@@ -32,6 +33,8 @@ chatty_deps = [
   dependency('purple'),
   dependency('libhandy-0.0'),
   dependency('sqlite3', version: '>=3.0.0'),
+  dependency('gee-0.8'),
+  dependency('folks'),
   libebook_dep,
 ]
 

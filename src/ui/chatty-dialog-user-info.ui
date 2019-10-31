@@ -49,7 +49,7 @@
                         <property name="valign">start</property>
                         <property name="expand">True</property>
                         <child>
-                          <object class="GtkImage">
+                          <object class="GtkImage" id="avatar">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <property name="valign">center</property>

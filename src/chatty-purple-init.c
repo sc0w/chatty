@@ -24,6 +24,7 @@
 #include "chatty-buddy-list.h"
 #include "chatty-connection.h"
 #include "chatty-conversation.h"
+#include "chatty-folks.h"
 
 static GHashTable *ui_info = NULL;
 
@@ -155,6 +156,8 @@ chatty_purple_quit (void)
   }
 
   chatty_xeps_close ();
+
+  chatty_folks_close ();
 
   g_application_quit (g_application_get_default ());
 }

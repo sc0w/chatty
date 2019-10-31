@@ -11,6 +11,8 @@ Build-Depends:
  libebook-contacts1.2-dev,
  libpurple-dev,
  libsqlite3-dev,
+ libgee-0.8-dev,
+ libfolks-dev,
  meson,
 Standards-Version: 4.2.1
 Homepage: https://source.puri.sm/Librem5/chatty

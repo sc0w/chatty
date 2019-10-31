@@ -15,6 +15,8 @@ enum {
   PROP_DESCRIPTION,
   PROP_TIMESTAMP,
   PROP_MESSAGE_COUNT,
+  PROP_ID,
+  PROP_NUMBER,
   PROP_DATA,
   PROP_LAST_PROP,
 };
@@ -29,7 +31,9 @@ typedef struct
   GtkWidget *timestamp;
   GtkWidget *message_count;
 
-  gpointer data;
+  gpointer   data;
+  gchar     *id;
+  gchar     *number;
 } ChattyContactRowPrivate;
 
 struct _ChattyContactRow
@@ -42,7 +46,7 @@ G_DEFINE_TYPE_WITH_PRIVATE (ChattyContactRow, chatty_contact_row, GTK_TYPE_LIST_
 static void
 chatty_contact_row_get_property (GObject      *object,
                                  guint         property_id,
-                                 GValue *value,
+                                 GValue       *value,
                                  GParamSpec   *pspec)
 {
   ChattyContactRow *self = CHATTY_CONTACT_ROW (object);
@@ -71,6 +75,14 @@ chatty_contact_row_get_property (GObject      *object,
 
     case PROP_DATA:
       g_value_set_pointer (value, priv->data);
+      break;
+
+    case PROP_ID:
+      g_value_set_string (value, priv->id);
+      break;
+
+    case PROP_NUMBER:
+      g_value_set_string (value, priv->number);
       break;
 
     default:
@@ -128,6 +140,16 @@ chatty_contact_row_set_property (GObject      *object,
       priv->data = g_value_get_pointer (value);
       break;
 
+    case PROP_ID:
+      g_free (priv->id);
+      priv->id = g_value_dup_string (value);
+      break;
+
+    case PROP_NUMBER:
+      g_free (priv->number);
+      priv->number = g_value_dup_string (value);
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
       break;
@@ -180,6 +202,20 @@ chatty_contact_row_class_init (ChattyContactRowClass *klass)
                         "",
                         G_PARAM_READWRITE | G_PARAM_EXPLICIT_NOTIFY);
 
+  props[PROP_ID] =
+   g_param_spec_string ("id",
+                        "Contact ID",
+                        "The ID of a libfolks individual",
+                        "",
+                        G_PARAM_READWRITE | G_PARAM_EXPLICIT_NOTIFY);
+
+  props[PROP_NUMBER] =
+   g_param_spec_string ("phone_number",
+                        "Contact phone number",
+                        "The phone number of libfolks individual",
+                        "",
+                        G_PARAM_READWRITE | G_PARAM_EXPLICIT_NOTIFY);
+
   props[PROP_DATA] =
    g_param_spec_pointer ("data",
                         "Data",
@@ -209,7 +245,9 @@ chatty_contact_row_new (gpointer data,
                         const gchar *name,
                         const gchar *description,
                         const gchar *timestamp,
-                        const gchar *message_count) {
+                        const gchar *message_count,
+                        const gchar *id,
+                        const gchar *phone_number) {
   return g_object_new (CHATTY_TYPE_CONTACT_ROW,
                        "data", data,
                        "avatar", avatar,
@@ -217,5 +255,7 @@ chatty_contact_row_new (gpointer data,
                        "description", description, 
                        "timestamp", timestamp,
                        "message_count", message_count,
+                       "id", id,
+                       "phone_number", phone_number,
                        NULL);
 }
