@@ -1426,12 +1426,13 @@ chatty_blist_chats_update_node (PurpleBuddy     *buddy,
   GtkListBox       *listbox;
   GdkPixbuf        *avatar;
   g_autofree gchar *name = NULL;
+  g_autofree gchar *last_msg = NULL;
   g_autofree gchar *last_msg_text = NULL;
   g_autofree gchar *last_msg_ts = NULL;
   g_autofree gchar *unread_messages = NULL;
+  g_autofree gchar *last_message_striped = NULL;
   const gchar      *tag;
   const gchar      *alias;
-  g_autofree gchar *last_message_striped = NULL;
   gboolean          notify;
   gboolean          blur;
 
@@ -1489,6 +1490,8 @@ chatty_blist_chats_update_node (PurpleBuddy     *buddy,
                                            tag,
                                            last_message_striped);
 
+  last_msg = chatty_utils_strip_cr_lf (last_msg_text);
+
   last_msg_ts = chatty_utils_time_ago_in_words (chatty_node->conv.last_msg_ts_raw,
                                                 CHATTY_UTILS_TIME_AGO_SHOW_DATE);
 
@@ -1511,7 +1514,7 @@ chatty_blist_chats_update_node (PurpleBuddy     *buddy,
     chatty_node->row_chat = CHATTY_CONTACT_ROW (chatty_contact_row_new ((gpointer) node,
                                                     avatar,
                                                     name,
-                                                    last_msg_text,
+                                                    last_msg,
                                                     last_msg_ts,
                                                     unread_messages,
                                                     NULL,
@@ -1524,7 +1527,7 @@ chatty_blist_chats_update_node (PurpleBuddy     *buddy,
     g_object_set (chatty_node->row_chat,
                   "avatar", avatar,
                   "name", name,
-                  "description", last_msg_text,
+                  "description", last_msg,
                   "timestamp", last_msg_ts,
                   "message_count", unread_messages,
                   NULL);
@@ -1536,8 +1539,6 @@ chatty_blist_chats_update_node (PurpleBuddy     *buddy,
     g_object_unref (avatar);
   }
 }
-
-
 
 
 /**
