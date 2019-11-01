@@ -1490,7 +1490,7 @@ chatty_blist_chats_update_node (PurpleBuddy     *buddy,
                                            tag,
                                            last_message_striped);
 
-  last_msg = chatty_utils_strip_newlines (last_msg_text);
+  last_msg = chatty_utils_strip_cr_lf (last_msg_text);
 
   last_msg_ts = chatty_utils_time_ago_in_words (chatty_node->conv.last_msg_ts_raw,
                                                 CHATTY_UTILS_TIME_AGO_SHOW_DATE);
