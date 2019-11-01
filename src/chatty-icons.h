@@ -27,6 +27,7 @@ typedef enum
 
 void chatty_icon_do_alphashift (GdkPixbuf *pixbuf, int shift);
 GdkPixbuf *chatty_icon_shape_pixbuf (GdkPixbuf *pixbuf);
+GIcon *chatty_icon_get_gicon_from_pixbuf (GdkPixbuf *pixbuf);
 
 GdkPixbuf *chatty_icon_get_buddy_icon (PurpleBlistNode *node,
                                        const char      *name,

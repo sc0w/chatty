@@ -22,6 +22,7 @@ enum {
 void chatty_notify_show_notification (const char         *title,
                                       const char         *message,
                                       guint               notification_type,
-                                      PurpleConversation *conv);
+                                      PurpleConversation *conv,
+                                      GdkPixbuf          *pixbuf);
 
 #endif

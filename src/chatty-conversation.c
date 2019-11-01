@@ -11,6 +11,7 @@
 #include "chatty-window.h"
 #include "chatty-icons.h"
 #include "chatty-lurch.h"
+#include "chatty-buddy-list.h"
 #include "chatty-purple-init.h"
 #include "chatty-message-list.h"
 #include "chatty-conversation.h"
@@ -2200,7 +2201,16 @@ chatty_conv_write_conversation (PurpleConversation *conv,
 
     titel = g_strdup_printf (_("New message from %s"), buddy_name);
 
-    chatty_notify_show_notification (titel, message, CHATTY_NOTIFY_MESSAGE_RECEIVED, conv);
+    avatar = chatty_icon_get_buddy_icon ((PurpleBlistNode*)buddy,
+                                          alias,
+                                          CHATTY_ICON_SIZE_SMALL,
+                                          chatty_blist_protocol_is_sms (account) ?
+                                          CHATTY_COLOR_GREEN : CHATTY_COLOR_BLUE,
+                                          FALSE);
+
+    chatty_notify_show_notification (titel, message, CHATTY_NOTIFY_MESSAGE_RECEIVED, conv, avatar);
+
+    g_object_unref (avatar);
 
     g_free (titel);
   }

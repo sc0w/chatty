@@ -11,6 +11,7 @@
 #include "purple.h"
 #include "chatty-window.h"
 #include "chatty-notify.h"
+#include "chatty-icons.h"
 #include "chatty-conversation.h"
 
 static PurpleConversation *conv_notify = NULL;
@@ -45,7 +46,8 @@ void
 chatty_notify_show_notification (const char         *title,
                                  const char         *message,
                                  guint               notification_type,
-                                 PurpleConversation *conv)
+                                 PurpleConversation *conv,
+                                 GdkPixbuf          *pixbuf)
 {
   GApplication  *application;
   GNotification *notification;
@@ -59,13 +61,13 @@ chatty_notify_show_notification (const char         *title,
 
   notification = g_notification_new ("chatty");
 
-  g_notification_set_body (notification, message);
+  if (pixbuf) {
+    icon = chatty_icon_get_gicon_from_pixbuf (pixbuf);
 
-  icon = g_icon_new_for_string ("sm.puri.Chatty-symbolic", NULL);
-
-  if (icon) {
     g_notification_set_icon (notification, icon);
   }
+
+  g_notification_set_body (notification, message);
 
   switch (notification_type) {
     case CHATTY_NOTIFY_MESSAGE_RECEIVED:
