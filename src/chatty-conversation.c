@@ -2629,7 +2629,7 @@ chatty_conv_setup_pane (ChattyConversation *chatty_conv,
       for (l = ll = prpl_info->blist_node_menu(node); l; l = l->next) {
         act = (PurpleMenuAction *) l->data;
 
-        if (!g_strcmp0 (act->label, _("HTTP File Upload"))) {
+        if (!g_strcmp0 (act->label, "HTTP File Upload")) {
           g_object_set_data (G_OBJECT(button),
                              "callback", act->callback);
 

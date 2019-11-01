@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: purism-chatty\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-10-11 16:48+0200\n"
+"POT-Creation-Date: 2019-11-01 17:24+0100\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -17,7 +17,7 @@ msgstr ""
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2)\n"
 
 #: data/sm.puri.Chatty.appdata.xml.in:6 data/sm.puri.Chatty.desktop.in:3
-#: src/chatty-dialogs.c:1421 src/ui/chatty-window.ui:184
+#: src/chatty-dialogs.c:1436 src/ui/chatty-window.ui:184
 msgid "Chats"
 msgstr "Чаты"
 
@@ -49,23 +49,23 @@ msgstr "Приложение для общения через СМС и XMPP"
 msgid "XMPP;SMS;chat;jabber;messaging;modem"
 msgstr ""
 
-#: src/chatty-application.c:51
+#: src/chatty-application.c:54
 msgid "Show release version"
 msgstr "Показать версию выпуска"
 
-#: src/chatty-application.c:52
+#: src/chatty-application.c:55
 msgid "Start in daemon mode"
 msgstr "Запустить в режиме сервиса"
 
-#: src/chatty-application.c:53
+#: src/chatty-application.c:56
 msgid "Disable all accounts"
 msgstr "Отключить все учётные записи"
 
-#: src/chatty-application.c:54
+#: src/chatty-application.c:57
 msgid "Enable libpurple debug messages"
 msgstr "Включить сообщения отладки libpurple"
 
-#: src/chatty-application.c:55
+#: src/chatty-application.c:58
 msgid "Enable verbose libpurple debug messages"
 msgstr "Включить подробные сообщения отладки libpurple"
 
@@ -108,109 +108,98 @@ msgstr "Принять"
 msgid "Add %s to contact list"
 msgstr "Добавить %s в список контактов"
 
-#: src/chatty-buddy-list.c:747
+#: src/chatty-buddy-list.c:820
 msgid "Disconnect group chat"
 msgstr "Покинуть групповой чат"
 
-#: src/chatty-buddy-list.c:748
+#: src/chatty-buddy-list.c:821
 msgid "This removes chat from chats list"
 msgstr "Убирает чат из списка"
 
-#: src/chatty-buddy-list.c:752
+#: src/chatty-buddy-list.c:825
 msgid "Delete chat with"
 msgstr "Удалить чат с"
 
-#: src/chatty-buddy-list.c:753
+#: src/chatty-buddy-list.c:826
 msgid "This deletes the conversation history"
 msgstr "Удаляет историю бесед"
 
-#: src/chatty-buddy-list.c:765 src/chatty-purple-request.c:186
+#: src/chatty-buddy-list.c:838 src/chatty-purple-request.c:186
 #: src/ui/chatty-dialog-join-muc.ui:16 src/ui/chatty-dialog-muc-info.ui:54
 msgid "Cancel"
 msgstr "Отмена"
 
-#: src/chatty-buddy-list.c:767
+#: src/chatty-buddy-list.c:840
 msgid "Delete"
 msgstr "Удалить"
 
-#: src/chatty-buddy-list.c:1391
+#: src/chatty-buddy-list.c:1479
 msgid "Me: "
 msgstr "Я:"
 
-#: src/chatty-connection.c:141
+#: src/chatty-connection.c:142
 msgid "Login failed"
 msgstr "Ошибка входа"
 
-#: src/chatty-connection.c:144
-#, c-format
-msgid "%s: %s\n"
-"\n"
-"%s"
-msgstr ""
-
-#: src/chatty-connection.c:147
+#: src/chatty-connection.c:148
 msgid "Please check ID and password"
 msgstr "Проверьте правильность идентификатора и пароля"
 
-#: src/chatty-conversation.c:1431
+#: src/chatty-conversation.c:1401
 msgid "Owner"
 msgstr "Владелец"
 
-#: src/chatty-conversation.c:1434
+#: src/chatty-conversation.c:1404
 msgid "Moderator"
 msgstr "Модератор"
 
-#: src/chatty-conversation.c:1437
+#: src/chatty-conversation.c:1407
 msgid "Member"
 msgstr "Участник"
 
-#: src/chatty-conversation.c:1891
+#: src/chatty-conversation.c:1861
 msgid "members"
 msgstr "участников"
 
-#: src/chatty-conversation.c:2233
+#: src/chatty-conversation.c:2201
 #, c-format
 msgid "New message from %s"
 msgstr "Новое сообщение от %s"
 
-#: src/chatty-conversation.c:2671
-msgid "HTTP File Upload"
-msgstr "Загрузка файла по HTTP"
-
-#: src/chatty-dialogs.c:202 src/ui/chatty-dialog-settings.ui:495
+#: src/chatty-dialogs.c:203 src/ui/chatty-dialog-settings.ui:495
 msgid "Delete Account"
 msgstr "Удаление уч. записи"
 
-#: src/chatty-dialogs.c:205
+#: src/chatty-dialogs.c:206
 #, c-format
 msgid "Delete account %s?"
 msgstr "Удалить уч. запись %s?"
 
-#: src/chatty-dialogs.c:293 src/chatty-dialogs.c:312
+#: src/chatty-dialogs.c:294 src/chatty-dialogs.c:313
 msgid "connected"
 msgstr "подключено"
 
-#: src/chatty-dialogs.c:295 src/chatty-dialogs.c:314
+#: src/chatty-dialogs.c:296 src/chatty-dialogs.c:315
 msgid "connecting…"
 msgstr "подключение..."
 
-#: src/chatty-dialogs.c:297 src/chatty-dialogs.c:316
+#: src/chatty-dialogs.c:298 src/chatty-dialogs.c:317
 msgid "disconnected"
 msgstr "отключено"
 
-#: src/chatty-dialogs.c:509
+#: src/chatty-dialogs.c:510
 msgid "Phonenumber validation"
 msgstr "Проверка номера телефона"
 
-#: src/chatty-dialogs.c:1348
+#: src/chatty-dialogs.c:1352
 msgid "Phone Number:"
 msgstr "Телефонный номер:"
 
-#: src/chatty-dialogs.c:1423
+#: src/chatty-dialogs.c:1438
 msgid "An SMS and XMPP messaging client"
 msgstr "Клиент обмена сообщениями СМС и XMPP"
 
-#: src/chatty-dialogs.c:1430
+#: src/chatty-dialogs.c:1445
 msgid "translator-credits"
 msgstr "Переводчики"
 
@@ -230,31 +219,31 @@ msgstr "Чат не поддерживает шифрование"
 msgid "This chat is encrypted"
 msgstr "Этот чат зашифрован"
 
-#: src/chatty-message-list.c:70 src/chatty-message-list.c:75
+#: src/chatty-message-list.c:73 src/chatty-message-list.c:78
 msgid "This is a IM conversation."
 msgstr "Это беседа мгновенными сообщениями."
 
-#: src/chatty-message-list.c:71 src/chatty-message-list.c:81
+#: src/chatty-message-list.c:74 src/chatty-message-list.c:84
 msgid "Your messages are not encrypted,"
 msgstr "Ваши сообщения не зашифрованы,"
 
-#: src/chatty-message-list.c:72
+#: src/chatty-message-list.c:75
 msgid "ask your counterpart to use E2EE."
 msgstr "попросите собеседника использовать сквозное шифрование."
 
-#: src/chatty-message-list.c:76
+#: src/chatty-message-list.c:79
 msgid "Your messages are secured"
 msgstr "Ваши сообщения защищены"
 
-#: src/chatty-message-list.c:77
+#: src/chatty-message-list.c:80
 msgid "by end-to-end encryption."
 msgstr "сквозным шифрованием."
 
-#: src/chatty-message-list.c:80
+#: src/chatty-message-list.c:83
 msgid "This is a SMS conversation."
 msgstr "Это СМС-беседа."
 
-#: src/chatty-message-list.c:82
+#: src/chatty-message-list.c:85
 msgid "and carrier rates may apply."
 msgstr "сотовый оператор может взимать плату."
 
@@ -305,6 +294,94 @@ msgstr "Сохранить"
 #: src/chatty-purple-request.c:188
 msgid "Open"
 msgstr "Открыть"
+
+#: src/chatty-utils.c:47
+msgid "About "
+msgstr ""
+
+#: src/chatty-utils.c:48
+msgid "Less than "
+msgstr ""
+
+#: src/chatty-utils.c:49
+msgid " seconds"
+msgstr ""
+
+#: src/chatty-utils.c:50
+msgid " minute"
+msgstr ""
+
+#: src/chatty-utils.c:51
+msgid " minutes"
+msgstr ""
+
+#: src/chatty-utils.c:52
+msgid " hour"
+msgstr ""
+
+#: src/chatty-utils.c:53
+msgid " hours"
+msgstr ""
+
+#: src/chatty-utils.c:54
+msgid " day"
+msgstr ""
+
+#: src/chatty-utils.c:55
+msgid " days"
+msgstr ""
+
+#: src/chatty-utils.c:56
+msgid " month"
+msgstr ""
+
+#: src/chatty-utils.c:57
+msgid " months"
+msgstr ""
+
+#: src/chatty-utils.c:58
+msgid " year"
+msgstr ""
+
+#: src/chatty-utils.c:59
+msgid " years"
+msgstr ""
+
+#: src/chatty-utils.c:63
+msgid "s"
+msgstr ""
+
+#: src/chatty-utils.c:64 src/chatty-utils.c:65
+msgid "m"
+msgstr ""
+
+#: src/chatty-utils.c:66 src/chatty-utils.c:67
+msgid "h"
+msgstr ""
+
+#: src/chatty-utils.c:68 src/chatty-utils.c:69
+msgid "d"
+msgstr ""
+
+#: src/chatty-utils.c:70
+msgid "mo"
+msgstr ""
+
+#: src/chatty-utils.c:71
+msgid "mos"
+msgstr ""
+
+#: src/chatty-utils.c:72 src/chatty-utils.c:73
+msgid "y"
+msgstr ""
+
+#: src/chatty-utils.c:176
+msgid "Over"
+msgstr ""
+
+#: src/chatty-utils.c:180
+msgid "Almost"
+msgstr ""
 
 #: src/chatty-window.c:39 src/chatty-window.c:45
 msgid "Start chatting"
@@ -367,7 +444,7 @@ msgstr "Новый групповой чат"
 msgid "Join Chat"
 msgstr "Присоединиться к чату"
 
-#: src/ui/chatty-dialog-join-muc.ui:80 src/ui/chatty-dialog-new-chat.ui:210
+#: src/ui/chatty-dialog-join-muc.ui:80 src/ui/chatty-dialog-new-chat.ui:213
 msgid "Select chat account"
 msgstr "Выберите уч. запись чата"
 
@@ -455,15 +532,15 @@ msgstr "Сообщение с приглашением"
 msgid "Start Chat"
 msgstr "Начать Чат"
 
-#: src/ui/chatty-dialog-new-chat.ui:50
+#: src/ui/chatty-dialog-new-chat.ui:53
 msgid "New Contact"
 msgstr "Новый контакт"
 
-#: src/ui/chatty-dialog-new-chat.ui:77 src/ui/chatty-window.ui:112
+#: src/ui/chatty-dialog-new-chat.ui:80 src/ui/chatty-window.ui:112
 msgid "Add Contact"
 msgstr "Добавить контакт"
 
-#: src/ui/chatty-dialog-new-chat.ui:260
+#: src/ui/chatty-dialog-new-chat.ui:263
 msgid "Name (optional)"
 msgstr "Имя (необязательно)"
 
