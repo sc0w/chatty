@@ -2196,37 +2196,38 @@ chatty_conv_write_conversation (PurpleConversation *conv,
     timestamp = g_strdup("00:00");
   }
 
-  if (buddy && purple_blist_node_get_bool (node, "chatty-notifications")) {
-    buddy_name = purple_buddy_get_name (buddy);
-
-    titel = g_strdup_printf (_("New message from %s"), buddy_name);
-
-    avatar = chatty_icon_get_buddy_icon ((PurpleBlistNode*)buddy,
-                                          alias,
-                                          CHATTY_ICON_SIZE_SMALL,
-                                          chatty_blist_protocol_is_sms (account) ?
-                                          CHATTY_COLOR_GREEN : CHATTY_COLOR_BLUE,
-                                          FALSE);
-
-    chatty_notify_show_notification (titel, message, CHATTY_NOTIFY_MESSAGE_RECEIVED, conv, avatar);
-
-    g_object_unref (avatar);
-
-    g_free (titel);
-  }
-
   if (*message != '\0') {
-     // TODO: LELAND: UID to be implemented by XEP-0313
+     // TODO UID to be implemented by XEP-0313
     chatty_utils_generate_uuid(&uuid);
 
     who_no_resource = chatty_utils_jabber_id_strip(who);
 
     if (flags & PURPLE_MESSAGE_RECV) {
+      if (buddy && purple_blist_node_get_bool (node, "chatty-notifications")) {
+        buddy_name = purple_buddy_get_alias (buddy);
+
+        titel = g_strdup_printf (_("New message from %s"), buddy_name);
+
+        avatar = chatty_icon_get_buddy_icon ((PurpleBlistNode*)buddy,
+                                              alias,
+                                              CHATTY_ICON_SIZE_SMALL,
+                                              chatty_blist_protocol_is_sms (account) ?
+                                              CHATTY_COLOR_GREEN : CHATTY_COLOR_BLUE,
+                                              FALSE);
+
+        chatty_notify_show_notification (titel, message, CHATTY_NOTIFY_MESSAGE_RECEIVED, conv, avatar);
+
+        g_object_unref (avatar);
+
+        g_free (titel);
+      }
+
       chatty_msg_list_add_message (chatty_conv->msg_list,
                                    MSG_IS_INCOMING,
                                    message,
                                    group_chat ? who : timestamp,
                                    icon ? icon : NULL);
+
       if (type == PURPLE_CONV_TYPE_CHAT){
         chatty_history_add_chat_message (message, 1, account->username, real_who, uuid, mtime, conv_name);
       } else {
@@ -2238,12 +2239,12 @@ chatty_conv_write_conversation (PurpleConversation *conv,
                                    message,
                                    NULL,
                                    NULL);
+
       if (type == PURPLE_CONV_TYPE_CHAT){
         chatty_history_add_chat_message (message, -1, account->username, real_who, uuid, mtime, conv_name);
       } else {
         chatty_history_add_im_message (message, -1, account->username, who_no_resource, uuid, mtime);
       }
-
     } else if (flags & PURPLE_MESSAGE_SYSTEM) {
       if (purple_blist_node_get_bool (node, "chatty-status-msg")) {
         chatty_msg_list_add_message (chatty_conv->msg_list,
