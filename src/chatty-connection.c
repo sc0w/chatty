@@ -142,7 +142,7 @@ chatty_connection_error_dialog (PurpleAccount *account,
                                    _("Login failed"));
 
   gtk_message_dialog_format_secondary_text (GTK_MESSAGE_DIALOG(dialog),
-                                            _("%s: %s\n\n%s"),
+                                            "%s: %s\n\n%s",
                                             error,
                                             purple_account_get_username (account),
                                             _("Please check ID and password"));
