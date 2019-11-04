@@ -1,3 +1,93 @@
+chatty (0.1.1) amber-phone; urgency=medium
+
+  [ Julian Sparber ]
+  * BuddyList: use listbox
+  * BuddyList: Clean up code and remove manual refresh for buddylist
+  * BuddyList: remove selected-node prop
+  * BuddyList: Destroy ui_data when a BuddyList is destroied
+  * BuddyList: remove ChattyBuddyList struct
+  * BuddyList: resort buddylist on change
+  * BuddyList: make Contact list not selectable
+  * BuddyList: auto select first chat when unfolding
+
+  [ Andrea Schaefer ]
+  * Fix double-free issue
+  * Only show contacts of connected accounts
+  * Add 'chatty_utils_time_ago_in_words'
+  * Shorten timestamp
+  * Drop translation for symbols add flag for markup esc
+  * Add libphonenumber to flatpak
+  * Fix issue #209 'Hide conversation menu on an empty state'
+  * Add copyright info
+  * Update potfiles; change gettext-domain in appdata
+  * Remove straying character
+  * Add gettext setup
+
+  [ Antonio Pandolfo ]
+  * Delete it.po
+  * Delete it_IT.po
+  * upload new file
+
+  [ Andrea Schaefer ]
+  * Add zanata translations to LINGUAS file update po files
+
+  [ Antonio Pandolfo ]
+  * Update it.po
+
+  [ Andrea Schaefer ]
+  * Revert "Update it.po"
+
+  [ Guido Günther ]
+  * conversations: Don't crash without an alias
+
+  [ Andrea Schaefer ]
+  * Fix issue #203 'Keyboard open doesn't auto-scroll screen to bottom'
+  * Update po files
+
+  [ Mohammed Sadiq ]
+  * History: fix a memory leak
+  * application: Fix applying remote instance commands
+
+  [ Andrea Schaefer ]
+  * Fix sms account disconnect
+  * Fix g_return check
+
+  [ Julian Sparber ]
+  * MessageList: Strip and escape markup in messages
+
+  [ Andrea Schaefer ]
+  * Reduce icon size to 36px
+  * Avoid sms account disconnect
+  * Add folks contact handling ro blist
+  * Move e_phonenumber function to utils Add chatty_utils_strip_blank
+  * Add properties to contact-row widget
+  * Lookup phonenumber for incoming sms
+  * Add libfolks support
+  * Add libfolks and libgee to debian control
+  * Correct typos as mentioned in the MR
+  * Remove 'individuals' hash table
+  * Use gtk_container_get_children to retrieve contact rows
+  * Fix several issues mentioned in the MR comments
+  * Fix leak in contacts-row
+
+  [ Mohammed Sadiq ]
+  * application: Simplify app running check
+
+  [ Andrea Schaefer ]
+  * Fix icon issues - get avatar for new incoming SMS and URI-SMS - add folks avatar to blist.xml - show icon in chat details - adjust icon sizes - move icon shaping to chatty-icon.c - cleanup chatty-icon.c
+  * Make GInputStream local
+  * Autojoin uri SMS contacts with chat history
+  * Fix remaining issues of #52 'Various visual bugs'
+  * Fix newline issue in contact-row description
+  * Add /r to strsplit delimiters
+  * Use buffer instead of file for icon transfer
+  * Show user icons in message notifications
+  * Show notifications only for received messages Set notification title with alias instead of user ID
+  * Update po files
+  * Add debian gpb.conf
+
+ -- Andrea Schaefer <andrea@localhost.localdomain>  Mon, 04 Nov 2019 09:45:56 +0100
+
 chatty (0.1.0) amber-phone; urgency=medium
 
   * Changed app release description
