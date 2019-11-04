@@ -209,7 +209,7 @@ chatty_application_open (GApplication  *application,
   chatty_data_t *chatty = chatty_get_data ();
 
   for (i = 0; i < n_files; i++) {
-    char *uri = g_file_get_uri (files[i]);
+    char *uri;
 
     if (g_file_has_uri_scheme (files[i], "sms")) {
       uri = g_file_get_uri (files[i]);
@@ -217,6 +217,7 @@ chatty_application_open (GApplication  *application,
       if (gtk_application_get_active_window (GTK_APPLICATION (application))) {
         chatty_blist_add_buddy_from_uri (uri);
       } else {
+        g_free (chatty->uri);
         chatty->uri = g_strdup (uri);
       }
 
