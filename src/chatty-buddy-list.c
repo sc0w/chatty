@@ -6,6 +6,7 @@
 
 #define G_LOG_DOMAIN "chatty-buddy-list"
 
+#define _GNU_SOURCE
 #include <glib.h>
 #include <glib/gi18n.h>
 #include <glib-object.h>
@@ -139,14 +140,13 @@ cb_search_entry_changed (GtkSearchEntry     *entry,
 static gboolean
 filter_chat_list_cb (GtkListBoxRow *row, gpointer entry) {
   const gchar *query;
-  const gchar *name;
+  g_autofree gchar *name = NULL;
 
   query = gtk_entry_get_text (GTK_ENTRY (entry));
 
   g_object_get (row, "name", &name, NULL);
 
-  // TODO: make search case insensitive
-  return ((*query == '\0') || (name && strstr (name, query)));
+  return ((*query == '\0') || (name && strcasestr (name, query)));
 }
 
 

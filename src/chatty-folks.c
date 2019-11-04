@@ -647,8 +647,8 @@ chatty_folks_individual_add_contact_rows (FolksIndividual *individual)
   while (gee_iterator_next (iter)) {
     FolksPhoneFieldDetails *field_details;
     g_autofree char        *number;
-    g_autofree char        *number_e164;
-    char                   *type_number;
+    g_autofree char        *number_e164 = NULL;
+    g_autofree char        *type_number = NULL;
 
     field_details = gee_iterator_get (iter);
     number = folks_phone_field_details_get_normalised (field_details);
