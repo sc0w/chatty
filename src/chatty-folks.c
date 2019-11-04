@@ -206,6 +206,8 @@ cb_pixbuf_from_stream_ready (GObject      *source_object,
   AvatarData    *data = avatar_data;
   PurpleContact *contact;
   PurpleBuddy   *buddy;
+  gchar         *buffer;
+  size_t         size;
 
   g_autoptr(GError) error = NULL;
 
@@ -221,18 +223,18 @@ cb_pixbuf_from_stream_ready (GObject      *source_object,
 
   switch (data->mode) {
     case CHATTY_FOLKS_SET_CONTACT_ROW_ICON:
-
       g_return_if_fail (data->row != NULL);
+
       g_object_set (data->row,
                     "avatar", chatty_icon_shape_pixbuf (pixbuf),
                     NULL);
       break;
 
     case CHATTY_FOLKS_SET_PURPLE_BUDDY_ICON:
-      gdk_pixbuf_save (pixbuf, "/var/tmp/chatty_tmp.jpg", "jpeg", &error, "quality", "100", NULL);
+      gdk_pixbuf_save_to_buffer (pixbuf, &buffer, &size, "png", &error, NULL);
 
       if (error != NULL) {
-        g_error ("Could not save pixbuf to file: %s", error->message);
+        g_error ("Could not save pixbuf to buffer: %s", error->message);
 
         g_slice_free (AvatarData, data);
 
@@ -240,16 +242,11 @@ cb_pixbuf_from_stream_ready (GObject      *source_object,
       }
 
       buddy = purple_find_buddy (data->purple_account, data->purple_user_name);
-
       contact = purple_buddy_get_contact (buddy);
 
-      purple_buddy_icons_node_set_custom_icon_from_file ((PurpleBlistNode*)contact,
-                                                         "/var/tmp/chatty_tmp.jpg");
-
-      if (remove ("/var/tmp/chatty_tmp.jpg")) {
-        g_error ("Could not delete file: %s", "/var/tmp/chatty_tmp.jpg");
-      };
-
+      purple_buddy_icons_node_set_custom_icon ((PurpleBlistNode*)contact, 
+                                               (guchar*)buffer, 
+                                               size);
       break;
 
     default:

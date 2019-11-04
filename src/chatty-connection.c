@@ -177,7 +177,7 @@ chatty_connection_connected (PurpleConnection *gc)
     message = g_strdup_printf ("Account %s reconnected", user_name);
 
     if (!sms_match || (sms_match && sms_notifications)) {
-      chatty_notify_show_notification (NULL, message, CHATTY_NOTIFY_ACCOUNT_CONNECTED, NULL);
+      chatty_notify_show_notification (NULL, message, CHATTY_NOTIFY_ACCOUNT_CONNECTED, NULL, NULL);
     }
 
     g_free (message);
@@ -307,7 +307,7 @@ chatty_connection_report_disconnect_reason (PurpleConnection     *gc,
     // in the 'cb_sms_modem_added' callback
     if (sms_notifications) {
       message = g_strdup_printf ("SMS disconnected: %s", text);
-      chatty_notify_show_notification (user_name, message, CHATTY_NOTIFY_ACCOUNT_GENERIC, NULL);
+      chatty_notify_show_notification (user_name, message, CHATTY_NOTIFY_ACCOUNT_GENERIC, NULL, NULL);
       g_free (message);
     }
 
@@ -350,7 +350,7 @@ chatty_connection_report_disconnect_reason (PurpleConnection     *gc,
   chatty_dialogs_update_connection_status ();
 
   message = g_strdup_printf ("Account %s disconnected: %s", user_name, text);
-  chatty_notify_show_notification (NULL, message, CHATTY_NOTIFY_ACCOUNT_DISCONNECTED, NULL);
+  chatty_notify_show_notification (NULL, message, CHATTY_NOTIFY_ACCOUNT_DISCONNECTED, NULL, NULL);
   g_free (message);
 }
 
