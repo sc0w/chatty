@@ -139,7 +139,7 @@ cb_search_entry_changed (GtkSearchEntry     *entry,
 static gboolean
 filter_chat_list_cb (GtkListBoxRow *row, gpointer entry) {
   const gchar *query;
-  const gchar *name;
+  g_autofree gchar *name = NULL;
 
   query = gtk_entry_get_text (GTK_ENTRY (entry));
 

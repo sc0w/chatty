@@ -151,11 +151,14 @@ chatty_icon_get_buddy_icon (PurpleBlistNode *node,
   if (color) {
     sub_str = g_utf8_substring (color, 0, 2);
     color_r = (gdouble)g_ascii_strtoll (sub_str, NULL, 16) / 255;
+    g_free (sub_str);
+
     sub_str = g_utf8_substring (color, 2, 4);
     color_g = (gdouble)g_ascii_strtoll (sub_str, NULL, 16) / 255;
+    g_free (sub_str);
+
     sub_str = g_utf8_substring (color, 4, 6);
     color_b = (gdouble)g_ascii_strtoll (sub_str, NULL, 16) / 255;
-
     g_free (sub_str);
   }
 
