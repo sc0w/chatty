@@ -25,15 +25,160 @@
 #define NS_FWDv0 "urn:xmpp:forward:0"
 #define NS_SIDv0 "urn:xmpp:sid:0"
 #define NS_MAMv2 "urn:xmpp:mam:2"
+#define NS_DATA "jabber:x:data"
+#define NS_RSM "http://jabber.org/protocol/rsm"
 
 typedef struct {
   PurpleConvMessage p;
   char *id;
   PurpleConversationType type;
 } MamMsg;
-static GHashTable *ht_bare_ctx = NULL;
+
+typedef struct {
+  JabberStream  *js;
+  char          *id;
+  char          *to;
+  char        *with;
+  char       *after;
+  char      *before;
+  char       *start;
+  char         *end;
+  int           max;
+} MAMQuery;
+
+static GHashTable *ht_mam_ctx = NULL;
 /* FIXME: What if purple becomes multithreaded 8-O */
 static MamMsg *inflight_msg = NULL;
+
+static void
+mamq_free(void *ptr)
+{
+  MAMQuery *mamq = (MAMQuery*)ptr;
+  g_free(mamq->id);
+  g_free(mamq->to);
+  g_free(mamq->with);
+  g_free(mamq->after);
+  g_free(mamq->before);
+  g_free(mamq->start);
+  g_free(mamq->end);
+  g_free(mamq);
+}
+
+static void chatty_mam_query_archive (MAMQuery *mamq);
+
+static void
+cb_mam_query_result(JabberStream *js, const char *from,
+                    JabberIqType type, const char *id,
+                    xmlnode *res, gpointer data)
+{
+  xmlnode *fin = xmlnode_get_child_with_namespace(res, "fin", NS_MAMv2);
+  char *key;
+  MAMQuery *mamq = (MAMQuery*) data;
+
+  if(type == JABBER_IQ_RESULT && fin != NULL) {
+    const char *complete = xmlnode_get_attrib(fin, "complete");
+    if(g_strcmp0(complete, "true")) {
+      // not last page, need to continue
+      xmlnode *set = xmlnode_get_child_with_namespace(fin, "set", NS_RSM);
+      if(set) {
+        xmlnode *last = xmlnode_get_child(set, "last");
+        if(last) {
+          g_free(mamq->after);
+          mamq->after = xmlnode_get_data(last);
+          chatty_mam_query_archive(mamq);
+          return;
+        }
+      }
+      fin = NULL; // Flag error state
+    } else {
+      g_debug("This is the last of them, standing down");
+    }
+  } else {
+      fin = NULL; // Flag error state
+  }
+  if(fin == NULL) {
+    // Report error and give up
+    int strl;
+    char *xml = xmlnode_to_str(res, &strl);
+    g_debug("Error for MAM Query: %s", xml);
+    g_free(xml);
+  }
+  // No follow up, clean up the context
+  key = g_strjoin(":", js->stream_id, mamq->id, NULL);
+  g_hash_table_remove(ht_mam_ctx, key);
+  g_free(key);
+}
+
+static void
+chatty_mam_query_archive (MAMQuery *mamq)
+{
+  JabberIq  *iq;
+  xmlnode   *mq;
+
+  g_return_if_fail(mamq != NULL);
+  g_return_if_fail(mamq->js != NULL);
+  g_return_if_fail(mamq->id != NULL);
+
+  iq = jabber_iq_new_query(mamq->js, JABBER_IQ_SET, NS_MAMv2);
+  mq = xmlnode_get_child(iq->node, "query");
+
+  xmlnode_set_attrib(mq, "queryid", mamq->id);
+  if(mamq->to != NULL)
+    xmlnode_set_attrib(iq->node, "to", mamq->to);
+  jabber_iq_set_callback(iq, cb_mam_query_result, mamq);
+
+  // Set search params
+  if(mamq->with || mamq->start || mamq->end) {
+    xmlnode *x = xmlnode_new_child(mq, "x");
+    xmlnode *f = xmlnode_new_child(x, "field");
+    xmlnode *v = xmlnode_new_child(f, "value");
+    xmlnode_set_namespace(x, NS_DATA);
+    xmlnode_set_attrib(x, "type", "submit");
+    xmlnode_set_attrib(f, "type", "hidden");
+    xmlnode_set_attrib(f, "var", "FORM_TYPE");
+    xmlnode_insert_data(v, NS_MAMv2, -1);
+    if(mamq->with) {
+      f = xmlnode_new_child(x, "field");
+      v = xmlnode_new_child(f, "value");
+      xmlnode_set_attrib(f, "var", "with");
+      xmlnode_insert_data(v, mamq->with, -1);
+    }
+    if(mamq->start) {
+      f = xmlnode_new_child(x, "field");
+      v = xmlnode_new_child(f, "value");
+      xmlnode_set_attrib(f, "var", "start");
+      xmlnode_insert_data(v, mamq->start, -1);
+    }
+    if(mamq->end) {
+      f = xmlnode_new_child(x, "field");
+      v = xmlnode_new_child(f, "value");
+      xmlnode_set_attrib(f, "var", "end");
+      xmlnode_insert_data(v, mamq->end, -1);
+    }
+  }
+
+  if(mamq->before || mamq->after || (mamq->max > 0 && mamq->max < 1e9)) {
+    xmlnode *rsm = xmlnode_new_child(mq, "set");
+    xmlnode_set_namespace(rsm, NS_RSM);
+    if(mamq->before) {
+      xmlnode *v = xmlnode_new_child(rsm, "before");
+      xmlnode_insert_data(v, mamq->before, -1);
+    }
+    if(mamq->after) {
+      xmlnode *v = xmlnode_new_child(rsm, "after");
+      xmlnode_insert_data(v, mamq->after, -1);
+    }
+    if(mamq->max > 0 && mamq->max < 1e9) {
+      xmlnode *max = xmlnode_new_child(rsm, "max");
+      char data[10];
+      xmlnode_set_namespace(rsm, NS_RSM);
+      snprintf(data, 10, "%d", mamq->max);
+      xmlnode_insert_data(max, data, -1);
+    }
+  }
+
+  jabber_iq_send(iq);
+}
 
 static void
 cb_chatty_mam_bare_info (PurpleConnection *pc,
@@ -41,9 +186,20 @@ cb_chatty_mam_bare_info (PurpleConnection *pc,
                           const char *var)
 {
   if(g_strcmp0(var,NS_MAMv2) == 0) {
-    g_debug ("Server supports MAM %s on %s", var, bare);
+    JabberStream  *js = purple_connection_get_protocol_data (pc);
+    char *qid = jabber_get_next_id(js);
+    char *key = g_strjoin(":",js->stream_id, qid, NULL);
     // Init CTX
+    MAMQuery *mamq = g_new0(MAMQuery, 1);
+    mamq->js = js;
+    mamq->id = qid;
+    g_hash_table_insert(ht_mam_ctx, key, mamq);
+    // Get last stop point
+    // this is a drill
+    mamq->start = g_strdup("2010-06-07T00:00:00Z");
+    g_debug ("Server supports MAM %s on %s; Querying it with %s from %s", var, bare, qid, mamq->start);
     // Request MAM backlog
+    chatty_mam_query_archive(mamq);
   }
 }
 
@@ -69,7 +225,7 @@ cb_chatty_mam_msg_wrote(PurpleAccount *pa, PurpleConvMessage *pcm,
     pcm->flags |= PURPLE_MESSAGE_NO_LOG;
   }
   inflight_msg->type = type;
-  inflight_msg->p.alias = pcm->alias;
+  inflight_msg->p.alias = g_strdup(pcm->alias);
   inflight_msg->p.when = pcm->when;
   inflight_msg->p.who = g_strdup(pcm->who);
   if(inflight_msg->id)
@@ -212,6 +368,7 @@ cb_chatty_mam_msg_received (PurpleConnection *pc,
   // Clear resubmission state
   if(peer != inflight_msg->p.who)
     g_free(inflight_msg->p.who);
+  g_free(inflight_msg->p.alias);
   g_free(inflight_msg->p.what);
   g_free(inflight_msg);
   inflight_msg = NULL;
@@ -248,7 +405,7 @@ chatty_0313_close (void)
                             "wrote-chat-msg",
                             handle,
                             PURPLE_CALLBACK(cb_chatty_mam_msg_wrote));
-  g_hash_table_destroy (ht_bare_ctx);
+  g_hash_table_destroy (ht_mam_ctx);
 }
 
 
@@ -264,10 +421,10 @@ chatty_0313_init (void)
 {
   PurplePlugin *jabber = chatty_xeps_get_jabber ();
   void *handle = chatty_xeps_get_handle ();
-  ht_bare_ctx = g_hash_table_new_full (g_str_hash,
+  ht_mam_ctx = g_hash_table_new_full (g_str_hash,
                                        g_str_equal,
                                        g_free,
-                                       NULL);
+                                       mamq_free);
 
   purple_signal_connect(jabber,
                         "jabber-bare-info",
