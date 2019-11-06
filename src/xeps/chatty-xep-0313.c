@@ -49,6 +49,7 @@ typedef struct {
 static GHashTable *ht_mam_ctx = NULL;
 /* FIXME: What if purple becomes multithreaded 8-O */
 static MamMsg *inflight_msg = NULL;
+static char *origin_id = NULL;
 
 static void
 mamq_free(void *ptr)
@@ -208,6 +209,14 @@ cb_chatty_mam_msg_wrote(PurpleAccount *pa, PurpleConvMessage *pcm,
                         char **uuid, PurpleConversationType type,
                         void *ctx)
 {
+  if(origin_id && pcm->flags & PURPLE_MESSAGE_SEND) {
+    // copy origin_id into uuid to be able to dedup outgoing messages
+    *uuid = g_strdup(origin_id);
+    g_free(origin_id);
+    origin_id = NULL;
+    return;
+  }
+
   if(inflight_msg == NULL)
     return;
 
@@ -285,6 +294,7 @@ cb_chatty_mam_msg_received (PurpleConnection *pc,
     if(node_result != NULL) {
       xmlnode    *node_fwd;
       xmlnode    *node_delay;
+      const char *msg_type;
       int dts;
       query_id = xmlnode_get_attrib (node_result, "queryid");
       stanza_id = xmlnode_get_attrib (node_result, "id");
@@ -302,6 +312,9 @@ cb_chatty_mam_msg_received (PurpleConnection *pc,
         return FALSE;
 
       message = xmlnode_get_child (node_fwd, "message");
+      if(message == NULL)
+        return FALSE; // Now this is bizare
+
       node_delay = xmlnode_get_child (node_fwd, "delay");
       peer = xmlnode_get_attrib (message, "from");
       if(node_delay != NULL) {
@@ -310,8 +323,13 @@ cb_chatty_mam_msg_received (PurpleConnection *pc,
         xmlnode_insert_child (message, xmlnode_copy (node_delay));
       }
       // check history and drop the dup
-      dts = get_im_timestamp_for_uuid(stanza_id, user);
-      if(dts<INT_MAX) {
+      msg_type = xmlnode_get_attrib(message, "type");
+      if(from && msg_type && g_strcmp0(msg_type, "groupchat") == 0) {
+        dts = get_chat_timestamp_for_uuid(stanza_id, from);
+      } else {
+        dts = get_im_timestamp_for_uuid(stanza_id, user);
+      }
+      if(dts < INT_MAX) {
         g_debug ("Message id %s for acc %s is already stored on %d", stanza_id, user, dts);
         return TRUE; // note - true means stop processing
       }
@@ -325,12 +343,27 @@ cb_chatty_mam_msg_received (PurpleConnection *pc,
           xmlnode_set_attrib (message, "from", msg_to);
           g_free (msg_to);
           flags |= PURPLE_MESSAGE_SEND;
+          peer = xmlnode_get_attrib (message, "from");
         }
         g_free (bare_peer);
       } else {
         xmlnode_set_attrib (message, "from", xmlnode_get_attrib (message, "to"));
         peer = xmlnode_get_attrib (message, "from");
         flags |= PURPLE_MESSAGE_SEND;
+      }
+      if(flags & PURPLE_MESSAGE_SEND) {
+        // For sent messages need to attempt dedup based on origin-id
+        xmlnode *node_oid = xmlnode_get_child_with_namespace (message, "origin-id", NS_SIDv0);
+        if(node_oid) {
+          const char *uuid = xmlnode_get_attrib (node_oid, "id");
+          if(uuid) {
+            dts = get_im_timestamp_for_uuid(uuid, user);
+            if(dts < INT_MAX) {
+              g_debug ("Message id %s for acc %s is already stored on %d", uuid, user, dts);
+              return TRUE; // note - true means stop processing
+            }
+          }
+        }
       }
       g_debug ("Received result %s for query_id %s dated %s", stanza_id, query_id, stamp);
     } else {
@@ -374,6 +407,38 @@ cb_chatty_mam_msg_received (PurpleConnection *pc,
   inflight_msg = NULL;
   // Stop processing, we have done that already
   return TRUE;
+}
+
+/**
+ * cb_chatty_mam_xmlnode_send:
+ * @pc: a PurpleConnection
+ * @packet: a xmlnode
+ *
+ * This function is called via the
+ * "jabber-sending-xmlnode" signal
+ *
+ */
+static void
+cb_chatty_mam_xmlnode_send (PurpleConnection  *pc,
+                            xmlnode          **packet,
+                            gpointer           null)
+{
+  xmlnode    *node_body;
+  xmlnode    *node_id;
+
+  if (*packet && (*packet)->name && g_strcmp0((*packet)->name, "message") == 0) {
+    node_body = xmlnode_get_child (*packet, "body");
+
+    if (node_body) {
+      node_id = xmlnode_new_child (*packet, "origin-id");
+      xmlnode_set_namespace (node_id, NS_SIDv0);
+      g_free(origin_id);
+      chatty_utils_generate_uuid(&origin_id);
+      xmlnode_set_attrib(node_id, "id", origin_id);
+
+      g_debug ("Set origin-id %s for outgoing message", origin_id);
+    }
+  }
 }
 
 
@@ -430,6 +495,12 @@ chatty_0313_init (void)
                         "jabber-bare-info",
                         handle,
                         PURPLE_CALLBACK(cb_chatty_mam_bare_info),
+                        NULL);
+
+  purple_signal_connect(jabber,
+                        "jabber-sending-xmlnode",
+                        handle,
+                        PURPLE_CALLBACK(cb_chatty_mam_xmlnode_send),
                         NULL);
 
   purple_signal_connect(jabber,
