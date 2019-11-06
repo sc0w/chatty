@@ -17,6 +17,7 @@
 #include "chatty-purple-init.h"
 #include "chatty-icons.h"
 #include "chatty-popover-actions.h"
+#include "chatty-dbus.h"
 
 static chatty_data_t chatty_data;
 
@@ -342,6 +343,8 @@ chatty_window_init_data (void)
   if (chatty->uri) {
     chatty_blist_add_buddy_from_uri (chatty->uri);
   }
+
+  chatty_dbus_gc_write_contact ("Jane Doe", "12345");
 }
 
 
