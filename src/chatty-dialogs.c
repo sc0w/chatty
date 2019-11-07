@@ -18,6 +18,8 @@
 #include "chatty-lurch.h"
 #include "chatty-utils.h"
 #include "chatty-icons.h"
+#include "chatty-dbus.h"
+#include "chatty-folks.h"
 #include "version.h"
 
 #include <libebook-contacts/libebook-contacts.h>
@@ -557,11 +559,15 @@ cb_button_add_contact_clicked (GtkButton *sender,
       who = e_phone_number_to_string (number, E_PHONE_NUMBER_FORMAT_E164);
     }
 
+    if (!chatty_folks_has_individual_with_phonenumber (who)) {
+      chatty_dbus_gc_write_contact (alias, who);
+    }
+
     g_free (region);
     e_phone_number_free (number);
   }
 
-  chatty_blist_add_buddy (who, alias);
+  chatty_blist_add_buddy (chatty->selected_account, who, alias);
 
   chatty_conv_im_with_buddy (chatty->selected_account, g_strdup (who));
 
@@ -571,6 +577,9 @@ cb_button_add_contact_clicked (GtkButton *sender,
 
   gtk_entry_set_text (GTK_ENTRY(chatty_dialog->entry_contact_name), "");
   gtk_entry_set_text (GTK_ENTRY(chatty_dialog->entry_contact_nick), "");
+
+  gtk_stack_set_visible_child_name (chatty_dialog->stack_panes_new_chat,
+                                    "view-new-chat");
 }
 
 

@@ -84,6 +84,8 @@ cb_update_row (FolksIndividual *individual,
 
     gtk_list_box_invalidate_sort (chatty_folks->listbox);
 
+    g_debug ("%s pspec: %s", __func__, pspec->name);
+
     g_list_free (l);
     g_list_free (rows);
   }
@@ -188,6 +190,8 @@ cb_aggregator_individuals_changed (FolksIndividualAggregator *aggregator,
   
     g_clear_object (&individual);
   }
+
+  g_debug ("%s", __func__);
 
   gtk_list_box_invalidate_sort (chatty_folks->listbox);
 
@@ -561,12 +565,16 @@ chatty_folks_get_phone_type (FolksPhoneFieldDetails *details)
   while (gee_iterator_next (iter)) {
     gchar *type = gee_iterator_get (iter);
 
+    g_debug ("%s type: %s", __func__, type);
+
     if (!g_strcmp0 (type, "cell")) {
       val = _("Mobile");
     } else if (!g_strcmp0  (type, "work")) {
       val = _("Work");
     } else if (!g_strcmp0  (type, "home")) {
       val = _("Home");
+    } else if (!g_strcmp0  (type, "other")) {
+      val = _("Other");
     } else {
       val = NULL;
     }

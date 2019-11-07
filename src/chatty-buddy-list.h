@@ -81,7 +81,7 @@ void chatty_blist_init (void);
 void chatty_blist_uninit (void);
 void chatty_blist_chat_list_select_first (void);
 void chatty_blist_returned_from_chat (void);
-void chatty_blist_add_buddy (const char *who, const char *whoalias);
+void chatty_blist_add_buddy (PurpleAccount *account, const char *who, const char *whoalias);
 void chatty_blist_refresh (PurpleBuddyList *list);
 void chatty_blist_chat_list_selection (gboolean select);
 void chatty_blist_create_add_buddy_view (PurpleAccount *account);

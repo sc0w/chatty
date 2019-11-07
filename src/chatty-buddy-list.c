@@ -24,6 +24,7 @@
 #include "chatty-history.h"
 #include "chatty-utils.h"
 #include "chatty-folks.h"
+#include "chatty-dbus.h"
 #define HANDY_USE_UNSTABLE_API
 #include <handy.h>
 
@@ -120,11 +121,11 @@ row_selected_cb (GtkListBox    *box,
                                          CHATTY_COLOR_GREY,
                                          FALSE);
  
-     chatty_window_update_sub_header_titlebar (avatar, chat_name);
-     chatty_window_change_view (CHATTY_VIEW_MESSAGE_LIST);
-     gtk_widget_hide (GTK_WIDGET(chatty->dialog_new_chat));
+    chatty_window_update_sub_header_titlebar (avatar, chat_name);
+    chatty_window_change_view (CHATTY_VIEW_MESSAGE_LIST);
+    gtk_widget_hide (GTK_WIDGET(chatty->dialog_new_chat));
  
-     g_object_unref (avatar);
+    g_object_unref (avatar);
    }
 }
 
@@ -652,7 +653,6 @@ chatty_blist_add_buddy_from_uri (const char *uri)
 {
   PurpleAccount *account;
   PurpleBuddy   *buddy;
-  GdkPixbuf     *avatar;
   GtkWindow     *window;
   char          *who = NULL;
   const char    *folks_id;
@@ -679,22 +679,13 @@ chatty_blist_add_buddy_from_uri (const char *uri)
     buddy = purple_buddy_new (account, who, alias);
 
     purple_blist_add_buddy (buddy, NULL, NULL, NULL);
+  }
 
+  if (!purple_buddy_icons_node_has_custom_icon (PURPLE_BLIST_NODE(buddy))) {
     chatty_folks_set_purple_buddy_avatar (folks_id, account, g_strdup (who));
   }
 
-  avatar = chatty_icon_get_buddy_icon (PURPLE_BLIST_NODE(buddy),
-                                       who,
-                                       CHATTY_ICON_SIZE_SMALL,
-                                       CHATTY_COLOR_GREEN,
-                                       FALSE);
-
   chatty_conv_im_with_buddy (account, g_strdup (who));
-
-  if (avatar) {
-    chatty_window_update_sub_header_titlebar (avatar,
-                                              alias ? alias : who);
-  }
 
   purple_blist_node_set_bool (PURPLE_BLIST_NODE(buddy), "chatty-autojoin", TRUE);
 
@@ -707,8 +698,6 @@ chatty_blist_add_buddy_from_uri (const char *uri)
   gtk_window_present (window);
 
   g_free (who);
-
-  g_object_unref (avatar);
 }
 
 
@@ -727,6 +716,9 @@ chatty_blist_contact_list_add_buddy (void)
   PurpleAccount      *account;
   PurpleConversation *conv;
   PurpleBuddy        *buddy;
+  const char         *who;
+  const char         *folks_id;             
+  g_autofree gchar   *number;
   
   chatty_data_t *chatty = chatty_get_data ();
 
@@ -739,6 +731,18 @@ chatty_blist_contact_list_add_buddy (void)
   purple_account_add_buddy (account, buddy);
   purple_blist_node_remove_setting (PURPLE_BLIST_NODE(buddy), "chatty-unknown-contact");
   purple_blist_node_set_bool (PURPLE_BLIST_NODE (buddy), "chatty-notifications", TRUE);
+
+  if (chatty_blist_protocol_is_sms (account)) {
+    who = purple_buddy_get_name (buddy);
+
+    number = chatty_utils_format_phonenumber (who);
+
+    folks_id = chatty_folks_has_individual_with_phonenumber (number);
+
+    if (folks_id) {
+      chatty_dbus_gc_write_contact (who, number);
+    }
+  }
 }
 
 
@@ -888,34 +892,38 @@ chatty_blist_chat_list_remove_buddy (void)
  *
  */
 void
-chatty_blist_add_buddy (const char *who,
-                        const char *whoalias)
+chatty_blist_add_buddy (PurpleAccount *account,
+                        const char    *who,
+                        const char    *whoalias)
 {
   PurpleBuddy        *buddy;
   PurpleConversation *conv;
   PurpleBuddyIcon    *icon;
-
-  chatty_data_t *chatty = chatty_get_data ();
-
-  if (chatty->selected_account == NULL) {
-    return;
-  }
+  const char         *folks_id;
 
   if (*whoalias == '\0') {
     whoalias = NULL;
   }
 
-  buddy = purple_buddy_new (chatty->selected_account, who, whoalias);
+  buddy = purple_buddy_new (account, who, whoalias);
 
   purple_blist_add_buddy (buddy, NULL, NULL, NULL);
 
   g_debug ("chatty_blist_add_buddy: %s ", purple_buddy_get_name (buddy));
 
-  purple_account_add_buddy_with_invite (chatty->selected_account, buddy, NULL);
+  if (chatty_blist_protocol_is_sms (account)) {
+    folks_id = chatty_folks_has_individual_with_phonenumber (who);
+
+    if (folks_id) {
+      chatty_folks_set_purple_buddy_avatar (folks_id, account, who);
+    }
+  } else {
+    purple_account_add_buddy_with_invite (account, buddy, NULL);
+  }
 
   conv = purple_find_conversation_with_account (PURPLE_CONV_TYPE_IM,
                                                 who,
-                                                chatty->selected_account);
+                                                account);
 
   if (conv != NULL) {
     icon = purple_conv_im_get_icon (PURPLE_CONV_IM(conv));
@@ -1836,20 +1844,6 @@ chatty_blist_new_node (PurpleBlistNode *node)
 
 
 /**
- * chatty_blist_new_list:
- * @blist: a PurpleBuddyList
- *
- * Creates a new PurpleBuddyList.
- * Function is called via PurpleBlistUiOps.
- *
- */
-static void
-chatty_blist_new_list (PurpleBuddyList *blist)
-{
-}
-
-
-/**
  * PurpleBlistUiOps:
  *
  * The interface struct for libpurple blist events.
@@ -1858,7 +1852,7 @@ chatty_blist_new_list (PurpleBuddyList *blist)
  */
 static PurpleBlistUiOps blist_ui_ops =
 {
-  chatty_blist_new_list,
+  NULL,
   chatty_blist_new_node,
   chatty_blist_show,
   chatty_blist_update,
