@@ -1139,8 +1139,8 @@ chatty_blist_create_chat_list (void)
 static void
 chatty_blist_create_contact_list (void)
 {
-  GtkListBox        *listbox;
-  chatty_data_t     *chatty = chatty_get_data ();
+  GtkListBox    *listbox;
+  chatty_data_t *chatty = chatty_get_data ();
 
   listbox = GTK_LIST_BOX (gtk_list_box_new ());
 
@@ -1161,12 +1161,18 @@ chatty_blist_create_contact_list (void)
 
   gtk_box_pack_start (GTK_BOX (chatty->pane_view_new_chat), GTK_WIDGET (listbox), TRUE, TRUE, 0);
   gtk_widget_show_all (GTK_WIDGET(chatty->pane_view_new_chat));
+}
 
-  if (purple_accounts_find ("SMS", "prpl-mm-sms")) {
-    chatty_folks_init (chatty_get_contacts_list ());
-  }
 
-  
+void
+chatty_blist_enable_folks_contacts (void) 
+{
+  GtkListBox *listbox;
+
+  listbox = chatty_get_contacts_list ();
+
+  if (listbox != NULL)
+    chatty_folks_init (listbox);
 }
 
 
