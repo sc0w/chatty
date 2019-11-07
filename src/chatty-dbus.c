@@ -4,23 +4,26 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-#define G_LOG_DOMAIN "chatty-gc-dbus"
+#define G_LOG_DOMAIN "chatty-dbus"
 
 #include <glib.h>
-#include <glib/gi18n.h>
 #include <gtk/gtk.h>
 #include "chatty-dbus.h"
 
 
-typedef struct {
-  GDBusConnection *connection;
-  GCancellable    *cancellable;
-  char            *name;
-  char            *number;
-} DbusData;
+static void
+cb_action_group (GActionGroup *action_group,
+                 gchar        *action_name,
+                 gpointer      user_data)
+{
+  if (g_strcmp0 (action_name, "new-contact-data") != 0)
+    return;
 
-static void chatty_dbus_write_contact_stop (DbusData *data);
+  g_debug ("Call new-contact-data action %s\n", action_name);
 
+  g_action_group_activate_action (action_group, action_name, (GVariant *) user_data);
+  g_variant_unref ((GVariant *) user_data);
+}
 
 
 static void
@@ -28,56 +31,25 @@ cb_bus_connected (GObject      *source_object,
                   GAsyncResult *res,
                   gpointer      user_data)
 {
-  GDBusConnection  *connection;
-  GDBusActionGroup *action_group;
-  DbusData         *data = user_data;
-  GVariant         *contact;
-  GVariant         *array;
-  GVariantBuilder  *builder;
-
-  g_autoptr(GError) error = NULL;
+  g_autoptr (GDBusConnection) connection = NULL;
+  g_autoptr (GError) error = NULL;
+  g_autoptr (GDBusActionGroup) action_group = NULL;
 
   connection = g_bus_get_finish (res, &error);
 
-  if (connection == NULL && error != NULL) {
+  if (connection == NULL || error != NULL) {
     g_error ("%s Could not get dbus connection: %s", __func__, error->message);
-    g_object_unref (connection);
     return;
   }
-
-  data->connection = connection;
-
-  builder = g_variant_builder_new (G_VARIANT_TYPE_ARRAY);
-  g_variant_builder_add_parsed (builder, "{'full-name', <%s>}", data->name);
-  g_variant_builder_add_parsed (builder, "{'phone-numbers', <%s>}", data->number);
-  array = g_variant_builder_end (builder);
-
-  builder = g_variant_builder_new (G_VARIANT_TYPE_TUPLE);
-  g_variant_builder_add_value (builder, array);
-  contact = g_variant_builder_end (builder);
 
   action_group = g_dbus_action_group_get (connection,
                                           "org.gnome.Contacts",
                                           "/org/gnome/Contacts");
 
-  g_action_group_activate_action ((GActionGroup*)action_group,
-                                  "new-contact-data",
-                                  contact);
+  g_signal_connect (action_group, "action-added", (GCallback) cb_action_group, user_data);
 
-  chatty_dbus_write_contact_stop (data);
-}
-
-
-static void
-chatty_dbus_write_contact_stop (DbusData *data)
-{
-  g_clear_object (&data->connection);
-  g_clear_object (&data->cancellable);
-
-  g_free (data->name);
-  g_free (data->number);
-
-  g_slice_free (DbusData, data);
+  // For some reason we need to ask for the full list or "action-added" isn't triggered
+  g_action_group_list_actions (G_ACTION_GROUP (action_group));
 }
 
 
@@ -85,16 +57,15 @@ void
 chatty_dbus_gc_write_contact (const char *contact_name,
                               const char *phone_number)
 {
-  DbusData *data;
+  GVariant *contact;
 
-  data = g_slice_new0 (DbusData);
-
-  data->cancellable = g_cancellable_new ();
-  data->name = g_strdup (contact_name);
-  data->number = g_strdup (phone_number);
+  contact =  g_variant_new_parsed ("[('full-name', %s), ('phone-numbers', %s)]",
+                                   contact_name,
+                                   phone_number);
+  g_variant_ref_sink (contact);
 
   g_bus_get (G_BUS_TYPE_SESSION,
-             data->cancellable,
+             NULL,
              (GAsyncReadyCallback) cb_bus_connected,
-             data);
+             contact);
 }
