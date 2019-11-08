@@ -92,6 +92,27 @@ cb_update_row (FolksIndividual *individual,
 }
 
 
+
+static void
+connect_notify_signals (FolksIndividual *individual)
+{
+  g_signal_connect (G_OBJECT(individual), 
+                    "notify::avatar",
+                    G_CALLBACK (cb_update_row),
+                    NULL);
+
+  g_signal_connect (G_OBJECT(individual), 
+                    "notify::display-name",
+                    G_CALLBACK (cb_update_row),
+                    NULL);
+
+  g_signal_connect (G_OBJECT(individual), 
+                    "notify::phone-numbers",
+                    G_CALLBACK (cb_update_row),
+                    NULL);
+}
+
+
 static void
 cb_aggregator_notify (FolksIndividualAggregator *aggregator,
                       GParamSpec                *pspec,
@@ -108,21 +129,10 @@ cb_aggregator_notify (FolksIndividualAggregator *aggregator,
   while (gee_map_iterator_next (iter)) {
     individual = gee_map_iterator_get_value (iter);
 
-    g_signal_connect (G_OBJECT(individual), 
-                      "notify::avatar",
-                      G_CALLBACK (cb_update_row),
-                      NULL);
-
-    g_signal_connect (G_OBJECT(individual), 
-                      "notify::display-name",
-                      G_CALLBACK (cb_update_row),
-                      NULL);
-
-    g_signal_connect (G_OBJECT(individual), 
-                      "notify::phone-numbers",
-                      G_CALLBACK (cb_update_row),
-                      NULL);
+    connect_notify_signals (individual);
   }
+
+  g_debug ("%s pspec: %s", __func__, pspec->name);
 
   g_clear_object (&iter);
 }
@@ -187,6 +197,8 @@ cb_aggregator_individuals_changed (FolksIndividualAggregator *aggregator,
     }
 
     chatty_folks_individual_add_contact_rows (individual);
+
+    connect_notify_signals (individual);
   
     g_clear_object (&individual);
   }
