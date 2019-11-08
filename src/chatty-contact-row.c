@@ -23,8 +23,10 @@ enum {
 
 static GParamSpec *props[PROP_LAST_PROP];
 
-typedef struct
-{ 
+typedef struct _ChattyContactRow
+{
+  GtkListBoxRow parent_instance;
+
   GtkWidget *avatar;
   GtkWidget *name;
   GtkWidget *description;
@@ -34,13 +36,9 @@ typedef struct
   gpointer   data;
   gchar     *id;
   gchar     *number;
-} ChattyContactRowPrivate;
+} ChattyContactRow;
 
-struct _ChattyContactRow
-{
-  GtkListBoxRow parent_instance;
-};
-G_DEFINE_TYPE_WITH_PRIVATE (ChattyContactRow, chatty_contact_row, GTK_TYPE_LIST_BOX_ROW)
+G_DEFINE_TYPE (ChattyContactRow, chatty_contact_row, GTK_TYPE_LIST_BOX_ROW)
 
 
 static void
@@ -50,39 +48,38 @@ chatty_contact_row_get_property (GObject      *object,
                                  GParamSpec   *pspec)
 {
   ChattyContactRow *self = CHATTY_CONTACT_ROW (object);
-  ChattyContactRowPrivate *priv = chatty_contact_row_get_instance_private (self);
 
   switch (property_id) {
     case PROP_AVATR:
-      g_value_set_object (value, gtk_image_get_pixbuf (GTK_IMAGE (priv->avatar)));
+      g_value_set_object (value, gtk_image_get_pixbuf (GTK_IMAGE (self->avatar)));
       break;
 
     case PROP_NAME:
-      g_value_set_string (value, gtk_label_get_label (GTK_LABEL (priv->name)));
+      g_value_set_string (value, gtk_label_get_label (GTK_LABEL (self->name)));
       break;
 
     case PROP_DESCRIPTION:
-      g_value_set_string (value, gtk_label_get_label (GTK_LABEL (priv->description)));
+      g_value_set_string (value, gtk_label_get_label (GTK_LABEL (self->description)));
       break;
 
     case PROP_TIMESTAMP:
-      g_value_set_string (value, gtk_label_get_label (GTK_LABEL (priv->timestamp)));
+      g_value_set_string (value, gtk_label_get_label (GTK_LABEL (self->timestamp)));
       break;
 
     case PROP_MESSAGE_COUNT:
-      g_value_set_string (value, gtk_label_get_label (GTK_LABEL (priv->message_count)));
+      g_value_set_string (value, gtk_label_get_label (GTK_LABEL (self->message_count)));
       break;
 
     case PROP_DATA:
-      g_value_set_pointer (value, priv->data);
+      g_value_set_pointer (value, self->data);
       break;
 
     case PROP_ID:
-      g_value_set_string (value, priv->id);
+      g_value_set_string (value, self->id);
       break;
 
     case PROP_NUMBER:
-      g_value_set_string (value, priv->number);
+      g_value_set_string (value, self->number);
       break;
 
     default:
@@ -99,55 +96,53 @@ chatty_contact_row_set_property (GObject      *object,
                                  GParamSpec   *pspec)
 {
   ChattyContactRow *self = CHATTY_CONTACT_ROW (object);
-
-  ChattyContactRowPrivate *priv = chatty_contact_row_get_instance_private (self);
   const gchar *str;
   GObject *obj;
 
   switch (property_id) {
     case PROP_AVATR:
       obj = g_value_get_object (value);
-      if (gtk_image_get_pixbuf (GTK_IMAGE (priv->avatar)) != GDK_PIXBUF (obj)) {
-        gtk_image_set_from_pixbuf (GTK_IMAGE (priv->avatar), GDK_PIXBUF (obj));
+      if (gtk_image_get_pixbuf (GTK_IMAGE (self->avatar)) != GDK_PIXBUF (obj)) {
+        gtk_image_set_from_pixbuf (GTK_IMAGE (self->avatar), GDK_PIXBUF (obj));
       }
       break;
 
     case PROP_NAME:
       str = g_value_get_string (value);
-      gtk_label_set_markup (GTK_LABEL (priv->name), str);
-      gtk_widget_set_visible (priv->name, !(str == NULL || *str == '\0'));
+      gtk_label_set_markup (GTK_LABEL (self->name), str);
+      gtk_widget_set_visible (self->name, !(str == NULL || *str == '\0'));
       break;
 
     case PROP_DESCRIPTION:
       str = g_value_get_string (value);
-      gtk_label_set_markup (GTK_LABEL (priv->description), str);
-      gtk_widget_set_visible (priv->description, !(str == NULL || *str == '\0'));
+      gtk_label_set_markup (GTK_LABEL (self->description), str);
+      gtk_widget_set_visible (self->description, !(str == NULL || *str == '\0'));
       break;
 
     case PROP_TIMESTAMP:
       str = g_value_get_string (value);
-      gtk_label_set_markup (GTK_LABEL (priv->timestamp), str);
-      gtk_widget_set_visible (priv->timestamp, !(str == NULL || *str == '\0'));
+      gtk_label_set_markup (GTK_LABEL (self->timestamp), str);
+      gtk_widget_set_visible (self->timestamp, !(str == NULL || *str == '\0'));
       break;
 
     case PROP_MESSAGE_COUNT:
       str = g_value_get_string (value);
-      gtk_label_set_markup (GTK_LABEL (priv->message_count), str);
-      gtk_widget_set_visible (priv->message_count, !(str == NULL || *str == '\0'));
+      gtk_label_set_markup (GTK_LABEL (self->message_count), str);
+      gtk_widget_set_visible (self->message_count, !(str == NULL || *str == '\0'));
       break;
 
     case PROP_DATA:
-      priv->data = g_value_get_pointer (value);
+      self->data = g_value_get_pointer (value);
       break;
 
     case PROP_ID:
-      g_free (priv->id);
-      priv->id = g_value_dup_string (value);
+      g_free (self->id);
+      self->id = g_value_dup_string (value);
       break;
 
     case PROP_NUMBER:
-      g_free (priv->number);
-      priv->number = g_value_dup_string (value);
+      g_free (self->number);
+      self->number = g_value_dup_string (value);
       break;
 
     default:
@@ -227,11 +222,11 @@ chatty_contact_row_class_init (ChattyContactRowClass *klass)
 
   gtk_widget_class_set_template_from_resource (widget_class,
                                                "/sm/puri/chatty/ui/chatty-contact-row.ui");
-  gtk_widget_class_bind_template_child_private (widget_class, ChattyContactRow, avatar);
-  gtk_widget_class_bind_template_child_private (widget_class, ChattyContactRow, name);
-  gtk_widget_class_bind_template_child_private (widget_class, ChattyContactRow, description);
-  gtk_widget_class_bind_template_child_private (widget_class, ChattyContactRow, timestamp);
-  gtk_widget_class_bind_template_child_private (widget_class, ChattyContactRow, message_count);
+  gtk_widget_class_bind_template_child (widget_class, ChattyContactRow, avatar);
+  gtk_widget_class_bind_template_child (widget_class, ChattyContactRow, name);
+  gtk_widget_class_bind_template_child (widget_class, ChattyContactRow, description);
+  gtk_widget_class_bind_template_child (widget_class, ChattyContactRow, timestamp);
+  gtk_widget_class_bind_template_child (widget_class, ChattyContactRow, message_count);
 }
 
 static void

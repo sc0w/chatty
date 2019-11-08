@@ -6,6 +6,7 @@
 
 #define G_LOG_DOMAIN "chatty-buddy-list"
 
+#define _GNU_SOURCE
 #include <glib.h>
 #include <glib/gi18n.h>
 #include <glib-object.h>
@@ -140,14 +141,13 @@ cb_search_entry_changed (GtkSearchEntry     *entry,
 static gboolean
 filter_chat_list_cb (GtkListBoxRow *row, gpointer entry) {
   const gchar *query;
-  const gchar *name;
+  g_autofree gchar *name = NULL;
 
   query = gtk_entry_get_text (GTK_ENTRY (entry));
 
   g_object_get (row, "name", &name, NULL);
 
-  // TODO: make search case insensitive
-  return ((*query == '\0') || (name && strstr (name, query)));
+  return ((*query == '\0') || (name && strcasestr (name, query)));
 }
 
 
@@ -1437,6 +1437,7 @@ chatty_blist_chats_update_node (PurpleBuddy     *buddy,
                                 PurpleBlistNode *node)
 {
   PurpleAccount    *account;
+  PurpleContact    *contact;
   GtkListBox       *listbox;
   GdkPixbuf        *avatar;
   g_autofree gchar *name = NULL;
@@ -1460,7 +1461,12 @@ chatty_blist_chats_update_node (PurpleBuddy     *buddy,
     return;
   }
 
-  alias = purple_buddy_get_alias (buddy);
+  contact = purple_buddy_get_contact (buddy);
+  alias = purple_contact_get_alias (contact);
+
+  if (alias == NULL) {
+    alias = purple_buddy_get_alias (buddy);
+  }
 
   if (!purple_prefs_get_bool (CHATTY_PREFS_ROOT "/status/first_start")) {
      chatty_window_overlay_show (FALSE);

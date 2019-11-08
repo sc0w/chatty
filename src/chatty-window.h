@@ -68,7 +68,7 @@ typedef struct {
 
   ChattyCmlOptions   cml_options;
 
-  const char        *uri;
+  char        *uri;
 
   struct {
     GtkWidget     *label_chat_id;

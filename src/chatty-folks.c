@@ -56,7 +56,8 @@ cb_update_row (FolksIndividual *individual,
 {
   GList      *rows, *l;
   const char *id;
-  const char *row_id;
+  char       *row_id;
+  char       *number;
 
   chatty_folks_data_t *chatty_folks = chatty_get_folks_data ();
 
@@ -73,6 +74,30 @@ cb_update_row (FolksIndividual *individual,
     for (l = rows; l; l = l->next) {
       if (l->data != NULL) {
         g_object_get (l->data, "id", &row_id, NULL);
+        g_object_get (l->data, "phone_number", &number, NULL);
+
+        if (!g_strcmp0 (pspec->name, "avatar")) {
+          PurpleAccount *account = purple_accounts_find ("SMS", "prpl-mm-sms");
+
+          if (account != NULL && number != NULL) {
+            if (purple_find_buddy (account, number)) {
+              chatty_folks_set_purple_buddy_avatar (id, account, number);
+            }
+          }
+        }
+
+        if (!g_strcmp0 (pspec->name, "display-name")) {
+          PurpleAccount *account = purple_accounts_find ("SMS", "prpl-mm-sms");
+
+          if (account != NULL && number != NULL) {
+            PurpleBuddy *buddy = purple_find_buddy (account, number);
+
+            if (buddy) {
+              PurpleContact *contact = purple_buddy_get_contact (buddy);
+              purple_contact_set_alias (contact, folks_individual_get_display_name (individual));
+            }
+          }
+        }
 
         if (!g_strcmp0 (id, row_id )) {
           gtk_widget_destroy (GTK_WIDGET(l->data));
@@ -88,6 +113,8 @@ cb_update_row (FolksIndividual *individual,
 
     g_list_free (l);
     g_list_free (rows);
+    g_free (row_id);
+    g_free (number);
   }
 }
 
@@ -640,10 +667,13 @@ chatty_folks_individual_add_contact_rows (FolksIndividual *individual)
   while (gee_iterator_next (iter)) {
     FolksPhoneFieldDetails *field_details;
     g_autofree char        *number;
-    char                   *type_number;
+    g_autofree char        *number_e164 = NULL;
+    g_autofree char        *type_number = NULL;
 
     field_details = gee_iterator_get (iter);
     number = folks_phone_field_details_get_normalised (field_details);
+
+    number_e164 = chatty_utils_format_phonenumber (number);
 
     type_number = g_strconcat (chatty_folks_get_phone_type (field_details),
                                ": ",
@@ -657,7 +687,7 @@ chatty_folks_individual_add_contact_rows (FolksIndividual *individual)
                                                       NULL,
                                                       NULL,
                                                       folks_id,
-                                                      number));
+                                                      number_e164));
 
     gtk_list_box_row_set_selectable (GTK_LIST_BOX_ROW (row), FALSE);
 
