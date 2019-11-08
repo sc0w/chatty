@@ -3,9 +3,6 @@
     "runtime": "org.gnome.Platform",
     "runtime-version": "master",
     "sdk": "org.gnome.Sdk",
-    "sdk-extensions": [
-        "org.freedesktop.Sdk.Extension.openjdk11"
-    ],
     "command": "chatty",
     "finish-args": [
         "--share=network",
@@ -15,8 +12,7 @@
         "--filesystem=xdg-run/dconf",
         "--filesystem=~/.config/dconf:ro",
         "--talk-name=ca.desrt.dconf",
-        "--env=DCONF_USER_CONFIG_DIR=.config/dconf",
-        "--env=PATH=/app/jre/bin:/usr/bin"
+        "--env=DCONF_USER_CONFIG_DIR=.config/dconf"
     ],
     "build-options": {
         "cflags": "-O2 -g",
@@ -84,13 +80,6 @@
                     "type": "git",
                     "url": "https://source.puri.sm/Librem5/libhandy.git"
                 }
-            ]
-        },
-        {
-            "name": "openjdk",
-            "buildsystem": "simple",
-            "build-commands": [
-                "/usr/lib/sdk/openjdk11/install.sh"
             ]
         },
         {
@@ -173,15 +162,15 @@
                 {
                     "type": "shell",
                     "commands": [
-                        "sed -i -e 's/\${\${NAME}_BIN}-NOTFOUND/\${NAME}_BIN-NOTFOUND/' cpp/CMakeLists.txt",
-                        "sed -i '317d' cpp/CMakeLists.txt && sed -i '316 a \"test_metadata\"' cpp/CMakeLists.txt"
+                        "sed -i -e 's/\${\${NAME}_BIN}-NOTFOUND/\${NAME}_BIN-NOTFOUND/' cpp/CMakeLists.txt"
                     ]
+                },
+                {
+                    "type" : "patch",
+                    "path" : "0001-Remove-java-dep-and-fix-build-issue.patch"
                 }
             ],
-            "subdir": "cpp",
-            "build-options": {
-                "append-path": "/app/jre/bin"
-            }
+            "subdir": "cpp"
         },
         {
             "name": "evolution-data-server",
