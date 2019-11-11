@@ -117,7 +117,33 @@
           </packing>
         </child>
         <child>
-          <object class="GtkSeparator" id="separator_menu_msg_view">
+          <object class="GtkSeparator" id="separator_menu_msg_view1">
+            <property name="visible" bind-source="button_menu_add_gnome_contact" bind-property="visible" bind-flags="sync-create"/>
+            <property name="can_focus">False</property>
+            <property name="margin_top">6</property>
+            <property name="margin_bottom">6</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkModelButton" id="button_menu_add_gnome_contact">
+            <property name="visible">False</property>
+            <property name="active">False</property>
+            <property name="can_focus">False</property>
+            <property name="receives_default">False</property>
+            <property name="action_name">msg_view.add-gnome-contact</property>
+            <property name="text" translatable="yes">Add to GNOME Contacts</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkSeparator" id="separator_menu_msg_view2">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="margin_top">6</property>

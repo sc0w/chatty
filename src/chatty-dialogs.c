@@ -372,7 +372,7 @@ static void
 chatty_entry_set_enabled (GtkWidget *widget,
                           gboolean   state)
 {
-  GtkStyleContext    *sc;
+  GtkStyleContext *sc;
 
   chatty_dialog_data_t *chatty_dialog = chatty_get_dialog_data ();
 
@@ -498,42 +498,23 @@ cb_button_show_add_contact_clicked (GtkButton *sender,
 
 
 static void
-chatty_dialog_phonenumber_not_valid (const char *number,
-                                     const char *err_msg)
+cb_button_add_gnome_contact_clicked (GtkButton *sender,
+                                     gpointer   data)
 {
-  GtkWidget  *dialog;
-  GtkWindow  *window;
+  chatty_dialog_data_t *chatty_dialog = chatty_get_dialog_data ();
 
-  window = gtk_application_get_active_window (GTK_APPLICATION (g_application_get_default ()));
-  dialog = gtk_message_dialog_new (window,
-                                   GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
-                                   GTK_MESSAGE_WARNING,
-                                   GTK_BUTTONS_OK,
-                                   _("Phonenumber validation"));
-
-  gtk_message_dialog_format_secondary_text (GTK_MESSAGE_DIALOG(dialog),
-                                            ("%s: %s"),
-                                            number,
-                                            err_msg);
-
-  gtk_dialog_set_default_response (GTK_DIALOG(dialog), GTK_RESPONSE_CANCEL);
-  gtk_window_set_position (GTK_WINDOW(dialog), GTK_WIN_POS_CENTER_ON_PARENT);
-
-  gtk_dialog_run (GTK_DIALOG(dialog));
-
-  gtk_widget_destroy (dialog);
+  chatty_dbus_gc_write_contact ("", "");
+   
+  gtk_stack_set_visible_child_name (chatty_dialog->stack_panes_new_chat,
+                                    "view-new-chat");
 }
-
 
 static void
 cb_button_add_contact_clicked (GtkButton *sender,
                                gpointer   data)
 {
-  GtkInputPurpose    ip;
   char              *who;
   const char        *alias;
-  EPhoneNumber      *number;
-  gchar             *region;
   g_autoptr(GError)  err = NULL;
 
   chatty_data_t        *chatty = chatty_get_data ();
@@ -542,30 +523,6 @@ cb_button_add_contact_clicked (GtkButton *sender,
 
   who = g_strdup (gtk_entry_get_text (GTK_ENTRY(chatty_dialog->entry_contact_name)));
   alias = gtk_entry_get_text (GTK_ENTRY(chatty_dialog->entry_contact_nick));
-
-  ip = gtk_entry_get_input_purpose (GTK_ENTRY(chatty_dialog->entry_contact_name));
-
-  if (ip == GTK_INPUT_PURPOSE_PHONE && e_phone_number_is_supported ()) {
-    region = e_phone_number_get_default_region (NULL);
-
-    number = e_phone_number_from_string (who, region, &err);
-
-    if (!number) {
-      g_warning ("failed to parse %s: %s", who, err->message);
-      chatty_dialog_phonenumber_not_valid (who, err->message);
-      return;
-    } else {
-      g_free (who);
-      who = e_phone_number_to_string (number, E_PHONE_NUMBER_FORMAT_E164);
-    }
-
-    if (!chatty_folks_has_individual_with_phonenumber (who)) {
-      chatty_dbus_gc_write_contact (alias, who);
-    }
-
-    g_free (region);
-    e_phone_number_free (number);
-  }
 
   chatty_blist_add_buddy (chatty->selected_account, who, alias);
 
@@ -1054,7 +1011,6 @@ chatty_dialogs_create_dialog_new_chat (void)
   GtkBuilder *builder;
   GtkWidget  *dialog;
   GtkWidget  *button_back;
-  GtkWidget  *button_add_contact;
   GtkWidget  *button_show_add_contact;
   GtkWindow  *window;
 
@@ -1067,14 +1023,15 @@ chatty_dialogs_create_dialog_new_chat (void)
 
   chatty->pane_view_new_chat = GTK_BOX (gtk_builder_get_object (builder, "pane_view_new_chat"));
   chatty->search_entry_contacts = GTK_ENTRY (gtk_builder_get_object (builder, "search_entry_contacts"));
-  chatty->label_contact_id = GTK_WIDGET (gtk_builder_get_object (builder, "label_contact_id"));
+  chatty_dialog->grid_edit_contact = GTK_WIDGET (gtk_builder_get_object (builder, "grid_edit_contact"));
+  chatty_dialog->button_add_gnome_contact = GTK_WIDGET (gtk_builder_get_object (builder, "button_add_gnome_contact"));
   chatty_dialog->stack_panes_new_chat = GTK_STACK (gtk_builder_get_object (builder, "stack_panes_new_chat"));
   chatty_dialog->list_select_account = GTK_LIST_BOX (gtk_builder_get_object (builder, "list_select_chat_account"));
   chatty_dialog->entry_contact_name = GTK_ENTRY (gtk_builder_get_object (builder, "entry_contact_name"));
   chatty_dialog->entry_contact_nick = GTK_ENTRY (gtk_builder_get_object (builder, "entry_contact_alias"));
+  chatty_dialog->button_add_contact = GTK_WIDGET (gtk_builder_get_object (builder, "button_add_contact"));
   button_back = GTK_WIDGET (gtk_builder_get_object (builder, "button_back"));
   button_show_add_contact = GTK_WIDGET (gtk_builder_get_object (builder, "button_show_add_contact"));
-  button_add_contact = GTK_WIDGET (gtk_builder_get_object (builder, "button_add_contact"));
 
   g_signal_connect (G_OBJECT(dialog),
                     "delete-event",
@@ -1083,17 +1040,22 @@ chatty_dialogs_create_dialog_new_chat (void)
 
   g_signal_connect (G_OBJECT(button_back),
                     "clicked",
-                    G_CALLBACK (cb_button_new_chat_back_clicked),
+                    G_CALLBACK(cb_button_new_chat_back_clicked),
                     NULL);
 
   g_signal_connect (G_OBJECT(button_show_add_contact),
                     "clicked",
-                    G_CALLBACK (cb_button_show_add_contact_clicked),
+                    G_CALLBACK(cb_button_show_add_contact_clicked),
                     NULL);
 
-  g_signal_connect (G_OBJECT(button_add_contact),
+  g_signal_connect (G_OBJECT(chatty_dialog->button_add_contact),
                     "clicked",
-                    G_CALLBACK (cb_button_add_contact_clicked),
+                    G_CALLBACK(cb_button_add_contact_clicked),
+                    NULL);
+
+  g_signal_connect (G_OBJECT(chatty_dialog->button_add_gnome_contact),
+                    "clicked",
+                    G_CALLBACK(cb_button_add_gnome_contact_clicked),
                     NULL);
 
   gtk_list_box_set_header_func (chatty_dialog->list_select_account,
@@ -1103,12 +1065,12 @@ chatty_dialogs_create_dialog_new_chat (void)
   g_signal_connect_after (G_OBJECT(chatty_dialog->entry_contact_name),
                           "insert_text",
                           G_CALLBACK(cb_contact_name_insert_text),
-                          (gpointer)button_add_contact);
+                          (gpointer)chatty_dialog->button_add_contact);
 
   g_signal_connect_after (G_OBJECT(chatty_dialog->entry_contact_name),
                           "delete_text",
                           G_CALLBACK(cb_contact_name_delete_text),
-                          (gpointer)button_add_contact);
+                          (gpointer)chatty_dialog->button_add_contact);
 
   window = gtk_application_get_active_window (GTK_APPLICATION (g_application_get_default ()));
   gtk_window_set_transient_for (GTK_WINDOW(dialog), window);

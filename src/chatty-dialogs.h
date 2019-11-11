@@ -19,9 +19,12 @@ typedef struct {
   GtkLabel   *label_protocol;
   GtkLabel   *label_status;
   GtkListBox *list_select_account;
+  GtkWidget  *grid_edit_contact;
   GtkWidget  *dialog_edit_account;
   GtkWidget  *button_add_account;
   GtkWidget  *button_save_account;
+  GtkWidget  *button_add_contact;
+  GtkWidget  *button_add_gnome_contact;
   GtkWidget  *box_topic_frame;
   GtkWidget  *textview_muc_topic;
   GtkWidget  *radio_button_xmpp;

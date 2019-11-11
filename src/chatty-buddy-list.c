@@ -66,6 +66,7 @@ row_selected_cb (GtkListBox    *box,
   GdkPixbuf       *avatar;
   const char      *chat_name;
   const char      *number;
+  const char      *folks_id;  
 
   chatty_data_t   *chatty = chatty_get_data ();
 
@@ -83,6 +84,9 @@ row_selected_cb (GtkListBox    *box,
 
   g_object_get (row, "data", &node, NULL);
 
+  gtk_widget_hide (chatty->button_menu_add_contact);
+  gtk_widget_hide (chatty->button_menu_add_gnome_contact);
+
   if (PURPLE_BLIST_NODE_IS_BUDDY(node)) {
     PurpleBuddy *buddy;
 
@@ -95,8 +99,15 @@ row_selected_cb (GtkListBox    *box,
                                     "chatty-unknown-contact")) {
 
       gtk_widget_show (chatty->button_menu_add_contact);
-    } else {
-      gtk_widget_hide (chatty->button_menu_add_contact);
+
+      if (chatty_blist_protocol_is_sms (account)) {
+        number = purple_buddy_get_name (buddy);
+        folks_id = chatty_folks_has_individual_with_phonenumber (number);
+
+        if (!folks_id) {
+          gtk_widget_show (chatty->button_menu_add_gnome_contact);
+        }
+      }
     }
 
     purple_blist_node_set_bool (node, "chatty-autojoin", TRUE);
@@ -109,8 +120,6 @@ row_selected_cb (GtkListBox    *box,
   } else if (PURPLE_BLIST_NODE_IS_CHAT(node)) {
     chat = (PurpleChat*)node;
     chat_name = purple_chat_get_name (chat);
-
-    gtk_widget_hide (chatty->button_menu_add_contact);
 
     chatty_conv_join_chat (chat);
 
@@ -132,11 +141,79 @@ row_selected_cb (GtkListBox    *box,
 
 
 static void
-cb_search_entry_changed (GtkSearchEntry     *entry,
-                         GtkListBox *listbox)
+cb_search_entry_chats_changed (GtkSearchEntry *entry,
+                               GtkListBox     *listbox)
 {
   gtk_list_box_invalidate_filter (GTK_LIST_BOX (listbox));
 }
+
+
+static void
+cb_search_entry_contacts_changed (GtkSearchEntry *entry,
+                                  GtkListBox     *listbox)
+{
+  static ChattyContactRow *new_row;
+  GList                   *children, *l;
+  const gchar             *number;
+  gchar                   *number_e164;
+  int                      num_rows = 0;
+
+  children = gtk_container_get_children (GTK_CONTAINER(listbox));
+
+  for (l = children; l != NULL; l = g_list_next (l)) {
+    if (gtk_widget_get_child_visible (GTK_WIDGET(l->data))) {
+      num_rows ++;
+    };
+  }
+
+  if ((num_rows == 0) && !new_row) {
+    number = gtk_entry_get_text (GTK_ENTRY(entry));
+    number_e164 = chatty_utils_format_phonenumber (number);
+
+    if (!new_row && number_e164) {
+      number_e164 = chatty_utils_format_phonenumber (number);
+
+      if (number_e164) {
+        listbox = chatty_get_contacts_list ();
+
+        new_row = CHATTY_CONTACT_ROW (chatty_contact_row_new (NULL,
+                                                              NULL,
+                                                              _("Send to"),
+                                                              number,
+                                                              NULL,
+                                                              NULL,
+                                                              NULL,
+                                                              number_e164));
+
+        gtk_list_box_row_set_selectable (GTK_LIST_BOX_ROW (new_row), FALSE);
+
+        gtk_container_add (GTK_CONTAINER (listbox), GTK_WIDGET (new_row));
+
+        gtk_widget_show (GTK_WIDGET(new_row));
+      }
+    }
+  } else if (new_row && num_rows == 1) {
+    number = gtk_entry_get_text (GTK_ENTRY(entry));
+    number_e164 = chatty_utils_format_phonenumber (number);
+
+    if (number_e164) {
+      g_object_set (new_row,
+                    "description", number,
+                    "phone_number", number_e164,
+                    NULL);
+    }
+  } else {
+    if (new_row) {
+      gtk_widget_destroy (GTK_WIDGET(new_row));
+      new_row = NULL;
+    }
+  }
+
+  g_list_free (children);
+
+  gtk_list_box_invalidate_filter (GTK_LIST_BOX (listbox));
+}
+
 
 static gboolean
 filter_chat_list_cb (GtkListBoxRow *row, gpointer entry) {
@@ -148,6 +225,23 @@ filter_chat_list_cb (GtkListBoxRow *row, gpointer entry) {
   g_object_get (row, "name", &name, NULL);
 
   return ((*query == '\0') || (name && strcasestr (name, query)));
+}
+
+
+static gboolean
+filter_contacts_list_cb (GtkListBoxRow *row, gpointer entry) {
+  const gchar *query;
+  g_autofree gchar *name = NULL;
+  g_autofree gchar *number = NULL;
+
+  query = gtk_entry_get_text (GTK_ENTRY (entry));
+
+  g_object_get (row, "name", &name, NULL);
+  g_object_get (row, "description", &number, NULL);
+
+  return ((*query == '\0') || 
+          (name && strcasestr (name, query)) ||
+          (number && strcasestr (number, query)));
 }
 
 
@@ -747,6 +841,33 @@ chatty_blist_contact_list_add_buddy (void)
 
 
 /**
+ * chatty_blist_gnome_contacts_add_buddy:
+ *
+ * Add active chat buddy to GNOME contacts
+ *
+ * called from view_msg_list_cmd_add_gnome_contact
+ * in chatty-popover-actions.c
+ *
+ */
+void
+chatty_blist_gnome_contacts_add_buddy (void)
+{
+  PurpleBuddy        *buddy;
+  const char         *who;
+  g_autofree gchar   *number;
+  
+  buddy = PURPLE_BUDDY (chatty_get_selected_node ());
+  g_return_if_fail (buddy != NULL);
+
+  who = purple_buddy_get_name (buddy);
+
+  number = chatty_utils_format_phonenumber (who);
+
+  chatty_dbus_gc_write_contact (who, number);
+}
+
+
+/**
  * chatty_blist_chat_list_leave_chat:
  *
  * Remove active chat buddy from chats-list
@@ -1112,7 +1233,7 @@ chatty_blist_create_chat_list (void)
 
   g_signal_connect (chatty->search_entry_chats,
                     "search-changed",
-                    G_CALLBACK (cb_search_entry_changed),
+                    G_CALLBACK (cb_search_entry_chats_changed),
                     listbox);
 
   gtk_list_box_set_filter_func (GTK_LIST_BOX (listbox), filter_chat_list_cb, chatty->search_entry_chats, NULL);
@@ -1148,10 +1269,10 @@ chatty_blist_create_contact_list (void)
 
   g_signal_connect (chatty->search_entry_contacts,
                     "search-changed",
-                    G_CALLBACK (cb_search_entry_changed),
+                    G_CALLBACK (cb_search_entry_contacts_changed),
                     listbox);
 
-  gtk_list_box_set_filter_func (GTK_LIST_BOX (listbox), filter_chat_list_cb, chatty->search_entry_contacts, NULL);
+  gtk_list_box_set_filter_func (GTK_LIST_BOX (listbox), filter_contacts_list_cb, chatty->search_entry_contacts, NULL);
   gtk_list_box_set_sort_func (GTK_LIST_BOX (listbox), cb_chatty_blist_sort_contacts, NULL, NULL);
 
   g_signal_connect (listbox,
