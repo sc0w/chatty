@@ -47,6 +47,7 @@ static gboolean chatty_conv_check_for_command (PurpleConversation *conv);
 static void chatty_update_typing_status (ChattyConversation *chatty_conv);
 static void chatty_check_for_emoticon (ChattyConversation *chatty_conv);
 static PurpleBlistNode *chatty_get_conv_blist_node (PurpleConversation *conv);
+static void chatty_conv_conversation_update (PurpleConversation *conv);
 
 
 // *** callbacks
@@ -504,6 +505,20 @@ cb_tree_view_row_activated (GtkTreeView       *treeview,
 
 }
 
+
+static void
+cb_update_buddy_icon (PurpleBuddy *buddy)
+{
+	PurpleConversation *conv;
+
+	conv = purple_find_conversation_with_account (PURPLE_CONV_TYPE_IM, 
+                                                buddy->name, 
+                                                buddy->account);
+
+	if (conv) {
+    chatty_conv_conversation_update (conv);
+  }
+}
 
 // *** end callbacks
 
@@ -2431,23 +2446,19 @@ chatty_conv_im_with_buddy (PurpleAccount *account,
 
 
 /**
- * chatty_conv_show_conversation:
+ * chatty_conv_conversation_update:
  * @conv: a PurpleConversation
  *
- * Shows a conversation after a notification
- *
- * Called from cb_open_message in chatty-notify.c
+ * Update conversation UI
  *
  */
-void
-chatty_conv_show_conversation (PurpleConversation *conv)
+static void
+chatty_conv_conversation_update (PurpleConversation *conv)
 {
   PurpleAccount      *account;
   PurpleBuddy        *buddy;
   PurpleContact      *contact;
   GdkPixbuf          *avatar;
-  ChattyConversation *chatty_conv;
-  GtkWindow          *window;
   const char         *name;
   const char         *buddy_alias;
   const char         *contact_alias;
@@ -2456,14 +2467,10 @@ chatty_conv_show_conversation (PurpleConversation *conv)
     return;
   }
 
-  chatty_conv = CHATTY_CONVERSATION (conv);
   account = purple_conversation_get_account (conv);
   name = chatty_utils_jabber_id_strip (purple_conversation_get_name (conv));
   buddy = purple_find_buddy (account, name);
   buddy_alias = purple_buddy_get_alias (buddy);
-
-  chatty_conv_present_conversation (conv);
-  chatty_conv_set_unseen (chatty_conv, CHATTY_UNSEEN_NONE);
 
   avatar = chatty_icon_get_buddy_icon (PURPLE_BLIST_NODE(buddy),
                                        name,
@@ -2477,13 +2484,42 @@ chatty_conv_show_conversation (PurpleConversation *conv)
 
   chatty_window_update_sub_header_titlebar (avatar, contact_alias ? contact_alias : buddy_alias);
 
+  g_object_unref (avatar);
+}
+
+
+
+/**
+ * chatty_conv_show_conversation:
+ * @conv: a PurpleConversation
+ *
+ * Shows a conversation after a notification
+ *
+ * Called from cb_open_message in chatty-notify.c
+ *
+ */
+void
+chatty_conv_show_conversation (PurpleConversation *conv)
+{
+  ChattyConversation *chatty_conv;
+  GtkWindow          *window;
+
+  if (!conv) {
+    return;
+  }
+
+  chatty_conv = CHATTY_CONVERSATION (conv);
+
+  chatty_conv_present_conversation (conv);
+  chatty_conv_set_unseen (chatty_conv, CHATTY_UNSEEN_NONE);
+
+  chatty_conv_conversation_update (conv);
+
   chatty_window_change_view (CHATTY_VIEW_MESSAGE_LIST);
 
   window = gtk_application_get_active_window (GTK_APPLICATION (g_application_get_default ()));
 
   gtk_window_present (window);
-
-  g_object_unref (avatar);
 }
 
 
@@ -3022,6 +3058,9 @@ chatty_conversations_init (void)
 
   purple_signal_connect (blist_handle, "buddy-status-changed",
                          handle, PURPLE_CALLBACK (cb_update_buddy_status), NULL);
+
+  purple_signal_connect (blist_handle, "buddy-icon-changed",
+                          handle, PURPLE_CALLBACK (cb_update_buddy_icon), NULL);
 
   purple_signal_connect (purple_conversations_get_handle (),
                          "sms-sent", &handle,
