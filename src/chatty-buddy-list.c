@@ -1663,7 +1663,7 @@ chatty_blist_update_buddy (PurpleBuddyList *list,
   ChattyBlistNode         *ui;
   PurpleAccount           *account;
   const char              *username;
-  const char              *who;
+  g_autofree char         *who;
   g_autofree gchar        *iso_timestamp = NULL;
   struct tm               *timeinfo;
   char                     message_exists;
@@ -1675,10 +1675,10 @@ chatty_blist_update_buddy (PurpleBuddyList *list,
   account = purple_buddy_get_account (buddy);
 
   username = purple_account_get_username (account);
-  who = purple_buddy_get_name (buddy);
+  who = chatty_utils_jabber_id_strip (purple_buddy_get_name (buddy));
   log_data = g_new0(ChattyLog, 1);
 
-  message_exists = chatty_history_get_im_last_message(username, who, log_data);
+  message_exists = chatty_history_get_im_last_message (username, who, log_data);
 
   iso_timestamp = g_malloc0(MAX_GMT_ISO_SIZE * sizeof(char));
 
