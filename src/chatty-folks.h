@@ -32,8 +32,8 @@ void chatty_folks_close (void);
 const char *chatty_folks_has_individual_with_name (const char *name);
 const char *chatty_folks_has_individual_with_phonenumber (const char *number);
 const char *chatty_folks_get_individual_name_by_id (const char *id);
-void chatty_folks_set_purple_buddy_avatar (const char    *folks_id, 
-                                           PurpleAccount *account,
-                                           const char    *user_name);
+void chatty_folks_set_purple_buddy_data (const char    *folks_id, 
+                                         PurpleAccount *account,
+                                         const char    *user_name);
 
 #endif

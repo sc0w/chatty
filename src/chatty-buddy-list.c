@@ -776,7 +776,7 @@ chatty_blist_add_buddy_from_uri (const char *uri)
   }
 
   if (!purple_buddy_icons_node_has_custom_icon (PURPLE_BLIST_NODE(buddy))) {
-    chatty_folks_set_purple_buddy_avatar (folks_id, account, g_strdup (who));
+    chatty_folks_set_purple_buddy_data (folks_id, account, g_strdup (who));
   }
 
   chatty_conv_im_with_buddy (account, g_strdup (who));
@@ -1036,7 +1036,7 @@ chatty_blist_add_buddy (PurpleAccount *account,
     folks_id = chatty_folks_has_individual_with_phonenumber (who);
 
     if (folks_id) {
-      chatty_folks_set_purple_buddy_avatar (folks_id, account, who);
+      chatty_folks_set_purple_buddy_data (folks_id, account, who);
     }
   } else {
     purple_account_add_buddy_with_invite (account, buddy, NULL);

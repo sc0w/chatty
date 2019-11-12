@@ -81,7 +81,7 @@ cb_update_row (FolksIndividual *individual,
 
           if (account != NULL && number != NULL) {
             if (purple_find_buddy (account, number)) {
-              chatty_folks_set_purple_buddy_avatar (id, account, number);
+              chatty_folks_set_purple_buddy_data (id, account, number);
             }
           }
         }
@@ -564,9 +564,9 @@ chatty_folks_get_individual_name_by_id (const char *id)
  *
  */
 void
-chatty_folks_set_purple_buddy_avatar (const char    *folks_id,
-                                      PurpleAccount *account,
-                                      const char    *user_name)
+chatty_folks_set_purple_buddy_data (const char    *folks_id,
+                                    PurpleAccount *account,
+                                    const char    *user_name)
 { 
   FolksIndividual *individual;
 
@@ -575,6 +575,10 @@ chatty_folks_set_purple_buddy_avatar (const char    *folks_id,
   individual = FOLKS_INDIVIDUAL(gee_map_get (chatty_folks->individuals, folks_id));
 
   if (individual != NULL) {
+    PurpleBuddy *buddy = purple_find_buddy (account, user_name);
+    PurpleContact *contact = purple_buddy_get_contact (buddy);
+    purple_contact_set_alias (contact, folks_individual_get_display_name (individual));
+
     chatty_folks_load_avatar (individual, 
                               NULL, 
                               account, 

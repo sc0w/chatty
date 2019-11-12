@@ -2813,7 +2813,7 @@ chatty_conv_new (PurpleConversation *conv)
 
           purple_blist_add_buddy (buddy, NULL, NULL, NULL);
 
-          chatty_folks_set_purple_buddy_avatar (folks_id, account, conv_name);
+          chatty_folks_set_purple_buddy_data (folks_id, account, conv_name);
         }
       }
 
