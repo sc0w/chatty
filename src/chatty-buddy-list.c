@@ -95,19 +95,20 @@ row_selected_cb (GtkListBox    *box,
 
     gtk_widget_hide (chatty->button_header_chat_info);
 
+    if (chatty_blist_protocol_is_sms (account)) {
+      number = purple_buddy_get_name (buddy);
+      folks_id = chatty_folks_has_individual_with_phonenumber (number);
+
+      if (!folks_id) {
+        gtk_widget_show (chatty->button_menu_add_gnome_contact);
+      }
+    }
+
     if (purple_blist_node_get_bool (PURPLE_BLIST_NODE(buddy),
                                     "chatty-unknown-contact")) {
 
       gtk_widget_show (chatty->button_menu_add_contact);
 
-      if (chatty_blist_protocol_is_sms (account)) {
-        number = purple_buddy_get_name (buddy);
-        folks_id = chatty_folks_has_individual_with_phonenumber (number);
-
-        if (!folks_id) {
-          gtk_widget_show (chatty->button_menu_add_gnome_contact);
-        }
-      }
     }
 
     purple_blist_node_set_bool (node, "chatty-autojoin", TRUE);
@@ -779,9 +780,9 @@ chatty_blist_add_buddy_from_uri (const char *uri)
     chatty_folks_set_purple_buddy_data (folks_id, account, g_strdup (who));
   }
 
-  chatty_conv_im_with_buddy (account, g_strdup (who));
-
   purple_blist_node_set_bool (PURPLE_BLIST_NODE(buddy), "chatty-autojoin", TRUE);
+
+  chatty_conv_im_with_buddy (account, g_strdup (who));
 
   chatty_window_change_view (CHATTY_VIEW_MESSAGE_LIST);
 
@@ -853,17 +854,21 @@ void
 chatty_blist_gnome_contacts_add_buddy (void)
 {
   PurpleBuddy        *buddy;
+  PurpleContact      *contact;
   const char         *who;
+  const char         *alias;
   g_autofree gchar   *number;
   
   buddy = PURPLE_BUDDY (chatty_get_selected_node ());
   g_return_if_fail (buddy != NULL);
 
   who = purple_buddy_get_name (buddy);
+  contact = purple_buddy_get_contact (buddy);
+  alias = purple_contact_get_alias (contact);
 
   number = chatty_utils_format_phonenumber (who);
 
-  chatty_dbus_gc_write_contact (who, number);
+  chatty_dbus_gc_write_contact (alias, number);
 }
 
 

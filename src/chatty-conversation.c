@@ -2444,13 +2444,13 @@ chatty_conv_show_conversation (PurpleConversation *conv)
 {
   PurpleAccount      *account;
   PurpleBuddy        *buddy;
+  PurpleContact      *contact;
   GdkPixbuf          *avatar;
   ChattyConversation *chatty_conv;
   GtkWindow          *window;
-  const gchar        *protocol_id;
-  const char         *color;
   const char         *name;
   const char         *buddy_alias;
+  const char         *contact_alias;
 
   if (!conv) {
     return;
@@ -2458,7 +2458,6 @@ chatty_conv_show_conversation (PurpleConversation *conv)
 
   chatty_conv = CHATTY_CONVERSATION (conv);
   account = purple_conversation_get_account (conv);
-  protocol_id = purple_account_get_protocol_id (account);
   name = chatty_utils_jabber_id_strip (purple_conversation_get_name (conv));
   buddy = purple_find_buddy (account, name);
   buddy_alias = purple_buddy_get_alias (buddy);
@@ -2466,19 +2465,17 @@ chatty_conv_show_conversation (PurpleConversation *conv)
   chatty_conv_present_conversation (conv);
   chatty_conv_set_unseen (chatty_conv, CHATTY_UNSEEN_NONE);
 
-  if (g_strcmp0 (protocol_id, "prpl-mm-sms") == 0) {
-    color = CHATTY_COLOR_GREEN;
-  } else {
-    color = CHATTY_COLOR_BLUE;
-  }
-
   avatar = chatty_icon_get_buddy_icon (PURPLE_BLIST_NODE(buddy),
                                        name,
                                        CHATTY_ICON_SIZE_SMALL,
-                                       color,
+                                       chatty_blist_protocol_is_sms (account) ?
+                                       CHATTY_COLOR_GREEN : CHATTY_COLOR_BLUE,
                                        FALSE);
 
-  chatty_window_update_sub_header_titlebar (avatar, buddy_alias);
+  contact = purple_buddy_get_contact (buddy);
+  contact_alias = purple_contact_get_alias (contact);
+
+  chatty_window_update_sub_header_titlebar (avatar, contact_alias ? contact_alias : buddy_alias);
 
   chatty_window_change_view (CHATTY_VIEW_MESSAGE_LIST);
 
