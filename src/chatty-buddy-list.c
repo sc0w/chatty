@@ -1282,7 +1282,7 @@ chatty_blist_contacts_update_node (PurpleBuddy     *buddy,
     return;
   }
 
-  alias = purple_buddy_get_alias (buddy);
+  alias = chatty_utils_jabber_id_strip (purple_buddy_get_alias (buddy));
 
   if (purple_prefs_get_bool (CHATTY_PREFS_ROOT "/blist/greyout_offline_buddies") &&
       !PURPLE_BUDDY_IS_ONLINE(buddy)) {
@@ -1433,7 +1433,7 @@ chatty_blist_chats_update_node (PurpleBuddy     *buddy,
   g_autofree gchar *unread_messages = NULL;
   g_autofree gchar *last_message_striped = NULL;
   const gchar      *tag;
-  const gchar      *alias;
+  const gchar      *alias = NULL;
   gboolean          notify;
   gboolean          blur;
 
@@ -1448,11 +1448,7 @@ chatty_blist_chats_update_node (PurpleBuddy     *buddy,
   }
 
   contact = purple_buddy_get_contact (buddy);
-  alias = purple_contact_get_alias (contact);
-
-  if (alias == NULL) {
-    alias = purple_buddy_get_alias (buddy);
-  }
+  alias = chatty_utils_jabber_id_strip (purple_contact_get_alias (contact));
 
   if (!purple_prefs_get_bool (CHATTY_PREFS_ROOT "/status/first_start")) {
      chatty_window_overlay_show (FALSE);
