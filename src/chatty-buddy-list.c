@@ -153,11 +153,19 @@ static void
 cb_search_entry_contacts_changed (GtkSearchEntry *entry,
                                   GtkListBox     *listbox)
 {
+  PurpleAccount           *account;
   static ChattyContactRow *new_row;
   GList                   *children, *l;
   const gchar             *number;
   gchar                   *number_e164;
   int                      num_rows = 0;
+
+  account = purple_accounts_find ("SMS", "prpl-mm-sms");
+
+  if (purple_account_is_disconnected (account)) {
+    gtk_list_box_invalidate_filter (GTK_LIST_BOX (listbox));
+    return;
+  }
 
   children = gtk_container_get_children (GTK_CONTAINER(listbox));
 
@@ -167,8 +175,9 @@ cb_search_entry_contacts_changed (GtkSearchEntry *entry,
     };
   }
 
+  number = gtk_entry_get_text (GTK_ENTRY(entry));
+
   if ((num_rows == 0) && !new_row) {
-    number = gtk_entry_get_text (GTK_ENTRY(entry));
     number_e164 = chatty_utils_format_phonenumber (number);
 
     if (!new_row && number_e164) {
@@ -193,8 +202,7 @@ cb_search_entry_contacts_changed (GtkSearchEntry *entry,
         gtk_widget_show (GTK_WIDGET(new_row));
       }
     }
-  } else if (new_row && num_rows == 1) {
-    number = gtk_entry_get_text (GTK_ENTRY(entry));
+  } else if (new_row && num_rows == 1 && !(*number == '\0')) {
     number_e164 = chatty_utils_format_phonenumber (number);
 
     if (number_e164) {
