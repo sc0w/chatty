@@ -47,6 +47,9 @@
                   <object class="GtkLabel" id="timestamp">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <attributes>
+                      <attribute name="scale" value="0.7"/>
+                    </attributes>
                     <style>
                       <class name="dim-label"/>
                     </style>
