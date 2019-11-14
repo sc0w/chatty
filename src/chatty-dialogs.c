@@ -1326,8 +1326,6 @@ chatty_dialogs_show_dialog_user_info (ChattyConversation *chatty_conv)
 
   if (chatty_purple->plugin_lurch_loaded && (!g_strcmp0 (protocol_id, "prpl-jabber"))) {
     label_encryption = GTK_WIDGET (gtk_builder_get_object (builder, "label_encryption"));
-    label_user_status = GTK_WIDGET (gtk_builder_get_object (builder, "label_user_status"));
-    label_status_msg = GTK_WIDGET (gtk_builder_get_object (builder, "label_status_msg"));
     chatty_dialog->omemo.switch_on_off = GTK_SWITCH (gtk_builder_get_object (builder, "switch_omemo"));
     chatty_dialog->omemo.label_status_msg = GTK_WIDGET (gtk_builder_get_object (builder, "label_encryption_msg"));
     chatty_dialog->omemo.listbox_fp_contact = GTK_LIST_BOX (gtk_builder_get_object (builder, "listbox_fp"));
@@ -1335,8 +1333,6 @@ chatty_dialogs_show_dialog_user_info (ChattyConversation *chatty_conv)
     gtk_widget_show (GTK_WIDGET(listbox_prefs));
     gtk_widget_show (GTK_WIDGET(chatty_dialog->omemo.listbox_fp_contact));
     gtk_widget_show (GTK_WIDGET(label_encryption));
-    gtk_widget_show (GTK_WIDGET(label_user_status));
-    gtk_widget_show (GTK_WIDGET(label_status_msg));
     gtk_widget_show (GTK_WIDGET(chatty_dialog->omemo.label_status_msg));
 
     gtk_list_box_set_header_func (chatty_dialog->omemo.listbox_fp_contact,
@@ -1390,10 +1386,18 @@ chatty_dialogs_show_dialog_user_info (ChattyConversation *chatty_conv)
   gtk_label_set_text (GTK_LABEL(label_alias), chatty_utils_jabber_id_strip (alias));
   gtk_label_set_text (GTK_LABEL(label_jid), chatty_conv->conv->name);
 
-  presence = purple_buddy_get_presence (buddy);
-  status = purple_presence_get_active_status (presence);
+  if (!g_strcmp0 (protocol_id, "prpl-jabber")) {
+    label_user_status = GTK_WIDGET (gtk_builder_get_object (builder, "label_user_status"));
+    label_status_msg = GTK_WIDGET (gtk_builder_get_object (builder, "label_status_msg"));
+    
+    gtk_widget_show (GTK_WIDGET(label_user_status));
+    gtk_widget_show (GTK_WIDGET(label_status_msg));
 
-  gtk_label_set_text (GTK_LABEL(label_status_msg), purple_status_get_name (status));
+    presence = purple_buddy_get_presence (buddy);
+    status = purple_presence_get_active_status (presence);
+
+    gtk_label_set_text (GTK_LABEL(label_status_msg), purple_status_get_name (status));
+  }
 
   dialog = GTK_WIDGET (gtk_builder_get_object (builder, "dialog"));
 
