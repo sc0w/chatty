@@ -72,6 +72,7 @@ add_project_arguments(
 )
 
 libebook_dep = dependency('libebook-contacts-1.2')
+libm_dep = cc.find_library('m')
 
 subdir('data')
 subdir('src')

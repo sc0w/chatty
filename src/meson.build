@@ -36,6 +36,7 @@ chatty_deps = [
   dependency('gee-0.8'),
   dependency('folks'),
   libebook_dep,
+  libm_dep,
 ]
 
 gnome = import('gnome')

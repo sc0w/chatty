@@ -228,12 +228,14 @@ chatty_icon_get_buddy_icon (PurpleBlistNode *node,
   // create an avatar with the initial of the
   // buddy name if there is no icon available
   if (data == NULL && name != NULL) {
-    cairo_text_extents_t te;
+    PangoFontDescription *font_desc;
+    PangoLayout          *layout;
     int                  width = size;
     int                  height = size;
-    double               x_pos, y_pos;
+    int                  pango_width, pango_height;
     char                 tmp[4];
     char                *initial_char;
+    g_autofree gchar    *font;
 
     g_utf8_strncpy (tmp, name, 1);
     initial_char = g_utf8_strup (tmp, 1);
@@ -245,18 +247,20 @@ chatty_icon_get_buddy_icon (PurpleBlistNode *node,
     cairo_paint (cr);
 
     cairo_set_source_rgb (cr, 0.95, 0.95, 0.95);
-    cairo_set_font_size (cr, size / 2);
-    cairo_select_font_face (cr,
-                            "Sans",
-                            CAIRO_FONT_SLANT_NORMAL,
-                            CAIRO_FONT_WEIGHT_NORMAL);
 
-    cairo_text_extents (cr, initial_char, &te);
-    x_pos = width / 2 - (te.width / 2 + te.x_bearing);
-    y_pos = height / 2 - (te.height / 2 + te.y_bearing);
-    cairo_move_to (cr, x_pos, y_pos);
+    font = g_strdup_printf ("Sans %d", (int)ceil (size / 2.5));
+    layout = pango_cairo_create_layout (cr);
+    pango_layout_set_text (layout, initial_char, -1);
+    font_desc = pango_font_description_from_string (font);
+    pango_layout_set_font_description (layout, font_desc);
+    pango_font_description_free (font_desc);
 
-    cairo_show_text (cr, initial_char);
+    pango_layout_get_size (layout, &pango_width, &pango_height);
+    cairo_translate (cr, size/2, size/2);
+    cairo_move_to (cr,
+                   -((double)pango_width / PANGO_SCALE) / 2,
+                   -((double)pango_height / PANGO_SCALE) / 2);
+    pango_cairo_show_layout (cr, layout);
 
     buf = gdk_pixbuf_get_from_surface (surface,
                                        0,
