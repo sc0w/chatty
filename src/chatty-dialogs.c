@@ -1289,21 +1289,25 @@ chatty_dialogs_show_dialog_join_muc (void)
 void
 chatty_dialogs_show_dialog_user_info (ChattyConversation *chatty_conv)
 {
-  PurpleBuddy   *buddy;
-  PurpleAccount *account;
-  GtkBuilder    *builder;
-  GtkWidget     *dialog;
-  GtkWidget     *label_alias;
-  GtkWidget     *label_jid;
-  GtkWidget     *label_status;
-  GtkWidget     *label_user_id;
-  GtkWindow     *window;
-  GtkSwitch     *switch_notify;
-  GtkListBox    *listbox_prefs;
-  GdkPixbuf     *icon;
-  GtkImage      *avatar;
-  const char    *protocol_id;
-  const char    *alias;
+  PurpleBuddy    *buddy;
+  PurpleAccount  *account;
+  PurplePresence *presence;
+  PurpleStatus   *status;
+  GtkBuilder     *builder;
+  GtkWidget      *dialog;
+  GtkWidget      *label_alias;
+  GtkWidget      *label_jid;
+  GtkWidget      *label_encryption;
+  GtkWidget      *label_user_id;
+  GtkWidget      *label_user_status;
+  GtkWidget      *label_status_msg;
+  GtkWindow      *window;
+  GtkSwitch      *switch_notify;
+  GtkListBox     *listbox_prefs;
+  GdkPixbuf      *icon;
+  GtkImage       *avatar;
+  const char     *protocol_id;
+  const char     *alias;
 
   chatty_purple_data_t *chatty_purple = chatty_get_purple_data ();
   chatty_dialog_data_t *chatty_dialog = chatty_get_dialog_data ();
@@ -1321,14 +1325,14 @@ chatty_dialogs_show_dialog_user_info (ChattyConversation *chatty_conv)
   protocol_id = purple_account_get_protocol_id (account);
 
   if (chatty_purple->plugin_lurch_loaded && (!g_strcmp0 (protocol_id, "prpl-jabber"))) {
-    label_status = GTK_WIDGET (gtk_builder_get_object (builder, "label_status"));
+    label_encryption = GTK_WIDGET (gtk_builder_get_object (builder, "label_encryption"));
     chatty_dialog->omemo.switch_on_off = GTK_SWITCH (gtk_builder_get_object (builder, "switch_omemo"));
-    chatty_dialog->omemo.label_status_msg = GTK_WIDGET (gtk_builder_get_object (builder, "label_status_msg"));
+    chatty_dialog->omemo.label_status_msg = GTK_WIDGET (gtk_builder_get_object (builder, "label_encryption_msg"));
     chatty_dialog->omemo.listbox_fp_contact = GTK_LIST_BOX (gtk_builder_get_object (builder, "listbox_fp"));
 
     gtk_widget_show (GTK_WIDGET(listbox_prefs));
     gtk_widget_show (GTK_WIDGET(chatty_dialog->omemo.listbox_fp_contact));
-    gtk_widget_show (GTK_WIDGET(label_status));
+    gtk_widget_show (GTK_WIDGET(label_encryption));
     gtk_widget_show (GTK_WIDGET(chatty_dialog->omemo.label_status_msg));
 
     gtk_list_box_set_header_func (chatty_dialog->omemo.listbox_fp_contact,
@@ -1379,8 +1383,21 @@ chatty_dialogs_show_dialog_user_info (ChattyConversation *chatty_conv)
                     G_CALLBACK(cb_switch_notify_state_changed),
                     (gpointer)chatty_conv->conv);
 
-  gtk_label_set_text (GTK_LABEL(label_alias), alias);
-  gtk_label_set_text (GTK_LABEL(label_jid), chatty_utils_jabber_id_strip (chatty_conv->conv->name));
+  gtk_label_set_text (GTK_LABEL(label_alias), chatty_utils_jabber_id_strip (alias));
+  gtk_label_set_text (GTK_LABEL(label_jid), chatty_conv->conv->name);
+
+  if (!g_strcmp0 (protocol_id, "prpl-jabber")) {
+    label_user_status = GTK_WIDGET (gtk_builder_get_object (builder, "label_user_status"));
+    label_status_msg = GTK_WIDGET (gtk_builder_get_object (builder, "label_status_msg"));
+    
+    gtk_widget_show (GTK_WIDGET(label_user_status));
+    gtk_widget_show (GTK_WIDGET(label_status_msg));
+
+    presence = purple_buddy_get_presence (buddy);
+    status = purple_presence_get_active_status (presence);
+
+    gtk_label_set_text (GTK_LABEL(label_status_msg), purple_status_get_name (status));
+  }
 
   dialog = GTK_WIDGET (gtk_builder_get_object (builder, "dialog"));
 
