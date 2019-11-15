@@ -46,15 +46,21 @@ typedef struct {
   int           max;
 } MAMQuery;
 
-static GHashTable *ht_mam_ctx = NULL;
 /* FIXME: What if purple becomes multithreaded 8-O */
-static MamMsg *inflight_msg = NULL;
-static char *origin_id = NULL;
+typedef struct {
+  GHashTable *qs;
+  time_t   last_ts;
+  MamMsg  *cur_msg;
+  char    *cur_oid;
+} MamCtx;
+
+static GHashTable *ht_mam_ctx = NULL;
 
 static void
 mamq_free(void *ptr)
 {
   MAMQuery *mamq = (MAMQuery*)ptr;
+  if(ptr==NULL) return;
   g_free(mamq->id);
   g_free(mamq->to);
   g_free(mamq->with);
@@ -65,6 +71,74 @@ mamq_free(void *ptr)
   g_free(mamq);
 }
 
+static void
+mamm_free(void *ptr)
+{
+  MamMsg *mm = (MamMsg*)ptr;
+  if(ptr==NULL) return;
+  g_free(mm->id);
+  g_free(mm->p.who);
+  g_free(mm->p.what);
+  g_free(mm->p.alias);
+  g_free(mm);
+}
+
+/**
+ * MAM Context Management API
+ */
+static void
+mamc_free(void *ptr)
+{
+  MamCtx *mamc = (MamCtx*)ptr;
+  if(ptr==NULL) return;
+  g_free(mamc->cur_oid);
+  mamm_free(mamc->cur_msg);
+  g_hash_table_destroy(mamc->qs);
+  g_free(mamc);
+}
+
+static MamCtx *
+mamc_new(void)
+{
+  MamCtx *mamc = g_new0(MamCtx, 1);
+  mamc->qs = g_hash_table_new_full(g_str_hash,
+                                   g_str_equal,
+                                   g_free,
+                                   mamq_free);
+  return mamc;
+}
+
+static MamCtx *
+chatty_mam_ctx_get(PurpleAccount *pa)
+{
+  g_return_val_if_fail(pa != NULL, NULL);
+  return g_hash_table_lookup(ht_mam_ctx, purple_account_get_username(pa));
+}
+
+static inline MamCtx *
+chatty_mam_ctx_add(PurpleAccount *pa)
+{
+  MamCtx *mamc = chatty_mam_ctx_get(pa);
+  g_return_val_if_fail(pa != NULL, NULL);
+  if(mamc == NULL) {
+    mamc = mamc_new();
+    g_hash_table_insert(ht_mam_ctx,
+                        g_strdup(purple_account_get_username(pa)), mamc);
+  }
+  return mamc;
+}
+
+static void
+chatty_mam_ctx_del(PurpleAccount *pa)
+{
+  g_return_if_fail(pa != NULL);
+  g_debug("Cleaning context for %s", purple_account_get_username(pa));
+  g_hash_table_remove(ht_mam_ctx, purple_account_get_username(pa));
+}
+
+/**
+ * MAM Query Handlers
+ */
 static void chatty_mam_query_archive (MAMQuery *mamq);
 
 static void
@@ -73,7 +147,8 @@ cb_mam_query_result(JabberStream *js, const char *from,
                     xmlnode *res, gpointer data)
 {
   xmlnode *fin = xmlnode_get_child_with_namespace(res, "fin", NS_MAMv2);
-  char *key;
+  PurpleAccount *pa = purple_connection_get_account(js->gc);
+  MamCtx *mamc = chatty_mam_ctx_get(pa);
   MAMQuery *mamq = (MAMQuery*) data;
 
   if(type == JABBER_IQ_RESULT && fin != NULL) {
@@ -92,10 +167,13 @@ cb_mam_query_result(JabberStream *js, const char *from,
       }
       fin = NULL; // Flag error state
     } else {
-      g_debug("This is the last of them, standing down");
+      g_debug("This is the last of them, standing down at %ld", mamc->last_ts);
+      if(mamc->last_ts > 0)
+        purple_account_set_int(pa, "mam_last_ts", mamc->last_ts);
     }
   } else {
       fin = NULL; // Flag error state
+      // FIXME: restart if it's just item-not-found
   }
   if(fin == NULL) {
     // Report error and give up
@@ -105,9 +183,7 @@ cb_mam_query_result(JabberStream *js, const char *from,
     g_free(xml);
   }
   // No follow up, clean up the context
-  key = g_strjoin(":", js->stream_id, mamq->id, NULL);
-  g_hash_table_remove(ht_mam_ctx, key);
-  g_free(key);
+  g_hash_table_remove(mamc->qs, mamq->id);
 }
 
 static void
@@ -186,19 +262,31 @@ cb_chatty_mam_bare_info (PurpleConnection *pc,
                           const char *bare,
                           const char *var)
 {
-  if(g_strcmp0(var,NS_MAMv2) == 0) {
+  if(g_strcmp0(var, NS_MAMv2) == 0) {
     JabberStream  *js = purple_connection_get_protocol_data (pc);
     char *qid = jabber_get_next_id(js);
-    char *key = g_strjoin(":",js->stream_id, qid, NULL);
+    GDateTime *dt;
+    PurpleAccount *pa = purple_connection_get_account(pc);
     // Init CTX
+    MamCtx *mamc = chatty_mam_ctx_add(pa);
     MAMQuery *mamq = g_new0(MAMQuery, 1);
     mamq->js = js;
-    mamq->id = qid;
-    g_hash_table_insert(ht_mam_ctx, key, mamq);
+    mamq->id = g_strdup(qid);
+    g_hash_table_insert(mamc->qs, qid, mamq);
     // Get last stop point
-    // this is a drill
-    mamq->start = g_strdup("2010-06-07T00:00:00Z");
-    g_debug ("Server supports MAM %s on %s; Querying it with %s from %s", var, bare, qid, mamq->start);
+    mamc->last_ts = purple_account_get_int(pa, "mam_last_ts", 0);
+    if(mamc->last_ts > 0) {
+      dt = g_date_time_new_from_unix_utc(mamc->last_ts);
+    } else {
+      // last week should be good enough for the start
+      GDateTime *now = g_date_time_new_now_utc();
+      dt = g_date_time_add_days(now, -7);
+      g_date_time_unref(now);
+    }
+    mamq->start = g_date_time_format(dt,"%FT%TZ");
+    g_date_time_unref(dt);
+    g_debug ("Server supports MAM %s on %s; Querying by %s from %s after %s",
+                                    var, bare, qid, mamq->start, mamq->after);
     // Request MAM backlog
     chatty_mam_query_archive(mamq);
   }
@@ -209,38 +297,41 @@ cb_chatty_mam_msg_wrote(PurpleAccount *pa, PurpleConvMessage *pcm,
                         char **uuid, PurpleConversationType type,
                         void *ctx)
 {
-  if(origin_id && pcm->flags & PURPLE_MESSAGE_SEND) {
+  MamCtx *mamc = chatty_mam_ctx_get(pa);
+  if(mamc == NULL)
+    return;
+  if(mamc->cur_oid && pcm->flags & PURPLE_MESSAGE_SEND) {
     // copy origin_id into uuid to be able to dedup outgoing messages
-    *uuid = g_strdup(origin_id);
-    g_free(origin_id);
-    origin_id = NULL;
+    *uuid = g_strdup(mamc->cur_oid);
+    g_free(mamc->cur_oid);
+    mamc->cur_oid = NULL;
     return;
   }
 
-  if(inflight_msg == NULL)
+  if(mamc->cur_msg == NULL)
     return;
 
   // Skip non-jabber writes
   if(g_strcmp0 ("prpl-jabber", purple_account_get_protocol_id (pa)))
     return;
 
-  inflight_msg->p.what = g_strdup(pcm->what);
+  mamc->cur_msg->p.what = g_strdup(pcm->what);
   // If flags are already set - enforce them, otherwise copy
   // Also always set NO_LOG flag to suppress in-app archiving
-  if(inflight_msg->p.flags) {
-    pcm->flags = inflight_msg->p.flags | PURPLE_MESSAGE_NO_LOG;
+  if(mamc->cur_msg->p.flags) {
+    pcm->flags = mamc->cur_msg->p.flags | PURPLE_MESSAGE_NO_LOG;
   } else {
-    inflight_msg->p.flags = pcm->flags;
+    mamc->cur_msg->p.flags = pcm->flags;
     pcm->flags |= PURPLE_MESSAGE_NO_LOG;
   }
-  inflight_msg->type = type;
-  inflight_msg->p.alias = g_strdup(pcm->alias);
-  inflight_msg->p.when = pcm->when;
-  inflight_msg->p.who = g_strdup(pcm->who);
-  if(inflight_msg->id)
-    *uuid = g_strdup(inflight_msg->id);
+  mamc->cur_msg->type = type;
+  mamc->cur_msg->p.alias = g_strdup(pcm->alias);
+  mamc->cur_msg->p.when = pcm->when;
+  mamc->cur_msg->p.who = g_strdup(pcm->who);
+  if(mamc->cur_msg->id)
+    *uuid = g_strdup(mamc->cur_msg->id);
   g_debug ("Received message on %s of type %d with flags %d",
-            inflight_msg->p.alias, inflight_msg->type, inflight_msg->p.flags);
+            mamc->cur_msg->p.alias, mamc->cur_msg->type, mamc->cur_msg->p.flags);
 }
 
 static gboolean
@@ -277,6 +368,8 @@ cb_chatty_mam_msg_received (PurpleConnection *pc,
   const char *user;
   PurpleMessageFlags flags = 0;
   JabberStream  *js = purple_connection_get_protocol_data (pc);
+  PurpleAccount *pa = purple_connection_get_account (pc);
+  MamCtx *mamc = chatty_mam_ctx_add(pa);
 
   if (msg == NULL)
     return FALSE;
@@ -284,7 +377,7 @@ cb_chatty_mam_msg_received (PurpleConnection *pc,
   node_result = xmlnode_get_child_with_namespace (msg, "result", NS_MAMv2);
   node_sid    = xmlnode_get_child_with_namespace (msg, "stanza-id", NS_SIDv0);
 
-  if(inflight_msg != NULL) {
+  if(mamc->cur_msg != NULL) {
     // Skip resubmission - break the loop
     g_debug ("Received resubmission %s %s %s", id, from, to);
     return FALSE;
@@ -300,11 +393,11 @@ cb_chatty_mam_msg_received (PurpleConnection *pc,
       stanza_id = xmlnode_get_attrib (node_result, "id");
       user = purple_account_get_username(purple_connection_get_account(pc));
 
-      // TODO: Check result and query-id are valid
-      if(from != NULL && g_strcmp0(from, user)==0) {
+      // Check result and query-id are valid
+      if(query_id == NULL || !g_hash_table_contains(mamc->qs, query_id)) {
         // Fake result injection?
-        g_debug ("Fake MAM result injection from %s", from);
-        return FALSE; // TODO: uncomment after test
+        g_debug ("Fake MAM result[%s] injection from %s", query_id, from);
+        return FALSE;
       }
 
       node_fwd = xmlnode_get_child_with_namespace (node_result, "forwarded", NS_FWDv0);
@@ -321,6 +414,8 @@ cb_chatty_mam_msg_received (PurpleConnection *pc,
         stamp = xmlnode_get_attrib (node_delay, "stamp");
         /* Copy delay down for the parser */
         xmlnode_insert_child (message, xmlnode_copy (node_delay));
+        if(stamp)
+          mamc->last_ts = purple_str_to_time (stamp, TRUE, NULL, NULL, NULL);
       }
       // check history and drop the dup
       msg_type = xmlnode_get_attrib(message, "type");
@@ -387,24 +482,23 @@ cb_chatty_mam_msg_received (PurpleConnection *pc,
    * oob here is an overkill. Let's just try to fish end-state message from
    * the parser using signals which will override our empty message.
    */
-  inflight_msg = g_new0(MamMsg, 1);
-  inflight_msg->id = (char*)stanza_id;
-  inflight_msg->p.who = (char*)peer;
-  inflight_msg->p.flags = flags;
+  mamc->cur_msg = g_new0(MamMsg, 1);
+  mamc->cur_msg->id = (char*)stanza_id;
+  mamc->cur_msg->p.who = (char*)peer;
+  mamc->cur_msg->p.flags = flags;
   if(stamp)
-    inflight_msg->p.when = purple_str_to_time (stamp, TRUE, NULL, NULL, NULL);
+    mamc->cur_msg->p.when = mamc->last_ts;
   jabber_message_parse (js, message);
-  if(stanza_id != NULL || inflight_msg->p.what != NULL)
-    chatty_history_add_message (pc->account, &(inflight_msg->p),
-                                (char**)&stanza_id, inflight_msg->type,
+  if(stanza_id != NULL || mamc->cur_msg->p.what != NULL)
+    chatty_history_add_message (pc->account, &(mamc->cur_msg->p),
+                                (char**)&stanza_id, mamc->cur_msg->type,
                                 NULL);
   // Clear resubmission state
-  if(peer != inflight_msg->p.who)
-    g_free(inflight_msg->p.who);
-  g_free(inflight_msg->p.alias);
-  g_free(inflight_msg->p.what);
-  g_free(inflight_msg);
-  inflight_msg = NULL;
+  if(peer == mamc->cur_msg->p.who)
+    mamc->cur_msg->p.who = NULL;
+  mamc->cur_msg->id = NULL;
+  mamm_free(mamc->cur_msg);
+  mamc->cur_msg = NULL;
   // Stop processing, we have done that already
   return TRUE;
 }
@@ -430,17 +524,25 @@ cb_chatty_mam_xmlnode_send (PurpleConnection  *pc,
     node_body = xmlnode_get_child (*packet, "body");
 
     if (node_body) {
+      MamCtx *mamc = chatty_mam_ctx_get(purple_connection_get_account(pc));
+      if(mamc == NULL)
+        return;
       node_id = xmlnode_new_child (*packet, "origin-id");
       xmlnode_set_namespace (node_id, NS_SIDv0);
-      g_free(origin_id);
-      chatty_utils_generate_uuid(&origin_id);
-      xmlnode_set_attrib(node_id, "id", origin_id);
+      g_free(mamc->cur_oid);
+      chatty_utils_generate_uuid(&(mamc->cur_oid));
+      xmlnode_set_attrib(node_id, "id", mamc->cur_oid);
 
-      g_debug ("Set origin-id %s for outgoing message", origin_id);
+      g_debug ("Set origin-id %s for outgoing message", mamc->cur_oid);
     }
   }
 }
 
+static void
+cb_chatty_mam_disconnect(PurpleConnection *pc, gpointer ptr)
+{
+  chatty_mam_ctx_del(purple_connection_get_account(pc));
+}
 
 /**
  * chatty_mam_close:
@@ -489,7 +591,7 @@ chatty_0313_init (void)
   ht_mam_ctx = g_hash_table_new_full (g_str_hash,
                                        g_str_equal,
                                        g_free,
-                                       mamq_free);
+                                       mamc_free);
 
   purple_signal_connect(jabber,
                         "jabber-bare-info",
@@ -519,6 +621,11 @@ chatty_0313_init (void)
                         "conversation-write",
                         handle,
                         PURPLE_CALLBACK(cb_chatty_mam_msg_wrote),
+                        NULL);
+  purple_signal_connect(purple_connections_get_handle(),
+                        "signed-off",
+                        handle,
+                        PURPLE_CALLBACK(cb_chatty_mam_disconnect),
                         NULL);
 }
 /* vim: set sts=2 et: */
