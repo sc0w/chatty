@@ -50,6 +50,7 @@ typedef struct {
   GtkEntry          *search_entry_contacts;
 
   GtkWidget         *button_menu_add_contact;
+  GtkWidget         *button_menu_add_gnome_contact;
   GtkWidget         *button_header_chat_info;
   GtkWidget         *button_header_sub_menu;
 
@@ -58,7 +59,6 @@ typedef struct {
 
   GSList            *radio_button_list;
   GtkWidget         *dummy_prefix_radio;
-  GtkWidget         *label_contact_id;
 
   GtkBox            *box_overlay;
   GtkImage          *icon_overlay;

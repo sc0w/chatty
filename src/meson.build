@@ -17,6 +17,7 @@ chatty_sources = [
   'chatty-purple-init.c',
   'chatty-icons.c',
   'chatty-history.c',
+  'chatty-dbus.c',
   'chatty-lurch.c',
   'chatty-utils.c',
   'chatty-folks.c',

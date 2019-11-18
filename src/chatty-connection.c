@@ -15,6 +15,7 @@
 #include "chatty-purple-init.h"
 #include "chatty-notify.h"
 #include "chatty-dialogs.h"
+#include "chatty-folks.h"
 
 
 #define INITIAL_RECON_DELAY_MIN  5
@@ -185,6 +186,8 @@ chatty_connection_connected (PurpleConnection *gc)
 
   if (sms_match) {
     sms_notifications = TRUE;
+
+    chatty_blist_enable_folks_contacts ();
   }
 
   chatty_dialogs_update_connection_status ();

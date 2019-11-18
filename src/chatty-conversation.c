@@ -47,6 +47,7 @@ static gboolean chatty_conv_check_for_command (PurpleConversation *conv);
 static void chatty_update_typing_status (ChattyConversation *chatty_conv);
 static void chatty_check_for_emoticon (ChattyConversation *chatty_conv);
 static PurpleBlistNode *chatty_get_conv_blist_node (PurpleConversation *conv);
+static void chatty_conv_conversation_update (PurpleConversation *conv);
 
 
 // *** callbacks
@@ -504,6 +505,20 @@ cb_tree_view_row_activated (GtkTreeView       *treeview,
 
 }
 
+
+static void
+cb_update_buddy_icon (PurpleBuddy *buddy)
+{
+	PurpleConversation *conv;
+
+	conv = purple_find_conversation_with_account (PURPLE_CONV_TYPE_IM, 
+                                                buddy->name, 
+                                                buddy->account);
+
+	if (conv) {
+    chatty_conv_conversation_update (conv);
+  }
+}
 
 // *** end callbacks
 
@@ -2431,6 +2446,50 @@ chatty_conv_im_with_buddy (PurpleAccount *account,
 
 
 /**
+ * chatty_conv_conversation_update:
+ * @conv: a PurpleConversation
+ *
+ * Update conversation UI
+ *
+ */
+static void
+chatty_conv_conversation_update (PurpleConversation *conv)
+{
+  PurpleAccount      *account;
+  PurpleBuddy        *buddy;
+  PurpleContact      *contact;
+  GdkPixbuf          *avatar;
+  const char         *name;
+  const char         *buddy_alias;
+  const char         *contact_alias;
+
+  if (!conv) {
+    return;
+  }
+
+  account = purple_conversation_get_account (conv);
+  name = chatty_utils_jabber_id_strip (purple_conversation_get_name (conv));
+  buddy = purple_find_buddy (account, name);
+  buddy_alias = purple_buddy_get_alias (buddy);
+
+  avatar = chatty_icon_get_buddy_icon (PURPLE_BLIST_NODE(buddy),
+                                       name,
+                                       CHATTY_ICON_SIZE_SMALL,
+                                       chatty_blist_protocol_is_sms (account) ?
+                                       CHATTY_COLOR_GREEN : CHATTY_COLOR_BLUE,
+                                       FALSE);
+
+  contact = purple_buddy_get_contact (buddy);
+  contact_alias = purple_contact_get_alias (contact);
+
+  chatty_window_update_sub_header_titlebar (avatar, contact_alias ? contact_alias : buddy_alias);
+
+  g_object_unref (avatar);
+}
+
+
+
+/**
  * chatty_conv_show_conversation:
  * @conv: a PurpleConversation
  *
@@ -2442,51 +2501,25 @@ chatty_conv_im_with_buddy (PurpleAccount *account,
 void
 chatty_conv_show_conversation (PurpleConversation *conv)
 {
-  PurpleAccount      *account;
-  PurpleBuddy        *buddy;
-  GdkPixbuf          *avatar;
   ChattyConversation *chatty_conv;
   GtkWindow          *window;
-  const gchar        *protocol_id;
-  const char         *color;
-  const char         *name;
-  const char         *buddy_alias;
 
   if (!conv) {
     return;
   }
 
   chatty_conv = CHATTY_CONVERSATION (conv);
-  account = purple_conversation_get_account (conv);
-  protocol_id = purple_account_get_protocol_id (account);
-  name = chatty_utils_jabber_id_strip (purple_conversation_get_name (conv));
-  buddy = purple_find_buddy (account, name);
-  buddy_alias = purple_buddy_get_alias (buddy);
 
   chatty_conv_present_conversation (conv);
   chatty_conv_set_unseen (chatty_conv, CHATTY_UNSEEN_NONE);
 
-  if (g_strcmp0 (protocol_id, "prpl-mm-sms") == 0) {
-    color = CHATTY_COLOR_GREEN;
-  } else {
-    color = CHATTY_COLOR_BLUE;
-  }
-
-  avatar = chatty_icon_get_buddy_icon (PURPLE_BLIST_NODE(buddy),
-                                       name,
-                                       CHATTY_ICON_SIZE_SMALL,
-                                       color,
-                                       FALSE);
-
-  chatty_window_update_sub_header_titlebar (avatar, buddy_alias);
+  chatty_conv_conversation_update (conv);
 
   chatty_window_change_view (CHATTY_VIEW_MESSAGE_LIST);
 
   window = gtk_application_get_active_window (GTK_APPLICATION (g_application_get_default ()));
 
   gtk_window_present (window);
-
-  g_object_unref (avatar);
 }
 
 
@@ -2813,7 +2846,7 @@ chatty_conv_new (PurpleConversation *conv)
 
           purple_blist_add_buddy (buddy, NULL, NULL, NULL);
 
-          chatty_folks_set_purple_buddy_avatar (folks_id, account, conv_name);
+          chatty_folks_set_purple_buddy_data (folks_id, account, conv_name);
         }
       }
 
@@ -3025,6 +3058,9 @@ chatty_conversations_init (void)
 
   purple_signal_connect (blist_handle, "buddy-status-changed",
                          handle, PURPLE_CALLBACK (cb_update_buddy_status), NULL);
+
+  purple_signal_connect (blist_handle, "buddy-icon-changed",
+                          handle, PURPLE_CALLBACK (cb_update_buddy_icon), NULL);
 
   purple_signal_connect (purple_conversations_get_handle (),
                          "sms-sent", &handle,

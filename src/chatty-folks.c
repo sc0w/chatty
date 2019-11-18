@@ -81,7 +81,7 @@ cb_update_row (FolksIndividual *individual,
 
           if (account != NULL && number != NULL) {
             if (purple_find_buddy (account, number)) {
-              chatty_folks_set_purple_buddy_avatar (id, account, number);
+              chatty_folks_set_purple_buddy_data (id, account, number);
             }
           }
         }
@@ -109,11 +109,34 @@ cb_update_row (FolksIndividual *individual,
 
     gtk_list_box_invalidate_sort (chatty_folks->listbox);
 
+    g_debug ("%s pspec: %s", __func__, pspec->name);
+
     g_list_free (l);
     g_list_free (rows);
     g_free (row_id);
     g_free (number);
   }
+}
+
+
+
+static void
+connect_notify_signals (FolksIndividual *individual)
+{
+  g_signal_connect (G_OBJECT(individual), 
+                    "notify::avatar",
+                    G_CALLBACK (cb_update_row),
+                    NULL);
+
+  g_signal_connect (G_OBJECT(individual), 
+                    "notify::display-name",
+                    G_CALLBACK (cb_update_row),
+                    NULL);
+
+  g_signal_connect (G_OBJECT(individual), 
+                    "notify::phone-numbers",
+                    G_CALLBACK (cb_update_row),
+                    NULL);
 }
 
 
@@ -133,21 +156,10 @@ cb_aggregator_notify (FolksIndividualAggregator *aggregator,
   while (gee_map_iterator_next (iter)) {
     individual = gee_map_iterator_get_value (iter);
 
-    g_signal_connect (G_OBJECT(individual), 
-                      "notify::avatar",
-                      G_CALLBACK (cb_update_row),
-                      NULL);
-
-    g_signal_connect (G_OBJECT(individual), 
-                      "notify::display-name",
-                      G_CALLBACK (cb_update_row),
-                      NULL);
-
-    g_signal_connect (G_OBJECT(individual), 
-                      "notify::phone-numbers",
-                      G_CALLBACK (cb_update_row),
-                      NULL);
+    connect_notify_signals (individual);
   }
+
+  g_debug ("%s pspec: %s", __func__, pspec->name);
 
   g_clear_object (&iter);
 }
@@ -212,9 +224,13 @@ cb_aggregator_individuals_changed (FolksIndividualAggregator *aggregator,
     }
 
     chatty_folks_individual_add_contact_rows (individual);
+
+    connect_notify_signals (individual);
   
     g_clear_object (&individual);
   }
+
+  g_debug ("%s", __func__);
 
   gtk_list_box_invalidate_sort (chatty_folks->listbox);
 
@@ -548,9 +564,9 @@ chatty_folks_get_individual_name_by_id (const char *id)
  *
  */
 void
-chatty_folks_set_purple_buddy_avatar (const char    *folks_id,
-                                      PurpleAccount *account,
-                                      const char    *user_name)
+chatty_folks_set_purple_buddy_data (const char    *folks_id,
+                                    PurpleAccount *account,
+                                    const char    *user_name)
 { 
   FolksIndividual *individual;
 
@@ -559,6 +575,10 @@ chatty_folks_set_purple_buddy_avatar (const char    *folks_id,
   individual = FOLKS_INDIVIDUAL(gee_map_get (chatty_folks->individuals, folks_id));
 
   if (individual != NULL) {
+    PurpleBuddy *buddy = purple_find_buddy (account, user_name);
+    PurpleContact *contact = purple_buddy_get_contact (buddy);
+    purple_contact_set_alias (contact, folks_individual_get_display_name (individual));
+
     chatty_folks_load_avatar (individual, 
                               NULL, 
                               account, 
@@ -588,12 +608,16 @@ chatty_folks_get_phone_type (FolksPhoneFieldDetails *details)
   while (gee_iterator_next (iter)) {
     gchar *type = gee_iterator_get (iter);
 
+    g_debug ("%s type: %s", __func__, type);
+
     if (!g_strcmp0 (type, "cell")) {
       val = _("Mobile");
     } else if (!g_strcmp0  (type, "work")) {
       val = _("Work");
     } else if (!g_strcmp0  (type, "home")) {
       val = _("Home");
+    } else if (!g_strcmp0  (type, "other")) {
+      val = _("Other");
     } else {
       val = NULL;
     }

@@ -25,6 +25,7 @@
 #include "chatty-history.h"
 #include "chatty-utils.h"
 #include "chatty-folks.h"
+#include "chatty-dbus.h"
 #define HANDY_USE_UNSTABLE_API
 #include <handy.h>
 
@@ -65,6 +66,7 @@ row_selected_cb (GtkListBox    *box,
   GdkPixbuf       *avatar;
   const char      *chat_name;
   const char      *number;
+  const char      *folks_id;  
 
   chatty_data_t   *chatty = chatty_get_data ();
 
@@ -82,6 +84,9 @@ row_selected_cb (GtkListBox    *box,
 
   g_object_get (row, "data", &node, NULL);
 
+  gtk_widget_hide (chatty->button_menu_add_contact);
+  gtk_widget_hide (chatty->button_menu_add_gnome_contact);
+
   if (PURPLE_BLIST_NODE_IS_BUDDY(node)) {
     PurpleBuddy *buddy;
 
@@ -90,12 +95,20 @@ row_selected_cb (GtkListBox    *box,
 
     gtk_widget_hide (chatty->button_header_chat_info);
 
+    if (chatty_blist_protocol_is_sms (account)) {
+      number = purple_buddy_get_name (buddy);
+      folks_id = chatty_folks_has_individual_with_phonenumber (number);
+
+      if (!folks_id) {
+        gtk_widget_show (chatty->button_menu_add_gnome_contact);
+      }
+    }
+
     if (purple_blist_node_get_bool (PURPLE_BLIST_NODE(buddy),
                                     "chatty-unknown-contact")) {
 
       gtk_widget_show (chatty->button_menu_add_contact);
-    } else {
-      gtk_widget_hide (chatty->button_menu_add_contact);
+
     }
 
     purple_blist_node_set_bool (node, "chatty-autojoin", TRUE);
@@ -109,8 +122,6 @@ row_selected_cb (GtkListBox    *box,
     chat = (PurpleChat*)node;
     chat_name = purple_chat_get_name (chat);
 
-    gtk_widget_hide (chatty->button_menu_add_contact);
-
     chatty_conv_join_chat (chat);
 
     purple_blist_node_set_bool (node, "chatty-autojoin", TRUE);
@@ -121,21 +132,97 @@ row_selected_cb (GtkListBox    *box,
                                          CHATTY_COLOR_GREY,
                                          FALSE);
  
-     chatty_window_update_sub_header_titlebar (avatar, chat_name);
-     chatty_window_change_view (CHATTY_VIEW_MESSAGE_LIST);
-     gtk_widget_hide (GTK_WIDGET(chatty->dialog_new_chat));
+    chatty_window_update_sub_header_titlebar (avatar, chat_name);
+    chatty_window_change_view (CHATTY_VIEW_MESSAGE_LIST);
+    gtk_widget_hide (GTK_WIDGET(chatty->dialog_new_chat));
  
-     g_object_unref (avatar);
+    g_object_unref (avatar);
    }
 }
 
 
 static void
-cb_search_entry_changed (GtkSearchEntry     *entry,
-                         GtkListBox *listbox)
+cb_search_entry_chats_changed (GtkSearchEntry *entry,
+                               GtkListBox     *listbox)
 {
   gtk_list_box_invalidate_filter (GTK_LIST_BOX (listbox));
 }
+
+
+static void
+cb_search_entry_contacts_changed (GtkSearchEntry *entry,
+                                  GtkListBox     *listbox)
+{
+  PurpleAccount           *account;
+  static ChattyContactRow *new_row;
+  GList                   *children, *l;
+  const gchar             *number;
+  gchar                   *number_e164;
+  int                      num_rows = 0;
+
+  account = purple_accounts_find ("SMS", "prpl-mm-sms");
+
+  if (purple_account_is_disconnected (account)) {
+    gtk_list_box_invalidate_filter (GTK_LIST_BOX (listbox));
+    return;
+  }
+
+  children = gtk_container_get_children (GTK_CONTAINER(listbox));
+
+  for (l = children; l != NULL; l = g_list_next (l)) {
+    if (gtk_widget_get_child_visible (GTK_WIDGET(l->data))) {
+      num_rows ++;
+    };
+  }
+
+  number = gtk_entry_get_text (GTK_ENTRY(entry));
+
+  if ((num_rows == 0) && !new_row) {
+    number_e164 = chatty_utils_format_phonenumber (number);
+
+    if (!new_row && number_e164) {
+      number_e164 = chatty_utils_format_phonenumber (number);
+
+      if (number_e164) {
+        listbox = chatty_get_contacts_list ();
+
+        new_row = CHATTY_CONTACT_ROW (chatty_contact_row_new (NULL,
+                                                              NULL,
+                                                              _("Send to"),
+                                                              number,
+                                                              NULL,
+                                                              NULL,
+                                                              NULL,
+                                                              number_e164));
+
+        gtk_list_box_row_set_selectable (GTK_LIST_BOX_ROW (new_row), FALSE);
+
+        gtk_container_add (GTK_CONTAINER (listbox), GTK_WIDGET (new_row));
+
+        gtk_widget_show (GTK_WIDGET(new_row));
+      }
+    }
+  } else if (new_row && num_rows == 1 && !(*number == '\0')) {
+    number_e164 = chatty_utils_format_phonenumber (number);
+
+    if (number_e164) {
+      g_object_set (new_row,
+                    "description", number,
+                    "phone_number", number_e164,
+                    NULL);
+    }
+  } else {
+    if (new_row) {
+      gtk_widget_destroy (GTK_WIDGET(new_row));
+      new_row = NULL;
+    }
+  }
+
+  g_list_free (children);
+
+  gtk_list_box_invalidate_filter (GTK_LIST_BOX (listbox));
+}
+
 
 static gboolean
 filter_chat_list_cb (GtkListBoxRow *row, gpointer entry) {
@@ -147,6 +234,23 @@ filter_chat_list_cb (GtkListBoxRow *row, gpointer entry) {
   g_object_get (row, "name", &name, NULL);
 
   return ((*query == '\0') || (name && strcasestr (name, query)));
+}
+
+
+static gboolean
+filter_contacts_list_cb (GtkListBoxRow *row, gpointer entry) {
+  const gchar *query;
+  g_autofree gchar *name = NULL;
+  g_autofree gchar *number = NULL;
+
+  query = gtk_entry_get_text (GTK_ENTRY (entry));
+
+  g_object_get (row, "name", &name, NULL);
+  g_object_get (row, "description", &number, NULL);
+
+  return ((*query == '\0') || 
+          (name && strcasestr (name, query)) ||
+          (number && strcasestr (number, query)));
 }
 
 
@@ -652,7 +756,6 @@ chatty_blist_add_buddy_from_uri (const char *uri)
 {
   PurpleAccount *account;
   PurpleBuddy   *buddy;
-  GdkPixbuf     *avatar;
   GtkWindow     *window;
   char          *who = NULL;
   const char    *folks_id;
@@ -679,24 +782,15 @@ chatty_blist_add_buddy_from_uri (const char *uri)
     buddy = purple_buddy_new (account, who, alias);
 
     purple_blist_add_buddy (buddy, NULL, NULL, NULL);
-
-    chatty_folks_set_purple_buddy_avatar (folks_id, account, g_strdup (who));
   }
 
-  avatar = chatty_icon_get_buddy_icon (PURPLE_BLIST_NODE(buddy),
-                                       who,
-                                       CHATTY_ICON_SIZE_SMALL,
-                                       CHATTY_COLOR_GREEN,
-                                       FALSE);
-
-  chatty_conv_im_with_buddy (account, g_strdup (who));
-
-  if (avatar) {
-    chatty_window_update_sub_header_titlebar (avatar,
-                                              alias ? alias : who);
+  if (!purple_buddy_icons_node_has_custom_icon (PURPLE_BLIST_NODE(buddy))) {
+    chatty_folks_set_purple_buddy_data (folks_id, account, g_strdup (who));
   }
 
   purple_blist_node_set_bool (PURPLE_BLIST_NODE(buddy), "chatty-autojoin", TRUE);
+
+  chatty_conv_im_with_buddy (account, g_strdup (who));
 
   chatty_window_change_view (CHATTY_VIEW_MESSAGE_LIST);
 
@@ -707,8 +801,6 @@ chatty_blist_add_buddy_from_uri (const char *uri)
   gtk_window_present (window);
 
   g_free (who);
-
-  g_object_unref (avatar);
 }
 
 
@@ -727,6 +819,9 @@ chatty_blist_contact_list_add_buddy (void)
   PurpleAccount      *account;
   PurpleConversation *conv;
   PurpleBuddy        *buddy;
+  const char         *who;
+  const char         *folks_id;             
+  g_autofree gchar   *number;
   
   chatty_data_t *chatty = chatty_get_data ();
 
@@ -739,6 +834,49 @@ chatty_blist_contact_list_add_buddy (void)
   purple_account_add_buddy (account, buddy);
   purple_blist_node_remove_setting (PURPLE_BLIST_NODE(buddy), "chatty-unknown-contact");
   purple_blist_node_set_bool (PURPLE_BLIST_NODE (buddy), "chatty-notifications", TRUE);
+
+  if (chatty_blist_protocol_is_sms (account)) {
+    who = purple_buddy_get_name (buddy);
+
+    number = chatty_utils_format_phonenumber (who);
+
+    folks_id = chatty_folks_has_individual_with_phonenumber (number);
+
+    if (folks_id) {
+      chatty_dbus_gc_write_contact (who, number);
+    }
+  }
+}
+
+
+/**
+ * chatty_blist_gnome_contacts_add_buddy:
+ *
+ * Add active chat buddy to GNOME contacts
+ *
+ * called from view_msg_list_cmd_add_gnome_contact
+ * in chatty-popover-actions.c
+ *
+ */
+void
+chatty_blist_gnome_contacts_add_buddy (void)
+{
+  PurpleBuddy        *buddy;
+  PurpleContact      *contact;
+  const char         *who;
+  const char         *alias;
+  g_autofree gchar   *number;
+  
+  buddy = PURPLE_BUDDY (chatty_get_selected_node ());
+  g_return_if_fail (buddy != NULL);
+
+  who = purple_buddy_get_name (buddy);
+  contact = purple_buddy_get_contact (buddy);
+  alias = purple_contact_get_alias (contact);
+
+  number = chatty_utils_format_phonenumber (who);
+
+  chatty_dbus_gc_write_contact (alias, number);
 }
 
 
@@ -888,34 +1026,38 @@ chatty_blist_chat_list_remove_buddy (void)
  *
  */
 void
-chatty_blist_add_buddy (const char *who,
-                        const char *whoalias)
+chatty_blist_add_buddy (PurpleAccount *account,
+                        const char    *who,
+                        const char    *whoalias)
 {
   PurpleBuddy        *buddy;
   PurpleConversation *conv;
   PurpleBuddyIcon    *icon;
-
-  chatty_data_t *chatty = chatty_get_data ();
-
-  if (chatty->selected_account == NULL) {
-    return;
-  }
+  const char         *folks_id;
 
   if (*whoalias == '\0') {
     whoalias = NULL;
   }
 
-  buddy = purple_buddy_new (chatty->selected_account, who, whoalias);
+  buddy = purple_buddy_new (account, who, whoalias);
 
   purple_blist_add_buddy (buddy, NULL, NULL, NULL);
 
   g_debug ("chatty_blist_add_buddy: %s ", purple_buddy_get_name (buddy));
 
-  purple_account_add_buddy_with_invite (chatty->selected_account, buddy, NULL);
+  if (chatty_blist_protocol_is_sms (account)) {
+    folks_id = chatty_folks_has_individual_with_phonenumber (who);
+
+    if (folks_id) {
+      chatty_folks_set_purple_buddy_data (folks_id, account, who);
+    }
+  } else {
+    purple_account_add_buddy_with_invite (account, buddy, NULL);
+  }
 
   conv = purple_find_conversation_with_account (PURPLE_CONV_TYPE_IM,
                                                 who,
-                                                chatty->selected_account);
+                                                account);
 
   if (conv != NULL) {
     icon = purple_conv_im_get_icon (PURPLE_CONV_IM(conv));
@@ -1104,7 +1246,7 @@ chatty_blist_create_chat_list (void)
 
   g_signal_connect (chatty->search_entry_chats,
                     "search-changed",
-                    G_CALLBACK (cb_search_entry_changed),
+                    G_CALLBACK (cb_search_entry_chats_changed),
                     listbox);
 
   gtk_list_box_set_filter_func (GTK_LIST_BOX (listbox), filter_chat_list_cb, chatty->search_entry_chats, NULL);
@@ -1131,8 +1273,8 @@ chatty_blist_create_chat_list (void)
 static void
 chatty_blist_create_contact_list (void)
 {
-  GtkListBox        *listbox;
-  chatty_data_t     *chatty = chatty_get_data ();
+  GtkListBox    *listbox;
+  chatty_data_t *chatty = chatty_get_data ();
 
   listbox = GTK_LIST_BOX (gtk_list_box_new ());
 
@@ -1140,10 +1282,10 @@ chatty_blist_create_contact_list (void)
 
   g_signal_connect (chatty->search_entry_contacts,
                     "search-changed",
-                    G_CALLBACK (cb_search_entry_changed),
+                    G_CALLBACK (cb_search_entry_contacts_changed),
                     listbox);
 
-  gtk_list_box_set_filter_func (GTK_LIST_BOX (listbox), filter_chat_list_cb, chatty->search_entry_contacts, NULL);
+  gtk_list_box_set_filter_func (GTK_LIST_BOX (listbox), filter_contacts_list_cb, chatty->search_entry_contacts, NULL);
   gtk_list_box_set_sort_func (GTK_LIST_BOX (listbox), cb_chatty_blist_sort_contacts, NULL, NULL);
 
   g_signal_connect (listbox,
@@ -1153,12 +1295,18 @@ chatty_blist_create_contact_list (void)
 
   gtk_box_pack_start (GTK_BOX (chatty->pane_view_new_chat), GTK_WIDGET (listbox), TRUE, TRUE, 0);
   gtk_widget_show_all (GTK_WIDGET(chatty->pane_view_new_chat));
+}
 
-  if (purple_accounts_find ("SMS", "prpl-mm-sms")) {
-    chatty_folks_init (chatty_get_contacts_list ());
-  }
 
-  
+void
+chatty_blist_enable_folks_contacts (void) 
+{
+  GtkListBox *listbox;
+
+  listbox = chatty_get_contacts_list ();
+
+  if (listbox != NULL)
+    chatty_folks_init (listbox);
 }
 
 
@@ -1838,20 +1986,6 @@ chatty_blist_new_node (PurpleBlistNode *node)
 
 
 /**
- * chatty_blist_new_list:
- * @blist: a PurpleBuddyList
- *
- * Creates a new PurpleBuddyList.
- * Function is called via PurpleBlistUiOps.
- *
- */
-static void
-chatty_blist_new_list (PurpleBuddyList *blist)
-{
-}
-
-
-/**
  * PurpleBlistUiOps:
  *
  * The interface struct for libpurple blist events.
@@ -1860,7 +1994,7 @@ chatty_blist_new_list (PurpleBuddyList *blist)
  */
 static PurpleBlistUiOps blist_ui_ops =
 {
-  chatty_blist_new_list,
+  NULL,
   chatty_blist_new_node,
   chatty_blist_show,
   chatty_blist_update,

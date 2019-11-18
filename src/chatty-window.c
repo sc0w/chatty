@@ -375,6 +375,7 @@ chatty_window_activate (GtkApplication *app,
   chatty->sub_header_label = GTK_WIDGET (gtk_builder_get_object (builder, "sub_header_label"));
   chatty->sub_header_icon = GTK_WIDGET (gtk_builder_get_object (builder, "sub_header_icon"));
   chatty->button_menu_add_contact = GTK_WIDGET (gtk_builder_get_object (builder, "button_menu_add_contact"));
+  chatty->button_menu_add_gnome_contact = GTK_WIDGET (gtk_builder_get_object (builder, "button_menu_add_gnome_contact"));
   chatty->button_header_chat_info = GTK_WIDGET (gtk_builder_get_object (builder, "button_header_chat_info"));
   chatty->button_header_sub_menu = GTK_WIDGET (gtk_builder_get_object (builder, "button_header_sub_menu"));
 

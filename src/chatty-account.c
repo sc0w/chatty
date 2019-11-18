@@ -77,12 +77,7 @@ cb_list_account_select_row_activated (GtkListBox    *box,
                                       gpointer       user_data)
 {
   PurpleAccount *account;
-
-  PurpleConnection         *pc = NULL;
-  PurplePlugin             *prpl = NULL;
-  PurplePluginProtocolInfo *prpl_info = NULL;
-  const gchar              *protocol_id;
-  GtkWidget                *prefix_radio;
+  GtkWidget     *prefix_radio;
 
   chatty_data_t *chatty = chatty_get_data ();
   chatty_dialog_data_t *chatty_dialog = chatty_get_dialog_data ();
@@ -93,8 +88,6 @@ cb_list_account_select_row_activated (GtkListBox    *box,
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(prefix_radio), TRUE);
 
   if (account) {
-    pc = purple_account_get_connection (account);
-
     if (GPOINTER_TO_INT(user_data) == LIST_SELECT_MUC_ACCOUNT) {
       chatty->selected_account = account;
       return;
@@ -103,28 +96,14 @@ cb_list_account_select_row_activated (GtkListBox    *box,
     chatty->selected_account = account;
   }
 
-  if (pc) {
-    prpl = purple_connection_get_prpl (pc);
-  }
-
-  if (prpl) {
-    prpl_info = PURPLE_PLUGIN_PROTOCOL_INFO (prpl);
-  }
-
-  if (prpl_info && !(prpl_info->options & OPT_PROTO_INVITE_MESSAGE)) {
-    // TODO setup UI for invite msg?
-  }
-
-  protocol_id = purple_account_get_protocol_id (account);
-
-  if (g_strcmp0 (protocol_id, "prpl-mm-sms") == 0) {
-    gtk_label_set_text (GTK_LABEL(chatty->label_contact_id), _("SMS Number"));
-    gtk_entry_set_input_purpose (GTK_ENTRY(chatty_dialog->entry_contact_name),
-				 GTK_INPUT_PURPOSE_PHONE);
+  if (chatty_blist_protocol_is_sms (account)) {
+    gtk_widget_hide (GTK_WIDGET(chatty_dialog->grid_edit_contact));
+    gtk_widget_hide (GTK_WIDGET(chatty_dialog->button_add_contact));
+    gtk_widget_show (GTK_WIDGET(chatty_dialog->button_add_gnome_contact));
   } else {
-    gtk_label_set_text (GTK_LABEL(chatty->label_contact_id), _("Jabber ID"));
-        gtk_entry_set_input_purpose (GTK_ENTRY(chatty_dialog->entry_contact_name),
-				     GTK_INPUT_PURPOSE_EMAIL);
+    gtk_widget_show (GTK_WIDGET(chatty_dialog->grid_edit_contact));
+    gtk_widget_show (GTK_WIDGET(chatty_dialog->button_add_contact));
+    gtk_widget_hide (GTK_WIDGET(chatty_dialog->button_add_gnome_contact));
   }
 }
 
