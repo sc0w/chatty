@@ -12,7 +12,7 @@
 
 #define CHATTY_APP_NAME     "Chats"
 #define CHATTY_APP_ID       "sm.puri.Chatty"
-#define CHATTY_VERSION      "v0.1.1"
+#define CHATTY_VERSION      "v0.1.2"
 #define CHATTY_UI           "chatty-ui"
 #define CHATTY_PREFS_ROOT   "/chatty"
 

@@ -1,3 +1,44 @@
+chatty (0.1.2) amber-phone; urgency=medium
+
+  [ Mohammed Sadiq ]
+  * application: Fix some leaks
+  * contact-row: Use G_DEFINE_TYPE
+
+  [ Andrea Schaefer ]
+  * Fix issue #217: 'Avatar from contacts does not update'
+
+  [ Mohammed Sadiq ]
+  * icons: Fix some leaks
+  * folks: Fix a memory leak
+  * buddy-list: Fix a memory leak
+  * buddy-list: Ignore case when filtering list
+
+  [ Andrea Schaefer ]
+  * Fix issue #218 'smaller font size for timestamp'
+  * Add dbus trial
+  * Merge improved code from Julian
+  * Add contacts to gnome-contacts when created in chatty
+  * Enable folks contacts only when modem is available
+  * Fix notify-signal connect issue
+  * Start new SMS from search entry Rework 'Add Contact' dialog Add 'Add to GNOME contacts' entry to sub-menu
+  * Sync gnome-contacts alias in chats-list enries
+  * Add proper buddy alias via dbus api
+  * Add icon-update signal
+  * Update po files
+  * Fix hidden jabber contacts with rescource part
+  * Disable SMS feature in search-entry if no modem is connected
+  * Scale down timestamp font by 0.7
+  * Show jabber user status in chat details Strip resource portion from alias strings
+
+  [ Mohammed Sadiq ]
+  * icons: Fix multibyte utf-8 avatars from name
+
+  [ Andrea Schaefer ]
+  * Show jabber status independentlly from lurch
+  * Mitigate phonenumber parsing message
+
+ -- Andrea Schaefer <andrea@localhost.localdomain>  Tue, 19 Nov 2019 13:01:39 +0100
+
 chatty (0.1.1) amber-phone; urgency=medium
 
   [ Julian Sparber ]
