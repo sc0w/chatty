@@ -238,7 +238,7 @@ chatty_utils_format_phonenumber (const char *phone_number)
   number = e_phone_number_from_string (stripped, region, &err);
 
   if (!number || !e_phone_number_is_supported ()) {
-    g_warning ("failed to parse %s: %s", phone_number, err->message);
+    g_debug ("Skipped parsing %s: %s", phone_number, err->message);
 
     result = NULL;
   } else {
