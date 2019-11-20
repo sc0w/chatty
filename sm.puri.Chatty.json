@@ -89,10 +89,13 @@
             ],
             "buildsystem": "cmake-ninja",
             "config-opts": [
-                "-DCMAKE_INSTALL_LIBDIR:PATH=/app/lib",
-                "-DBUILD_SHARED_LIBS=On",
-                "-DICAL_BUILD_DOCS=False",
-                "-DWITH_CXX_BINDINGS=False"
+                "-DCMAKE_BUILD_TYPE=Release",
+                "-DCMAKE_INSTALL_LIBDIR=lib",
+                "-DBUILD_SHARED_LIBS:BOOL=ON",
+                "-DICAL_GLIB=true",
+                "-DGOBJECT_INTROSPECTION=true",
+                "-DICAL_GLIB_VAPI=true",
+                "-DICAL_BUILD_DOCS=false"
             ],
             "sources": [
                 {
@@ -179,17 +182,17 @@
             ],
             "buildsystem": "cmake-ninja",
             "config-opts": [
-                "-DENABLE_PHONENUMBER=ON",
-                "-DENABLE_DOT_LOCKING=OFF",
-                "-DENABLE_FILE_LOCKING=fcntl",
-                "-DENABLE_GOA=OFF",
                 "-DENABLE_GTK=ON",
+                "-DENABLE_GOA=OFF",
+                "-DENABLE_UOA=OFF",
+                "-DENABLE_GOOGLE_AUTH=OFF",
                 "-DENABLE_GOOGLE=OFF",
-                "-DENABLE_VALA_BINDINGS=OFF",
+                "-DENABLE_WITH_PHONENUMBER=ON",
+                "-DENABLE_VALA_BINDINGS=ON",
                 "-DENABLE_WEATHER=OFF",
                 "-DWITH_OPENLDAP=OFF",
                 "-DWITH_LIBDB=OFF",
-                "-DENABLE_INTROSPECTION=OFF",
+                "-DENABLE_INTROSPECTION=ON",
                 "-DENABLE_INSTALLED_TESTS=OFF",
                 "-DENABLE_GTK_DOC=OFF",
                 "-DENABLE_EXAMPLES=OFF"
@@ -198,6 +201,37 @@
                 {
                     "type": "git",
                     "url": "https://gitlab.gnome.org/GNOME/evolution-data-server.git"
+                }
+            ]
+        },
+        {
+            "name": "libgee",
+            "make-install-args": [
+                "girdir=/app/share/gir-1.0",
+                "typelibdir=/app/lib/girepository-1.0"
+            ],
+            "sources": [
+                {
+                    "type": "git",
+                    "url": "https://gitlab.gnome.org/GNOME/libgee.git"
+                }
+            ]
+        },
+        {
+            "name": "folks",
+            "buildsystem": "meson",
+            "cleanup": [
+                "/bin"
+            ],
+            "config-opts": [
+                "-Dtelepathy_backend=false",
+                "-Dinspect_tool=false",
+                "-Dimport_tool=false"
+           ],
+            "sources": [
+                {
+                    "type": "git",
+                    "url": "https://gitlab.gnome.org/GNOME/folks.git"
                 }
             ]
         },
