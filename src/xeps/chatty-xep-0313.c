@@ -139,6 +139,49 @@ chatty_mam_ctx_del(PurpleAccount *pa)
 /**
  * MAM Query Handlers
  */
+static void
+cb_mam_query_prefs(JabberStream *js, const char *from,
+                    JabberIqType type, const char *id,
+                    xmlnode *res, gpointer data)
+{
+  PurpleAccount *pa = purple_connection_get_account(js->gc);
+  xmlnode *prefs = xmlnode_get_child_with_namespace(res, "prefs", NS_MAMv2);
+  const char *to = data;
+
+  if(type == JABBER_IQ_RESULT && prefs) {
+    const char *srv_def = xmlnode_get_attrib(prefs, "default");
+    const char *clt_def = purple_account_get_ui_string(pa, CHATTY_UI,
+                                              MAM_PREFS_DEF, MAM_DEF_ROSTER);
+    if(g_strcmp0(clt_def, srv_def)) {
+      JabberIq *iq = jabber_iq_new(js, JABBER_IQ_SET);
+      prefs = xmlnode_new_child(iq->node, "prefs");
+      xmlnode_set_namespace(prefs, NS_MAMv2);
+      if(to != NULL)
+        xmlnode_set_attrib(iq->node, "to", to);
+      xmlnode_set_attrib(prefs, MAM_PREFS_DEF, clt_def);
+      xmlnode_new_child(prefs,"always");
+      xmlnode_new_child(prefs,"never");
+      jabber_iq_send(iq);
+    }
+  }
+}
+
+static void
+chatty_mam_query_prefs(PurpleConnection *pc, const char *to)
+{
+  JabberStream  *js = purple_connection_get_protocol_data (pc);
+  JabberIq *iq = jabber_iq_new(js, JABBER_IQ_GET);
+  xmlnode *prefs = xmlnode_new_child(iq->node, "prefs");
+  xmlnode_set_namespace(prefs, NS_MAMv2);
+
+  if(to != NULL)
+    xmlnode_set_attrib(iq->node, "to", to);
+
+  jabber_iq_set_callback(iq, cb_mam_query_prefs, (void*)to);
+
+  jabber_iq_send(iq);
+}
+
 static void chatty_mam_query_archive (MAMQuery *mamq);
 
 static void
@@ -269,9 +312,18 @@ cb_chatty_mam_bare_info (PurpleConnection *pc,
     PurpleAccount *pa = purple_connection_get_account(pc);
     // Init CTX
     MamCtx *mamc = chatty_mam_ctx_add(pa);
-    MAMQuery *mamq = g_new0(MAMQuery, 1);
+    MAMQuery *mamq;
+
+    if(g_strcmp0 (MAM_DEF_DISABLE,
+                  purple_account_get_ui_string (pa, CHATTY_UI,
+                                                MAM_PREFS_DEF, NULL)) == 0)
+      return; // ok, if you say so
+
+    mamq = g_new0(MAMQuery, 1);
     mamq->js = js;
     mamq->id = g_strdup(qid);
+    if(g_strcmp0(bare, purple_account_get_username(pa)))
+      mamq->to = g_strdup(bare);
     g_hash_table_insert(mamc->qs, qid, mamq);
     // Get last stop point
     mamc->last_ts = purple_account_get_int(pa, "mam_last_ts", 0);
@@ -289,6 +341,8 @@ cb_chatty_mam_bare_info (PurpleConnection *pc,
                                     var, bare, qid, mamq->start, mamq->after);
     // Request MAM backlog
     chatty_mam_query_archive(mamq);
+    // Also - request preferences and correct them if required
+    chatty_mam_query_prefs(pc, mamq->to);
   }
 }
 
