@@ -175,8 +175,6 @@ cb_aggregator_individuals_changed (FolksIndividualAggregator *aggregator,
   GeeCollection *added;
   GList         *rows, *l;
   const char    *id;
-  char          *row_id;
-
 
   chatty_folks_data_t *chatty_folks = chatty_get_folks_data ();
 
@@ -199,6 +197,8 @@ cb_aggregator_individuals_changed (FolksIndividualAggregator *aggregator,
     id = folks_individual_get_id (individual);      
 
     for (l = rows; l; l = l->next) {
+      g_autofree gchar *row_id = NULL;
+
       g_object_get (l->data, "id", &row_id, NULL);
 
       if (!g_strcmp0 (id, row_id ) && l->data != NULL) {
@@ -206,7 +206,6 @@ cb_aggregator_individuals_changed (FolksIndividualAggregator *aggregator,
       }
     } 
   
-    g_free (row_id);
     g_list_free (l);
     g_clear_object (&individual);
   } 
