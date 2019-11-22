@@ -28,6 +28,8 @@ static void chatty_dialogs_reset_settings_dialog (void);
 static void chatty_dialogs_reset_new_contact_dialog (void);
 static void chatty_dialogs_reset_invite_contact_dialog (void);
 static void chatty_entry_set_enabled (GtkWidget *widget, gboolean state);
+static char *chatty_dialogs_show_dialog_load_avatar (void);
+static void chatty_dialogs_update_user_avatar (PurpleBuddy *buddy, const char *color);
 
 static chatty_dialog_data_t chatty_dialog_data;
 
@@ -681,6 +683,35 @@ cb_button_edit_topic_clicked (GtkToggleButton *sender,
 }
 
 
+static void
+cb_button_user_avatar_clicked (GtkButton *sender,
+                               gpointer   data)
+{
+  PurpleContact *contact;
+  char          *file_name = NULL;
+  
+  file_name = chatty_dialogs_show_dialog_load_avatar ();
+
+  if (file_name) {
+    contact = purple_buddy_get_contact ((PurpleBuddy*)data);
+
+    purple_buddy_icons_node_set_custom_icon_from_file ((PurpleBlistNode*)contact, file_name);
+
+    chatty_dialogs_update_user_avatar ((PurpleBuddy*)data, CHATTY_COLOR_BLUE);
+  }
+
+  g_free (file_name);
+}
+
+
+static void
+cb_button_account_avatar_clicked (GtkButton *sender,
+                                  gpointer   data)
+{
+ 
+}
+
+
 static gboolean
 cb_textview_key_released (GtkWidget   *widget,
                           GdkEventKey *key_event,
@@ -845,6 +876,7 @@ chatty_dialogs_create_edit_account_view (GtkBuilder *builder)
   button_edit_pw = GTK_WIDGET (gtk_builder_get_object (builder, "button_edit_pw"));
   chatty_dialog->button_save_account = GTK_WIDGET (gtk_builder_get_object (builder, "button_save_account"));
   button_back = GTK_WIDGET (gtk_builder_get_object (builder, "button_edit_account_back"));
+  chatty_dialog->button_account_avatar = GTK_WIDGET (gtk_builder_get_object (builder, "button_account_avatar"));
   chatty_dialog->entry_name = GTK_ENTRY (gtk_builder_get_object (builder, "entry_account_id"));
   chatty_dialog->label_protocol = GTK_LABEL (gtk_builder_get_object (builder, "label_protocol"));
   chatty_dialog->label_status = GTK_LABEL (gtk_builder_get_object (builder, "label_status"));
@@ -870,6 +902,11 @@ chatty_dialogs_create_edit_account_view (GtkBuilder *builder)
   g_signal_connect (G_OBJECT(button_back),
                     "clicked",
                     G_CALLBACK (cb_button_settings_back_clicked),
+                    NULL);
+
+  g_signal_connect (G_OBJECT(chatty_dialog->button_account_avatar),
+                    "clicked",
+                    G_CALLBACK (cb_button_account_avatar_clicked),
                     NULL);
 }
 
@@ -1257,6 +1294,51 @@ chatty_dialogs_show_dialog_join_muc (void)
 }
 
 
+static void 
+chatty_dialogs_update_user_avatar (PurpleBuddy *buddy,
+                                   const char  *color)
+{
+  PurpleContact *contact;
+  GdkPixbuf     *icon;
+  GtkWidget     *avatar;
+  const char    *alias;
+  const char    *buddy_alias;
+  const char    *contact_alias;
+
+  chatty_dialog_data_t *chatty_dialog = chatty_get_dialog_data ();
+
+  alias = purple_buddy_get_alias (buddy);
+
+  icon = chatty_icon_get_buddy_icon (PURPLE_BLIST_NODE(buddy),
+                                     alias,
+                                     CHATTY_ICON_SIZE_LARGE,
+                                     color,
+                                     FALSE);
+  
+  if (icon != NULL) {
+    avatar = gtk_image_new ();
+    gtk_image_set_from_pixbuf (GTK_IMAGE(avatar), icon);
+    gtk_button_set_image (GTK_BUTTON(chatty_dialog->button_user_avatar), GTK_WIDGET(avatar));
+  }
+
+  g_object_unref (icon);
+
+  contact = purple_buddy_get_contact (buddy);
+  buddy_alias = purple_buddy_get_alias (buddy);
+  contact_alias = purple_contact_get_alias (contact);
+
+  icon = chatty_icon_get_buddy_icon (PURPLE_BLIST_NODE(buddy),
+                                     alias,
+                                     CHATTY_ICON_SIZE_SMALL,
+                                     color,
+                                     FALSE);
+
+  chatty_window_update_sub_header_titlebar (icon, contact_alias ? contact_alias : buddy_alias);
+
+  g_object_unref (icon);
+}
+
+
 void
 chatty_dialogs_show_dialog_user_info (ChattyConversation *chatty_conv)
 {
@@ -1275,8 +1357,6 @@ chatty_dialogs_show_dialog_user_info (ChattyConversation *chatty_conv)
   GtkWindow      *window;
   GtkSwitch      *switch_notify;
   GtkListBox     *listbox_prefs;
-  GdkPixbuf      *icon;
-  GtkImage       *avatar;
   const char     *protocol_id;
   const char     *alias;
 
@@ -1285,7 +1365,7 @@ chatty_dialogs_show_dialog_user_info (ChattyConversation *chatty_conv)
 
   builder = gtk_builder_new_from_resource ("/sm/puri/chatty/ui/chatty-dialog-user-info.ui");
 
-  avatar = GTK_IMAGE (gtk_builder_get_object (builder, "avatar"));
+  chatty_dialog->button_user_avatar = GTK_WIDGET (gtk_builder_get_object (builder, "button-user-avatar"));
   label_alias = GTK_WIDGET (gtk_builder_get_object (builder, "label_alias"));
   label_user_id = GTK_WIDGET (gtk_builder_get_object (builder, "label_user_id"));
   label_jid = GTK_WIDGET (gtk_builder_get_object (builder, "label_jid"));
@@ -1334,17 +1414,17 @@ chatty_dialogs_show_dialog_user_info (ChattyConversation *chatty_conv)
   buddy = purple_find_buddy (chatty_conv->conv->account, chatty_conv->conv->name);
   alias = purple_buddy_get_alias (buddy);
 
-  icon = chatty_icon_get_buddy_icon (PURPLE_BLIST_NODE(buddy),
-                                     alias,
-                                     CHATTY_ICON_SIZE_LARGE,
-                                     chatty_blist_protocol_is_sms (account) ?
-                                     CHATTY_COLOR_GREEN : CHATTY_COLOR_BLUE,
-                                     FALSE);
+  if (chatty_blist_protocol_is_sms (account)) {
+    chatty_dialogs_update_user_avatar (buddy, CHATTY_COLOR_GREEN);
+  } else {
+    chatty_dialogs_update_user_avatar (buddy, CHATTY_COLOR_BLUE);
 
-  if (icon != NULL) {
-    gtk_image_set_from_pixbuf (GTK_IMAGE(avatar), icon);
-  }
-
+    g_signal_connect (G_OBJECT(chatty_dialog->button_user_avatar),
+                      "clicked",
+                      G_CALLBACK (cb_button_user_avatar_clicked),
+                      buddy);
+  } 
+  
   gtk_switch_set_state (switch_notify,
                         purple_blist_node_get_bool (PURPLE_BLIST_NODE(buddy),
                         "chatty-notifications"));
@@ -1394,6 +1474,7 @@ chatty_dialogs_show_dialog_about_chatty (void)
     "Andrea Schäfer <mosibasu@me.com>",
     "Benedikt Wildenhain <benedikt.wildenhain@hs-bochum.de>",
     "Guido Günther <agx@sigxcpu.org>",
+    "Julian Sparber <jsparber@gnome.org>",
     "Leland Carlye <leland.carlye@protonmail.com>",
     "Mohammed Sadiq https://www.sadiqpk.org/",
     "Richard Bayerle (OMEMO Plugin) https://github.com/gkdr/lurch",
@@ -1432,4 +1513,43 @@ chatty_dialogs_show_dialog_about_chatty (void)
                          "documenters", documenters,
                          "translator-credits", _("translator-credits"),
                          NULL);
+}
+
+
+static char * 
+chatty_dialogs_show_dialog_load_avatar (void) 
+{
+  GtkWindow *window;
+  GtkWidget *dialog;
+  gchar     *file_name;
+  int        response;
+
+  window = gtk_application_get_active_window (GTK_APPLICATION (g_application_get_default ()));
+
+  dialog = gtk_file_chooser_dialog_new (_("Set Avatar"),
+                                        window,
+                                        GTK_FILE_CHOOSER_ACTION_OPEN,
+                                        _("Cancel"),
+                                        GTK_RESPONSE_CANCEL,
+                                        _("Open"),
+                                        GTK_RESPONSE_ACCEPT,
+                                        NULL);
+
+  gtk_dialog_set_default_response (GTK_DIALOG(dialog), GTK_RESPONSE_ACCEPT);
+
+  gtk_file_chooser_set_current_folder (GTK_FILE_CHOOSER(dialog), getenv ("HOME"));
+
+  // TODO: add preview widget when available in portrait mode
+
+  response = gtk_dialog_run (GTK_DIALOG(dialog));
+
+  if (response == GTK_RESPONSE_ACCEPT) {
+    file_name = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER(dialog));
+  } else {
+    file_name = NULL;
+  }
+
+  gtk_widget_destroy (dialog);
+
+  return file_name;
 }
