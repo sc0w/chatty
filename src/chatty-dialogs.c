@@ -1519,29 +1519,24 @@ chatty_dialogs_show_dialog_about_chatty (void)
 static char * 
 chatty_dialogs_show_dialog_load_avatar (void) 
 {
-  GtkWindow *window;
-  GtkWidget *dialog;
-  gchar     *file_name;
-  int        response;
+  GtkWindow            *window;
+  GtkFileChooserNative *dialog;
+  gchar                *file_name;
+  int                   response;
 
   window = gtk_application_get_active_window (GTK_APPLICATION (g_application_get_default ()));
 
-  dialog = gtk_file_chooser_dialog_new (_("Set Avatar"),
+  dialog = gtk_file_chooser_native_new (_("Set Avatar"),
                                         window,
                                         GTK_FILE_CHOOSER_ACTION_OPEN,
-                                        _("Cancel"),
-                                        GTK_RESPONSE_CANCEL,
                                         _("Open"),
-                                        GTK_RESPONSE_ACCEPT,
-                                        NULL);
-
-  gtk_dialog_set_default_response (GTK_DIALOG(dialog), GTK_RESPONSE_ACCEPT);
+                                        _("Cancel"));
 
   gtk_file_chooser_set_current_folder (GTK_FILE_CHOOSER(dialog), getenv ("HOME"));
 
   // TODO: add preview widget when available in portrait mode
 
-  response = gtk_dialog_run (GTK_DIALOG(dialog));
+  response = gtk_native_dialog_run (GTK_NATIVE_DIALOG(dialog));
 
   if (response == GTK_RESPONSE_ACCEPT) {
     file_name = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER(dialog));
@@ -1549,7 +1544,7 @@ chatty_dialogs_show_dialog_load_avatar (void)
     file_name = NULL;
   }
 
-  gtk_widget_destroy (dialog);
+  g_object_unref (dialog);
 
   return file_name;
 }
