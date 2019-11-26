@@ -238,7 +238,8 @@ cb_chatty_xeps_xmlnode_send (PurpleConnection  *gc,
 
   if (*packet != NULL && (*packet)->name) {
 
-    if (g_strcmp0 ((*packet)->name, "message") == 0) {
+    if (g_strcmp0 ((*packet)->name, "message") == 0 &&
+        g_strcmp0 (xmlnode_get_attrib(*packet, "type"), "groupchat") != 0) {
       node_body = xmlnode_get_child (*packet, "body");
 
       if (node_body) {
