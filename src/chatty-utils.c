@@ -228,7 +228,7 @@ chatty_utils_format_phonenumber (const char *phone_number)
 {
   EPhoneNumber      *number;
   char              *region;
-  char              *stripped;
+  g_autofree char   *stripped = NULL;
   char              *result;
   g_autoptr(GError)  err = NULL;
 

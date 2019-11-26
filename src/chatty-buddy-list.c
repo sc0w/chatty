@@ -1580,8 +1580,8 @@ chatty_blist_chats_update_node (PurpleBuddy     *buddy,
   g_autofree gchar *last_msg_ts = NULL;
   g_autofree gchar *unread_messages = NULL;
   g_autofree gchar *last_message_striped = NULL;
+  g_autofree gchar *alias = NULL;
   const gchar      *tag;
-  const gchar      *alias = NULL;
   gboolean          notify;
   gboolean          blur;
 
