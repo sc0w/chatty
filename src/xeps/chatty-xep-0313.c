@@ -56,6 +56,11 @@ typedef struct {
 
 static GHashTable *ht_mam_ctx = NULL;
 
+/**
+ * mamq_free:
+ *
+ * Free MAMQuery structure and its internals
+ */
 static void
 mamq_free(void *ptr)
 {
@@ -71,6 +76,11 @@ mamq_free(void *ptr)
   g_free(mamq);
 }
 
+/**
+ * mamm_free:
+ *
+ * Free MamMsg structure and internals
+ */
 static void
 mamm_free(void *ptr)
 {
@@ -86,6 +96,12 @@ mamm_free(void *ptr)
 /**
  * MAM Context Management API
  */
+
+/**
+ * mamc_free:
+ *
+ * Free MamCtx context and its internals
+ */
 static void
 mamc_free(void *ptr)
 {
@@ -97,6 +113,11 @@ mamc_free(void *ptr)
   g_free(mamc);
 }
 
+/**
+ * mamc_new:
+ *
+ * Create new empty MamCtx context.
+ */
 static MamCtx *
 mamc_new(void)
 {
@@ -108,6 +129,13 @@ mamc_new(void)
   return mamc;
 }
 
+/**
+ * chatty_mam_ctx_get:
+ * @pa: PurpleAccount which username is used a key for context payload
+ *
+ * retrieve current MamCtx context for the @pa.
+ * Returns NULL if it doesn't exist.
+ */
 static MamCtx *
 chatty_mam_ctx_get(PurpleAccount *pa)
 {
@@ -115,6 +143,14 @@ chatty_mam_ctx_get(PurpleAccount *pa)
   return g_hash_table_lookup(ht_mam_ctx, purple_account_get_username(pa));
 }
 
+/**
+ * chatty_mam_ctx_add:
+ * @pa: PurpleAccount which username is used a key for context payload
+ *
+ * Creates (allocates and zerrores) new MamCtx context and registers it
+ * in context hashtable for the given @pa.
+ * If the context already exists simply returns current context.
+ */
 static inline MamCtx *
 chatty_mam_ctx_add(PurpleAccount *pa)
 {
@@ -128,6 +164,12 @@ chatty_mam_ctx_add(PurpleAccount *pa)
   return mamc;
 }
 
+/**
+ * chatty_mam_ctx_del:
+ * @pa: PurpleAccount which username is used a key for context payload
+ *
+ * Removes MamCtx context for the account @pa, which is auto-freed.
+ */
 static void
 chatty_mam_ctx_del(PurpleAccount *pa)
 {
@@ -138,6 +180,19 @@ chatty_mam_ctx_del(PurpleAccount *pa)
 
 /**
  * MAM Query Handlers
+ */
+
+/**
+ * cb_mam_query_prefs:
+ * @js: JabberStream of the current connection
+ * @from: the jid string of the iq responder
+ * @type: the type of the iq response - error or result
+ * @id: the id of the iq query/response
+ * @res: the xmlnode of the response
+ *
+ * The callback for chatty_mam_query_prefs which checks
+ * server-side mam preferences and reset them if differ
+ * from the client-side.
  */
 static void
 cb_mam_query_prefs(JabberStream *js, const char *from,
@@ -166,6 +221,15 @@ cb_mam_query_prefs(JabberStream *js, const char *from,
   }
 }
 
+/**
+ * chatty_mam_query_prefs:
+ * @pc: PurpleConnection with current JabberStream
+ * @to: optional destination (if not own bare but say muc)
+ *
+ * Queries server-side preferences of the mam archiving node
+ * to figure whether it is in sync with client-side. The iq
+ * clabback is supposed to resync if it differs.
+ */
 static void
 chatty_mam_query_prefs(PurpleConnection *pc, const char *to)
 {
@@ -184,6 +248,18 @@ chatty_mam_query_prefs(PurpleConnection *pc, const char *to)
 
 static void chatty_mam_query_archive (MAMQuery *mamq);
 
+/**
+ * cb_mam_query_result:
+ * @js: JabberStream of the current connection
+ * @from: jid string of the iq responder
+ * @type: the type of the response - result or error
+ * @id: id of the iq stanza
+ * @res: the response xmlnode
+ *
+ * The callback for mam archive query set in chatty_mam_query_archive
+ * Parses reponse and either finalizes it or pages through
+ * remaining set.
+ */
 static void
 cb_mam_query_result(JabberStream *js, const char *from,
                     JabberIqType type, const char *id,
@@ -229,6 +305,17 @@ cb_mam_query_result(JabberStream *js, const char *from,
   g_hash_table_remove(mamc->qs, mamq->id);
 }
 
+/**
+ * chatty_mam_query_archive:
+ * @mamq: MAMQuery containing full query context
+ *
+ * Generates and sends iq query with mam archive query.
+ * mamq structure is passed to the response callback to
+ * page through RSM result set.
+ * mamq is also supposed to be in the account's context
+ * qs hashtable, it is freed on fin/error as part of hash
+ * removal call.
+ */
 static void
 chatty_mam_query_archive (MAMQuery *mamq)
 {
@@ -300,6 +387,16 @@ chatty_mam_query_archive (MAMQuery *mamq)
   jabber_iq_send(iq);
 }
 
+/**
+ * cb_chatty_mam_bare_info:
+ * @pc: PurpleConnection on which bare was discovered
+ * @bare: the bare jid on which disco#info was queried
+ * @var: the namespace/feature discovered on bare jid
+ *
+ * The callback for "jabber-bare-info" signal to discover whether
+ * the bare jid (own jid or muc) is a mam v2 archiving entity. If
+ * yes - query the archive.
+ */
 static void
 cb_chatty_mam_bare_info (PurpleConnection *pc,
                           const char *bare,
@@ -346,6 +443,18 @@ cb_chatty_mam_bare_info (PurpleConnection *pc,
   }
 }
 
+/**
+ * cb_chatty_mam_msg_wrote:
+ * @pa: PurpleAccount for the event
+ * @pcm: PurpleConvMessage which has been writen to the Conversation
+ * @uuid: a pointer to char* poiner which should contain message uuid
+ * @type: PurpleConversationType enum with Conversation type (im or chat)
+ *
+ * The callback for message archive signal "conversation-write", the cb is
+ * supposed to populate inflight message with body and flags, give back uuid
+ * and have NO_LOG flag set to suppress archiving for incomin messages.
+ *
+ */
 static void
 cb_chatty_mam_msg_wrote(PurpleAccount *pa, PurpleConvMessage *pcm,
                         char **uuid, PurpleConversationType type,
@@ -592,6 +701,12 @@ cb_chatty_mam_xmlnode_send (PurpleConnection  *pc,
   }
 }
 
+/**
+ * cb_chatty_mam_disconnect:
+ *
+ * Clean up (remove/destroy) account's context.
+ * Callback for connection close "signed-off" signal.
+ */
 static void
 cb_chatty_mam_disconnect(PurpleConnection *pc, gpointer ptr)
 {
@@ -601,31 +716,12 @@ cb_chatty_mam_disconnect(PurpleConnection *pc, gpointer ptr)
 /**
  * chatty_mam_close:
  *
- * Unref node hashtable
+ * Clean up context hashtable, the rest (signal cleanup)
+ * is already done in xeps close.
  */
 void
 chatty_0313_close (void)
 {
-  PurplePlugin *jabber = chatty_xeps_get_jabber ();
-  void *handle = chatty_xeps_get_handle ();
-  purple_signal_disconnect (jabber,
-                            "jabber-bare-info",
-                            handle,
-                            PURPLE_CALLBACK(cb_chatty_mam_bare_info));
-
-  purple_signal_disconnect (jabber,
-                            "jabber-receiving-message",
-                            handle,
-                            PURPLE_CALLBACK(cb_chatty_mam_msg_received));
-
-  purple_signal_disconnect (purple_conversations_get_handle(),
-                            "wrote-im-msg",
-                            handle,
-                            PURPLE_CALLBACK(cb_chatty_mam_msg_wrote));
-  purple_signal_disconnect (purple_conversations_get_handle(),
-                            "wrote-chat-msg",
-                            handle,
-                            PURPLE_CALLBACK(cb_chatty_mam_msg_wrote));
   g_hash_table_destroy (ht_mam_ctx);
 }
 
@@ -633,8 +729,8 @@ chatty_0313_close (void)
 /**
  * chatty_mam_init:
  *
- * Sets purple XEP functions
- * and defines libpurple signal callbacks
+ * Sets purple functions interception at appropriate signals
+ * and initializes hashtable for per-account MAM context.
  *
  */
 void
@@ -642,40 +738,49 @@ chatty_0313_init (void)
 {
   PurplePlugin *jabber = chatty_xeps_get_jabber ();
   void *handle = chatty_xeps_get_handle ();
+
+  // Initialize per-account context storage
   ht_mam_ctx = g_hash_table_new_full (g_str_hash,
                                        g_str_equal,
                                        g_free,
                                        mamc_free);
 
+  // Perform MAM query if NS_MAMv2 is discovered
   purple_signal_connect(jabber,
                         "jabber-bare-info",
                         handle,
                         PURPLE_CALLBACK(cb_chatty_mam_bare_info),
                         NULL);
 
+  // Intercept message send, inject origin-id
   purple_signal_connect(jabber,
                         "jabber-sending-xmlnode",
                         handle,
                         PURPLE_CALLBACK(cb_chatty_mam_xmlnode_send),
                         NULL);
 
+  // Intercept message parsing and replace with own version
   purple_signal_connect(jabber,
                         "jabber-receiving-message",
                         handle,
                         PURPLE_CALLBACK(cb_chatty_mam_msg_received),
                         NULL);
 
+  // Well, nothing really, just for debug/future use maybe
   purple_signal_connect(purple_conversations_get_handle(),
                         "receiving-im-msg",
                         handle,
                         PURPLE_CALLBACK(cb_chatty_mam_msg_receiving),
                         NULL);
 
+  // Intercept history archiving and do it my way
   purple_signal_connect(chatty_conversations_get_handle(),
                         "conversation-write",
                         handle,
                         PURPLE_CALLBACK(cb_chatty_mam_msg_wrote),
                         NULL);
+
+  // Clean up the context
   purple_signal_connect(purple_connections_get_handle(),
                         "signed-off",
                         handle,
