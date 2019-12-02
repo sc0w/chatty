@@ -29,6 +29,8 @@
         "/share/gtk-doc",
         "/share/man",
         "/share/pkgconfig",
+        "/share/aclocal",
+        "/share/vala",
         "*.la",
         "*.a"
     ],
@@ -178,7 +180,11 @@
         {
             "name": "evolution-data-server",
             "cleanup": [
-                "/share/GConf"
+                "/share/GConf",
+                "/lib/cmake",
+                "/lib/evolution-data-server/*-backends",
+                "/libexec",
+                "/share/dbus-1/services"
             ],
             "buildsystem": "cmake-ninja",
             "config-opts": [
