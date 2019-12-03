@@ -8,19 +8,8 @@
         "--share=network",
         "--share=ipc",
         "--socket=x11",
-        "--socket=wayland",
-        "--filesystem=xdg-run/dconf",
-        "--filesystem=~/.config/dconf:ro",
-        "--talk-name=ca.desrt.dconf",
-        "--env=DCONF_USER_CONFIG_DIR=.config/dconf"
+        "--socket=wayland"
     ],
-    "build-options": {
-        "cflags": "-O2 -g",
-        "cxxflags": "-O2 -g",
-        "env": {
-            "V": "1"
-        }
-    },
     "cleanup-commands": [ "rm -rf /app/lib/debug/ /app/include/boost" ],
     "cleanup": [
         "/include",
@@ -245,9 +234,6 @@
         {
             "name": "purism-chatty",
             "buildsystem": "meson",
-            "config-opts": [
-                "--libdir=lib"
-            ],
             "builddir": true,
             "sources": [
                 {
