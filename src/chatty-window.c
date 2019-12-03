@@ -264,8 +264,7 @@ chatty_window_overlay_show (gboolean show)
   }
 
   // First start = welcome screen
-  if (purple_prefs_get_bool (CHATTY_PREFS_ROOT "/status/first_start")) {
-    purple_prefs_set_bool (CHATTY_PREFS_ROOT "/status/first_start", FALSE);
+  if (chatty_settings_get_first_start (chatty_settings_get_default ())) {
 
     if (accounts & CHATTY_ACCOUNTS_SMS) {
       mode = CHATTY_OVERLAY_WELCOME;
@@ -334,7 +333,7 @@ chatty_window_init_data (void)
 
   chatty_window_change_view (CHATTY_VIEW_CHAT_LIST);
 
-  if (purple_prefs_get_bool (CHATTY_PREFS_ROOT "/status/first_start")) {
+  if (chatty_settings_get_first_start (chatty_settings_get_default ())) {
     chatty_window_overlay_show (TRUE);
   }
 

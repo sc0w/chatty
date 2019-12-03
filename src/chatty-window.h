@@ -11,6 +11,7 @@
 #include <gtk/gtk.h>
 #include <purple.h>
 #include "chatty-message-list.h"
+#include "chatty-settings.h"
 #define HANDY_USE_UNSTABLE_API
 #include <handy.h>
 
