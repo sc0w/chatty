@@ -13,7 +13,7 @@
 #include "chatty-icons.h"
 
 
-static GdkPixbuf *
+GdkPixbuf *
 chatty_icon_pixbuf_from_data (const guchar *buf,
                               gsize         count)
 {
@@ -26,17 +26,13 @@ chatty_icon_pixbuf_from_data (const guchar *buf,
 
   if (!gdk_pixbuf_loader_write (loader, buf, count, &error)) {
     g_error ("%s: pixbuf_loder_write failed: %s", __func__, error->message);
-
     g_object_unref (G_OBJECT(loader));
-
     return NULL;
   }
 
   if (!gdk_pixbuf_loader_close (loader, &error)) {
     g_error ("%s: pixbuf_loder_close failed: %s", __func__, error->message);
-
-    g_object_unref(G_OBJECT(loader));
-
+    g_object_unref (G_OBJECT(loader));
     return NULL;
   }
 
@@ -44,9 +40,7 @@ chatty_icon_pixbuf_from_data (const guchar *buf,
 
   if (!pixbuf) {
     g_error ("%s: pixbuf creation failed", __func__);
-
     g_object_unref (G_OBJECT(loader));
-
     return NULL;
   }
 
@@ -58,7 +52,7 @@ chatty_icon_pixbuf_from_data (const guchar *buf,
 
 
 GdkPixbuf *
-chatty_icon_shape_pixbuf (GdkPixbuf *pixbuf)
+chatty_icon_shape_pixbuf_circular (GdkPixbuf *pixbuf)
 {
   cairo_format_t   format;
   cairo_surface_t *surface;
@@ -346,12 +340,12 @@ chatty_icon_get_buddy_icon (PurpleBlistNode *node,
     ret = gdk_pixbuf_scale_simple (buf,
                                    scale_width,
                                    scale_height,
-                                   GDK_INTERP_BILINEAR);
+                                   GDK_INTERP_HYPER);
   }
 
   g_object_unref (G_OBJECT(buf));
 
-  return chatty_icon_shape_pixbuf (ret);
+  return chatty_icon_shape_pixbuf_circular (ret);
 }
 
 
@@ -401,7 +395,7 @@ chatty_icon_get_gicon_from_pixbuf (GdkPixbuf *pixbuf)
   gdk_pixbuf_save_to_buffer (pixbuf, &buffer, &size, "png", &error, NULL);
 
   if (error != NULL) {
-    g_error ("%s Could not save pixbuf to buffer: %s", __func__, error->message);
+    g_error ("%s: Could not save pixbuf to buffer: %s", __func__, error->message);
 
     return NULL;
   }
@@ -413,4 +407,68 @@ chatty_icon_get_gicon_from_pixbuf (GdkPixbuf *pixbuf)
   g_bytes_unref (bytes);
 
   return icon;
+}
+
+
+gpointer
+chatty_icon_get_data_from_pixbuf (const char               *file_name,
+                                  PurplePluginProtocolInfo *prpl_info,
+                                  size_t                   *len)
+{
+  GdkPixbuf           *pixbuf;
+  GdkPixbuf           *origin_pixbuf;
+  PurpleBuddyIconSpec *icon_spec;
+  gsize                size;
+  gchar               *buffer;
+  int                  icon_width, icon_height;
+
+  g_autoptr(GError) error = NULL;
+
+  icon_spec = &prpl_info->icon_spec;
+
+  gdk_pixbuf_get_file_info (file_name, &icon_width, &icon_height);
+
+  if (icon_width > icon_spec->max_width || icon_height > icon_spec->max_height) {
+
+    pixbuf = gdk_pixbuf_new_from_file (file_name, &error);
+
+    if (error != NULL) {
+      g_error ("%s: Could not create pixbuf from file: %s", __func__, error->message);
+      return NULL;
+    }
+
+    origin_pixbuf = g_object_ref (pixbuf);
+
+    g_object_unref (pixbuf);
+
+    pixbuf = gdk_pixbuf_scale_simple (origin_pixbuf, 
+                                      icon_spec->max_width, 
+                                      icon_spec->max_height, 
+                                      GDK_INTERP_HYPER);
+
+    g_object_unref (origin_pixbuf);
+
+    gdk_pixbuf_save_to_buffer (pixbuf, &buffer, &size, "png", &error, NULL);
+
+    g_object_unref (pixbuf);
+
+    if (error != NULL) {
+      g_error ("%s: Could not save pixbuf to buffer: %s", __func__, error->message);
+      return NULL;
+    }
+  } else {
+    if (!g_file_get_contents (file_name, &buffer, &size, &error)) {
+      g_error ("%s: Could not get file content: %s", __func__, error->message);
+      return NULL;
+    }
+
+    if (size < icon_spec->max_filesize) {
+      g_debug ("%s: Filesize too big", __func__);
+      return NULL;
+    }
+  }
+
+  *len = (size_t)size;
+
+  return buffer;
 }

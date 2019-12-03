@@ -305,10 +305,15 @@ chatty_dialogs_update_connection_status (void)
 
 
 static void
-write_account_data_into_dialog (chatty_data_t *chatty, chatty_dialog_data_t *chatty_dialog)
+write_account_data_into_dialog (chatty_data_t        *chatty, 
+                                chatty_dialog_data_t *chatty_dialog)
 {
-  const char *account_name;
-  const char *protocol_name;
+  PurpleStoredImage *image = NULL;
+  GtkWidget         *avatar = NULL;
+  GdkPixbuf         *pixbuf;
+  GdkPixbuf         *origin_pixbuf;
+  const char        *account_name;
+  const char        *protocol_name;
 
   account_name = purple_account_get_username (chatty->selected_account);
   protocol_name = purple_account_get_protocol_name (chatty->selected_account);
@@ -323,6 +328,42 @@ write_account_data_into_dialog (chatty_data_t *chatty, chatty_dialog_data_t *cha
 
   gtk_entry_set_text (chatty_dialog->entry_name, account_name);
   gtk_label_set_text (chatty_dialog->label_protocol, protocol_name);
+
+  image = purple_buddy_icons_find_account_icon (chatty->selected_account);
+
+  avatar = gtk_image_new ();
+
+  if (image != NULL) {
+    pixbuf = chatty_icon_pixbuf_from_data (purple_imgstore_get_data (image),
+                                           purple_imgstore_get_size (image));
+
+    if (gdk_pixbuf_get_width (pixbuf) >= CHATTY_ICON_SIZE_LARGE || 
+        gdk_pixbuf_get_height (pixbuf) >= CHATTY_ICON_SIZE_LARGE) {
+
+      origin_pixbuf = g_object_ref (pixbuf);
+
+      g_object_unref (pixbuf);
+
+      pixbuf = gdk_pixbuf_scale_simple (origin_pixbuf, 
+                                        CHATTY_ICON_SIZE_LARGE, 
+                                        CHATTY_ICON_SIZE_LARGE, 
+                                        GDK_INTERP_BILINEAR);
+
+      g_object_unref (origin_pixbuf);
+    }
+    
+    gtk_image_set_from_pixbuf (GTK_IMAGE(avatar), chatty_icon_shape_pixbuf_circular (pixbuf));
+
+    g_object_unref (pixbuf);
+    purple_imgstore_unref (image);
+  } else {
+    gtk_image_set_from_icon_name (GTK_IMAGE(avatar),
+                                  "avatar-default-symbolic",
+                                  GTK_ICON_SIZE_DIALOG);
+  }
+
+  gtk_button_set_image (GTK_BUTTON(chatty_dialog->button_account_avatar), 
+                        GTK_WIDGET(avatar));
 }
 
 
@@ -708,7 +749,60 @@ static void
 cb_button_account_avatar_clicked (GtkButton *sender,
                                   gpointer   data)
 {
- 
+  PurplePluginProtocolInfo *prpl_info;
+  GdkPixbuf                *pixbuf;
+  GdkPixbuf                *origin_pixbuf;
+  GtkWidget                *avatar;
+  guchar                   *buffer;
+  char                     *file_name = NULL;
+  size_t                    len;
+
+  g_autoptr(GError) error = NULL;
+
+  chatty_data_t        *chatty = chatty_get_data ();
+  chatty_dialog_data_t *chatty_dialog = chatty_get_dialog_data ();
+  
+  file_name = chatty_dialogs_show_dialog_load_avatar ();
+
+  if (file_name) {
+    prpl_info = PURPLE_PLUGIN_PROTOCOL_INFO(purple_find_prpl 
+      (purple_account_get_protocol_id (chatty->selected_account)));
+
+    buffer = chatty_icon_get_data_from_pixbuf (file_name, prpl_info, &len);
+
+    purple_buddy_icons_set_account_icon (chatty->selected_account, buffer, len);
+
+    pixbuf = gdk_pixbuf_new_from_file (file_name, &error);
+
+    if (error != NULL) {
+      g_error ("%s Could not create pixbuf from file: %s", __func__, error->message);
+      return;
+    }
+
+    avatar = gtk_image_new ();
+
+    if (gdk_pixbuf_get_width (pixbuf) >= CHATTY_ICON_SIZE_LARGE || 
+        gdk_pixbuf_get_height (pixbuf) >= CHATTY_ICON_SIZE_LARGE) {
+
+      origin_pixbuf = g_object_ref (pixbuf);
+
+      g_object_unref (pixbuf);
+
+      pixbuf = gdk_pixbuf_scale_simple (origin_pixbuf, 
+                                        CHATTY_ICON_SIZE_LARGE, 
+                                        CHATTY_ICON_SIZE_LARGE, 
+                                        GDK_INTERP_BILINEAR);
+
+      g_object_unref (origin_pixbuf);
+    }
+
+    gtk_image_set_from_pixbuf (GTK_IMAGE(avatar), chatty_icon_shape_pixbuf_circular (pixbuf));
+    gtk_button_set_image (GTK_BUTTON(chatty_dialog->button_account_avatar), GTK_WIDGET(avatar));
+
+    g_object_unref (pixbuf);
+  }
+  
+  g_free (file_name);
 }
 
 

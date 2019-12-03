@@ -269,7 +269,7 @@ cb_pixbuf_from_stream_ready (GObject      *source_object,
       g_return_if_fail (data->row != NULL);
 
       g_object_set (data->row,
-                    "avatar", chatty_icon_shape_pixbuf (pixbuf),
+                    "avatar", chatty_icon_shape_pixbuf_circular (pixbuf),
                     NULL);
       break;
 
@@ -383,7 +383,7 @@ chatty_folks_load_avatar (FolksIndividual  *individual,
                                          FALSE);
     
     g_object_set (row,
-                  "avatar", chatty_icon_shape_pixbuf (pixbuf),
+                  "avatar", chatty_icon_shape_pixbuf_circular (pixbuf),
                   NULL);
 
     g_object_unref (pixbuf);
