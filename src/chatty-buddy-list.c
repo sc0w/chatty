@@ -1197,6 +1197,7 @@ chatty_blist_join_group_chat (PurpleAccount *account,
                               gboolean       autojoin)
 {
   PurpleChat               *chat;
+  PurpleGroup              *group;
   PurpleConnection         *gc;
   PurplePluginProtocolInfo *info;
   GHashTable               *hash = NULL;
@@ -1216,7 +1217,12 @@ chatty_blist_join_group_chat (PurpleAccount *account,
   chat = purple_chat_new (account, group_chat_id, hash);
 
   if (chat != NULL) {
-    purple_blist_add_chat (chat, NULL, NULL);
+    if ((group = purple_find_group ("Chats")) == NULL) {
+      group = purple_group_new ("Chats");
+      purple_blist_add_group (group, NULL);
+    }
+
+    purple_blist_add_chat (chat, group, NULL);
     purple_blist_alias_chat (chat, alias);
     purple_blist_node_set_bool ((PurpleBlistNode*)chat,
                                 "chatty-autojoin",
