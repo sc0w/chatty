@@ -3,19 +3,19 @@ msgid ""
 msgstr ""
 "Project-Id-Version: purism-chatty\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-11-01 17:24+0100\n"
+"POT-Creation-Date: 2019-11-19 14:02+0100\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2019-11-05 04:09+0000\n"
-"Last-Translator: Josh <josh.public@protonmail.ch>\n"
+"PO-Revision-Date: 2019-12-03 03:31+0000\n"
+"Last-Translator: Copied by Zanata <copied-by-zanata@zanata.org>\n"
 "Language-Team: Latin\n"
 "Language: la\n"
 "X-Generator: Zanata 4.6.2\n"
 "Plural-Forms: nplurals=1; plural=0\n"
 
 #: data/sm.puri.Chatty.appdata.xml.in:6 data/sm.puri.Chatty.desktop.in:3
-#: src/chatty-dialogs.c:1436 src/ui/chatty-window.ui:184
+#: src/chatty-dialogs.c:1424 src/ui/chatty-window.ui:210
 msgid "Chats"
 msgstr "Fabulae"
 
@@ -58,7 +58,7 @@ msgstr "Pellere in modo daemonis"
 
 #: src/chatty-application.c:56
 msgid "Disable all accounts"
-msgstr "Debilitare omnia accounti"
+msgstr "Debilitare omnia breviaria"
 
 #: src/chatty-application.c:57
 msgid "Enable libpurple debug messages"
@@ -68,137 +68,129 @@ msgstr "Habilitare nuntia emendantes de libpurple"
 msgid "Enable verbose libpurple debug messages"
 msgstr "Habilitare nuntia emendantes verbosas de libpurple"
 
-#: src/chatty-account.c:121
-msgid "SMS Number"
-msgstr "Numerus SMS"
-
-#: src/chatty-account.c:125
-msgid "Jabber ID"
-msgstr "Jabber ID"
-
-#: src/chatty-account.c:293
+#: src/chatty-account.c:272
 msgid "Add new account…"
-msgstr "Addere accountus novus..."
+msgstr "Addere breviarium novum..."
 
-#: src/chatty-account.c:326
+#: src/chatty-account.c:305
 msgid "Contact added"
 msgstr "Socius addidit est"
 
-#: src/chatty-account.c:330
+#: src/chatty-account.c:309
 #, c-format
 msgid "User %s has added %s to the contacts"
 msgstr "Actor %s addidit %s ad sociis"
 
-#: src/chatty-account.c:391
+#: src/chatty-account.c:370
 #, c-format
 msgid "Authorize %s?"
 msgstr "Authorizare %s?"
 
-#: src/chatty-account.c:395
+#: src/chatty-account.c:374
 msgid "Reject"
 msgstr "Abnuere"
 
-#: src/chatty-account.c:397
+#: src/chatty-account.c:376
 msgid "Accept"
 msgstr "Accipere"
 
-#: src/chatty-account.c:402
+#: src/chatty-account.c:381
 #, c-format
 msgid "Add %s to contact list"
 msgstr "Addere %s ad inventario sociorum"
 
-#: src/chatty-buddy-list.c:820
+#: src/chatty-buddy-list.c:191
+msgid "Send to"
+msgstr "Mittere ad"
+
+#: src/chatty-buddy-list.c:958
 msgid "Disconnect group chat"
 msgstr "Deiugare fabula classis"
 
-#: src/chatty-buddy-list.c:821
+#: src/chatty-buddy-list.c:959
 msgid "This removes chat from chats list"
 msgstr "Hic amovet fabula ab inventario fabularum"
 
-#: src/chatty-buddy-list.c:825
+#: src/chatty-buddy-list.c:963
 msgid "Delete chat with"
 msgstr "Delere fabula cum"
 
-#: src/chatty-buddy-list.c:826
+#: src/chatty-buddy-list.c:964
 msgid "This deletes the conversation history"
 msgstr "Hic delet historiam colloquii"
 
-#: src/chatty-buddy-list.c:838 src/chatty-purple-request.c:186
+#: src/chatty-buddy-list.c:976 src/chatty-purple-request.c:186
 #: src/ui/chatty-dialog-join-muc.ui:16 src/ui/chatty-dialog-muc-info.ui:54
 msgid "Cancel"
 msgstr "Retexere"
 
-#: src/chatty-buddy-list.c:840
+#: src/chatty-buddy-list.c:978
 msgid "Delete"
 msgstr "Delere"
 
-#: src/chatty-buddy-list.c:1479
+#: src/chatty-buddy-list.c:1630
 msgid "Me: "
 msgstr "Ego: "
 
-#: src/chatty-connection.c:142
+#: src/chatty-connection.c:143
 msgid "Login failed"
 msgstr "Inire defecit"
 
-#: src/chatty-connection.c:148
+#: src/chatty-connection.c:149
 msgid "Please check ID and password"
 msgstr "Quaesto inspice ID et signum"
 
-#: src/chatty-conversation.c:1401
+#: src/chatty-conversation.c:1417
 msgid "Owner"
 msgstr "Erus"
 
-#: src/chatty-conversation.c:1404
+#: src/chatty-conversation.c:1420
 msgid "Moderator"
 msgstr "Moderator"
 
-#: src/chatty-conversation.c:1407
+#: src/chatty-conversation.c:1423
 msgid "Member"
 msgstr "Membrum"
 
-#: src/chatty-conversation.c:1861
+#: src/chatty-conversation.c:1877
 msgid "members"
 msgstr "membra"
 
-#: src/chatty-conversation.c:2201
+#: src/chatty-conversation.c:2224
 #, c-format
 msgid "New message from %s"
 msgstr "Nova nuntia ab %s"
 
-#: src/chatty-dialogs.c:203 src/ui/chatty-dialog-settings.ui:495
+#: src/chatty-dialogs.c:205 src/ui/chatty-dialog-settings.ui:495
 msgid "Delete Account"
-msgstr "Delere Accountum"
+msgstr "Delere Breviarium"
 
-#: src/chatty-dialogs.c:206
+#: src/chatty-dialogs.c:208
 #, c-format
 msgid "Delete account %s?"
-msgstr "Delere accountum %s?"
-
-#: src/chatty-dialogs.c:294 src/chatty-dialogs.c:313
-msgid "connected"
-msgstr "coniunctus"
+msgstr "Delere breviarium %s?"
 
 #: src/chatty-dialogs.c:296 src/chatty-dialogs.c:315
+msgid "connected"
+msgstr "coniunctus est"
+
+#: src/chatty-dialogs.c:298 src/chatty-dialogs.c:317
 msgid "connecting…"
 msgstr "coniungit…"
 
-#: src/chatty-dialogs.c:298 src/chatty-dialogs.c:317
+#: src/chatty-dialogs.c:300 src/chatty-dialogs.c:319
 msgid "disconnected"
-msgstr "deiunxitur"
+msgstr "deiunctus est"
 
-#: src/chatty-dialogs.c:510
-msgid "Phonenumber validation"
-msgstr "Confirmatio de numerum telephonum"
-
-#: src/chatty-dialogs.c:1352
+#: src/chatty-dialogs.c:1327
 msgid "Phone Number:"
 msgstr "Numerus Telephoni:"
 
-#: src/chatty-dialogs.c:1438
+#: src/chatty-dialogs.c:1426
 msgid "An SMS and XMPP messaging client"
 msgstr "Cliens adnuntiare via SMS et XMPP"
 
-#: src/chatty-dialogs.c:1445
+#: src/chatty-dialogs.c:1433
 msgid "translator-credits"
 msgstr "interpres-credentiae"
 
@@ -246,37 +238,37 @@ msgstr "Haec est fabula via SMS."
 msgid "and carrier rates may apply."
 msgstr "et aesa cursoris "
 
-#: src/chatty-notify.c:73
+#: src/chatty-notify.c:75
 msgid "Open Message"
-msgstr ""
+msgstr "Aperire Epistulam"
 
-#: src/chatty-notify.c:78
+#: src/chatty-notify.c:80
 msgid "Message Received"
-msgstr ""
+msgstr "Epistula Receptus Est"
 
-#: src/chatty-notify.c:84
+#: src/chatty-notify.c:86
 msgid "Message Error"
-msgstr ""
+msgstr "Erratum Epistulae"
 
-#: src/chatty-notify.c:90
+#: src/chatty-notify.c:92
 msgid "Account Info"
-msgstr ""
+msgstr "Info. Breviarii"
 
-#: src/chatty-notify.c:96
+#: src/chatty-notify.c:98
 msgid "Account Connected"
-msgstr ""
+msgstr "Breviarium Coniunctus Est"
 
-#: src/chatty-notify.c:103
+#: src/chatty-notify.c:105
 msgid "Open Account Settings"
-msgstr ""
+msgstr "Aperire Proprietates Breviarii"
 
-#: src/chatty-notify.c:106
+#: src/chatty-notify.c:108
 msgid "Account Disconnected"
-msgstr ""
+msgstr "Breviarium Deiugatus Est"
 
 #: src/chatty-purple-notify.c:40
 msgid "Close"
-msgstr ""
+msgstr "Cludere"
 
 #: src/chatty-purple-request.c:181
 msgid "Save File..."
@@ -384,62 +376,70 @@ msgstr "Paene"
 
 #: src/chatty-window.c:39 src/chatty-window.c:45
 msgid "Start chatting"
-msgstr ""
+msgstr "Incipe fabulare"
 
 #: src/chatty-window.c:40
 msgid ""
 "<b>SMS</b> Chat is set up by default. Start a chat with the \"+\" button in "
 "the titlebar."
 msgstr ""
+"<b>SMS</b> Fabula statuitur ab regula. Incipe fabulam ab \"+\" botone in "
+"regula tituli"
 
 #: src/chatty-window.c:41 src/chatty-window.c:46
 msgid ""
 "Add <b>Instant Messaging</b> by selecting \n"
 "<i>\"Add new account\"</i> in <i>\"preferences\"</i>."
 msgstr ""
+"Adde <b>Adnuntiare Instans</b> ab optare \n"
+"<i>\"Addere breviarium novum\"</i> in <i>\"Praepositiones\"</i>."
 
 #: src/chatty-window.c:51 src/chatty-window.c:57 src/chatty-window.c:63
 #: src/chatty-window.c:69
 msgid "Choose a contact"
-msgstr ""
+msgstr "Opta socium"
 
 #: src/chatty-window.c:52
 msgid ""
 "Select an <b>SMS</b> or <b>Instant Message</b> contact with the <b>\"+\"</b> "
 "button in the titlebar."
 msgstr ""
+"Opta <b>SMS</b> aut <b>Nuntium Instans</b> socium ab <b>\"=\"</b> botone in "
+"regula tituli."
 
 #: src/chatty-window.c:58
 msgid ""
 "Select an <b>Instant Message</b> contact with the \"+\" button in the "
 "titlebar."
-msgstr ""
+msgstr "Opta <b>Nuntium Instans</b> socium ab \"+\" botone in regula tituli."
 
 #: src/chatty-window.c:64
 msgid "Start a <b>SMS</b> chat with with the \"+\" button in the titlebar."
-msgstr ""
+msgstr "Incipe <b>SMS</b> fabulam ab \"+\" botone in regula tituli."
 
 #: src/chatty-window.c:65 src/chatty-window.c:70
 msgid ""
 "For <b>Instant Messaging</b> add or activate an account in "
 "<i>\"preferences\"</i>."
 msgstr ""
+"Pro <b>Adnuntiare Instans</b> adde aut habilita breviarium in "
+"<i>\"praepositiones\"</i>."
 
 #: src/ui/chatty-dialog-join-muc.ui:12 src/ui/chatty-window.ui:19
 msgid "New Group Chat"
-msgstr ""
+msgstr "Nova Fabula Classis"
 
 #: src/ui/chatty-dialog-join-muc.ui:28
 msgid "Join Chat"
-msgstr ""
+msgstr "Iugare Fabulam"
 
 #: src/ui/chatty-dialog-join-muc.ui:80 src/ui/chatty-dialog-new-chat.ui:213
 msgid "Select chat account"
-msgstr ""
+msgstr "Opta brevarium fabulae"
 
 #: src/ui/chatty-dialog-join-muc.ui:130
 msgid "Password (optional)"
-msgstr ""
+msgstr "Signum (facultativum)"
 
 #: src/ui/chatty-dialog-join-muc.ui:181
 msgid "Autojoin"
@@ -469,7 +469,7 @@ msgstr ""
 msgid "Room settings"
 msgstr ""
 
-#: src/ui/chatty-dialog-muc-info.ui:242 src/ui/chatty-dialog-user-info.ui:178
+#: src/ui/chatty-dialog-muc-info.ui:242 src/ui/chatty-dialog-user-info.ui:207
 msgid "Notifications"
 msgstr ""
 
@@ -533,17 +533,21 @@ msgstr "Addere Socium"
 msgid "Name (optional)"
 msgstr "Nomen "
 
+#: src/ui/chatty-dialog-new-chat.ui:300
+msgid "Add in GNOME Contacts"
+msgstr ""
+
 #: src/ui/chatty-dialog-settings.ui:22 src/ui/chatty-window.ui:57
 msgid "Preferences"
 msgstr "Praepositiones"
 
 #: src/ui/chatty-dialog-settings.ui:32
 msgid "Edit Account"
-msgstr "Conrigere Accountam"
+msgstr "Conrigere Breviarium"
 
 #: src/ui/chatty-dialog-settings.ui:74
 msgid "Add Account"
-msgstr "Addere Accountam"
+msgstr "Addere Breviarium"
 
 #: src/ui/chatty-dialog-settings.ui:98
 msgid "Add"
@@ -551,7 +555,7 @@ msgstr "Addere"
 
 #: src/ui/chatty-dialog-settings.ui:135
 msgid "Accounts"
-msgstr "Accountae"
+msgstr "Breviaria"
 
 #: src/ui/chatty-dialog-settings.ui:152
 msgid "Privacy"
@@ -639,13 +643,13 @@ msgstr ""
 
 #: src/ui/chatty-dialog-settings.ui:352
 msgid "Account ID"
-msgstr "ID Accountae"
+msgstr "ID Breviarii"
 
 #: src/ui/chatty-dialog-settings.ui:385
 msgid "Protocol"
 msgstr "Modus"
 
-#: src/ui/chatty-dialog-settings.ui:414
+#: src/ui/chatty-dialog-settings.ui:414 src/ui/chatty-dialog-user-info.ui:124
 msgid "Status"
 msgstr "Status"
 
@@ -689,15 +693,15 @@ msgstr ""
 msgid "XMPP ID"
 msgstr ""
 
-#: src/ui/chatty-dialog-user-info.ui:109 src/ui/chatty-dialog-user-info.ui:193
+#: src/ui/chatty-dialog-user-info.ui:109 src/ui/chatty-dialog-user-info.ui:222
 msgid "Encryption"
 msgstr "Encryptare"
 
-#: src/ui/chatty-dialog-user-info.ui:194
+#: src/ui/chatty-dialog-user-info.ui:223
 msgid "Secure messaging using OMEMO"
 msgstr ""
 
-#: src/ui/chatty-dialog-user-info.ui:215
+#: src/ui/chatty-dialog-user-info.ui:244
 msgid "Fingerprints"
 msgstr "Signa digitorum"
 
@@ -717,10 +721,14 @@ msgstr ""
 msgid "About Chats"
 msgstr "De Fabulae"
 
-#: src/ui/chatty-window.ui:137
+#: src/ui/chatty-window.ui:138
+msgid "Add to GNOME Contacts"
+msgstr ""
+
+#: src/ui/chatty-window.ui:163
 msgid "Leave Chat"
 msgstr "Exire Fabula"
 
-#: src/ui/chatty-window.ui:150
+#: src/ui/chatty-window.ui:176
 msgid "Delete Chat"
 msgstr "Delire Fabulam"
