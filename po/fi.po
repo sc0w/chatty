@@ -4,11 +4,11 @@ msgid ""
 msgstr ""
 "Project-Id-Version: purism-chatty\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-11-01 17:24+0100\n"
+"POT-Creation-Date: 2019-11-19 14:02+0100\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2019-11-02 01:40+0000\n"
+"PO-Revision-Date: 2019-11-26 07:20+0000\n"
 "Last-Translator: JR-Fi <juho@reivo.fi>\n"
 "Language-Team: Finnish\n"
 "Language: fi\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
 
 #: data/sm.puri.Chatty.appdata.xml.in:6 data/sm.puri.Chatty.desktop.in:3
-#: src/chatty-dialogs.c:1436 src/ui/chatty-window.ui:184
+#: src/chatty-dialogs.c:1424 src/ui/chatty-window.ui:210
 msgid "Chats"
 msgstr "Keskustelut"
 
@@ -70,139 +70,131 @@ msgstr "Mahdollista libpurple virheenetsinnän viestit"
 msgid "Enable verbose libpurple debug messages"
 msgstr "Mahdollista laajennetut libpurple virheenetsinnän viestit"
 
-#: src/chatty-account.c:121
-msgid "SMS Number"
-msgstr "Tekstiviestinumero"
-
-#: src/chatty-account.c:125
-msgid "Jabber ID"
-msgstr "Jabber tunnus"
-
-#: src/chatty-account.c:293
+#: src/chatty-account.c:272
 msgid "Add new account…"
 msgstr "Lisää uusi tili..."
 
-#: src/chatty-account.c:326
+#: src/chatty-account.c:305
 msgid "Contact added"
 msgstr "Yhteystieto lisätty"
 
-#: src/chatty-account.c:330
+#: src/chatty-account.c:309
 #, c-format
 msgid "User %s has added %s to the contacts"
 msgstr "Käyttäjä %s on lisännyt %sn yhteystietoihin"
 
-#: src/chatty-account.c:391
+#: src/chatty-account.c:370
 #, c-format
 msgid "Authorize %s?"
 msgstr "Salli %s?"
 
-#: src/chatty-account.c:395
+#: src/chatty-account.c:374
 msgid "Reject"
 msgstr "Hylkää"
 
-#: src/chatty-account.c:397
+#: src/chatty-account.c:376
 msgid "Accept"
 msgstr "Hyväksy"
 
-#: src/chatty-account.c:402
+#: src/chatty-account.c:381
 #, c-format
 msgid "Add %s to contact list"
 msgstr "Lisää %s yhteystietoihin"
 
-#: src/chatty-buddy-list.c:820
+#: src/chatty-buddy-list.c:191
+msgid "Send to"
+msgstr "Lähetä"
+
+#: src/chatty-buddy-list.c:958
 msgid "Disconnect group chat"
 msgstr "Katkaise ryhmä-keskustelu"
 
-#: src/chatty-buddy-list.c:821
+#: src/chatty-buddy-list.c:959
 msgid "This removes chat from chats list"
 msgstr "Tämä poistaa keskustelun keskustelulistalta"
 
-#: src/chatty-buddy-list.c:825
+#: src/chatty-buddy-list.c:963
 msgid "Delete chat with"
 msgstr "Poista keskustelu jossa"
 
-#: src/chatty-buddy-list.c:826
+#: src/chatty-buddy-list.c:964
 msgid "This deletes the conversation history"
 msgstr "Tämä poistaa keskusteluhistorian"
 
-#: src/chatty-buddy-list.c:838 src/chatty-purple-request.c:186
+#: src/chatty-buddy-list.c:976 src/chatty-purple-request.c:186
 #: src/ui/chatty-dialog-join-muc.ui:16 src/ui/chatty-dialog-muc-info.ui:54
 msgid "Cancel"
 msgstr "Peruuta"
 
-#: src/chatty-buddy-list.c:840
+#: src/chatty-buddy-list.c:978
 msgid "Delete"
 msgstr "Poista"
 
-#: src/chatty-buddy-list.c:1479
+#: src/chatty-buddy-list.c:1630
 msgid "Me: "
 msgstr "Minä:"
 
-#: src/chatty-connection.c:142
+#: src/chatty-connection.c:143
 msgid "Login failed"
 msgstr "Kirjautuminen epäonnistui"
 
-#: src/chatty-connection.c:148
+#: src/chatty-connection.c:149
 msgid "Please check ID and password"
 msgstr "Tarkasta tunnus ja salasana"
 
-#: src/chatty-conversation.c:1401
+#: src/chatty-conversation.c:1417
 msgid "Owner"
 msgstr "Omistaja"
 
-#: src/chatty-conversation.c:1404
+#: src/chatty-conversation.c:1420
 msgid "Moderator"
 msgstr "Moderaattori"
 
-#: src/chatty-conversation.c:1407
+#: src/chatty-conversation.c:1423
 msgid "Member"
 msgstr "Osallistuja"
 
-#: src/chatty-conversation.c:1861
+#: src/chatty-conversation.c:1877
 msgid "members"
 msgstr "Osallistujat"
 
-#: src/chatty-conversation.c:2201
+#: src/chatty-conversation.c:2224
 #, c-format
 msgid "New message from %s"
 msgstr "Uusi viesti käyttäjältä %s"
 
-#: src/chatty-dialogs.c:203 src/ui/chatty-dialog-settings.ui:495
+#: src/chatty-dialogs.c:205 src/ui/chatty-dialog-settings.ui:495
 msgid "Delete Account"
 msgstr "Poista tili"
 
-#: src/chatty-dialogs.c:206
+#: src/chatty-dialogs.c:208
 #, c-format
 msgid "Delete account %s?"
 msgstr "Poista tili %s?"
 
-#: src/chatty-dialogs.c:294 src/chatty-dialogs.c:313
+#: src/chatty-dialogs.c:296 src/chatty-dialogs.c:315
 msgid "connected"
 msgstr "Yhteys muodostettu"
 
-#: src/chatty-dialogs.c:296 src/chatty-dialogs.c:315
+#: src/chatty-dialogs.c:298 src/chatty-dialogs.c:317
 msgid "connecting…"
 msgstr "muodostaa yhteyttä..."
 
-#: src/chatty-dialogs.c:298 src/chatty-dialogs.c:317
+#: src/chatty-dialogs.c:300 src/chatty-dialogs.c:319
 msgid "disconnected"
 msgstr "Yhteys katkaistu"
 
-#: src/chatty-dialogs.c:510
-msgid "Phonenumber validation"
-msgstr "Puhelinnumeron varmistus"
-
-#: src/chatty-dialogs.c:1352
+#: src/chatty-dialogs.c:1327
 msgid "Phone Number:"
 msgstr "Puhelinnumero:"
 
-#: src/chatty-dialogs.c:1438
+#: src/chatty-dialogs.c:1426
 msgid "An SMS and XMPP messaging client"
 msgstr ""
 "Tämä on ohjelma tekstiviesti (SMS) ja XMPP viestitysprotokollien "
 "käyttämiseen"
 
-#: src/chatty-dialogs.c:1445
+#: src/chatty-dialogs.c:1433
 msgid "translator-credits"
 msgstr "Kääntäjän tiedot"
 
@@ -250,31 +242,31 @@ msgstr "Tämä on tekstiviestikeskustelu "
 msgid "and carrier rates may apply."
 msgstr ", joten huomioithan mahdolliset operaattorimaksut."
 
-#: src/chatty-notify.c:73
+#: src/chatty-notify.c:75
 msgid "Open Message"
 msgstr "Avaa viesti"
 
-#: src/chatty-notify.c:78
+#: src/chatty-notify.c:80
 msgid "Message Received"
 msgstr "Viesti vastaanotettu"
 
-#: src/chatty-notify.c:84
+#: src/chatty-notify.c:86
 msgid "Message Error"
 msgstr "Viesti virhe"
 
-#: src/chatty-notify.c:90
+#: src/chatty-notify.c:92
 msgid "Account Info"
 msgstr "Tilin tiedot"
 
-#: src/chatty-notify.c:96
+#: src/chatty-notify.c:98
 msgid "Account Connected"
 msgstr "Tili liitetty"
 
-#: src/chatty-notify.c:103
+#: src/chatty-notify.c:105
 msgid "Open Account Settings"
 msgstr "Avaa tilin asetukset"
 
-#: src/chatty-notify.c:106
+#: src/chatty-notify.c:108
 msgid "Account Disconnected"
 msgstr "Tilin yhteys katkaistu"
 
@@ -481,7 +473,7 @@ msgstr "Keskusteluhuoneen aihe"
 msgid "Room settings"
 msgstr "Tämän keskustelun asetukset"
 
-#: src/ui/chatty-dialog-muc-info.ui:242 src/ui/chatty-dialog-user-info.ui:178
+#: src/ui/chatty-dialog-muc-info.ui:242 src/ui/chatty-dialog-user-info.ui:207
 msgid "Notifications"
 msgstr "Ilmoitukset"
 
@@ -544,6 +536,10 @@ msgstr "Lisää yhteystieto"
 #: src/ui/chatty-dialog-new-chat.ui:263
 msgid "Name (optional)"
 msgstr "Nimi (valinnainen)"
+
+#: src/ui/chatty-dialog-new-chat.ui:300
+msgid "Add in GNOME Contacts"
+msgstr "Lisää GNOME:n kontakteissa"
 
 #: src/ui/chatty-dialog-settings.ui:22 src/ui/chatty-window.ui:57
 msgid "Preferences"
@@ -657,7 +653,7 @@ msgstr "Tilin tunnus"
 msgid "Protocol"
 msgstr "Yhteysprotokolla"
 
-#: src/ui/chatty-dialog-settings.ui:414
+#: src/ui/chatty-dialog-settings.ui:414 src/ui/chatty-dialog-user-info.ui:124
 msgid "Status"
 msgstr "Tila"
 
@@ -701,15 +697,15 @@ msgstr "Keskustelun tiedot"
 msgid "XMPP ID"
 msgstr "XMPP tunnus"
 
-#: src/ui/chatty-dialog-user-info.ui:109 src/ui/chatty-dialog-user-info.ui:193
+#: src/ui/chatty-dialog-user-info.ui:109 src/ui/chatty-dialog-user-info.ui:222
 msgid "Encryption"
 msgstr "Salaus"
 
-#: src/ui/chatty-dialog-user-info.ui:194
+#: src/ui/chatty-dialog-user-info.ui:223
 msgid "Secure messaging using OMEMO"
 msgstr "Turvaa viestinvälitys OMEMO-protokollalla"
 
-#: src/ui/chatty-dialog-user-info.ui:215
+#: src/ui/chatty-dialog-user-info.ui:244
 msgid "Fingerprints"
 msgstr "Sormenjäljet"
 
@@ -729,10 +725,14 @@ msgstr "Uusi suora keskustelu"
 msgid "About Chats"
 msgstr "Tietoja Chats-ohjelmasta"
 
-#: src/ui/chatty-window.ui:137
+#: src/ui/chatty-window.ui:138
+msgid "Add to GNOME Contacts"
+msgstr "Lisää GNOME:n kontakteihin"
+
+#: src/ui/chatty-window.ui:163
 msgid "Leave Chat"
 msgstr "Poistu keskustelusta"
 
-#: src/ui/chatty-window.ui:150
+#: src/ui/chatty-window.ui:176
 msgid "Delete Chat"
 msgstr "Poista keskustelu"
