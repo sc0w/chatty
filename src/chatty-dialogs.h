@@ -25,6 +25,8 @@ typedef struct {
   GtkWidget  *button_save_account;
   GtkWidget  *button_add_contact;
   GtkWidget  *button_add_gnome_contact;
+  GtkWidget  *button_user_avatar;
+  GtkWidget  *button_account_avatar;
   GtkWidget  *box_topic_frame;
   GtkWidget  *textview_muc_topic;
   GtkWidget  *radio_button_xmpp;

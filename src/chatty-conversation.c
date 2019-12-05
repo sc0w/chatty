@@ -1502,7 +1502,7 @@ chatty_conv_muc_add_user (PurpleConversation  *conv,
 
       avatar = chatty_icon_get_buddy_icon ((PurpleBlistNode*)buddy,
                                            alias,
-                                           CHATTY_ICON_SIZE_LARGE,
+                                           CHATTY_ICON_SIZE_MEDIUM,
                                            color,
                                            FALSE);
     }
