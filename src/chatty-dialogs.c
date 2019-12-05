@@ -1345,6 +1345,8 @@ chatty_dialogs_show_dialog_join_muc (void)
   GtkWindow  *window;
   GtkListBox *list_select_muc_account;
   GtkEntry   *entry_group_chat_id;
+  GtkEntry   *entry_group_chat_room_alias;
+  GtkEntry   *entry_group_chat_user_alias;
   GtkEntry   *entry_group_chat_pw;
   GtkSwitch  *switch_prefs_chat_autojoin;
   gboolean    autojoin;
@@ -1359,6 +1361,8 @@ chatty_dialogs_show_dialog_join_muc (void)
   list_select_muc_account = GTK_LIST_BOX (gtk_builder_get_object (builder, "list_select_muc_account"));
   button_join_chat = GTK_WIDGET (gtk_builder_get_object (builder, "button_join_chat"));
   entry_group_chat_id = GTK_ENTRY (gtk_builder_get_object (builder, "entry_group_chat_id"));
+  entry_group_chat_room_alias = GTK_ENTRY (gtk_builder_get_object (builder, "entry_group_chat_room_alias"));
+  entry_group_chat_user_alias = GTK_ENTRY (gtk_builder_get_object (builder, "entry_group_chat_user_alias"));
   entry_group_chat_pw = GTK_ENTRY (gtk_builder_get_object (builder, "entry_group_chat_pw"));
   switch_prefs_chat_autojoin = GTK_SWITCH (gtk_builder_get_object (builder, "switch_prefs_chat_autojoin"));
 
@@ -1384,7 +1388,8 @@ chatty_dialogs_show_dialog_join_muc (void)
 
     chatty_blist_join_group_chat (chatty->selected_account,
                                   gtk_entry_get_text (entry_group_chat_id),
-                                  NULL,
+                                  gtk_entry_get_text (entry_group_chat_room_alias),
+                                  gtk_entry_get_text (entry_group_chat_user_alias),
                                   gtk_entry_get_text (entry_group_chat_pw),
                                   autojoin);
   }

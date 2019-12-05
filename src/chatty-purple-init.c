@@ -314,6 +314,7 @@ libpurple_init (void)
   chatty_purple_data_t *chatty_purple = chatty_get_purple_data ();
 
   signal (SIGCHLD, SIG_IGN);
+  signal (SIGPIPE, SIG_IGN);
 
   purple_core_set_ui_ops (chatty_core_get_ui_ops ());
   purple_eventloop_set_ui_ops (chatty_eventloop_get_ui_ops ());

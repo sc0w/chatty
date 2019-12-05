@@ -95,7 +95,8 @@ void chatty_blist_add_buddy_from_uri (const char *uri);
 void chatty_blist_enable_folks_contacts (void);
 void chatty_blist_join_group_chat (PurpleAccount *account,
                                    const char    *group_chat_id,
-                                   const char    *alias,
+                                   const char    *room_alias,
+                                   const char    *user_alias,
                                    const char    *pwd,
                                    gboolean       autojoin);
 

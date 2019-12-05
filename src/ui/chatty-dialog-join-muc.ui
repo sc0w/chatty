@@ -91,7 +91,6 @@
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <property name="expand">True</property>
-                            <property name="margin-bottom">32</property>
                             <child>
                               <object class="GtkListBox" id="list_select_muc_account">
                                 <property name="visible">True</property>
@@ -107,7 +106,7 @@
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <property name="halign">center</property>
-                            <property name="margin_top">24</property>
+                            <property name="margin_top">32</property>
                             <property name="row_spacing">12</property>
                             <property name="column_spacing">6</property>
                             <child>
@@ -123,6 +122,30 @@
                               </packing>
                             </child>
                             <child>
+                              <object class="GtkLabel" id="label_group_chat_room_alias">
+                                <property name="visible">True</property>
+                                <property name="xalign">1</property>
+                                <property name="can_focus">False</property>
+                                <property name="label" translatable="no">Room alias (optional)</property>
+                              </object>
+                              <packing>
+                                <property name="left_attach">0</property>
+                                <property name="top_attach">1</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkLabel" id="label_group_chat_user_alias">
+                                <property name="visible">True</property>
+                                <property name="xalign">1</property>
+                                <property name="can_focus">False</property>
+                                <property name="label" translatable="no">User alias (optional)</property>
+                              </object>
+                              <packing>
+                                <property name="left_attach">0</property>
+                                <property name="top_attach">2</property>
+                              </packing>
+                            </child>
+                            <child>
                               <object class="GtkLabel" id="label_pw">
                                 <property name="visible">True</property>
                                 <property name="xalign">1</property>
@@ -131,7 +154,7 @@
                               </object>
                               <packing>
                                 <property name="left_attach">0</property>
-                                <property name="top_attach">1</property>
+                                <property name="top_attach">3</property>
                               </packing>
                             </child>
                             <child>
@@ -146,6 +169,28 @@
                               </packing>
                             </child>
                             <child>
+                              <object class="GtkEntry" id="entry_group_chat_room_alias">
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="input_purpose">email</property>
+                              </object>
+                              <packing>
+                                <property name="left_attach">1</property>
+                                <property name="top_attach">1</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkEntry" id="entry_group_chat_user_alias">
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="input_purpose">email</property>
+                              </object>
+                              <packing>
+                                <property name="left_attach">1</property>
+                                <property name="top_attach">2</property>
+                              </packing>
+                            </child>
+                            <child>
                               <object class="GtkEntry" id="entry_group_chat_pw">
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
@@ -154,7 +199,7 @@
                               </object>
                               <packing>
                                 <property name="left_attach">1</property>
-                                <property name="top_attach">1</property>
+                                <property name="top_attach">3</property>
                               </packing>
                             </child>
                           </object>
@@ -168,8 +213,7 @@
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <property name="expand">True</property>
-                            <property name="margin-bottom">32</property>
-                            <property name="margin-top">48</property>
+                            <property name="margin-top">32</property>
                             <child>
                               <object class="GtkListBox">
                                 <property name="visible">True</property>
