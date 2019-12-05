@@ -3,6 +3,7 @@ project('chatty', 'c',        version: '0.1.2',
 )
 
 i18n = import('i18n')
+gnome = import('gnome')
 
 config_h = configuration_data()
 config_h.set_quoted('GETTEXT_PACKAGE', 'purism-chatty')
@@ -70,6 +71,14 @@ add_project_arguments(
   global_c_args,
   language: 'c'
 )
+
+run_data = configuration_data()
+run_data.set('ABS_BUILDDIR', meson.current_build_dir())
+run_data.set('ABS_SRCDIR', meson.current_source_dir())
+configure_file(
+  input: 'run.in',
+  output: 'run',
+  configuration: run_data)
 
 libebook_dep = dependency('libebook-contacts-1.2')
 libm_dep = cc.find_library('m')

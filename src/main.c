@@ -11,6 +11,7 @@
 #include "chatty-application.h"
 #include "chatty-purple-init.h"
 #include "chatty-history.h"
+#include "chatty-settings.h"
 
 
 int
@@ -33,6 +34,7 @@ main (int   argc,
 
   status = g_application_run (G_APPLICATION (application), argc, argv);
 
+  g_object_unref (chatty_settings_get_default ());
   chatty_history_close();
 
   return status;

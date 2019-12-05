@@ -1,5 +1,60 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <schemalist gettext-domain="purism-chatty">
-	<schema id="sm.puri.Chatty" path="/sm/puri/Chatty/">
-	</schema>
+  <schema id="sm.puri.Chatty" path="/sm/puri/Chatty/">
+
+    <key name="first-start" type="b">
+      <default>true</default>
+      <summary>Whether the application is launching the first time</summary>
+      <description>Whether the application is launching the first time</description>
+    </key>
+
+    <key name="send-receipts" type="b">
+      <default>false</default>
+      <summary>Send message read receipts</summary>
+      <description>Whether to send the status of the message if read</description>
+    </key>
+
+    <key name="send-typing" type="b">
+      <default>false</default>
+      <summary>Send typing notifications</summary>
+      <description>Whether to Send typing notifications</description>
+    </key>
+
+    <key name="show-offline-buddies" type="b">
+      <default>true</default>
+      <summary>Show offline users</summary>
+      <description>Show offline users</description>
+    </key>
+
+    <key name="greyout-offline-buddies" type="b">
+      <default>true</default>
+      <summary>Mark offline users differently</summary>
+      <description>Mark offline users differently</description>
+    </key>
+
+    <key name="blur-idle-buddies" type="b">
+      <default>true</default>
+      <summary>Mark Idle users differently</summary>
+      <description>Mark Idle users differently</description>
+    </key>
+
+    <key name="indicate-unknown-contacts" type="b">
+      <default>true</default>
+      <summary>Indicate unknown contacts</summary>
+      <description>Indicate unknown contacts</description>
+    </key>
+
+    <key name="convert-emoticons" type="b">
+      <default>false</default>
+      <summary>Convert text to emoticons</summary>
+      <description>Convert text matching emoticons as real emoticons</description>
+    </key>
+
+    <key name="return-sends-message" type="b">
+      <default>false</default>
+      <summary>Enter key sends the message</summary>
+      <description>Whether pressing Enter key sends the message</description>
+    </key>
+
+  </schema>
 </schemalist>

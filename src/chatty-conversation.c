@@ -351,7 +351,7 @@ cb_textview_key_pressed (GtkWidget   *widget,
                          GdkEventKey *key_event,
                          gpointer     data)
 {
-  if (!purple_prefs_get_bool (CHATTY_PREFS_ROOT "/conversations/return_sends")) {
+  if (!chatty_settings_get_return_sends_message (chatty_settings_get_default ())) {
     return FALSE;
   }
   if (!(key_event->state & GDK_SHIFT_MASK) && key_event->keyval == GDK_KEY_Return) {
@@ -384,11 +384,11 @@ cb_textview_key_released (GtkWidget   *widget,
     gtk_widget_hide (chatty_conv->input.button_send);
   }
 
-  if (purple_prefs_get_bool (CHATTY_PREFS_ROOT "/conversations/send_typing")) {
+  if (chatty_settings_get_send_typing (chatty_settings_get_default ())) {
     chatty_update_typing_status (chatty_conv);
   }
 
-  if (purple_prefs_get_bool (CHATTY_PREFS_ROOT "/conversations/convert_emoticons") &&
+  if (chatty_settings_get_convert_emoticons (chatty_settings_get_default ()) &&
       (g_strcmp0 (protocol_id, "prpl-mm-sms") != 0)) {
     chatty_check_for_emoticon (chatty_conv);
   }
@@ -647,8 +647,10 @@ cb_chatty_cmd (PurpleConversation  *conv,
                gchar              **error,
                void                *data)
 {
+  ChattySettings *settings;
   char *msg = NULL;
 
+  settings = chatty_settings_get_default ();
 
   if (args[0] == NULL || !g_strcmp0 (args[0], "help")) {
     msg = g_strdup ("Commands for setting properties:\n\n"
@@ -666,59 +668,59 @@ cb_chatty_cmd (PurpleConversation  *conv,
                     " - '/chatty msg_carbons [on; off]': Share chat history\n");
   } else if (!g_strcmp0 (args[1], "on")) {
     if (!g_strcmp0 (args[0], "return_sends")) {
-      purple_prefs_set_bool (CHATTY_PREFS_ROOT "/conversations/return_sends", TRUE);
+      g_object_set (settings, "return-sends-message", TRUE, NULL);
       msg = g_strdup ("Return key sends messages");
     } else if (!g_strcmp0 (args[0], "show_offline")) {
-      purple_prefs_set_bool (CHATTY_PREFS_ROOT "/blist/show_offline_buddies", TRUE);
+      g_object_set (settings, "show-offline-users", TRUE, NULL);
       msg = g_strdup ("Offline contacts will be shown");
     } else if (!g_strcmp0 (args[0], "grey_offline")) {
-      purple_prefs_set_bool (CHATTY_PREFS_ROOT "/blist/greyout_offline_buddies", TRUE);
+      g_object_set (settings, "greyout-offline-users", TRUE, NULL);
       msg = g_strdup ("Offline user avatars will be greyed out");
     } else if (!g_strcmp0 (args[0], "blur_idle")) {
-      purple_prefs_set_bool (CHATTY_PREFS_ROOT "/blist/blur_idle_buddies", TRUE);
+      g_object_set (settings, "blur-idle-users", TRUE, NULL);
       msg = g_strdup ("Offline user avatars will be blurred");
     } else if (!g_strcmp0 (args[0], "typing_info")) {
-      purple_prefs_set_bool (CHATTY_PREFS_ROOT "/conversations/send_typing", TRUE);
+      g_object_set (settings, "send-typing", TRUE, NULL);
       msg = g_strdup ("Typing messages will be sent");
     } else if (!g_strcmp0 (args[0], "msg_receipts")) {
-      purple_prefs_set_bool (CHATTY_PREFS_ROOT "/conversations/msg_receipts", TRUE);
+      g_object_set (settings, "send-receipts", TRUE, NULL);
       msg = g_strdup ("Message receipts will be sent");
     } else if (!g_strcmp0 (args[0], "msg_carbons")) {
       chatty_purple_load_plugin ("core-riba-carbons");
       purple_prefs_set_bool (CHATTY_PREFS_ROOT "/plugins/message_carbons", TRUE);
       msg = g_strdup ("Chat history will be shared");
     } else if (!g_strcmp0 (args[0], "emoticons")) {
-      purple_prefs_set_bool (CHATTY_PREFS_ROOT "/conversations/convert_emoticons", TRUE);
+      g_object_set (settings, "convert-emoticons", TRUE, NULL);
       msg = g_strdup ("Emoticons will be converted");
     } else if (!g_strcmp0 (args[0], "welcome")) {
-      purple_prefs_set_bool (CHATTY_PREFS_ROOT "/status/first_start", TRUE);
+      g_object_set (settings, "first-start", TRUE, NULL);
       msg = g_strdup ("Welcome screen has been reset");
     }
   } else if (!g_strcmp0 (args[1], "off")) {
     if (!g_strcmp0 (args[0], "return_sends")) {
-      purple_prefs_set_bool (CHATTY_PREFS_ROOT "/conversations/return_sends", FALSE);
+      g_object_set (settings, "return-sends-message", FALSE, NULL);
       msg = g_strdup ("Return key doesn't send messages");
     } else if (!g_strcmp0 (args[0], "show_offline")) {
-      purple_prefs_set_bool (CHATTY_PREFS_ROOT "/blist/show_offline_buddies", FALSE);
+      g_object_set (settings, "show-offline-users", FALSE, NULL);
       msg = g_strdup("Offline contacts will be hidden");
     } else if (!g_strcmp0 (args[0], "grey_offline")) {
-      purple_prefs_set_bool (CHATTY_PREFS_ROOT "/blist/greyout_offline_buddies", FALSE);
+      g_object_set (settings, "greyout-offline-users", FALSE, NULL);
       msg = g_strdup ("Offline user avatars will not be greyed out");
     } else if (!g_strcmp0 (args[0], "blur_idle")) {
-      purple_prefs_set_bool (CHATTY_PREFS_ROOT "/blist/blur_idle_buddies", FALSE);
+      g_object_set (settings, "blur-idle-users", FALSE, NULL);
       msg = g_strdup ("Offline user avatars will not be blurred");
     } else if (!g_strcmp0 (args[0], "typing_info")) {
-      purple_prefs_set_bool (CHATTY_PREFS_ROOT "/conversations/send_typing", FALSE);
+      g_object_set (settings, "send-typing", FALSE, NULL);
       msg = g_strdup ("Typing messages will be hidden");
     } else if (!g_strcmp0 (args[0], "msg_receipts")) {
-      purple_prefs_set_bool (CHATTY_PREFS_ROOT "/conversations/msg_receipts", FALSE);
+      g_object_set (settings, "send-receipts", FALSE, NULL);
       msg = g_strdup ("Message receipts won't be sent");
     } else if (!g_strcmp0 (args[0], "msg_carbons")) {
       chatty_purple_unload_plugin ("core-riba-carbons");
       purple_prefs_set_bool (CHATTY_PREFS_ROOT "/plugins/message_carbons", FALSE);
       msg = g_strdup ("Chat history won't be shared");
     } else if (!g_strcmp0 (args[0], "emoticons")) {
-      purple_prefs_set_bool (CHATTY_PREFS_ROOT "/conversations/convert_emoticons", FALSE);
+      g_object_set (settings, "convert-emoticons", FALSE, NULL);
       msg = g_strdup ("emoticons will not be converted");
     }
   }
@@ -3030,13 +3032,7 @@ chatty_conversations_init (void)
   chatty_conv_container_init ();
 
   purple_prefs_add_none (CHATTY_PREFS_ROOT "/conversations");
-  purple_prefs_add_bool (CHATTY_PREFS_ROOT "/conversations/im/show_buddy_icons", TRUE);
-  purple_prefs_add_bool (CHATTY_PREFS_ROOT "/conversations/show_timestamps", TRUE);
   purple_prefs_add_bool (CHATTY_PREFS_ROOT "/conversations/show_tabs", FALSE);
-  purple_prefs_add_bool (CHATTY_PREFS_ROOT "/conversations/send_typing", TRUE);
-  purple_prefs_add_bool (CHATTY_PREFS_ROOT "/conversations/convert_emoticons", TRUE);
-  purple_prefs_add_bool (CHATTY_PREFS_ROOT "/conversations/send_receipts", TRUE);
-  purple_prefs_add_bool (CHATTY_PREFS_ROOT "/conversations/return_sends", TRUE);
 
   purple_prefs_add_bool ("/purple/logging/log_system", FALSE);
   purple_prefs_set_bool ("/purple/logging/log_system", FALSE);

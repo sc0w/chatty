@@ -545,10 +545,7 @@ cb_chat_joined (PurpleConversation *conv,
 
 
 static void
-cb_chatty_prefs_change_update_list (const char     *name,
-                                    PurplePrefType  type,
-                                    gconstpointer   val,
-                                    gpointer        data)
+chatty_prefs_changed_cb (void)
 {
   PurpleBlistNode *node;
   PurpleBuddyList *list;
@@ -602,7 +599,7 @@ cb_auto_join_chats (gpointer data)
 static gboolean
 cb_chatty_blist_refresh_timer (PurpleBuddyList *list)
 {
-  cb_chatty_prefs_change_update_list (NULL, 0, NULL, NULL);
+  chatty_prefs_changed_cb ();
 
   return TRUE;
 }
@@ -693,7 +690,7 @@ chatty_blist_buddy_is_displayable (PurpleBuddy *buddy)
   return (purple_account_is_connected (buddy->account) &&
           (purple_presence_is_online (buddy->presence) ||
            (chatty_node && chatty_node->recent_signonoff) ||
-           purple_prefs_get_bool (CHATTY_PREFS_ROOT "/blist/show_offline_buddies")));
+           chatty_settings_get_show_offline_buddies (chatty_settings_get_default ())));
 
 }
 
@@ -1432,7 +1429,7 @@ chatty_blist_contacts_update_node (PurpleBuddy     *buddy,
 
   alias = chatty_utils_jabber_id_strip (purple_buddy_get_alias (buddy));
 
-  if (purple_prefs_get_bool (CHATTY_PREFS_ROOT "/blist/greyout_offline_buddies") &&
+  if (chatty_settings_get_show_offline_buddies (chatty_settings_get_default ()) &&
       !PURPLE_BUDDY_IS_ONLINE(buddy)) {
 
     blur = TRUE;
@@ -1447,7 +1444,7 @@ chatty_blist_contacts_update_node (PurpleBuddy     *buddy,
                                        CHATTY_COLOR_GREEN : CHATTY_COLOR_BLUE,
                                        blur);
 
-  if (purple_prefs_get_bool (CHATTY_PREFS_ROOT "/blist/blur_idle_buddies") &&
+  if (chatty_settings_get_blur_idle_buddies (chatty_settings_get_default ()) &&
       purple_presence_is_idle (presence)) {
 
     chatty_icon_do_alphashift (avatar, 77);
@@ -1598,12 +1595,11 @@ chatty_blist_chats_update_node (PurpleBuddy     *buddy,
   contact = purple_buddy_get_contact (buddy);
   alias = chatty_utils_jabber_id_strip (purple_contact_get_alias (contact));
 
-  if (!purple_prefs_get_bool (CHATTY_PREFS_ROOT "/status/first_start")) {
+  if (!chatty_settings_get_first_start (chatty_settings_get_default ())) {
      chatty_window_overlay_show (FALSE);
-     purple_prefs_set_bool (CHATTY_PREFS_ROOT "/status/first_start", FALSE);
   }
 
-  if (purple_prefs_get_bool (CHATTY_PREFS_ROOT "/blist/greyout_offline_buddies") &&
+  if (chatty_settings_get_greyout_offline_buddies (chatty_settings_get_default ()) &&
       !PURPLE_BUDDY_IS_ONLINE(buddy)) {
 
     blur = TRUE;
@@ -1618,7 +1614,7 @@ chatty_blist_chats_update_node (PurpleBuddy     *buddy,
                                        CHATTY_COLOR_GREEN : CHATTY_COLOR_BLUE,
                                        blur);
 
-  if (purple_prefs_get_bool (CHATTY_PREFS_ROOT "/blist/blur_idle_buddies") &&
+  if (chatty_settings_get_blur_idle_buddies (chatty_settings_get_default ()) &&
       purple_presence_is_idle (presence)) {
 
     chatty_icon_do_alphashift (avatar, 77);
@@ -1646,7 +1642,7 @@ chatty_blist_chats_update_node (PurpleBuddy     *buddy,
                                                 CHATTY_UTILS_TIME_AGO_SHOW_DATE);
 
   if (purple_blist_node_get_bool (PURPLE_BLIST_NODE(buddy), "chatty-unknown-contact") &&
-      purple_prefs_get_bool (CHATTY_PREFS_ROOT "/blist/indicate_unknown_contacts")) {
+      chatty_settings_get_indicate_unkown_contacts (chatty_settings_get_default ())) {
     name = g_markup_printf_escaped ("<span color='#FF3333'>%s</span>", alias);
   } else {
     name = g_markup_printf_escaped ("%s", alias);
@@ -1725,9 +1721,8 @@ chatty_blist_chats_update_group_chat (PurpleBlistNode *node)
     return;
   }
 
-  if (!purple_prefs_get_bool (CHATTY_PREFS_ROOT "/status/first_start")) {
+  if (!chatty_settings_get_first_start (chatty_settings_get_default ())) {
      chatty_window_overlay_show (FALSE);
-     purple_prefs_set_bool (CHATTY_PREFS_ROOT "/status/first_start", FALSE);
   }
 
   avatar = chatty_icon_get_buddy_icon (node,
@@ -2028,49 +2023,19 @@ void chatty_blist_init (void)
 {
   static int handle;
   void *conv_handle;
-
+  ChattySettings *settings;
   void *chatty_blist_handle = chatty_blist_get_handle();
 
   chatty_blist_create_chat_list ();
   chatty_blist_create_contact_list ();
 
-  purple_prefs_add_none (CHATTY_PREFS_ROOT "/blist");
-  purple_prefs_add_bool (CHATTY_PREFS_ROOT "/blist/show_buddy_icons", TRUE);
-  purple_prefs_add_bool (CHATTY_PREFS_ROOT "/blist/show_idle_time", TRUE);
-  purple_prefs_add_bool (CHATTY_PREFS_ROOT "/blist/show_offline_buddies", TRUE);
-  purple_prefs_add_bool (CHATTY_PREFS_ROOT "/blist/greyout_offline_buddies", FALSE);
-  purple_prefs_add_bool (CHATTY_PREFS_ROOT "/blist/blur_idle_buddies", FALSE);
-  purple_prefs_add_bool (CHATTY_PREFS_ROOT "/blist/indicate_unknown_contacts", TRUE);
-  purple_prefs_add_bool (CHATTY_PREFS_ROOT "/blist/show_protocol_icons", FALSE);
-
-  purple_prefs_connect_callback (&handle,
-                                 CHATTY_PREFS_ROOT "/blist/show_buddy_icons",
-                                 cb_chatty_prefs_change_update_list,
-                                 NULL);
-  purple_prefs_connect_callback (&handle,
-                                 CHATTY_PREFS_ROOT "/blist/show_idle_time",
-                                 cb_chatty_prefs_change_update_list,
-                                 NULL);
-  purple_prefs_connect_callback (&handle,
-                                 CHATTY_PREFS_ROOT "/blist/show_offline_buddies",
-                                 cb_chatty_prefs_change_update_list,
-                                 NULL);
-  purple_prefs_connect_callback (&handle,
-                                 CHATTY_PREFS_ROOT "/blist/indicate_unknown_contacts",
-                                 cb_chatty_prefs_change_update_list,
-                                 NULL);
-  purple_prefs_connect_callback (&handle,
-                                 CHATTY_PREFS_ROOT "/blist/show_protocol_icons",
-                                 cb_chatty_prefs_change_update_list,
-                                 NULL);
-  purple_prefs_connect_callback (&handle,
-                                 CHATTY_PREFS_ROOT "/blist/blur_idle_buddies",
-                                 cb_chatty_prefs_change_update_list,
-                                 NULL);
-  purple_prefs_connect_callback (&handle,
-                                 CHATTY_PREFS_ROOT "/blist/greyout_offline_buddies",
-                                 cb_chatty_prefs_change_update_list,
-                                 NULL);
+  settings = chatty_settings_get_default ();
+  g_object_connect (settings,
+                    "signal::notify::show-offline-buddies", G_CALLBACK (chatty_prefs_changed_cb), NULL,
+                    "signal::notify::indicate-unkown-contacts", G_CALLBACK (chatty_prefs_changed_cb), NULL,
+                    "signal::notify::blur-idle-buddies", G_CALLBACK (chatty_prefs_changed_cb), NULL,
+                    "signal::notify::greyout-offline-buddies", G_CALLBACK (chatty_prefs_changed_cb), NULL,
+                    NULL);
 
   purple_signal_register (chatty_blist_handle,
                           "chatty-blist-created",

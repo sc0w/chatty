@@ -19,6 +19,7 @@
 #include "chatty-message-list.h"
 #include "chatty-conversation.h"
 #include "chatty-purple-init.h"
+#include "chatty-settings.h"
 
 
 static GHashTable *ht_bubble_node = NULL;
@@ -232,7 +233,7 @@ cb_chatty_xeps_xmlnode_send (PurpleConnection  *gc,
   const char *node_to;
   const char *node_id;
 
-  if (!purple_prefs_get_bool (CHATTY_PREFS_ROOT "/conversations/send_receipts")) {
+  if (!chatty_settings_get_send_receipts (chatty_settings_get_default ())) {
     return;
   }
 

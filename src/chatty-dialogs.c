@@ -41,9 +41,13 @@ cb_switch_prefs_state_changed (GtkSwitch *widget,
                                gboolean   state,
                                gpointer   data)
 {
+  ChattySettings *settings;
+
+  settings = chatty_settings_get_default ();
+
   switch (GPOINTER_TO_INT(data)) {
     case CHATTY_PREF_SEND_RECEIPTS:
-      purple_prefs_set_bool (CHATTY_PREFS_ROOT "/conversations/send_receipts", state);
+      g_object_set (settings, "send-receipts", state, NULL);
       break;
     case CHATTY_PREF_MESSAGE_CARBONS:
       if (state) {
@@ -55,25 +59,25 @@ cb_switch_prefs_state_changed (GtkSwitch *widget,
       }
       break;
     case CHATTY_PREF_TYPING_NOTIFICATION:
-      purple_prefs_set_bool (CHATTY_PREFS_ROOT "/conversations/send_typing", state);
+      g_object_set (settings, "send-typing", state, NULL);
       break;
     case CHATTY_PREF_SHOW_OFFLINE:
-      purple_prefs_set_bool (CHATTY_PREFS_ROOT "/blist/show_offline_buddies", state);
+      g_object_set (settings, "show-offline-buddies", state, NULL);
       break;
     case CHATTY_PREF_INDICATE_OFFLINE:
-      purple_prefs_set_bool (CHATTY_PREFS_ROOT "/blist/greyout_offline_buddies", state);
+      g_object_set (settings, "greyout-offline-buddies", state, NULL);
       break;
     case CHATTY_PREF_INDICATE_IDLE:
-      purple_prefs_set_bool (CHATTY_PREFS_ROOT "/blist/blur_idle_buddies", state);
+      g_object_set (settings, "blur-idle-buddies", state, NULL);
       break;
     case CHATTY_PREF_INDICATE_UNKNOWN:
-      purple_prefs_set_bool (CHATTY_PREFS_ROOT "/blist/indicate_unknown_contacts", state);
+      g_object_set (settings, "indicate-unknown-contacts", state, NULL);
       break;
     case CHATTY_PREF_CONVERT_SMILEY:
-      purple_prefs_set_bool (CHATTY_PREFS_ROOT "/conversations/convert_emoticons", state);
+      g_object_set (settings, "convert-emoticons", state, NULL);
       break;
     case CHATTY_PREF_RETURN_SENDS:
-      purple_prefs_set_bool (CHATTY_PREFS_ROOT "/conversations/return_sends", state);
+      g_object_set (settings, "return-sends-message", state, NULL);
       break;
     case CHATTY_PREF_MUC_NOTIFICATIONS:
       chatty_conv_set_muc_prefs (CHATTY_PREF_MUC_NOTIFICATIONS, state);
@@ -890,12 +894,14 @@ chatty_dialogs_create_dialog_settings (void)
   GtkSwitch     *switch_prefs_convert_smileys;
   GtkSwitch     *switch_prefs_return_sends;
   HdyActionRow  *row_pref_message_carbons;
+  ChattySettings *settings;
 
   chatty_data_t        *chatty = chatty_get_data ();
   chatty_dialog_data_t *chatty_dialog = chatty_get_dialog_data ();
   chatty_purple_data_t *chatty_purple = chatty_get_purple_data ();
 
   builder = gtk_builder_new_from_resource ("/sm/puri/chatty/ui/chatty-dialog-settings.ui");
+  settings = chatty_settings_get_default ();
 
   dialog = GTK_WIDGET (gtk_builder_get_object (builder, "dialog"));
 
@@ -929,21 +935,21 @@ chatty_dialogs_create_dialog_settings (void)
   gtk_switch_set_state (switch_prefs_message_carbons,
                         chatty_purple->plugin_carbons_loaded);
   gtk_switch_set_state (switch_prefs_send_receipts,
-                        purple_prefs_get_bool (CHATTY_PREFS_ROOT "/conversations/send_receipts"));
+                        chatty_settings_get_send_receipts (settings));
   gtk_switch_set_state (switch_prefs_typing_notification,
-                        purple_prefs_get_bool (CHATTY_PREFS_ROOT "/conversations/send_typing"));
+                        chatty_settings_get_send_typing (settings));
   gtk_switch_set_state (switch_prefs_show_offline,
-                        purple_prefs_get_bool (CHATTY_PREFS_ROOT "/blist/show_offline_buddies"));
+                        chatty_settings_get_show_offline_buddies (settings));
   gtk_switch_set_state (switch_prefs_indicate_offline,
-                        purple_prefs_get_bool (CHATTY_PREFS_ROOT "/blist/greyout_offline_buddies"));
+                        chatty_settings_get_greyout_offline_buddies (settings));
   gtk_switch_set_state (switch_prefs_indicate_idle,
-                        purple_prefs_get_bool (CHATTY_PREFS_ROOT "/blist/blur_idle_buddies"));
+                        chatty_settings_get_blur_idle_buddies (settings));
   gtk_switch_set_state (switch_prefs_indicate_unknown,
-                        purple_prefs_get_bool (CHATTY_PREFS_ROOT "/blist/indicate_unknown_contacts"));
+                        chatty_settings_get_indicate_unkown_contacts (settings));
   gtk_switch_set_state (switch_prefs_convert_smileys,
-                        purple_prefs_get_bool (CHATTY_PREFS_ROOT "/conversations/convert_emoticons"));
+                        chatty_settings_get_convert_emoticons (settings));
   gtk_switch_set_state (switch_prefs_return_sends,
-                        purple_prefs_get_bool (CHATTY_PREFS_ROOT "/conversations/return_sends"));
+                        chatty_settings_get_return_sends_message (settings));
 
   if (chatty_purple->plugin_carbons_available) {
     gtk_widget_show (GTK_WIDGET(row_pref_message_carbons));

@@ -6,6 +6,7 @@ chatty_sources = [
   'main.c',
   'chatty-application.c',
   'chatty-window.c',
+  'chatty-settings.c',
   'chatty-dialogs.c',
   'chatty-account.c',
   'chatty-message-list.c',

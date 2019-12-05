@@ -190,9 +190,6 @@ chatty_purple_prefs_init (void)
   purple_prefs_add_bool (CHATTY_PREFS_ROOT "/plugins/message_carbons", TRUE);
   purple_prefs_add_path_list (CHATTY_PREFS_ROOT "/plugins/loaded", NULL);
 
-  purple_prefs_add_none (CHATTY_PREFS_ROOT "/status");
-  purple_prefs_add_bool (CHATTY_PREFS_ROOT "/status/first_start", TRUE);
-
   purple_prefs_add_none (CHATTY_PREFS_ROOT "/filelocations");
   purple_prefs_add_path (CHATTY_PREFS_ROOT "/filelocations/last_save_folder", "");
   purple_prefs_add_path (CHATTY_PREFS_ROOT "/filelocations/last_open_folder", "");
