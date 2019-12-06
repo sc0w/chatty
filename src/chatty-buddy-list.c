@@ -428,7 +428,9 @@ cb_written_msg_update_ui (PurpleAccount       *account,
     return;
   }
 
-  if (flag & (PURPLE_MESSAGE_SEND | PURPLE_MESSAGE_RECV)) {
+  if (flag & (PURPLE_MESSAGE_SEND | PURPLE_MESSAGE_RECV) && 
+      ui->row_chat != NULL) {
+        
     if (!gtk_list_box_row_is_selected (GTK_LIST_BOX_ROW (ui->row_chat))) {
       ui->conv.flags |= CHATTY_BLIST_NODE_HAS_PENDING_MESSAGE;
       ui->conv.pending_messages ++;
@@ -933,6 +935,7 @@ chatty_blist_chat_list_remove_buddy (void)
   PurpleChat      *chat;
   GtkWidget       *dialog;
   GtkWindow       *window;
+  GHashTable      *components;
   const char      *name;
   const char      *text;
   const char      *sub_text;
@@ -1002,6 +1005,8 @@ chatty_blist_chat_list_remove_buddy (void)
       // somewhere and when re-joining the same chat, the db is not re-populated
       // (until next app session) since there is no server call. Ask @Andrea
 
+      components = purple_chat_get_components (chat);
+      g_hash_table_steal (components, "history_since");
       purple_blist_remove_chat (chat);
     }
 
@@ -1194,6 +1199,7 @@ chatty_blist_join_group_chat (PurpleAccount *account,
                               gboolean       autojoin)
 {
   PurpleChat               *chat;
+  PurpleGroup              *group;
   PurpleConnection         *gc;
   PurplePluginProtocolInfo *info;
   GHashTable               *hash = NULL;
@@ -1213,7 +1219,12 @@ chatty_blist_join_group_chat (PurpleAccount *account,
   chat = purple_chat_new (account, group_chat_id, hash);
 
   if (chat != NULL) {
-    purple_blist_add_chat (chat, NULL, NULL);
+    if ((group = purple_find_group ("Chats")) == NULL) {
+      group = purple_group_new ("Chats");
+      purple_blist_add_group (group, NULL);
+    }
+
+    purple_blist_add_chat (chat, group, NULL);
     purple_blist_alias_chat (chat, alias);
     purple_blist_node_set_bool ((PurpleBlistNode*)chat,
                                 "chatty-autojoin",
