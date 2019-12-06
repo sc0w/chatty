@@ -1230,7 +1230,7 @@ chatty_blist_join_group_chat (PurpleAccount *account,
     }
 
     purple_blist_add_chat (chat, group, NULL);
-    purple_blist_alias_chat (chat, alias);
+    purple_blist_alias_chat (chat, room_alias);
     purple_blist_node_set_bool ((PurpleBlistNode*)chat,
                                 "chatty-autojoin",
                                 autojoin);
