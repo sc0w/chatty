@@ -78,6 +78,28 @@ cb_account_disabled (PurpleAccount *account,
 
 
 static void
+chatty_connection_update_ui (void)
+{
+  GList *accounts;
+
+  chatty_data_t *chatty = chatty_get_data ();
+
+  gtk_widget_set_sensitive (chatty->button_menu_new_group_chat, FALSE);
+
+  for (accounts = purple_accounts_get_all (); accounts != NULL; accounts = accounts->next) {
+    PurpleAccount *account = accounts->data;
+
+    if (!chatty_blist_protocol_is_sms (account)) {
+      if (purple_account_is_connected ((account))) {
+        gtk_widget_set_sensitive (chatty->button_menu_new_group_chat, TRUE);
+        break;
+      } 
+    }
+  }
+}
+
+
+static void
 chatty_connection_account_spinner (PurpleAccount *account,
                                    gboolean       spin)
 {
@@ -192,6 +214,8 @@ chatty_connection_connected (PurpleConnection *gc)
 
   chatty_dialogs_update_connection_status ();
 
+  chatty_connection_update_ui ();
+
   g_hash_table_remove (auto_reconns, account);
 
   g_debug ("%s account: %s", __func__, purple_account_get_username (account));
@@ -202,6 +226,8 @@ static void
 chatty_connection_disconnected (PurpleConnection *gc)
 {
   chatty_dialogs_update_connection_status ();
+
+  chatty_connection_update_ui ();
 
   g_debug ("chatty_connection_disconnected");
 }

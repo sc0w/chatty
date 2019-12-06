@@ -52,6 +52,7 @@ typedef struct {
 
   GtkWidget         *button_menu_add_contact;
   GtkWidget         *button_menu_add_gnome_contact;
+  GtkWidget         *button_menu_new_group_chat;
   GtkWidget         *button_header_chat_info;
   GtkWidget         *button_header_sub_menu;
 
