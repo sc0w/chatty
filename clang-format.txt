@@ -1,0 +1,16 @@
+﻿---
+BasedOnStyle: Mozilla
+AlignAfterOpenBracket: Align
+AlignConsecutiveAssignments: 'true'
+AlignConsecutiveDeclarations: 'true'
+AlignOperands: 'false'
+AllowShortBlocksOnASingleLine: 'false'
+IndentWidth: '2'
+MaxEmptyLinesToKeep: '2'
+PointerAlignment: Right
+SpaceAfterCStyleCast: 'false'
+SpaceAfterLogicalNot: 'false'
+SpaceBeforeParens: Always
+SpaceInEmptyParentheses: 'false'
+
+...

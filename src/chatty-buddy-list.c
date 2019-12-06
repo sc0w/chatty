@@ -1194,7 +1194,8 @@ chatty_blist_get_handle (void) {
 void
 chatty_blist_join_group_chat (PurpleAccount *account,
                               const char    *group_chat_id,
-                              const char    *alias,
+                              const char    *room_alias,
+                              const char    *user_alias,
                               const char    *pwd,
                               gboolean       autojoin)
 {
@@ -1216,6 +1217,10 @@ chatty_blist_join_group_chat (PurpleAccount *account,
     hash = info->chat_info_defaults(gc, group_chat_id);
   }
 
+  if (*user_alias != '\0') {
+    g_hash_table_replace (hash, "handle", g_strdup (user_alias));
+  }
+
   chat = purple_chat_new (account, group_chat_id, hash);
 
   if (chat != NULL) {
@@ -1225,7 +1230,7 @@ chatty_blist_join_group_chat (PurpleAccount *account,
     }
 
     purple_blist_add_chat (chat, group, NULL);
-    purple_blist_alias_chat (chat, alias);
+    purple_blist_alias_chat (chat, room_alias);
     purple_blist_node_set_bool ((PurpleBlistNode*)chat,
                                 "chatty-autojoin",
                                 autojoin);
