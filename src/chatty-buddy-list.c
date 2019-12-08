@@ -1186,7 +1186,6 @@ chatty_blist_get_handle (void) {
  * @group_chat_id:  a const char
  * @alias:          a const char
  * @pwd:            a const char
- * @autojoin:       a gboolean
  *
  * Filters the current row according to entry-text
  *
@@ -1196,8 +1195,7 @@ chatty_blist_join_group_chat (PurpleAccount *account,
                               const char    *group_chat_id,
                               const char    *room_alias,
                               const char    *user_alias,
-                              const char    *pwd,
-                              gboolean       autojoin)
+                              const char    *pwd)
 {
   PurpleChat               *chat;
   PurpleGroup              *group;
@@ -1233,7 +1231,7 @@ chatty_blist_join_group_chat (PurpleAccount *account,
     purple_blist_alias_chat (chat, room_alias);
     purple_blist_node_set_bool ((PurpleBlistNode*)chat,
                                 "chatty-autojoin",
-                                autojoin);
+                                TRUE);
 
     chatty_conv_join_chat (chat);
   }

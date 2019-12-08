@@ -208,38 +208,6 @@
                             <property name="fill">True</property>
                           </packing>
                         </child>
-                        <child>
-                          <object class="GtkFrame">
-                            <property name="visible">True</property>
-                            <property name="can_focus">False</property>
-                            <property name="expand">True</property>
-                            <property name="margin-top">32</property>
-                            <child>
-                              <object class="GtkListBox">
-                                <property name="visible">True</property>
-                                <property name="can_focus">False</property>
-                                <property name="expand">True</property>
-                                <property name="selection-mode">none</property>
-                                <child>
-                                  <object class="HdyActionRow">
-                                    <property name="title" translatable="yes">Autojoin</property>
-                                    <property name="subtitle" translatable="yes">Join group chat at startup</property>
-                                    <property name="visible">True</property>
-                                    <property name="selectable">False</property>
-                                    <property name="activatable">False</property>
-                                    <child type="action">
-                                      <object class="GtkSwitch" id="switch_prefs_chat_autojoin">
-                                        <property name="can_focus">True</property>
-                                        <property name="valign">center</property>
-                                        <property name="visible">True</property>
-                                      </object>
-                                    </child>
-                                  </object>
-                                </child>
-                              </object>
-                            </child>
-                          </object>
-                        </child>
                       </object>
                     </child>
                   </object>
