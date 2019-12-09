@@ -1,3 +1,43 @@
+chatty (0.1.3) amber-phone; urgency=high
+
+  [ Mohammed Sadiq ]
+  * folks: Fix leaking row id
+  * utils: Fix a memory leak
+  * buddy-list: Fix a memory leak
+
+  [ Andrea Schaefer ]
+  * Add support for custom user icons
+
+  [ Ruslan N. Marchenko ]
+  * Do not send receipts for groupchats, fix #225
+
+  [ Andrea Schaefer ]
+  * Use file_chooser_native
+  * Add support for account icons
+
+  [ Mohammed Sadiq ]
+  * Add chatty-settings
+
+  [ Andrea Schaefer ]
+  * Update po files
+
+  [ Mohammed Sadiq ]
+  * Add a script to run chatty without install
+
+  [ Andrea Schaefer ]
+  * Set correct icon size in muc info dialog
+  * Set group for blist-chat entry
+  * Fix double-free issue; avoid gtk-critical when creating chat
+  * Add support for muc room and user aliases
+  * Change 'user alias' to 'nickname'
+  * Resolve merge conflict issue
+  * Fix issue 231 'disable add group chat button...'
+  * Remove muc autojoin option
+  * Don't send account notifications  when network is disconnected
+  * Use g_autofree
+
+ -- Andrea Schaefer <andrea.schaefer@puri.sm>  Mon, 09 Dec 2019 19:11:34 +0100
+
 chatty (0.1.2) amber-phone; urgency=medium
 
   [ Mohammed Sadiq ]
