@@ -182,11 +182,11 @@ chatty_connection_error_dialog (PurpleAccount *account,
 static void
 chatty_connection_connected (PurpleConnection *gc)
 {
-  PurpleAccount *account;
-  char          *message;
-  const char    *user_name;
-  const char    *protocol_id;
-  int            sms_match;
+  PurpleAccount    *account;
+  g_autofree gchar *message = NULL;
+  const char       *user_name;
+  const char       *protocol_id;
+  int               sms_match;
 
   account = purple_connection_get_account (gc);
   user_name = purple_account_get_username (account),
@@ -202,8 +202,6 @@ chatty_connection_connected (PurpleConnection *gc)
     if (!sms_match || (sms_match && sms_notifications)) {
       chatty_notify_show_notification (NULL, message, CHATTY_NOTIFY_ACCOUNT_CONNECTED, NULL, NULL);
     }
-
-    g_free (message);
   }
 
   if (sms_match) {
@@ -318,12 +316,12 @@ chatty_connection_report_disconnect_reason (PurpleConnection     *gc,
                                             PurpleConnectionError reason,
                                             const char           *text)
 {
-  PurpleAccount   *account;
-  GNetworkMonitor *monitor;
-  ChattyAutoRecon *info;
-  char            *message;
-  const char      *user_name;
-  const char      *protocol_id;
+  PurpleAccount    *account;
+  GNetworkMonitor  *monitor;
+  ChattyAutoRecon  *info;
+  g_autofree gchar *message = NULL;
+  const char       *user_name;
+  const char       *protocol_id;
 
   account = purple_connection_get_account (gc);
   user_name = purple_account_get_username (account);
@@ -338,7 +336,6 @@ chatty_connection_report_disconnect_reason (PurpleConnection     *gc,
     if (sms_notifications) {
       message = g_strdup_printf ("SMS disconnected: %s", text);
       chatty_notify_show_notification (user_name, message, CHATTY_NOTIFY_ACCOUNT_GENERIC, NULL, NULL);
-      g_free (message);
     }
 
     return;
@@ -384,7 +381,6 @@ chatty_connection_report_disconnect_reason (PurpleConnection     *gc,
   if (g_network_monitor_get_connectivity (monitor) == G_NETWORK_CONNECTIVITY_FULL) {
     message = g_strdup_printf ("Account %s disconnected: %s", user_name, text);
     chatty_notify_show_notification (NULL, message, CHATTY_NOTIFY_ACCOUNT_DISCONNECTED, NULL, NULL);
-    g_free (message);
   }
 }
 
