@@ -1348,8 +1348,6 @@ chatty_dialogs_show_dialog_join_muc (void)
   GtkEntry   *entry_group_chat_room_alias;
   GtkEntry   *entry_group_chat_user_alias;
   GtkEntry   *entry_group_chat_pw;
-  GtkSwitch  *switch_prefs_chat_autojoin;
-  gboolean    autojoin;
   int         response;
 
   chatty_data_t *chatty = chatty_get_data ();
@@ -1364,7 +1362,6 @@ chatty_dialogs_show_dialog_join_muc (void)
   entry_group_chat_room_alias = GTK_ENTRY (gtk_builder_get_object (builder, "entry_group_chat_room_alias"));
   entry_group_chat_user_alias = GTK_ENTRY (gtk_builder_get_object (builder, "entry_group_chat_user_alias"));
   entry_group_chat_pw = GTK_ENTRY (gtk_builder_get_object (builder, "entry_group_chat_pw"));
-  switch_prefs_chat_autojoin = GTK_SWITCH (gtk_builder_get_object (builder, "switch_prefs_chat_autojoin"));
 
   gtk_list_box_set_header_func (list_select_muc_account,
                                 hdy_list_box_separator_header,
@@ -1384,14 +1381,11 @@ chatty_dialogs_show_dialog_join_muc (void)
   response = gtk_dialog_run (GTK_DIALOG(dialog));
 
   if (response == GTK_RESPONSE_OK) {
-    autojoin = gtk_switch_get_state (switch_prefs_chat_autojoin);
-
     chatty_blist_join_group_chat (chatty->selected_account,
                                   gtk_entry_get_text (entry_group_chat_id),
                                   gtk_entry_get_text (entry_group_chat_room_alias),
                                   gtk_entry_get_text (entry_group_chat_user_alias),
-                                  gtk_entry_get_text (entry_group_chat_pw),
-                                  autojoin);
+                                  gtk_entry_get_text (entry_group_chat_pw));
   }
 
   gtk_widget_destroy (dialog);

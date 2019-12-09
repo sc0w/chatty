@@ -97,7 +97,6 @@ void chatty_blist_join_group_chat (PurpleAccount *account,
                                    const char    *group_chat_id,
                                    const char    *room_alias,
                                    const char    *user_alias,
-                                   const char    *pwd,
-                                   gboolean       autojoin);
+                                   const char    *pwd);
 
 #endif
