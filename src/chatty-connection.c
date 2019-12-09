@@ -319,6 +319,7 @@ chatty_connection_report_disconnect_reason (PurpleConnection     *gc,
                                             const char           *text)
 {
   PurpleAccount   *account;
+  GNetworkMonitor *monitor;
   ChattyAutoRecon *info;
   char            *message;
   const char      *user_name;
@@ -377,10 +378,14 @@ chatty_connection_report_disconnect_reason (PurpleConnection     *gc,
   }
 
   chatty_dialogs_update_connection_status ();
+  
+  monitor = g_network_monitor_get_default ();
 
-  message = g_strdup_printf ("Account %s disconnected: %s", user_name, text);
-  chatty_notify_show_notification (NULL, message, CHATTY_NOTIFY_ACCOUNT_DISCONNECTED, NULL, NULL);
-  g_free (message);
+  if (g_network_monitor_get_connectivity (monitor) == G_NETWORK_CONNECTIVITY_FULL) {
+    message = g_strdup_printf ("Account %s disconnected: %s", user_name, text);
+    chatty_notify_show_notification (NULL, message, CHATTY_NOTIFY_ACCOUNT_DISCONNECTED, NULL, NULL);
+    g_free (message);
+  }
 }
 
 
