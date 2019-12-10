@@ -62,6 +62,13 @@ meson build
 ninja -C build
 ```
 
+## Running from the source tree
+To run Chatty from source tree (without installing) do:
+
+``` bash
+build/run
+```
+
 ## Commands
 
 In a messaging conversation (except SMS conversations) the following commands can be used:
