@@ -308,7 +308,10 @@ chatty_settings_get_default (void)
   static ChattySettings *self;
 
   if (!self)
-    self = g_object_new (CHATTY_TYPE_SETTINGS, NULL);
+    {
+      self = g_object_new (CHATTY_TYPE_SETTINGS, NULL);
+      g_object_add_weak_pointer (G_OBJECT (self), (gpointer *)&self);
+    }
 
   return self;
 }

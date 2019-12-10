@@ -2,11 +2,14 @@ version_h = vcs_tag(command: ['git', 'rev-parse', 'HEAD'],
 		    input: 'version.h.in',
 		    output: 'version.h')
 
+libsrc = [
+  'chatty-settings.c',
+]
+
 chatty_sources = [
   'main.c',
   'chatty-application.c',
   'chatty-window.c',
-  'chatty-settings.c',
   'chatty-dialogs.c',
   'chatty-account.c',
   'chatty-message-list.c',
@@ -48,7 +51,14 @@ chatty_sources += gnome.compile_resources('chatty-resources',
   c_name: 'chatty'
 )
 
+libchatty = static_library(
+  'libchatty', libsrc,
+  install: false,
+  dependencies: chatty_deps,
+)
+
 executable('chatty', chatty_sources,
   dependencies: chatty_deps,
+  link_with: libchatty,
   install: true,
 )

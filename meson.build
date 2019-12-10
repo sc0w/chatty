@@ -5,6 +5,9 @@ project('chatty', 'c',        version: '0.1.3',
 i18n = import('i18n')
 gnome = import('gnome')
 
+top_inc = include_directories('.')
+src_inc = include_directories('src')
+
 config_h = configuration_data()
 config_h.set_quoted('GETTEXT_PACKAGE', 'purism-chatty')
 config_h.set_quoted('LOCALEDIR', join_paths(get_option('prefix'), get_option('localedir')))
@@ -85,6 +88,7 @@ libm_dep = cc.find_library('m')
 
 subdir('data')
 subdir('src')
+subdir('tests')
 subdir('po')
 
 meson.add_install_script('build-aux/meson/postinstall.py')
