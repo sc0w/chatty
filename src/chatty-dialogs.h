@@ -18,6 +18,7 @@ typedef struct {
   GtkStack   *stack_panes_muc_info;
   GtkLabel   *label_protocol;
   GtkLabel   *label_status;
+  GtkLabel   *label_libremone_hint;
   GtkListBox *list_select_account;
   GtkWidget  *grid_edit_contact;
   GtkWidget  *dialog_edit_account;
