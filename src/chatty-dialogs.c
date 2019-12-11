@@ -63,9 +63,6 @@ cb_switch_prefs_state_changed (GtkSwitch *widget,
     case CHATTY_PREF_TYPING_NOTIFICATION:
       g_object_set (settings, "send-typing", state, NULL);
       break;
-    case CHATTY_PREF_SHOW_OFFLINE:
-      g_object_set (settings, "show-offline-buddies", state, NULL);
-      break;
     case CHATTY_PREF_INDICATE_OFFLINE:
       g_object_set (settings, "greyout-offline-buddies", state, NULL);
       break;
@@ -1018,7 +1015,6 @@ chatty_dialogs_create_dialog_settings (void)
   GtkSwitch     *switch_prefs_send_receipts;
   GtkSwitch     *switch_prefs_message_carbons;
   GtkSwitch     *switch_prefs_typing_notification;
-  GtkSwitch     *switch_prefs_show_offline;
   GtkSwitch     *switch_prefs_indicate_offline;
   GtkSwitch     *switch_prefs_indicate_idle;
   GtkSwitch     *switch_prefs_indicate_unknown;
@@ -1043,7 +1039,6 @@ chatty_dialogs_create_dialog_settings (void)
   row_pref_message_carbons = HDY_ACTION_ROW (gtk_builder_get_object (builder, "row_pref_message_carbons"));
   switch_prefs_typing_notification = GTK_SWITCH (gtk_builder_get_object (builder, "pref_typing_notification"));
 
-  switch_prefs_show_offline = GTK_SWITCH (gtk_builder_get_object (builder, "pref_show_offline"));
   switch_prefs_indicate_offline = GTK_SWITCH (gtk_builder_get_object (builder, "pref_indicate_offline"));
   switch_prefs_indicate_idle = GTK_SWITCH (gtk_builder_get_object (builder, "pref_indicate_idle"));
   switch_prefs_indicate_unknown = GTK_SWITCH (gtk_builder_get_object (builder, "pref_indicate_unknown"));
@@ -1069,8 +1064,6 @@ chatty_dialogs_create_dialog_settings (void)
                         chatty_settings_get_send_receipts (settings));
   gtk_switch_set_state (switch_prefs_typing_notification,
                         chatty_settings_get_send_typing (settings));
-  gtk_switch_set_state (switch_prefs_show_offline,
-                        chatty_settings_get_show_offline_buddies (settings));
   gtk_switch_set_state (switch_prefs_indicate_offline,
                         chatty_settings_get_greyout_offline_buddies (settings));
   gtk_switch_set_state (switch_prefs_indicate_idle,
@@ -1100,10 +1093,6 @@ chatty_dialogs_create_dialog_settings (void)
                     "state-set",
                     G_CALLBACK(cb_switch_prefs_state_changed),
                     (gpointer)CHATTY_PREF_TYPING_NOTIFICATION);
-  g_signal_connect (switch_prefs_show_offline,
-                    "state-set",
-                    G_CALLBACK(cb_switch_prefs_state_changed),
-                    (gpointer)CHATTY_PREF_SHOW_OFFLINE);
   g_signal_connect (switch_prefs_indicate_offline,
                     "state-set",
                     G_CALLBACK(cb_switch_prefs_state_changed),

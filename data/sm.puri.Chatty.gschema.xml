@@ -20,12 +20,6 @@
       <description>Whether to Send typing notifications</description>
     </key>
 
-    <key name="show-offline-buddies" type="b">
-      <default>true</default>
-      <summary>Show offline users</summary>
-      <description>Show offline users</description>
-    </key>
-
     <key name="greyout-offline-buddies" type="b">
       <default>true</default>
       <summary>Mark offline users differently</summary>
