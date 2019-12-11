@@ -648,17 +648,17 @@ static void
 cb_button_add_account_clicked (GtkButton *sender,
                                gpointer   data)
 {
-  PurpleAccount   *account;
-  GtkToggleButton *button_xmpp;
-  GtkToggleButton *button_matrix;
-  GtkToggleButton *button_telegram;
-  const gchar     *protocol;
-  const gchar     *user_id;
-  const gchar     *server;
-  const gchar     *pwd;
-  const gchar     *setting = NULL;
-  const gchar     *value;
-  gchar           *name;
+  PurpleAccount    *account;
+  GtkToggleButton  *button_xmpp;
+  GtkToggleButton  *button_matrix;
+  GtkToggleButton  *button_telegram;
+  const gchar      *protocol;
+  const gchar      *user_id;
+  const gchar      *server;
+  const gchar      *pwd;
+  const gchar      *setting = NULL;
+  const gchar      *value;
+  g_autofree gchar *name;
 
   chatty_data_t        *chatty = chatty_get_data ();
   chatty_dialog_data_t *chatty_dialog = chatty_get_dialog_data ();
