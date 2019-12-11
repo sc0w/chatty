@@ -74,7 +74,7 @@ chatty_application_handle_local_options (GApplication *application,
                                          GVariantDict *options)
 {
   if (g_variant_dict_contains (options, "version")) {
-    g_print ("%s %s\n", PACKAGE_NAME, PACKAGE_VERSION);
+    g_print ("%s %s\n", PACKAGE_NAME, GIT_VERSION);
     return 0;
   }
 
