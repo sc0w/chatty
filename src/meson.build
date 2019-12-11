@@ -1,5 +1,4 @@
-version_h = vcs_tag(command: ['git', 'rev-parse', 'HEAD'],
-		    input: 'version.h.in',
+version_h = vcs_tag(input: 'version.h.in',
 		    output: 'version.h')
 
 libsrc = [
