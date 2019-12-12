@@ -35,7 +35,6 @@ ChattySettings *chatty_settings_get_default                  (void);
 gboolean        chatty_settings_get_first_start              (ChattySettings *self);
 gboolean        chatty_settings_get_send_receipts            (ChattySettings *self);
 gboolean        chatty_settings_get_send_typing              (ChattySettings *self);
-gboolean        chatty_settings_get_show_offline_buddies     (ChattySettings *self);
 gboolean        chatty_settings_get_greyout_offline_buddies  (ChattySettings *self);
 gboolean        chatty_settings_get_blur_idle_buddies        (ChattySettings *self);
 gboolean        chatty_settings_get_indicate_unkown_contacts (ChattySettings *self);
