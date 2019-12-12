@@ -296,6 +296,8 @@ cb_radio_button_toggled (GtkWidget *button,
     gtk_widget_hide (GTK_WIDGET(chatty_dialog->label_libremone_hint));
     gtk_widget_hide (GTK_WIDGET(chatty_dialog->entry_account_server));
   }
+
+  gtk_widget_grab_focus (GTK_WIDGET(chatty_dialog->entry_account_name));
 }
 
 
@@ -928,6 +930,7 @@ chatty_dialogs_create_add_account_view (GtkBuilder *builder)
   GtkWidget    *button_back;
   GtkWindow    *window;
   GtkListBox   *list_protocol_sel;
+  GtkListBox   *list_account_settings;
   GtkLabel     *label_protocol_sel;
   HdyActionRow *action_row_matrix;
   HdyActionRow *action_row_telegram;
@@ -938,6 +941,7 @@ chatty_dialogs_create_add_account_view (GtkBuilder *builder)
   button_back = GTK_WIDGET (gtk_builder_get_object (builder, "button_add_account_back"));
   label_protocol_sel = GTK_LABEL (gtk_builder_get_object (builder, "label_protocol_sel"));
   list_protocol_sel = GTK_LIST_BOX (gtk_builder_get_object (builder, "list_protocol_sel"));
+  list_account_settings = GTK_LIST_BOX (gtk_builder_get_object (builder, "list_account_settings"));
   action_row_matrix = HDY_ACTION_ROW (gtk_builder_get_object (builder, "action_row_matrix"));
   action_row_telegram = HDY_ACTION_ROW (gtk_builder_get_object (builder, "action_row_telegram"));
   chatty_dialog->label_libremone_hint = GTK_LABEL (gtk_builder_get_object (builder, "label_libremone_hint"));
@@ -969,6 +973,7 @@ chatty_dialogs_create_add_account_view (GtkBuilder *builder)
   }
 
   gtk_list_box_set_header_func (list_protocol_sel, hdy_list_box_separator_header, NULL, NULL);
+  gtk_list_box_set_header_func (list_account_settings, hdy_list_box_separator_header, NULL, NULL);
 
 
   g_signal_connect (G_OBJECT(chatty_dialog->radio_button_xmpp), 
