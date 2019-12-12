@@ -20,6 +20,12 @@
       <description>Share chat history among devices</description>
     </key>
 
+    <key name="mam-enabled" type="b">
+      <default>true</default>
+      <summary>Enable Message Archive Management</summary>
+      <description>Enable MAM archive synchronization from the server</description>
+    </key>
+
     <key name="send-typing" type="b">
       <default>false</default>
       <summary>Send typing notifications</summary>

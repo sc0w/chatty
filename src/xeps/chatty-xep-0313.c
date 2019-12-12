@@ -21,6 +21,7 @@
 #include "chatty-message-list.h"
 #include "chatty-conversation.h"
 #include "chatty-purple-init.h"
+#include "chatty-settings.h"
 
 #define NS_FWDv0 "urn:xmpp:forward:0"
 #define NS_SIDv0 "urn:xmpp:sid:0"
@@ -52,6 +53,7 @@ typedef struct {
   time_t   last_ts;
   MamMsg  *cur_msg;
   char    *cur_oid;
+  char    *ns;
 } MamCtx;
 
 static GHashTable *ht_mam_ctx = NULL;
@@ -107,6 +109,7 @@ mamc_free(void *ptr)
 {
   MamCtx *mamc = (MamCtx*)ptr;
   if(ptr==NULL) return;
+  g_free(mamc->ns);
   g_free(mamc->cur_oid);
   mamm_free(mamc->cur_msg);
   g_hash_table_destroy(mamc->qs);
@@ -183,6 +186,32 @@ chatty_mam_ctx_del(PurpleAccount *pa)
  */
 
 /**
+ * chatty_mam_get_chat_prefs:
+ * @pa: PurpleAccount to use for account or chat prefs
+ * @room: jid string of MUC to get preference for
+ * @def: default value which is returnd when not set
+ *
+ * The function returns either chat preference for the
+ * given account, or, if @room is NULL, accounts prefs.
+ * When disabled globally it would never be called.
+ */
+static const char *
+chatty_mam_get_chat_prefs(PurpleAccount *pa, const char *room, const char *def)
+{
+  // Get per-room settings
+  if(room && *room != '\0') {
+    PurpleChat *chat = purple_blist_find_chat(pa, room);
+    if(chat)
+      return purple_blist_node_get_string(
+                                    PURPLE_BLIST_NODE(chat), MAM_PREFS_DEF);
+    return def;
+  } else
+    // Get per-account setting
+    return purple_account_get_ui_string(pa, CHATTY_UI, MAM_PREFS_DEF, def);
+
+}
+
+/**
  * cb_mam_query_prefs:
  * @js: JabberStream of the current connection
  * @from: the jid string of the iq responder
@@ -205,15 +234,14 @@ cb_mam_query_prefs(JabberStream *js, const char *from,
 
   if(type == JABBER_IQ_RESULT && prefs) {
     const char *srv_def = xmlnode_get_attrib(prefs, "default");
-    const char *clt_def = purple_account_get_ui_string(pa, CHATTY_UI,
-                                              MAM_PREFS_DEF, MAM_DEF_ROSTER);
+    const char *clt_def = chatty_mam_get_chat_prefs(pa, from, MAM_DEF_ROSTER);
     if(g_strcmp0(clt_def, srv_def)) {
       JabberIq *iq = jabber_iq_new(js, JABBER_IQ_SET);
       prefs = xmlnode_new_child(iq->node, "prefs");
       xmlnode_set_namespace(prefs, NS_MAMv2);
       if(to != NULL)
         xmlnode_set_attrib(iq->node, "to", to);
-      xmlnode_set_attrib(prefs, MAM_PREFS_DEF, clt_def);
+      xmlnode_set_attrib(prefs, "default", clt_def);
       xmlnode_new_child(prefs,"always");
       xmlnode_new_child(prefs,"never");
       jabber_iq_send(iq);
@@ -388,6 +416,32 @@ chatty_mam_query_archive (MAMQuery *mamq)
 }
 
 /**
+ * chatty_mam_is_enabled:
+ * @pa: PurpleAccount whose settings to consider
+ * @room: the JID string of the MUC room to check settings
+ *
+ * The function aggregates various settings which may disable
+ * mam processing globally, per-account and per-chat-room.
+ * Returns aggregated decision on whether mam is enabled.
+ */
+static gboolean
+chatty_mam_is_enabled(PurpleAccount *pa, const char *room)
+{
+  const char *pref;
+
+  // Get global setting
+  if(!chatty_settings_get_mam_enabled (chatty_settings_get_default ()))
+    return FALSE;
+
+  // Get local preference
+  pref = chatty_mam_get_chat_prefs(pa, room, NULL);
+  if(g_strcmp0(MAM_DEF_DISABLE, pref) == 0)
+    return FALSE;
+
+  return TRUE;
+}
+
+/**
  * cb_chatty_mam_bare_info:
  * @pc: PurpleConnection on which bare was discovered
  * @bare: the bare jid on which disco#info was queried
@@ -411,9 +465,10 @@ cb_chatty_mam_bare_info (PurpleConnection *pc,
     MamCtx *mamc = chatty_mam_ctx_add(pa);
     MAMQuery *mamq;
 
-    if(g_strcmp0 (MAM_DEF_DISABLE,
-                  purple_account_get_ui_string (pa, CHATTY_UI,
-                                                MAM_PREFS_DEF, NULL)) == 0)
+    if(mamc->ns == NULL)
+      mamc->ns = g_strdup(var);
+
+    if(!chatty_mam_is_enabled(pa, bare))
       return; // ok, if you say so
 
     mamq = g_new0(MAMQuery, 1);
@@ -440,6 +495,48 @@ cb_chatty_mam_bare_info (PurpleConnection *pc,
     chatty_mam_query_archive(mamq);
     // Also - request preferences and correct them if required
     chatty_mam_query_prefs(pc, mamq->to);
+  }
+}
+
+/**
+ * cb_chatty_mam_enabled_notify:
+ * @obj: GObject which emitted notify signal
+ * @param: GParamSpec which should contain mam-enabled prop
+ * @null: unused
+ *
+ * The callback to notify::mam_enabled property of the
+ * ChattySettings singleton to trigger mam sync when
+ * the global setting was enabled.
+ */
+static void
+cb_chatty_mam_enabled_notify (GObject *obj,
+                              GParamSpec *param,
+                              gpointer null)
+{
+  if(chatty_settings_get_mam_enabled((ChattySettings*)obj)) {
+    // Cycle through context keys? Or better connected accounts
+    GList *aacs = purple_accounts_get_all_active();
+    g_debug("MAM is enabled, re-discover the bares");
+    for(GList *la = aacs; la; la = la->next) {
+      PurpleAccount *pa = la->data;
+      MamCtx *mamc;
+
+      // Skip non-jabber account
+      if(g_strcmp0 ("prpl-jabber", purple_account_get_protocol_id (pa)))
+        continue;
+
+      mamc = chatty_mam_ctx_get(pa);
+
+      if(!mamc || !mamc->ns) // no mam discovered here
+        continue;
+
+      // Pretend we rediscovered mam again here
+      cb_chatty_mam_bare_info(
+            purple_account_get_connection(pa),
+            purple_account_get_username(pa),
+            mamc->ns);
+    }
+    g_list_free(aacs);
   }
 }
 
@@ -786,5 +883,11 @@ chatty_0313_init (void)
                         handle,
                         PURPLE_CALLBACK(cb_chatty_mam_disconnect),
                         NULL);
+
+  // Follow the settings
+  g_signal_connect (chatty_settings_get_default(),
+                    "notify::mam-enabled",
+                    G_CALLBACK(cb_chatty_mam_enabled_notify),
+                    NULL);
 }
 /* vim: set sts=2 et: */
