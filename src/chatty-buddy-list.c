@@ -671,33 +671,6 @@ chatty_blist_protocol_is_sms (PurpleAccount *account)
 
 
 /**
- * chatty_blist_buddy_is_displayable:
- * @buddy:      a PurpleBuddy
- *
- * Determines if a buddy may be displayed
- * in the chat list
- *
- */
-static gboolean
-chatty_blist_buddy_is_displayable (PurpleBuddy *buddy)
-{
-  struct _chatty_blist_node *chatty_node;
-
-  if (!buddy) {
-    return FALSE;
-  }
-
-  chatty_node = ((PurpleBlistNode*)buddy)->ui_data;
-
-  return (purple_account_is_connected (buddy->account) &&
-          (purple_presence_is_online (buddy->presence) ||
-           (chatty_node && chatty_node->recent_signonoff) ||
-           chatty_settings_get_show_offline_buddies (chatty_settings_get_default ())));
-
-}
-
-
-/**
  * chatty_blist_list_has_children:
  *
  * Returns 0 if chats list is empty
@@ -1443,9 +1416,7 @@ chatty_blist_contacts_update_node (PurpleBuddy     *buddy,
 
   alias = chatty_utils_jabber_id_strip (purple_buddy_get_alias (buddy));
 
-  if (chatty_settings_get_show_offline_buddies (chatty_settings_get_default ()) &&
-      !PURPLE_BUDDY_IS_ONLINE(buddy)) {
-
+  if (!PURPLE_BUDDY_IS_ONLINE(buddy)) {
     blur = TRUE;
   } else {
     blur = FALSE;
@@ -1836,7 +1807,7 @@ chatty_blist_update_buddy (PurpleBuddyList *list,
   iso_timestamp = g_malloc0(MAX_GMT_ISO_SIZE * sizeof(char));
 
   if (purple_blist_node_get_bool (node, "chatty-autojoin") &&
-      chatty_blist_buddy_is_displayable (buddy) &&
+      purple_account_is_connected (buddy->account) &&
       message_exists) {
 
     timeinfo = localtime (&log_data->epoch);

@@ -40,7 +40,6 @@ set_settings_bool (ChattySettings *settings,
   g_object_set (settings,
                 "send-receipts", value,
                 "send-typing", value,
-                "show-offline-buddies", value,
                 "greyout-offline-buddies", value,
                 "blur-idle-buddies", value,
                 "indicate-unknown-contacts", value,
@@ -57,7 +56,6 @@ check_settings_true (ChattySettings *settings)
 
   g_assert_true (chatty_settings_get_send_receipts (settings));
   g_assert_true (chatty_settings_get_send_typing (settings));
-  g_assert_true (chatty_settings_get_show_offline_buddies (settings));
   g_assert_true (chatty_settings_get_greyout_offline_buddies (settings));
   g_assert_true (chatty_settings_get_blur_idle_buddies (settings));
   g_assert_true (chatty_settings_get_indicate_unkown_contacts (settings));
@@ -73,7 +71,6 @@ check_settings_false (ChattySettings *settings)
 
   g_assert_false (chatty_settings_get_send_receipts (settings));
   g_assert_false (chatty_settings_get_send_typing (settings));
-  g_assert_false (chatty_settings_get_show_offline_buddies (settings));
   g_assert_false (chatty_settings_get_greyout_offline_buddies (settings));
   g_assert_false (chatty_settings_get_blur_idle_buddies (settings));
   g_assert_false (chatty_settings_get_indicate_unkown_contacts (settings));
