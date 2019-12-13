@@ -677,19 +677,6 @@
                           </object>
                         </child>
                         <child>
-                          <object class="GtkLabel" id="label_libremone_hint">
-                            <property name="visible">True</property>
-                            <property name="can_focus">False</property>
-                            <property name="expand">True</property>
-                            <property name="label" translatable="yes">If you have already a &lt;b&gt;Librem One&lt;/b&gt; account, you just need to enter user ID and password</property>
-                            <property name="justify">left</property>
-                            <property name="halign">start</property>
-                            <property name="use_markup">true</property>
-                            <property name="wrap">True</property>
-                            <property name="margin-bottom">12</property>
-                          </object>
-                        </child>
-                        <child>
                           <object class="GtkListBox" id="list_account_settings">>
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
@@ -740,8 +727,8 @@
                                 </child>
                                 <child type="action">
                                   <object class="GtkEntry" id="entry_add_server_url">
-                                    <property name="text">librem.one</property>
                                     <property name="activates_default">True</property>
+                                    <property name="placeholder-text">any-xmpp-server</property>
                                     <property name="hexpand">False</property>
                                     <property name="visible">True</property>
                                     <property name="halign">end</property>

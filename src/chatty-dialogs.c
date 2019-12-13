@@ -285,15 +285,12 @@ cb_radio_button_toggled (GtkWidget *button,
   chatty_dialog_data_t *chatty_dialog = chatty_get_dialog_data ();
 
   if (button == chatty_dialog->radio_button_xmpp) {
-    gtk_widget_show (GTK_WIDGET(chatty_dialog->label_libremone_hint));
     gtk_widget_show (GTK_WIDGET(chatty_dialog->entry_account_server));
-    gtk_entry_set_text (chatty_dialog->entry_account_server, "librem.one");
+    gtk_entry_set_text (chatty_dialog->entry_account_server, "");
   } else if (button == chatty_dialog->radio_button_matrix) {
-    gtk_widget_hide (GTK_WIDGET(chatty_dialog->label_libremone_hint));
     gtk_widget_show (GTK_WIDGET(chatty_dialog->entry_account_server));
     gtk_entry_set_text (chatty_dialog->entry_account_server, "https://talk.puri.sm");
   } else if (button == chatty_dialog->radio_button_telegram) {
-    gtk_widget_hide (GTK_WIDGET(chatty_dialog->label_libremone_hint));
     gtk_widget_hide (GTK_WIDGET(chatty_dialog->entry_account_server));
   }
 
@@ -944,7 +941,6 @@ chatty_dialogs_create_add_account_view (GtkBuilder *builder)
   list_account_settings = GTK_LIST_BOX (gtk_builder_get_object (builder, "list_account_settings"));
   action_row_matrix = HDY_ACTION_ROW (gtk_builder_get_object (builder, "action_row_matrix"));
   action_row_telegram = HDY_ACTION_ROW (gtk_builder_get_object (builder, "action_row_telegram"));
-  chatty_dialog->label_libremone_hint = GTK_LABEL (gtk_builder_get_object (builder, "label_libremone_hint"));
   chatty_dialog->button_add_account = GTK_WIDGET (gtk_builder_get_object (builder, "button_add_account"));
   chatty_dialog->radio_button_xmpp = GTK_WIDGET (gtk_builder_get_object (builder, "radio_button_xmpp"));
   chatty_dialog->radio_button_matrix = GTK_WIDGET (gtk_builder_get_object (builder, "radio_button_matrix"));
