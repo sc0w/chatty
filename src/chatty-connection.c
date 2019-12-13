@@ -188,6 +188,8 @@ chatty_connection_connected (PurpleConnection *gc)
   const char       *protocol_id;
   int               sms_match;
 
+  chatty_data_t *chatty = chatty_get_data ();
+
   account = purple_connection_get_account (gc);
   user_name = purple_account_get_username (account),
   protocol_id = purple_account_get_protocol_id (account);
@@ -208,6 +210,12 @@ chatty_connection_connected (PurpleConnection *gc)
     sms_notifications = TRUE;
 
     chatty_blist_enable_folks_contacts ();
+
+    // we are ready to open URI links now
+    if (chatty->uri) {
+      chatty_blist_add_buddy_from_uri (chatty->uri);
+      chatty->uri = NULL;
+    }
   }
 
   chatty_dialogs_update_connection_status ();
