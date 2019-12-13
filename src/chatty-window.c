@@ -336,11 +336,6 @@ chatty_window_init_data (void)
   if (chatty_settings_get_first_start (chatty_settings_get_default ())) {
     chatty_window_overlay_show (TRUE);
   }
-
-  // we are ready to open URI links now
-  if (chatty->uri) {
-    chatty_blist_add_buddy_from_uri (chatty->uri);
-  }
 }
 
 
