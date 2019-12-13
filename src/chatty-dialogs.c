@@ -275,6 +275,26 @@ cb_button_save_account_clicked (GtkButton *sender,
 }
 
 
+static void
+cb_radio_button_toggled (GtkWidget *button,
+                         gpointer   user_data)
+{
+  chatty_dialog_data_t *chatty_dialog = chatty_get_dialog_data ();
+
+  if (button == chatty_dialog->radio_button_xmpp) {
+    gtk_widget_show (GTK_WIDGET(chatty_dialog->entry_account_server));
+    gtk_entry_set_text (chatty_dialog->entry_account_server, "");
+  } else if (button == chatty_dialog->radio_button_matrix) {
+    gtk_widget_show (GTK_WIDGET(chatty_dialog->entry_account_server));
+    gtk_entry_set_text (chatty_dialog->entry_account_server, "https://talk.puri.sm");
+  } else if (button == chatty_dialog->radio_button_telegram) {
+    gtk_widget_hide (GTK_WIDGET(chatty_dialog->entry_account_server));
+  }
+
+  gtk_widget_grab_focus (GTK_WIDGET(chatty_dialog->entry_account_name));
+}
+
+
 void
 chatty_dialogs_update_connection_status (void)
 {
@@ -624,20 +644,23 @@ static void
 cb_button_add_account_clicked (GtkButton *sender,
                                gpointer   data)
 {
-  PurpleAccount   *account;
-  GtkToggleButton *button_xmpp;
-  GtkToggleButton *button_matrix;
-  GtkToggleButton *button_telegram;
-  const gchar     *protocol;
-  const gchar     *name;
-  const gchar     *pwd;
-  const gchar     *setting = NULL;
-  const gchar     *value;
+  PurpleAccount    *account;
+  GtkToggleButton  *button_xmpp;
+  GtkToggleButton  *button_matrix;
+  GtkToggleButton  *button_telegram;
+  const gchar      *protocol;
+  const gchar      *user_id;
+  const gchar      *server;
+  const gchar      *pwd;
+  const gchar      *setting = NULL;
+  const gchar      *value;
+  g_autofree gchar *name;
 
   chatty_data_t        *chatty = chatty_get_data ();
   chatty_dialog_data_t *chatty_dialog = chatty_get_dialog_data ();
 
-  name = gtk_entry_get_text (GTK_ENTRY(chatty_dialog->entry_account_name));
+  user_id = gtk_entry_get_text (GTK_ENTRY(chatty_dialog->entry_account_name));
+  server = gtk_entry_get_text (GTK_ENTRY(chatty_dialog->entry_account_server));
   pwd  = gtk_entry_get_text (GTK_ENTRY(chatty_dialog->entry_account_pwd));
 
   button_xmpp = GTK_TOGGLE_BUTTON(chatty_dialog->radio_button_xmpp);
@@ -646,14 +669,17 @@ cb_button_add_account_clicked (GtkButton *sender,
 
   if (gtk_toggle_button_get_active (button_xmpp) == TRUE) {
     protocol = "prpl-jabber";
+    name = g_strconcat (user_id, "@", server, NULL);
   } else if (gtk_toggle_button_get_active (button_matrix) == TRUE) {
     protocol = "prpl-matrix";
     setting = "home_server";
+    name = g_strdup (user_id);
     value = gtk_entry_get_text (GTK_ENTRY(chatty_dialog->entry_account_server));
   } else if (gtk_toggle_button_get_active (button_telegram) == TRUE) {
     protocol = "prpl-telegram";
     setting = "password-two-factor";
     value = pwd;
+    name = g_strdup (user_id);
     pwd = NULL;
   }
 
@@ -898,13 +924,18 @@ chatty_dialogs_create_add_account_view (GtkBuilder *builder)
   GtkWidget    *button_back;
   GtkWindow    *window;
   GtkListBox   *list_protocol_sel;
+  GtkListBox   *list_account_settings;
+  GtkLabel     *label_protocol_sel;
   HdyActionRow *action_row_matrix;
   HdyActionRow *action_row_telegram;
+  gboolean      further_protocols = FALSE;
 
   chatty_dialog_data_t *chatty_dialog = chatty_get_dialog_data ();
 
   button_back = GTK_WIDGET (gtk_builder_get_object (builder, "button_add_account_back"));
+  label_protocol_sel = GTK_LABEL (gtk_builder_get_object (builder, "label_protocol_sel"));
   list_protocol_sel = GTK_LIST_BOX (gtk_builder_get_object (builder, "list_protocol_sel"));
+  list_account_settings = GTK_LIST_BOX (gtk_builder_get_object (builder, "list_account_settings"));
   action_row_matrix = HDY_ACTION_ROW (gtk_builder_get_object (builder, "action_row_matrix"));
   action_row_telegram = HDY_ACTION_ROW (gtk_builder_get_object (builder, "action_row_telegram"));
   chatty_dialog->button_add_account = GTK_WIDGET (gtk_builder_get_object (builder, "button_add_account"));
@@ -919,15 +950,39 @@ chatty_dialogs_create_add_account_view (GtkBuilder *builder)
 
   if (protocol) {
     gtk_widget_show (GTK_WIDGET(action_row_matrix));
+    further_protocols = TRUE;
   }
 
   protocol = purple_find_prpl ("prpl-telegram");
 
   if (protocol) {
     gtk_widget_show (GTK_WIDGET(action_row_telegram));
+    further_protocols = TRUE;
+  }
+
+  if (further_protocols) {
+    gtk_label_set_text (label_protocol_sel, _("Select Protocol"));
+    gtk_widget_show (GTK_WIDGET(list_protocol_sel));
   }
 
   gtk_list_box_set_header_func (list_protocol_sel, hdy_list_box_separator_header, NULL, NULL);
+  gtk_list_box_set_header_func (list_account_settings, hdy_list_box_separator_header, NULL, NULL);
+
+
+  g_signal_connect (G_OBJECT(chatty_dialog->radio_button_xmpp), 
+                    "toggled", 
+                    G_CALLBACK(cb_radio_button_toggled), 
+                    NULL);
+
+  g_signal_connect (G_OBJECT(chatty_dialog->radio_button_matrix), 
+                    "toggled", 
+                    G_CALLBACK(cb_radio_button_toggled), 
+                    NULL);
+
+  g_signal_connect (G_OBJECT(chatty_dialog->radio_button_telegram), 
+                    "toggled", 
+                    G_CALLBACK(cb_radio_button_toggled), 
+                    NULL);
 
   g_signal_connect_after (G_OBJECT(chatty_dialog->entry_account_name),
                           "insert_text",
