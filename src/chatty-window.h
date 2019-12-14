@@ -54,6 +54,7 @@ typedef struct {
   GtkWidget         *button_menu_add_gnome_contact;
   GtkWidget         *button_menu_new_group_chat;
   GtkWidget         *button_header_chat_info;
+  GtkWidget         *button_header_add_chat;
   GtkWidget         *button_header_sub_menu;
 
   PurpleAccount     *selected_account;
@@ -67,6 +68,9 @@ typedef struct {
   GtkWidget         *label_overlay_1;
   GtkWidget         *label_overlay_2;
   GtkWidget         *label_overlay_3;
+
+  gboolean           im_account_connected;
+  gboolean           sms_account_connected;
 
   ChattyCmlOptions   cml_options;
 
@@ -125,13 +129,10 @@ enum {
 
 
 enum {
-  CHATTY_OVERLAY_WELCOME,
-  CHATTY_OVERLAY_WELCOME_NO_SMS,
   CHATTY_OVERLAY_EMPTY_CHAT,
   CHATTY_OVERLAY_EMPTY_CHAT_NO_SMS,
   CHATTY_OVERLAY_EMPTY_CHAT_NO_IM,
   CHATTY_OVERLAY_EMPTY_CHAT_NO_SMS_IM,
-  CHATTY_OVERLAY_HIDE
 } ChattyOverlayMode;
 
 
@@ -168,6 +169,7 @@ typedef enum {
 
 void chatty_window_change_view (guint state);
 void chatty_window_overlay_show (gboolean show);
+void chatty_window_overlay_show_delayed (void);
 void chatty_window_activate (GtkApplication* app, gpointer user_data);
 void chatty_window_update_sub_header_titlebar (GdkPixbuf  *icon, const char *title);
 

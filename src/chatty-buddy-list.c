@@ -634,6 +634,21 @@ cb_chatty_blist_sort_contacts (GtkListBoxRow *row1,
 
   return result;
 }
+
+
+static void
+cb_num_rows_changed (GtkContainer *container,
+                     GtkWidget    *widget,
+                     gpointer      user_data)
+{
+  if (chatty_blist_list_has_children (CHATTY_LIST_CHATS)) {
+    chatty_window_overlay_show (FALSE);
+  } else {
+    chatty_window_overlay_show (TRUE);
+  }
+}
+
+
 // *** end callbacks
 
 
@@ -1241,6 +1256,16 @@ chatty_blist_create_chat_list (void)
                     G_CALLBACK (row_selected_cb),
                     NULL);
 
+  g_signal_connect (listbox,
+                    "add",
+                    G_CALLBACK (cb_num_rows_changed),
+                    NULL);
+
+  g_signal_connect (listbox,
+                    "remove",
+                    G_CALLBACK (cb_num_rows_changed),
+                    NULL);
+
   gtk_box_pack_start (GTK_BOX (chatty->pane_view_chat_list), GTK_WIDGET(listbox), TRUE, TRUE, 0);
   gtk_widget_show_all (GTK_WIDGET(chatty->pane_view_chat_list));
 }
@@ -1580,10 +1605,6 @@ chatty_blist_chats_update_node (PurpleBuddy     *buddy,
   contact = purple_buddy_get_contact (buddy);
   alias = chatty_utils_jabber_id_strip (purple_contact_get_alias (contact));
 
-  if (!chatty_settings_get_first_start (chatty_settings_get_default ())) {
-     chatty_window_overlay_show (FALSE);
-  }
-
   if (chatty_settings_get_greyout_offline_buddies (chatty_settings_get_default ()) &&
       !PURPLE_BUDDY_IS_ONLINE(buddy)) {
 
@@ -1704,10 +1725,6 @@ chatty_blist_chats_update_group_chat (PurpleBlistNode *node)
 
   if(!purple_account_is_connected (chat->account)) {
     return;
-  }
-
-  if (!chatty_settings_get_first_start (chatty_settings_get_default ())) {
-     chatty_window_overlay_show (FALSE);
   }
 
   avatar = chatty_icon_get_buddy_icon (node,
