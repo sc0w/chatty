@@ -36,41 +36,21 @@ static void chatty_add_contact_action (GSimpleAction *action,
 
 
 overlay_content_t OverlayContent[6] = {
-  {.title      = N_("Start chatting"),
-   .text_1     = N_("<b>SMS</b> Chat is set up by default. Start a chat with the \"+\" button in the titlebar."),
-   .text_2     = N_("Add <b>Instant Messaging</b> by selecting \n<i>\"Add new account\"</i> in <i>\"preferences\"</i>."),
-   .icon_name  = "sm.puri.Chatty-symbolic",
-   .icon_size  = 128,
-  },
-  {.title      = N_("Start chatting"),
-   .text_1     = N_("Add <b>Instant Messaging</b> by selecting \n<i>\"Add new account\"</i> in <i>\"preferences\"</i>."),
-   .text_2     = NULL,
-   .icon_name  = "sm.puri.Chatty-symbolic",
-   .icon_size  = 128,
-  },
   {.title      = N_("Choose a contact"),
    .text_1     = N_("Select an <b>SMS</b> or <b>Instant Message</b> contact with the <b>\"+\"</b> button in the titlebar."),
    .text_2     = NULL,
-   .icon_name  = "system-users-symbolic",
-   .icon_size  = 128,
   },
   {.title      = N_("Choose a contact"),
    .text_1     = N_("Select an <b>Instant Message</b> contact with the \"+\" button in the titlebar."),
    .text_2     = NULL,
-   .icon_name  = "system-users-symbolic",
-   .icon_size  = 128,
   },
   {.title      = N_("Choose a contact"),
    .text_1     = N_("Start a <b>SMS</b> chat with with the \"+\" button in the titlebar."),
    .text_2     = N_("For <b>Instant Messaging</b> add or activate an account in <i>\"preferences\"</i>."),
-   .icon_name  = "system-users-symbolic",
-   .icon_size  = 128,
   },
-  {.title      = N_("Choose a contact"),
+  {.title      = N_("Start chatting"),
    .text_1     = N_("For <b>Instant Messaging</b> add or activate an account in <i>\"preferences\"</i>."),
    .text_2     = NULL,
-   .icon_name  = "system-users-symbolic",
-   .icon_size  = 128,
   }
 };
 
@@ -111,21 +91,6 @@ cb_leaflet_notify_fold (GObject       *sender,
   }
 
   chatty_update_header ();
-}
-
-
-static gboolean
-cb_show_overlay_timeout (gpointer data)
-{
-  chatty_data_t *chatty = chatty_get_data ();
-
-  if (!chatty_blist_list_has_children (CHATTY_LIST_CHATS) &&
-     !gtk_widget_get_visible (GTK_WIDGET(chatty->box_overlay))) {
-
-   chatty_window_overlay_show (TRUE);
-  }
-
-  return FALSE;
 }
 
 
@@ -214,8 +179,6 @@ chatty_window_change_view (ChattyWindowState view)
       hdy_leaflet_set_visible_child_name (chatty->content_box, "content");
       break;
     case CHATTY_VIEW_CHAT_LIST:
-      g_timeout_add_seconds (2, cb_show_overlay_timeout, NULL);
-
       hdy_leaflet_set_visible_child_name (chatty->content_box, "sidebar");
       break;
     default:
@@ -255,41 +218,29 @@ chatty_window_overlay_show (gboolean show)
     return;
   }
 
-  if (purple_accounts_find ("SMS", "prpl-mm-sms")) {
+  if (chatty->sms_account_connected) {
     accounts |= CHATTY_ACCOUNTS_SMS;
   }
 
-  if (accounts & CHATTY_ACCOUNTS_SMS && (g_list_length (purple_accounts_get_all ()) > 1)) {
+  if (chatty->im_account_connected ) {
     accounts |= CHATTY_ACCOUNTS_IM;
   }
 
-  // First start = welcome screen
-  if (chatty_settings_get_first_start (chatty_settings_get_default ())) {
-
-    if (accounts & CHATTY_ACCOUNTS_SMS) {
-      mode = CHATTY_OVERLAY_WELCOME;
-    } else {
-      mode = CHATTY_OVERLAY_WELCOME_NO_SMS;
-    }
+  if (accounts == CHATTY_ACCOUNTS_IM_SMS) {
+    mode = CHATTY_OVERLAY_EMPTY_CHAT;
+  } else if (accounts == CHATTY_ACCOUNTS_SMS) {
+    mode = CHATTY_OVERLAY_EMPTY_CHAT_NO_IM;
+  } else if (accounts == CHATTY_ACCOUNTS_IM) {
+    mode = CHATTY_OVERLAY_EMPTY_CHAT_NO_SMS;
   } else {
-    // No chat-list entries = empty-state placeholder
-    if (accounts == CHATTY_ACCOUNTS_IM_SMS) {
-      mode = CHATTY_OVERLAY_EMPTY_CHAT;
-    } else if (accounts == CHATTY_ACCOUNTS_SMS) {
-      mode = CHATTY_OVERLAY_EMPTY_CHAT_NO_IM;
-    } else if (accounts ^ CHATTY_ACCOUNTS_IM) {
-      mode = CHATTY_OVERLAY_EMPTY_CHAT_NO_SMS;
-    } else {
-      mode = CHATTY_OVERLAY_EMPTY_CHAT_NO_SMS_IM;
-    }
+    mode = CHATTY_OVERLAY_EMPTY_CHAT_NO_SMS_IM;
   }
 
   gtk_image_set_from_icon_name (chatty->icon_overlay,
-                                OverlayContent[mode].icon_name,
+                                "sm.puri.Chatty-symbolic",
                                 0);
 
-  gtk_image_set_pixel_size (chatty->icon_overlay,
-                            OverlayContent[mode].icon_size);
+  gtk_image_set_pixel_size (chatty->icon_overlay, 96);
 
   gtk_label_set_text (GTK_LABEL(chatty->label_overlay_1),
                       gettext (OverlayContent[mode].title));
@@ -304,7 +255,7 @@ chatty_window_overlay_show (gboolean show)
 }
 
 
-static void
+static void 
 chatty_window_init_data (void)
 {
   chatty_data_t *chatty = chatty_get_data ();
@@ -332,10 +283,6 @@ chatty_window_init_data (void)
   gtk_widget_set_sensitive (GTK_WIDGET(chatty->button_header_sub_menu), FALSE);
 
   chatty_window_change_view (CHATTY_VIEW_CHAT_LIST);
-
-  if (chatty_settings_get_first_start (chatty_settings_get_default ())) {
-    chatty_window_overlay_show (TRUE);
-  }
 }
 
 
@@ -372,6 +319,7 @@ chatty_window_activate (GtkApplication *app,
   chatty->button_menu_add_gnome_contact = GTK_WIDGET (gtk_builder_get_object (builder, "button_menu_add_gnome_contact"));
   chatty->button_menu_new_group_chat = GTK_WIDGET (gtk_builder_get_object (builder, "button_menu_new_group_chat"));
   chatty->button_header_chat_info = GTK_WIDGET (gtk_builder_get_object (builder, "button_header_chat_info"));
+  chatty->button_header_add_chat = GTK_WIDGET (gtk_builder_get_object (builder, "button_header_add_chat"));
   chatty->button_header_sub_menu = GTK_WIDGET (gtk_builder_get_object (builder, "button_header_sub_menu"));
 
   chatty->search_bar_chats = HDY_SEARCH_BAR (gtk_builder_get_object (builder, "search_bar_chats"));

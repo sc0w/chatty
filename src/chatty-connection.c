@@ -67,6 +67,7 @@ cb_account_removed (PurpleAccount *account,
   g_hash_table_remove (auto_reconns, account);
 }
 
+
 static void
 cb_account_disabled (PurpleAccount *account,
                      gpointer       user_data)
@@ -84,18 +85,29 @@ chatty_connection_update_ui (void)
 
   chatty_data_t *chatty = chatty_get_data ();
 
+  chatty->im_account_connected = FALSE;
+  chatty->sms_account_connected = FALSE;
+
   gtk_widget_set_sensitive (chatty->button_menu_new_group_chat, FALSE);
 
   for (accounts = purple_accounts_get_all (); accounts != NULL; accounts = accounts->next) {
     PurpleAccount *account = accounts->data;
 
-    if (!chatty_blist_protocol_is_sms (account)) {
-      if (purple_account_is_connected ((account))) {
+    if (purple_account_is_connected (account)) {
+      if (chatty_blist_protocol_is_sms (account)) {
+        chatty->sms_account_connected = TRUE;
+      }  else {
+        chatty->im_account_connected = TRUE;
         gtk_widget_set_sensitive (chatty->button_menu_new_group_chat, TRUE);
-        break;
       } 
     }
   }
+
+  gtk_widget_set_sensitive (chatty->button_header_add_chat, 
+                            chatty->im_account_connected |
+                            chatty->sms_account_connected);
+
+  chatty_window_overlay_show (!chatty_blist_list_has_children (CHATTY_LIST_CHATS));
 }
 
 
