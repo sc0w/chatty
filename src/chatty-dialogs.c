@@ -286,7 +286,7 @@ cb_radio_button_toggled (GtkWidget *button,
     gtk_entry_set_text (chatty_dialog->entry_account_server, "");
   } else if (button == chatty_dialog->radio_button_matrix) {
     gtk_widget_show (GTK_WIDGET(chatty_dialog->entry_account_server));
-    gtk_entry_set_text (chatty_dialog->entry_account_server, "https://talk.puri.sm");
+    gtk_entry_set_text (chatty_dialog->entry_account_server, "https://chat.librem.one");
   } else if (button == chatty_dialog->radio_button_telegram) {
     gtk_widget_hide (GTK_WIDGET(chatty_dialog->entry_account_server));
   }
