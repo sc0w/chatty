@@ -1,3 +1,22 @@
+chatty (0.1.4) amber-phone; urgency=high
+
+  [ Mohammed Sadiq ]
+  * settings: Add a weak pointer to self
+  * Add initial tests
+  * README.md: Add ‘running from source’ section
+  * build: fix generating version from git
+
+  [ Andrea Schaefer ]
+  * Remove 'show offline contacts' pref
+  * Add librem.one as default jabber provider
+  * Remove function prototype
+  * Frame account settings in listbox/rows
+  * Open URI when modem is connected
+  * Improve empty-state overlay handling
+  * Change matrix default server
+
+ -- Andrea Schaefer <andrea.schaefer@puri.sm  Sun, 15 Dec 2019 13:12:46 +0100
+
 chatty (0.1.3) amber-phone; urgency=high
 
   [ Mohammed Sadiq ]
