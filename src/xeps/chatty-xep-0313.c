@@ -315,7 +315,8 @@ cb_mam_query_result(JabberStream *js, const char *from,
       fin = NULL; // Flag error state
     } else {
       g_debug("This is the last of them, standing down at %ld", mamc->last_ts);
-      if(mamc->last_ts > 0)
+      // Save ts but not for muc
+      if(mamc->last_ts > 0 && mamq->to == NULL)
         purple_account_set_int(pa, "mam_last_ts", mamc->last_ts);
     }
   } else {
@@ -452,14 +453,14 @@ chatty_mam_is_enabled(PurpleAccount *pa, const char *room)
  * yes - query the archive.
  */
 static void
-cb_chatty_mam_bare_info (PurpleConnection *pc,
-                          const char *bare,
-                          const char *var)
+cb_chatty_mam_bare_info(PurpleConnection *pc,
+                        const char *bare,
+                        const char *var)
 {
   if(g_strcmp0(var, NS_MAMv2) == 0) {
     JabberStream  *js = purple_connection_get_protocol_data (pc);
     char *qid = jabber_get_next_id(js);
-    GDateTime *dt;
+    GDateTime *dt = NULL;
     PurpleAccount *pa = purple_connection_get_account(pc);
     // Init CTX
     MamCtx *mamc = chatty_mam_ctx_add(pa);
@@ -474,18 +475,27 @@ cb_chatty_mam_bare_info (PurpleConnection *pc,
     mamq = g_new0(MAMQuery, 1);
     mamq->js = js;
     mamq->id = g_strdup(qid);
-    if(g_strcmp0(bare, purple_account_get_username(pa)))
+    if(g_strcmp0(bare, purple_account_get_username(pa))) {
+      time_t ts = chatty_history_get_chat_last_message_time(
+                            purple_account_get_username(pa), bare);
+      // For MUC we're getting all messages so last history ts is ok
+      if(ts>0)
+        dt = g_date_time_new_from_unix_utc(ts);
+      // This becomes indication of the foreign archive, eg MUC
       mamq->to = g_strdup(bare);
+    } else
+      // Get last stop point on the account
+      mamc->last_ts = purple_account_get_int(pa, "mam_last_ts", 0);
     g_hash_table_insert(mamc->qs, qid, mamq);
-    // Get last stop point
-    mamc->last_ts = purple_account_get_int(pa, "mam_last_ts", 0);
-    if(mamc->last_ts > 0) {
-      dt = g_date_time_new_from_unix_utc(mamc->last_ts);
-    } else {
-      // last week should be good enough for the start
-      GDateTime *now = g_date_time_new_now_utc();
-      dt = g_date_time_add_days(now, -7);
-      g_date_time_unref(now);
+    if(dt == NULL) {
+      if(mamc->last_ts > 0 && mamq->to == NULL) {
+        dt = g_date_time_new_from_unix_utc(mamc->last_ts);
+      } else {
+        // last week should be good enough for the start
+        GDateTime *now = g_date_time_new_now_utc();
+        dt = g_date_time_add_days(now, -7);
+        g_date_time_unref(now);
+      }
     }
     mamq->start = g_date_time_format(dt,"%FT%TZ");
     g_date_time_unref(dt);
@@ -630,6 +640,7 @@ cb_chatty_mam_msg_received (PurpleConnection *pc,
   JabberStream  *js = purple_connection_get_protocol_data (pc);
   PurpleAccount *pa = purple_connection_get_account (pc);
   MamCtx *mamc = chatty_mam_ctx_add(pa);
+  MAMQuery *mamq = NULL;
 
   if (msg == NULL)
     return FALSE;
@@ -651,10 +662,15 @@ cb_chatty_mam_msg_received (PurpleConnection *pc,
       int dts;
       query_id = xmlnode_get_attrib (node_result, "queryid");
       stanza_id = xmlnode_get_attrib (node_result, "id");
-      user = purple_account_get_username(purple_connection_get_account(pc));
+      user = purple_account_get_username(pa);
 
       // Check result and query-id are valid
-      if(query_id == NULL || !g_hash_table_contains(mamc->qs, query_id)) {
+      if(query_id == NULL) {
+        g_debug ("Malformed MAM result from %s missing queryid", from);
+        return FALSE;
+      }
+      mamq = g_hash_table_lookup(mamc->qs, query_id);
+      if(mamq == NULL) {
         // Fake result injection?
         g_debug ("Fake MAM result[%s] injection from %s", query_id, from);
         return FALSE;
@@ -674,8 +690,6 @@ cb_chatty_mam_msg_received (PurpleConnection *pc,
         stamp = xmlnode_get_attrib (node_delay, "stamp");
         /* Copy delay down for the parser */
         xmlnode_insert_child (message, xmlnode_copy (node_delay));
-        if(stamp)
-          mamc->last_ts = purple_str_to_time (stamp, TRUE, NULL, NULL, NULL);
       }
       // check history and drop the dup
       msg_type = xmlnode_get_attrib(message, "type");
@@ -747,12 +761,16 @@ cb_chatty_mam_msg_received (PurpleConnection *pc,
   mamc->cur_msg->p.who = (char*)peer;
   mamc->cur_msg->p.flags = flags;
   if(stamp)
-    mamc->cur_msg->p.when = mamc->last_ts;
+    mamc->cur_msg->p.when = purple_str_to_time (stamp, TRUE, NULL, NULL, NULL);
   jabber_message_parse (js, message);
   if(stanza_id != NULL || mamc->cur_msg->p.what != NULL)
     chatty_history_add_message (pc->account, &(mamc->cur_msg->p),
                                 (char**)&stanza_id, mamc->cur_msg->type,
                                 NULL);
+  // Update last timestamp for account's archive
+  if(mamq != NULL && mamq->to == NULL)
+    mamc->last_ts = mamc->cur_msg->p.when;
+
   // Clear resubmission state
   if(peer == mamc->cur_msg->p.who)
     mamc->cur_msg->p.who = NULL;
