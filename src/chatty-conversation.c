@@ -185,9 +185,9 @@ cb_sms_show_send_receipt (const char *sms_id,
   bubble_footer = (GtkWidget*) g_hash_table_lookup (ht_sms_id, sms_id);
 
   footer_str = g_strconcat ("<small>",
-			    "<span color='grey'>",
-			    footer_str,
-			    "</span>",
+          "<span color='grey'>",
+          footer_str,
+          "</span>",
                             color,
                             symbol,
                             "</span></small>",
@@ -268,9 +268,9 @@ cb_button_send_clicked (GtkButton *sender,
   g_date_time_unref (time);
 
   footer_str = g_strconcat ("<small>",
-			    "<span color='grey'>",
-			    footer_str,
-			    "</span>",
+          "<span color='grey'>",
+          footer_str,
+          "</span>",
                             "<span color='grey'>",
                             " ✓",
                             "</span></small>",
@@ -509,13 +509,13 @@ cb_tree_view_row_activated (GtkTreeView       *treeview,
 static void
 cb_update_buddy_icon (PurpleBuddy *buddy)
 {
-	PurpleConversation *conv;
+  PurpleConversation *conv;
 
-	conv = purple_find_conversation_with_account (PURPLE_CONV_TYPE_IM, 
+  conv = purple_find_conversation_with_account (PURPLE_CONV_TYPE_IM, 
                                                 buddy->name, 
                                                 buddy->account);
 
-	if (conv) {
+  if (conv) {
     chatty_conv_conversation_update (conv);
   }
 }
@@ -2263,18 +2263,22 @@ chatty_conv_write_conversation (PurpleConversation *conv,
         chatty_history_add_im_message (message, -1, account->username, who_no_resource, uuid, mtime);
       }
     } else if (flags & PURPLE_MESSAGE_SYSTEM) {
-      if (purple_blist_node_get_bool (node, "chatty-status-msg")) {
-        chatty_msg_list_add_message (chatty_conv->msg_list,
-                                     MSG_IS_SYSTEM,
-                                     message,
-                                     NULL,
-                                     NULL);
-      }
-
-      if (type == PURPLE_CONV_TYPE_CHAT){
+      if (type == PURPLE_CONV_TYPE_CHAT) {
+        if (purple_blist_node_get_bool (node, "chatty-status-msg")) {
+          chatty_msg_list_add_message (chatty_conv->msg_list,
+                                      MSG_IS_SYSTEM,
+                                      message,
+                                      NULL,
+                                      NULL);
+        }
         // TODO: LELAND: Do not store "The topic is:" or store them but dont show to the user
         //chatty_history_add_chat_message (chat_id, message, 0, real_who, alias, uuid, mtime, conv_name);
       } else {
+        chatty_msg_list_add_message (chatty_conv->msg_list,
+                                    MSG_IS_SYSTEM,
+                                    message,
+                                    NULL,
+                                    NULL);
         //chatty_history_add_im_message (message, 0, account->username, who, uuid , mtime);
       }
     }
