@@ -583,10 +583,12 @@ cb_auto_join_chats (gpointer data)
 
       if (purple_chat_get_account (chat) == account &&
           purple_blist_node_get_bool (node, "chatty-autojoin")) {
+        g_autofree char *chat_name;
 
         prpl_info = PURPLE_PLUGIN_PROTOCOL_INFO(purple_find_prpl (purple_account_get_protocol_id (account)));
         components = purple_chat_get_components (chat);
-        chatty_conv_add_history_since_component(components, account->username, prpl_info->get_chat_name(components));
+        chat_name = prpl_info->get_chat_name(components);
+        chatty_conv_add_history_since_component(components, account->username, chat_name);
 
         serv_join_chat (purple_account_get_connection (account),
                         purple_chat_get_components (chat));
@@ -1149,9 +1151,16 @@ chatty_blist_chats_remove_node (PurpleBlistNode *node)
 {
   ChattyBlistNode *chatty_node = node->ui_data;
 
-  if (!chatty_node || !chatty_node->row_chat) {
+  if (!chatty_node)
     return;
-  }
+
+  g_free(chatty_node->conv.last_message);
+  g_free(chatty_node->conv.last_msg_timestamp);
+  chatty_node->conv.last_message = NULL;
+  chatty_node->conv.last_msg_timestamp = NULL;
+
+  if (!chatty_node->row_chat)
+    return;
 
   gtk_widget_destroy (GTK_WIDGET (chatty_node->row_chat));
   chatty_node->row_chat = NULL;
@@ -1417,7 +1426,7 @@ chatty_blist_contacts_update_node (PurpleBuddy     *buddy,
   GtkListBox    *listbox;
   GdkPixbuf     *avatar;
   gchar         *name = NULL;
-  const gchar   *alias;
+  g_autofree char *alias = NULL;
   const gchar   *account_name;
   PurpleAccount *account;
   gboolean       blur;
@@ -1633,7 +1642,7 @@ chatty_blist_chats_update_node (PurpleBuddy     *buddy,
   }
 
   if (chatty_node->conv.last_message == NULL) {
-    chatty_node->conv.last_message = "";
+    chatty_node->conv.last_message = g_strdup("");
   }
 
   // FIXME: Don't hard code the color it should read it from the theme
@@ -1736,7 +1745,7 @@ chatty_blist_chats_update_group_chat (PurpleBlistNode *node)
   chat_name = purple_chat_get_name (chat);
 
   if (chatty_node->conv.last_message == NULL) {
-    chatty_node->conv.last_message = "";
+    chatty_node->conv.last_message = g_strdup("");
   }
 
   last_message_striped = purple_markup_strip_html (chatty_node->conv.last_message);
@@ -1805,7 +1814,7 @@ chatty_blist_update_buddy (PurpleBuddyList *list,
   PurpleAccount           *account;
   const char              *username;
   g_autofree char         *who;
-  g_autofree gchar        *iso_timestamp = NULL;
+  gchar                   *iso_timestamp;
   struct tm               *timeinfo;
   char                     message_exists;
 
@@ -1821,23 +1830,24 @@ chatty_blist_update_buddy (PurpleBuddyList *list,
 
   message_exists = chatty_history_get_im_last_message (username, who, log_data);
 
-  iso_timestamp = g_malloc0(MAX_GMT_ISO_SIZE * sizeof(char));
-
   if (purple_blist_node_get_bool (node, "chatty-autojoin") &&
       purple_account_is_connected (buddy->account) &&
       message_exists) {
 
     timeinfo = localtime (&log_data->epoch);
+    iso_timestamp = g_malloc0(MAX_GMT_ISO_SIZE * sizeof(char));
     g_return_if_fail (strftime (iso_timestamp,
                                 MAX_GMT_ISO_SIZE * sizeof(char),
                                 "%I:%M %p",
                                 timeinfo));
 
     ui = node->ui_data;
+    g_free(ui->conv.last_message);
+    g_free(ui->conv.last_msg_timestamp);
     ui->conv.last_message = log_data->msg;
     ui->conv.last_message_dir = log_data->dir;
     ui->conv.last_msg_ts_raw = log_data->epoch;
-    ui->conv.last_msg_timestamp = g_steal_pointer (&iso_timestamp);
+    ui->conv.last_msg_timestamp = iso_timestamp;
 
     chatty_blist_chats_update_node (buddy, node);
   } else {

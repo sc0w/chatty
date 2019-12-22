@@ -71,24 +71,26 @@ chatty_xeps_display_received (const char* node_id)
 {
   GtkWidget *bubble_footer;
   GDateTime *time;
-  gchar     *footer_str = NULL;
+  gchar     *footer_tm;
+  gchar     *footer_str;
 
   if (node_id == NULL) {
     return;
   }
 
   time = g_date_time_new_now_local ();
-  footer_str = g_date_time_format (time, "%R");
+  footer_tm = g_date_time_format (time, "%R");
   g_date_time_unref (time);
 
   bubble_footer = (GtkWidget*) g_hash_table_lookup (ht_bubble_node, node_id);
 
   footer_str = g_strconcat ("<small>",
-                            footer_str,
+                            footer_tm,
                             "<span color='#6cba3d'>"
                             " ✓",
                             "</span></small>",
                             NULL);
+  g_free (footer_tm);
 
   if (bubble_footer != NULL) {
     gtk_label_set_markup (GTK_LABEL(bubble_footer), footer_str);
