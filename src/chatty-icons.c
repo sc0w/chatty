@@ -104,6 +104,7 @@ chatty_icon_shape_pixbuf_circular (GdkPixbuf *pixbuf)
 
   cairo_surface_destroy (surface);
   cairo_destroy (cr);
+  g_object_unref (pixbuf);
 
   return ret;
 }
@@ -263,6 +264,7 @@ chatty_icon_get_buddy_icon (PurpleBlistNode *node,
                                        height);
 
     cairo_surface_destroy (surface);
+    g_object_unref (layout);
     cairo_destroy (cr);
     g_free (initial_char);
   }

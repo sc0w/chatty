@@ -600,7 +600,7 @@ chatty_msg_list_add_message_at (ChattyMsgList *self,
   gchar           *style;
   gchar           *str;
   gint             width, height;
-  gchar *message;
+  g_autofree char *message;
 
   ChattyMsgListPrivate *priv = chatty_msg_list_get_instance_private (self);
 
@@ -811,6 +811,7 @@ chatty_msg_list_size_allocate (GtkWidget *widget, GtkAllocation *allocation)
 
   children = gtk_container_get_children (GTK_CONTAINER (widget));
   scroll = GTK_SCROLLED_WINDOW (g_list_first(children)->data);
+  g_list_free(children);
 
   view = GTK_VIEWPORT(gtk_bin_get_child (GTK_BIN(scroll)));
   column = HDY_COLUMN(gtk_bin_get_child (GTK_BIN(view)));
@@ -824,6 +825,7 @@ chatty_msg_list_size_allocate (GtkWidget *widget, GtkAllocation *allocation)
     if(revealer != NULL){
       hbox = GTK_BOX(gtk_bin_get_child (GTK_BIN(revealer)));
 
+      g_list_free(children);
       children = gtk_container_get_children (GTK_CONTAINER (hbox));
 
       if (GTK_IS_IMAGE(g_list_first (children)->data)) {
@@ -844,6 +846,7 @@ chatty_msg_list_size_allocate (GtkWidget *widget, GtkAllocation *allocation)
       }
     }
   }
+  g_list_free(children);
 
   GTK_WIDGET_CLASS (chatty_msg_list_parent_class)->size_allocate (widget, allocation);
 }

@@ -143,6 +143,7 @@ chatty_request_close (PurpleRequestType  type,
   ChattyRequestData *data = (ChattyRequestData *)ui_handle;
 
   g_free(data->cbs);
+  g_free(data->file_name);
 
   gtk_widget_destroy (data->dialog);
 

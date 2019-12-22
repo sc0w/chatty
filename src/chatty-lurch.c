@@ -439,10 +439,11 @@ chatty_lurch_get_status (PurpleConversation *conv)
   name = purple_conversation_get_name (conv);
 
   if (type == PURPLE_CONV_TYPE_IM) {
+    g_autofree char *stripped = chatty_utils_jabber_id_strip (name);
     purple_signal_emit (purple_plugins_get_handle(),
                         "lurch-status-im",
                         account,
-                        chatty_utils_jabber_id_strip (name),
+                        stripped,
                         cb_get_status,
                         conv);
   }
