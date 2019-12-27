@@ -1035,7 +1035,7 @@ chatty_conv_get_chat_messages_cb (const unsigned char* msg,
                                   const unsigned char *uuid,
                                   gpointer data){
   PurpleBuddy              *buddy;
-  const char               *color;
+  g_autofree char          *color = NULL;
   GdkPixbuf                *avatar = NULL;
   GtkWidget                *icon = NULL;
   PurpleAccount            *account;
@@ -1124,7 +1124,7 @@ chatty_conv_add_message_history_to_conv_with_limit (gpointer data, int limit)
   const gchar        *conv_name;
   gboolean            im;
   ChattyConversation *chatty_conv = data;
-  gchar              *who;
+  g_autofree char    *who = NULL;
 
   im = (chatty_conv->conv->type == PURPLE_CONV_TYPE_IM);
 
@@ -1461,8 +1461,8 @@ chatty_conv_muc_add_user (PurpleConversation  *conv,
   GtkTreePath              *path;
   GtkTreeIter               iter;
   gchar                    *status;
-  const gchar              *text;
-  const gchar              *color;
+  g_autofree gchar         *text = NULL;
+  g_autofree gchar         *color = NULL;
   const gchar              *name, *alias;
   gchar                    *tmp, *alias_key;
   gchar                    *real_who = NULL;
@@ -2142,7 +2142,7 @@ chatty_conv_write_conversation (PurpleConversation *conv,
   PurpleBuddy              *buddy;
   PurpleBlistNode          *node;
   gchar                    *real_who = NULL;
-  const char               *color;
+  g_autofree char          *color = NULL;
   gboolean                  group_chat;
   GdkPixbuf                *avatar = NULL;
   GtkWidget                *icon = NULL;
@@ -2461,7 +2461,7 @@ chatty_conv_conversation_update (PurpleConversation *conv)
   PurpleBuddy        *buddy;
   PurpleContact      *contact;
   GdkPixbuf          *avatar;
-  const char         *name;
+  g_autofree char    *name;
   const char         *buddy_alias;
   const char         *contact_alias;
 
@@ -2687,12 +2687,10 @@ chatty_conv_setup_pane (ChattyConversation *chatty_conv,
                             G_CALLBACK(cb_button_send_file_clicked),
                             node);
         }
+        purple_menu_action_free(act);
       }
+      g_list_free (ll);
     }
-
-    purple_menu_action_free (act);
-
-    g_list_free (ll);
   }
 
   type = purple_conversation_get_type (chatty_conv->conv);

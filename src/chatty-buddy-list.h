@@ -29,7 +29,7 @@ typedef struct _chatty_blist_node {
     guint                 pending_messages;
     char                 *last_msg_timestamp;
     time_t                last_msg_ts_raw;
-    const char           *last_message;
+    char                  *last_message;
     int                   last_message_dir;
     ChattyBlistNodeFlags  flags;
   } conv;
