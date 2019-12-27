@@ -229,6 +229,7 @@
                     <property name="can_focus">False</property>
                     <property name="receives_default">False</property>
                     <property name="popover">header_view_chat_list_popover</property>
+                    <accelerator key="F10" signal="clicked" />
                     <child>
                       <object class="GtkImage">
                         <property name="visible">True</property>
