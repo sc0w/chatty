@@ -90,9 +90,6 @@ cb_switch_prefs_state_changed (GtkSwitch  *widget,
     case CHATTY_PREF_MUC_PERSISTANT:
       chatty_conv_set_muc_prefs (CHATTY_PREF_MUC_PERSISTANT, state);
       break;
-    case CHATTY_PREF_MUC_AUTOJOIN:
-      chatty_conv_set_muc_prefs (CHATTY_PREF_MUC_AUTOJOIN, state);
-      break;
     default:
       break;
   }
@@ -1284,7 +1281,6 @@ chatty_dialogs_create_dialog_muc_info (void)
   chatty->muc.switch_prefs_notifications = GTK_SWITCH (gtk_builder_get_object (builder, "pref_muc_notifications"));
   chatty->muc.switch_prefs_status_msg = GTK_SWITCH (gtk_builder_get_object (builder, "pref_muc_status_msg"));
   chatty->muc.switch_prefs_persistant = GTK_SWITCH (gtk_builder_get_object (builder, "pref_muc_persistant"));
-  chatty->muc.switch_prefs_autojoin = GTK_SWITCH (gtk_builder_get_object (builder, "pref_muc_autojoin"));
   chatty_dialog->box_topic_frame = GTK_WIDGET (gtk_builder_get_object (builder, "box_topic_frame"));
   chatty_dialog->textview_muc_topic = GTK_WIDGET (gtk_builder_get_object (builder, "textview_muc_topic"));
   chatty_dialog->stack_panes_muc_info = GTK_STACK (gtk_builder_get_object (builder, "stack_panes_muc_info"));
@@ -1325,11 +1321,6 @@ chatty_dialogs_create_dialog_muc_info (void)
                     "notify::active",
                     G_CALLBACK(cb_switch_prefs_state_changed),
                     (gpointer)CHATTY_PREF_MUC_PERSISTANT);
-
-  g_signal_connect (chatty->muc.switch_prefs_autojoin,
-                    "notify::active",
-                    G_CALLBACK(cb_switch_prefs_state_changed),
-                    (gpointer)CHATTY_PREF_MUC_AUTOJOIN);
 
   g_signal_connect (G_OBJECT(dialog),
                     "delete-event",

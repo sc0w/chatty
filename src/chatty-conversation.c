@@ -1827,9 +1827,6 @@ chatty_conv_set_muc_prefs (gint     pref,
     case CHATTY_PREF_MUC_PERSISTANT:
       purple_blist_node_set_bool (node, "chatty-persistant", value);
       break;
-    case CHATTY_PREF_MUC_AUTOJOIN:
-      purple_blist_node_set_bool (node, "chatty-autojoin", value);
-      break;
     default:
       break;
   }
@@ -1901,9 +1898,6 @@ chatty_conv_update_muc_info (PurpleConversation *conv)
 
   gtk_switch_set_state (chatty->muc.switch_prefs_persistant,
                         purple_blist_node_get_bool (node, "chatty-persistant"));
-
-  gtk_switch_set_state (chatty->muc.switch_prefs_autojoin,
-                        purple_blist_node_get_bool (node, "chatty-autojoin"));
 
   children = gtk_container_get_children (GTK_CONTAINER(chatty->pane_view_muc_info));
   children = g_list_first (children);
