@@ -2043,7 +2043,6 @@ void chatty_blist_init (void)
 
   settings = chatty_settings_get_default ();
   g_object_connect (settings,
-                    "signal::notify::show-offline-buddies", G_CALLBACK (chatty_prefs_changed_cb), NULL,
                     "signal::notify::indicate-unkown-contacts", G_CALLBACK (chatty_prefs_changed_cb), NULL,
                     "signal::notify::blur-idle-buddies", G_CALLBACK (chatty_prefs_changed_cb), NULL,
                     "signal::notify::greyout-offline-buddies", G_CALLBACK (chatty_prefs_changed_cb), NULL,
