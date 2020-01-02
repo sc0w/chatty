@@ -1121,6 +1121,21 @@ chatty_dialogs_create_dialog_settings (void)
   gtk_switch_set_state (switch_prefs_return_sends,
                         chatty_settings_get_return_sends_message (settings));
 
+  chatty_settings_bind_widget (settings, "send-receipts",
+                               GTK_WIDGET(switch_prefs_send_receipts), "active");
+  chatty_settings_bind_widget (settings, "send-typing",
+                               GTK_WIDGET(switch_prefs_typing_notification), "active");
+  chatty_settings_bind_widget (settings, "greyout-offline-buddies",
+                               GTK_WIDGET(switch_prefs_indicate_offline), "active");
+  chatty_settings_bind_widget (settings, "blur-idle-buddies",
+                               GTK_WIDGET(switch_prefs_indicate_idle), "active");
+  chatty_settings_bind_widget (settings, "indicate-unknown-contacts",
+                               GTK_WIDGET(switch_prefs_indicate_unknown), "active");
+  chatty_settings_bind_widget (settings, "convert-emoticons",
+                               GTK_WIDGET(switch_prefs_convert_smileys), "active");
+  chatty_settings_bind_widget (settings, "return-sends-message",
+                               GTK_WIDGET(switch_prefs_return_sends), "active");
+
   if (chatty_purple->plugin_carbons_available) {
     gtk_widget_show (GTK_WIDGET(row_pref_message_carbons));
   } else {
