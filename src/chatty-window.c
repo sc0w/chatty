@@ -10,6 +10,7 @@
 #include "chatty-config.h"
 #include "chatty-dialogs.h"
 #include "chatty-window.h"
+#include "chatty-settings-dialog.h"
 #include "chatty-message-list.h"
 #include "chatty-buddy-list.h"
 #include "chatty-conversation.h"
@@ -153,6 +154,18 @@ chatty_window_show_chat_info (void)
   }
 }
 
+static void
+chatty_window_show_settings_dialog (void)
+{
+  GtkWindow *window;
+  GtkWidget *dialog;
+
+  window = gtk_application_get_active_window (GTK_APPLICATION (g_application_get_default ()));
+  dialog = chatty_settings_dialog_new (window);
+  gtk_dialog_run (GTK_DIALOG (dialog));
+
+  gtk_widget_destroy (dialog);
+}
 
 void
 chatty_window_change_view (ChattyWindowState view)
@@ -161,7 +174,7 @@ chatty_window_change_view (ChattyWindowState view)
 
   switch (view) {
     case CHATTY_VIEW_SETTINGS:
-      gtk_widget_show (GTK_WIDGET(chatty->dialog_settings));
+      chatty_window_show_settings_dialog ();
       break;
     case CHATTY_VIEW_ABOUT_CHATTY:
       chatty_dialogs_show_dialog_about_chatty ();
@@ -267,9 +280,6 @@ chatty_window_init_data (void)
   chatty->dialog_muc_info = chatty_dialogs_create_dialog_muc_info ();
 
   libpurple_init ();
-
-  // the settings dialog needs an initialized purple core
-  chatty->dialog_settings = chatty_dialogs_create_dialog_settings ();
 
   // now the account-list widgets are instantiated and we can add
   // the SMS account if the plugin && ModemManager is present
