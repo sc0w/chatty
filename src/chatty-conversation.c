@@ -660,7 +660,6 @@ cb_chatty_cmd (PurpleConversation  *conv,
                     " - '/chatty return_sends [on; off]': Return = send message\n"
                     "\n"
                     "XMPP settings:\n"
-                    " - '/chatty show_offline [on; off]': Show offline contacts\n"
                     " - '/chatty grey_offline [on; off]': Greyout offline-contacts\n"
                     " - '/chatty blur_idle [on; off]': Blur idle-contacts icons\n"
                     " - '/chatty typing_info [on; off]': Send typing notifications\n"
@@ -670,14 +669,11 @@ cb_chatty_cmd (PurpleConversation  *conv,
     if (!g_strcmp0 (args[0], "return_sends")) {
       g_object_set (settings, "return-sends-message", TRUE, NULL);
       msg = g_strdup ("Return key sends messages");
-    } else if (!g_strcmp0 (args[0], "show_offline")) {
-      g_object_set (settings, "show-offline-users", TRUE, NULL);
-      msg = g_strdup ("Offline contacts will be shown");
     } else if (!g_strcmp0 (args[0], "grey_offline")) {
-      g_object_set (settings, "greyout-offline-users", TRUE, NULL);
+      g_object_set (settings, "greyout-offline-buddies", TRUE, NULL);
       msg = g_strdup ("Offline user avatars will be greyed out");
     } else if (!g_strcmp0 (args[0], "blur_idle")) {
-      g_object_set (settings, "blur-idle-users", TRUE, NULL);
+      g_object_set (settings, "blur-idle-buddies", TRUE, NULL);
       msg = g_strdup ("Offline user avatars will be blurred");
     } else if (!g_strcmp0 (args[0], "typing_info")) {
       g_object_set (settings, "send-typing", TRUE, NULL);
@@ -700,14 +696,11 @@ cb_chatty_cmd (PurpleConversation  *conv,
     if (!g_strcmp0 (args[0], "return_sends")) {
       g_object_set (settings, "return-sends-message", FALSE, NULL);
       msg = g_strdup ("Return key doesn't send messages");
-    } else if (!g_strcmp0 (args[0], "show_offline")) {
-      g_object_set (settings, "show-offline-users", FALSE, NULL);
-      msg = g_strdup("Offline contacts will be hidden");
     } else if (!g_strcmp0 (args[0], "grey_offline")) {
-      g_object_set (settings, "greyout-offline-users", FALSE, NULL);
+      g_object_set (settings, "greyout-offline-buddies", FALSE, NULL);
       msg = g_strdup ("Offline user avatars will not be greyed out");
     } else if (!g_strcmp0 (args[0], "blur_idle")) {
-      g_object_set (settings, "blur-idle-users", FALSE, NULL);
+      g_object_set (settings, "blur-idle-buddies", FALSE, NULL);
       msg = g_strdup ("Offline user avatars will not be blurred");
     } else if (!g_strcmp0 (args[0], "typing_info")) {
       g_object_set (settings, "send-typing", FALSE, NULL);

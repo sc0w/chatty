@@ -38,12 +38,15 @@ chatty_dialog_data_t *chatty_get_dialog_data (void)
   return &chatty_dialog_data;
 }
 
-static gboolean
-cb_switch_prefs_state_changed (GtkSwitch *widget,
-                               gboolean   state,
-                               gpointer   data)
+static void
+cb_switch_prefs_state_changed (GtkSwitch  *widget,
+                               GParamSpec *pspec,
+                               gpointer    data)
 {
+  gboolean        state;
   ChattySettings *settings;
+
+  state = gtk_switch_get_active (widget);
 
   settings = chatty_settings_get_default ();
 
@@ -90,34 +93,27 @@ cb_switch_prefs_state_changed (GtkSwitch *widget,
     default:
       break;
   }
-
-  gtk_switch_set_state (widget, state);
-
-  return TRUE;
 }
 
 
-static gboolean
-cb_switch_omemo_state_changed (GtkSwitch *widget,
-                               gboolean   state,
-                               gpointer   user_data)
+static void
+cb_switch_omemo_state_changed (GtkSwitch  *widget,
+                               GParamSpec *pspec,
+                               gpointer    user_data)
 {
   PurpleConversation *conv;
 
   conv = (PurpleConversation *) user_data;
 
-  state ? chatty_lurch_enable (conv) : chatty_lurch_disable (conv);
+  gtk_switch_get_active (widget) ? chatty_lurch_enable (conv) : chatty_lurch_disable (conv);
 
   chatty_lurch_get_status (conv);
-
-  return TRUE;
 }
 
 
-static gboolean
-cb_switch_notify_state_changed (GtkSwitch *widget,
-                               gboolean   state,
-                               gpointer   user_data)
+static void
+cb_switch_notify_state_changed (GtkSwitch  *widget,
+                                gpointer    user_data)
 {
   PurpleBuddy        *buddy;
   PurpleConversation *conv;
@@ -126,11 +122,9 @@ cb_switch_notify_state_changed (GtkSwitch *widget,
 
   buddy = purple_find_buddy (conv->account, conv->name);
 
-  purple_blist_node_set_bool (PURPLE_BLIST_NODE(buddy), "chatty-notifications", state);
-
-  gtk_switch_set_state (widget, state);
-
-  return TRUE;
+  purple_blist_node_set_bool (PURPLE_BLIST_NODE(buddy), 
+                              "chatty-notifications", 
+                              gtk_switch_get_active (widget));
 }
 
 
@@ -1127,6 +1121,21 @@ chatty_dialogs_create_dialog_settings (void)
   gtk_switch_set_state (switch_prefs_return_sends,
                         chatty_settings_get_return_sends_message (settings));
 
+  chatty_settings_bind_widget (settings, "send-receipts",
+                               GTK_WIDGET(switch_prefs_send_receipts), "active");
+  chatty_settings_bind_widget (settings, "send-typing",
+                               GTK_WIDGET(switch_prefs_typing_notification), "active");
+  chatty_settings_bind_widget (settings, "greyout-offline-buddies",
+                               GTK_WIDGET(switch_prefs_indicate_offline), "active");
+  chatty_settings_bind_widget (settings, "blur-idle-buddies",
+                               GTK_WIDGET(switch_prefs_indicate_idle), "active");
+  chatty_settings_bind_widget (settings, "indicate-unknown-contacts",
+                               GTK_WIDGET(switch_prefs_indicate_unknown), "active");
+  chatty_settings_bind_widget (settings, "convert-emoticons",
+                               GTK_WIDGET(switch_prefs_convert_smileys), "active");
+  chatty_settings_bind_widget (settings, "return-sends-message",
+                               GTK_WIDGET(switch_prefs_return_sends), "active");
+
   if (chatty_purple->plugin_carbons_available) {
     gtk_widget_show (GTK_WIDGET(row_pref_message_carbons));
   } else {
@@ -1134,35 +1143,35 @@ chatty_dialogs_create_dialog_settings (void)
   }
 
   g_signal_connect (switch_prefs_send_receipts,
-                    "state-set",
+                    "notify::active",
                     G_CALLBACK(cb_switch_prefs_state_changed),
                     (gpointer)CHATTY_PREF_SEND_RECEIPTS);
   g_signal_connect (switch_prefs_message_carbons,
-                    "state-set",
+                    "notify::active",
                     G_CALLBACK(cb_switch_prefs_state_changed),
                     (gpointer)CHATTY_PREF_MESSAGE_CARBONS);
   g_signal_connect (switch_prefs_typing_notification,
-                    "state-set",
+                    "notify::active",
                     G_CALLBACK(cb_switch_prefs_state_changed),
                     (gpointer)CHATTY_PREF_TYPING_NOTIFICATION);
   g_signal_connect (switch_prefs_indicate_offline,
-                    "state-set",
+                    "notify::active",
                     G_CALLBACK(cb_switch_prefs_state_changed),
                     (gpointer)CHATTY_PREF_INDICATE_OFFLINE);
   g_signal_connect (switch_prefs_indicate_idle,
-                    "state-set",
+                    "notify::active",
                     G_CALLBACK(cb_switch_prefs_state_changed),
                     (gpointer)CHATTY_PREF_INDICATE_IDLE);
   g_signal_connect (switch_prefs_indicate_unknown,
-                    "state-set",
+                    "notify::active",
                     G_CALLBACK(cb_switch_prefs_state_changed),
                     (gpointer)CHATTY_PREF_INDICATE_UNKNOWN);
   g_signal_connect (switch_prefs_convert_smileys,
-                    "state-set",
+                    "notify::active",
                     G_CALLBACK(cb_switch_prefs_state_changed),
                     (gpointer)CHATTY_PREF_CONVERT_SMILEY);
   g_signal_connect (switch_prefs_return_sends,
-                    "state-set",
+                    "notify::active",
                     G_CALLBACK(cb_switch_prefs_state_changed),
                     (gpointer)CHATTY_PREF_RETURN_SENDS);
 
@@ -1314,17 +1323,17 @@ chatty_dialogs_create_dialog_muc_info (void)
                     NULL);
 
   g_signal_connect (chatty->muc.switch_prefs_notifications,
-                    "state-set",
+                    "notify::active",
                     G_CALLBACK(cb_switch_prefs_state_changed),
                     (gpointer)CHATTY_PREF_MUC_NOTIFICATIONS);
 
   g_signal_connect (chatty->muc.switch_prefs_status_msg,
-                    "state-set",
+                    "notify::active",
                     G_CALLBACK(cb_switch_prefs_state_changed),
                     (gpointer)CHATTY_PREF_MUC_STATUS_MSG);
 
   g_signal_connect (chatty->muc.switch_prefs_persistant,
-                    "state-set",
+                    "notify::active",
                     G_CALLBACK(cb_switch_prefs_state_changed),
                     (gpointer)CHATTY_PREF_MUC_PERSISTANT);
 
@@ -1532,7 +1541,7 @@ chatty_dialogs_show_dialog_user_info (ChattyConversation *chatty_conv)
     gtk_switch_set_state (chatty_dialog->omemo.switch_on_off, chatty_conv->omemo.enabled);
 
     g_signal_connect (chatty_dialog->omemo.switch_on_off,
-                      "state-set",
+                      "notify::active",
                       G_CALLBACK(cb_switch_omemo_state_changed),
                       (gpointer)chatty_conv->conv);
   }
@@ -1564,7 +1573,7 @@ chatty_dialogs_show_dialog_user_info (ChattyConversation *chatty_conv)
                         "chatty-notifications"));
 
   g_signal_connect (switch_notify,
-                    "state-set",
+                    "notify::active",
                     G_CALLBACK(cb_switch_notify_state_changed),
                     (gpointer)chatty_conv->conv);
 

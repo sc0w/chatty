@@ -41,4 +41,7 @@ gboolean        chatty_settings_get_indicate_unkown_contacts (ChattySettings *se
 gboolean        chatty_settings_get_convert_emoticons        (ChattySettings *self);
 gboolean        chatty_settings_get_return_sends_message     (ChattySettings *self);
 
+void chatty_settings_bind_widget (ChattySettings *self,   const char *key,
+                                  GtkWidget      *widget, const char *property);
+
 G_END_DECLS

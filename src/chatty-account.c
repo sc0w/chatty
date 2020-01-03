@@ -54,20 +54,16 @@ cb_account_added (PurpleAccount *account,
 }
 
 
-static gboolean
-cb_switch_on_off_state_changed (GtkSwitch *widget,
-                                gboolean   state,
-                                gpointer   row)
+static void
+cb_switch_on_off_state_changed (GtkSwitch  *widget,
+                                GParamSpec *pspec,
+                                gpointer    row)
 {
   PurpleAccount *account;
 
   account = g_object_get_data (G_OBJECT (row), "row-account");
 
-  gtk_switch_set_state (widget, state);
-
-  purple_account_set_enabled (account, CHATTY_UI, state);
-
-  return TRUE;
+  purple_account_set_enabled (account, CHATTY_UI, gtk_switch_get_active (widget));
 }
 
 
@@ -170,7 +166,7 @@ chatty_account_add_to_accounts_list (PurpleAccount *account,
                           purple_account_get_enabled (account, CHATTY_UI));
 
     g_signal_connect_object (switch_account_enabled,
-                             "state-set",
+                             "notify::active",
                              G_CALLBACK(cb_switch_on_off_state_changed),
                              (gpointer) row,
                              0);

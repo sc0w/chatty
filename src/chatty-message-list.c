@@ -566,12 +566,14 @@ chatty_msg_list_clear (ChattyMsgList *self)
 static gchar *
 chatty_msg_list_escape_message (const gchar *message)
 {
+  g_autofree gchar  *nl_2_br;
   g_autofree gchar  *striped;
   g_autofree gchar  *escaped;
   g_autofree gchar  *linkified;
   gchar *result;
 
-  striped = purple_markup_strip_html  (message);
+  nl_2_br = purple_strdup_withhtml (message);
+  striped = purple_markup_strip_html (nl_2_br);
   escaped = purple_markup_escape_text (striped, -1);
   linkified = purple_markup_linkify (escaped);
   // convert all tags to lowercase for GtkLabel markup parser
