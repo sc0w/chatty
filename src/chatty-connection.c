@@ -154,8 +154,6 @@ chatty_connection_connect_progress (PurpleConnection *gc,
 
   account = purple_connection_get_account (gc);
 
-  chatty_dialogs_update_connection_status ();
-
   if ((int)step == 2) {
     chatty_connection_account_spinner (account, TRUE);
   }
@@ -168,9 +166,7 @@ chatty_connection_error_dialog (PurpleAccount *account,
 {
   GtkWidget *dialog;
 
-  chatty_dialog_data_t *chatty_dialog = chatty_get_dialog_data ();
-
-  dialog = gtk_message_dialog_new ((GtkWindow*)chatty_dialog->dialog_edit_account,
+  dialog = gtk_message_dialog_new (NULL,
                                    GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
                                    GTK_MESSAGE_ERROR,
                                    GTK_BUTTONS_OK,
@@ -230,8 +226,6 @@ chatty_connection_connected (PurpleConnection *gc)
     }
   }
 
-  chatty_dialogs_update_connection_status ();
-
   chatty_connection_update_ui ();
 
   g_hash_table_remove (auto_reconns, account);
@@ -243,8 +237,6 @@ chatty_connection_connected (PurpleConnection *gc)
 static void
 chatty_connection_disconnected (PurpleConnection *gc)
 {
-  chatty_dialogs_update_connection_status ();
-
   chatty_connection_update_ui ();
 
   g_debug ("chatty_connection_disconnected");
@@ -394,8 +386,6 @@ chatty_connection_report_disconnect_reason (PurpleConnection     *gc,
     purple_account_set_enabled (account, CHATTY_UI, FALSE);
   }
 
-  chatty_dialogs_update_connection_status ();
-  
   monitor = g_network_monitor_get_default ();
 
   if (g_network_monitor_get_connectivity (monitor) == G_NETWORK_CONNECTIVITY_FULL) {

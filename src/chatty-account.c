@@ -42,11 +42,7 @@ static void
 cb_account_added (PurpleAccount *account,
                   gpointer       user_data)
 {
-  chatty_data_t *chatty = chatty_get_data ();
-
   chatty_window_overlay_show (FALSE);
-
-  chatty_account_populate_account_list (chatty->list_manage_account, LIST_MANAGE_ACCOUNT);
 
   if (purple_accounts_find ("SMS", "prpl-mm-sms")) {
     purple_account_set_enabled (account, CHATTY_UI, TRUE);
@@ -213,8 +209,6 @@ chatty_account_populate_account_list (GtkListBox *list, guint type)
   HdyActionRow  *row;
   const gchar   *protocol_id;
 
-  chatty_data_t *chatty = chatty_get_data ();
-
   chatty_account_list_clear (list);
 
   for (l = purple_accounts_get_all (); l != NULL; l = l->next) {
@@ -223,14 +217,6 @@ chatty_account_populate_account_list (GtkListBox *list, guint type)
     protocol_id = purple_account_get_protocol_id ((PurpleAccount *)l->data);
 
     switch (type) {
-      case LIST_MANAGE_ACCOUNT:
-        if (!(g_strcmp0 (protocol_id, "prpl-mm-sms") == 0)) {
-          chatty_account_add_to_accounts_list ((PurpleAccount *)l->data,
-                                               list,
-                                               LIST_MANAGE_ACCOUNT);
-        }
-
-        break;
       case LIST_SELECT_MUC_ACCOUNT:
         if (!(g_strcmp0 (protocol_id, "prpl-mm-sms") == 0)) {
           chatty_account_add_to_accounts_list ((PurpleAccount *)l->data,
@@ -258,20 +244,7 @@ chatty_account_populate_account_list (GtkListBox *list, guint type)
      }
   }
 
-  if (type == LIST_MANAGE_ACCOUNT) {
-    row = hdy_action_row_new ();
-
-    g_object_set_data (G_OBJECT(row),
-                       "row-new-account",
-                       (gpointer)TRUE);
-
-    hdy_action_row_set_title (row, _("Add new account…"));
-
-    gtk_container_add (GTK_CONTAINER(chatty->list_manage_account),
-                       GTK_WIDGET(row));
-
-    gtk_widget_show (GTK_WIDGET(row));
-  } else if (type == LIST_SELECT_CHAT_ACCOUNT) {
+  if (type == LIST_SELECT_CHAT_ACCOUNT) {
     row = HDY_ACTION_ROW(gtk_list_box_get_row_at_index (list, 0));
 
     if (row) {
