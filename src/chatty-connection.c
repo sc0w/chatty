@@ -122,6 +122,9 @@ chatty_connection_account_spinner (PurpleAccount *account,
 
   chatty_data_t *chatty = chatty_get_data ();
 
+  if (!chatty->list_manage_account)
+    return;
+
   children = gtk_container_get_children (GTK_CONTAINER(chatty->list_manage_account));
 
   for (iter = children; iter != NULL; iter = g_list_next (iter)) {
