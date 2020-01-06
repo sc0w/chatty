@@ -98,10 +98,12 @@ chatty_application_command_line (GApplication            *application,
     chatty->cml_options = CHATTY_CML_OPT_NONE;
 
   if (g_variant_dict_contains (options, "daemon")) {
-    if (!g_application_command_line_get_is_remote (command_line))
+    if (!g_application_command_line_get_is_remote (command_line)) {
       self->daemon = TRUE;
-    else
+      g_application_hold (application);
+    } else {
       g_debug ("Daemon mode not possible, application is already running");
+    }
   }
 
   if (g_variant_dict_contains (options, "nologin")) {
@@ -185,7 +187,7 @@ chatty_application_activate (GApplication *application)
   if (window) {
     show_win = TRUE;
   } else {
-    chatty_window_activate (app, NULL);
+    chatty_window_activate (app, GINT_TO_POINTER(self->daemon));
 
     show_win = !self->daemon;
   }
