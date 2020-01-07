@@ -210,7 +210,7 @@ chatty_settings_add_clicked_cb (ChattySettingsDialog *self)
     }
   else if (is_telegram)
     {
-      account = purple_account_new (user_id, "prpl-matrix");
+      account = purple_account_new (user_id, "prpl-telegram");
       purple_account_set_string (account, "password-two-factor", password);
     }
   else /* XMPP */
@@ -222,7 +222,7 @@ chatty_settings_add_clicked_cb (ChattySettingsDialog *self)
         url_prefix = "@";
 
       name = g_strconcat (user_id, url_prefix, server_url, NULL);
-      account = purple_account_new (name, "prpl-matrix");
+      account = purple_account_new (name, "prpl-jabber");
     }
 
   if (!is_telegram && password && *password)
