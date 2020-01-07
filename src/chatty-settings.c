@@ -299,28 +299,6 @@ chatty_settings_get_default (void)
 
 
 /**
- * chatty_settings_bind_widget:
- * @self:    A #ChattySettings
- * key:      A key to bind
- * widget:   A GtkWidget to tie to
- * property: The widget property to bind
- *
- */
-void
-chatty_settings_bind_widget (ChattySettings *self,
-                             const char     *key,
-                             GtkWidget      *widget,
-                             const char     *property)
-{
-  g_return_if_fail (CHATTY_IS_SETTINGS(self) || widget != NULL);
-
-  g_settings_bind (self->settings, key,
-                   widget, property,
-                   G_SETTINGS_BIND_DEFAULT);
-}
-
-
-/**
  * chatty_settings_get_first_start:
  * @self: A #ChattySettings
  *
