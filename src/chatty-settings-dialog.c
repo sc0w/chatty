@@ -645,6 +645,18 @@ chatty_settings_dialog_popuplate_account_list (ChattySettingsDialog *self)
   }
 }
 
+
+void
+chatty_settings_update_accounts (GObject *object) 
+{
+  ChattySettingsDialog *self = (ChattySettingsDialog *)object;
+
+  g_return_if_fail (CHATTY_IS_SETTINGS_DIALOG(self));
+
+  chatty_settings_dialog_popuplate_account_list (self);
+}
+
+
 static void
 chatty_settings_dialog_constructed (GObject *object)
 {

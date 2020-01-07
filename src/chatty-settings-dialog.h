@@ -33,5 +33,6 @@ G_BEGIN_DECLS
 G_DECLARE_FINAL_TYPE (ChattySettingsDialog, chatty_settings_dialog, CHATTY, SETTINGS_DIALOG, HdyDialog)
 
 GtkWidget *chatty_settings_dialog_new (GtkWindow *parent_window);
+void chatty_settings_update_accounts (GObject *object);
 
 G_END_DECLS

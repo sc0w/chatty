@@ -72,6 +72,8 @@ typedef struct {
   gboolean           im_account_connected;
   gboolean           sms_account_connected;
 
+  GtkWidget         *settings_dialog;
+
   ChattyCmlOptions   cml_options;
 
   char        *uri;

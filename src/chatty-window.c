@@ -158,13 +158,14 @@ static void
 chatty_window_show_settings_dialog (void)
 {
   GtkWindow *window;
-  GtkWidget *dialog;
+
+  chatty_data_t *chatty = chatty_get_data ();
 
   window = gtk_application_get_active_window (GTK_APPLICATION (g_application_get_default ()));
-  dialog = chatty_settings_dialog_new (window);
-  gtk_dialog_run (GTK_DIALOG (dialog));
+  chatty->settings_dialog = chatty_settings_dialog_new (window);
+  gtk_dialog_run (GTK_DIALOG (chatty->settings_dialog));
 
-  gtk_widget_destroy (dialog);
+  gtk_widget_destroy (chatty->settings_dialog);
 }
 
 void

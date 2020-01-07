@@ -17,6 +17,7 @@
 #include "purple.h"
 #include "chatty-buddy-list.h"
 #include "chatty-dialogs.h"
+#include "chatty-settings-dialog.h"
 #include "chatty-icons.h"
 #include "chatty-window.h"
 #include "chatty-account.h"
@@ -42,7 +43,11 @@ static void
 cb_account_added (PurpleAccount *account,
                   gpointer       user_data)
 {
+  chatty_data_t *chatty = chatty_get_data ();
+
   chatty_window_overlay_show (FALSE);
+
+  chatty_settings_update_accounts (G_OBJECT(chatty->settings_dialog));
 
   if (purple_accounts_find ("SMS", "prpl-mm-sms")) {
     purple_account_set_enabled (account, CHATTY_UI, TRUE);
