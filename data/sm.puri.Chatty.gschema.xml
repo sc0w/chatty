@@ -14,6 +14,12 @@
       <description>Whether to send the status of the message if read</description>
     </key>
 
+    <key name="message-carbons" type="b">
+      <default>false</default>
+      <summary>Message carbon copies</summary>
+      <description>Share chat history among devices</description>
+    </key>
+
     <key name="send-typing" type="b">
       <default>false</default>
       <summary>Send typing notifications</summary>

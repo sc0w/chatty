@@ -680,6 +680,9 @@ chatty_settings_dialog_constructed (GObject *object)
   g_object_bind_property (settings, "send-receipts",
                           self->send_receipts_switch, "active",
                           G_BINDING_SYNC_CREATE | G_BINDING_BIDIRECTIONAL);
+  g_object_bind_property (settings, "message-carbons",
+                          self->message_carbons_switch, "active",
+                          G_BINDING_SYNC_CREATE | G_BINDING_BIDIRECTIONAL);
   g_object_bind_property (settings, "send-typing",
                           self->typing_notification_switch, "active",
                           G_BINDING_SYNC_CREATE | G_BINDING_BIDIRECTIONAL);
@@ -806,8 +809,6 @@ chatty_settings_dialog_init (ChattySettingsDialog *self)
   chatty_purple = chatty_get_purple_data ();
   gtk_widget_set_visible (self->message_carbons_row,
                           chatty_purple->plugin_carbons_available);
-  gtk_switch_set_state (GTK_SWITCH (self->message_carbons_switch),
-                        chatty_purple->plugin_carbons_loaded);
 }
 
 GtkWidget *

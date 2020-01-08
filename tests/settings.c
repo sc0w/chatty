@@ -39,6 +39,7 @@ set_settings_bool (ChattySettings *settings,
   g_assert_true (CHATTY_IS_SETTINGS (settings));
   g_object_set (settings,
                 "send-receipts", value,
+                "message-carbons", value,
                 "send-typing", value,
                 "greyout-offline-buddies", value,
                 "blur-idle-buddies", value,
@@ -55,6 +56,7 @@ check_settings_true (ChattySettings *settings)
   set_settings_bool (settings, TRUE);
 
   g_assert_true (chatty_settings_get_send_receipts (settings));
+  g_assert_true (chatty_settings_get_message_carbons (settings));
   g_assert_true (chatty_settings_get_send_typing (settings));
   g_assert_true (chatty_settings_get_greyout_offline_buddies (settings));
   g_assert_true (chatty_settings_get_blur_idle_buddies (settings));
@@ -70,6 +72,7 @@ check_settings_false (ChattySettings *settings)
   set_settings_bool (settings, FALSE);
 
   g_assert_false (chatty_settings_get_send_receipts (settings));
+  g_assert_false (chatty_settings_get_message_carbons (settings));
   g_assert_false (chatty_settings_get_send_typing (settings));
   g_assert_false (chatty_settings_get_greyout_offline_buddies (settings));
   g_assert_false (chatty_settings_get_blur_idle_buddies (settings));
