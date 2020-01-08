@@ -2452,7 +2452,7 @@ chatty_conv_conversation_update (PurpleConversation *conv)
   PurpleBuddy        *buddy;
   PurpleContact      *contact;
   GdkPixbuf          *avatar;
-  g_autofree char    *name;
+  g_autofree char    *name = NULL;
   const char         *buddy_alias;
   const char         *contact_alias;
 
