@@ -53,6 +53,7 @@ enum {
   PROP_0,
   PROP_FIRST_START,
   PROP_SEND_RECEIPTS,
+  PROP_MESSAGE_CARBONS,
   PROP_SEND_TYPING,
   PROP_GREYOUT_OFFLINE_BUDDIES,
   PROP_BLUR_IDLE_BUDDIES,
@@ -80,6 +81,10 @@ chatty_settings_get_property (GObject    *object,
 
     case PROP_SEND_RECEIPTS:
       g_value_set_boolean (value, chatty_settings_get_send_receipts (self));
+      break;
+
+    case PROP_MESSAGE_CARBONS:
+      g_value_set_boolean (value, chatty_settings_get_message_carbons (self));
       break;
 
     case PROP_SEND_TYPING:
@@ -133,6 +138,11 @@ chatty_settings_set_property (GObject      *object,
                               g_value_get_boolean (value));
       break;
 
+    case PROP_MESSAGE_CARBONS:
+      g_settings_set_boolean (self->settings, "message-carbons",
+                              g_value_get_boolean (value));
+      break;
+
     case PROP_SEND_TYPING:
       g_settings_set_boolean (self->settings, "send-typing",
                               g_value_get_boolean (value));
@@ -178,6 +188,8 @@ chatty_settings_constructed (GObject *object)
 
   g_settings_bind (self->settings, "send-receipts",
                    self, "send-receipts", G_SETTINGS_BIND_DEFAULT);
+  g_settings_bind (self->settings, "message-carbons",
+                   self, "message-carbons", G_SETTINGS_BIND_DEFAULT);
   g_settings_bind (self->settings, "send-typing",
                    self, "send-typing", G_SETTINGS_BIND_DEFAULT);
   g_settings_bind (self->settings, "greyout-offline-buddies",
@@ -224,6 +236,13 @@ chatty_settings_class_init (ChattySettingsClass *klass)
                           "Send message read receipts",
                           FALSE,
                           G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
+
+    properties[PROP_MESSAGE_CARBONS] =
+      g_param_spec_boolean ("message-carbons",
+                            "Message Carbons",
+                            "Share chat history among devices",
+                            FALSE,
+                            G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 
     properties[PROP_SEND_TYPING] =
       g_param_spec_boolean ("send-typing",
@@ -331,6 +350,23 @@ chatty_settings_get_send_receipts (ChattySettings *self)
   g_return_val_if_fail (CHATTY_IS_SETTINGS (self), FALSE);
 
   return g_settings_get_boolean (self->settings, "send-receipts");
+}
+
+/**
+ * chatty_settings_get_message_carbons:
+ * @self: A #ChattySettings
+ *
+ * Get wether the chat history is shared among devices.
+ *
+ * Returns: %TRUE if message carbons should be sent.
+ * %FALSE otherwise.
+ */
+gboolean
+chatty_settings_get_message_carbons (ChattySettings *self)
+{
+  g_return_val_if_fail (CHATTY_IS_SETTINGS (self), FALSE);
+
+  return g_settings_get_boolean (self->settings, "message-carbons");
 }
 
 /**
