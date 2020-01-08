@@ -95,6 +95,17 @@ cb_leaflet_notify_fold (GObject       *sender,
 }
 
 
+static gboolean
+cb_window_delete (GtkWidget *widget,
+                  GdkEvent  *event,
+                  gpointer   user_data)
+{
+  gtk_widget_hide_on_delete (widget);
+
+  return TRUE;
+}
+
+
 static void
 chatty_update_header (void)
 {
@@ -311,6 +322,13 @@ chatty_window_activate (GtkApplication *app,
 
   window = GTK_WINDOW (gtk_builder_get_object (builder, "window"));
   g_object_set (window, "application", app, NULL);
+
+  if (GPOINTER_TO_INT(user_data)) {
+    g_signal_connect (G_OBJECT(window),
+                      "delete-event",
+                      G_CALLBACK(cb_window_delete),
+                      NULL);
+  }
 
   simple_action_group = g_simple_action_group_new ();
   g_action_map_add_action_entries (G_ACTION_MAP (simple_action_group),
