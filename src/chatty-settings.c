@@ -249,12 +249,12 @@ chatty_settings_class_init (ChattySettingsClass *klass)
                           FALSE,
                           G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 
-    properties[PROP_MESSAGE_CARBONS] =
-      g_param_spec_boolean ("message-carbons",
-                            "Message Carbons",
-                            "Share chat history among devices",
-                            FALSE,
-                            G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
+  properties[PROP_MESSAGE_CARBONS] =
+    g_param_spec_boolean ("message-carbons",
+                          "Message Carbons",
+                          "Share chat history among devices",
+                          FALSE,
+                          G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 
   properties[PROP_MAM_ENABLED] =
     g_param_spec_boolean ("mam-enabled",
