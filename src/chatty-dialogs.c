@@ -42,43 +42,10 @@ cb_switch_prefs_state_changed (GtkSwitch  *widget,
                                gpointer    data)
 {
   gboolean        state;
-  ChattySettings *settings;
 
   state = gtk_switch_get_active (widget);
 
-  settings = chatty_settings_get_default ();
-
   switch (GPOINTER_TO_INT(data)) {
-    case CHATTY_PREF_SEND_RECEIPTS:
-      g_object_set (settings, "send-receipts", state, NULL);
-      break;
-    case CHATTY_PREF_MESSAGE_CARBONS:
-      if (state) {
-        chatty_purple_load_plugin ("core-riba-carbons");
-        purple_prefs_set_bool (CHATTY_PREFS_ROOT "/plugins/message_carbons", TRUE);
-      } else {
-        chatty_purple_unload_plugin ("core-riba-carbons");
-        purple_prefs_set_bool (CHATTY_PREFS_ROOT "/plugins/message_carbons", FALSE);
-      }
-      break;
-    case CHATTY_PREF_TYPING_NOTIFICATION:
-      g_object_set (settings, "send-typing", state, NULL);
-      break;
-    case CHATTY_PREF_INDICATE_OFFLINE:
-      g_object_set (settings, "greyout-offline-buddies", state, NULL);
-      break;
-    case CHATTY_PREF_INDICATE_IDLE:
-      g_object_set (settings, "blur-idle-buddies", state, NULL);
-      break;
-    case CHATTY_PREF_INDICATE_UNKNOWN:
-      g_object_set (settings, "indicate-unknown-contacts", state, NULL);
-      break;
-    case CHATTY_PREF_CONVERT_SMILEY:
-      g_object_set (settings, "convert-emoticons", state, NULL);
-      break;
-    case CHATTY_PREF_RETURN_SENDS:
-      g_object_set (settings, "return-sends-message", state, NULL);
-      break;
     case CHATTY_PREF_MUC_NOTIFICATIONS:
       chatty_conv_set_muc_prefs (CHATTY_PREF_MUC_NOTIFICATIONS, state);
       break;
