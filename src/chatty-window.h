@@ -74,6 +74,7 @@ typedef struct {
 
   GtkWidget         *settings_dialog;
 
+  GListStore        *account_list;
   ChattyCmlOptions   cml_options;
 
   char        *uri;
