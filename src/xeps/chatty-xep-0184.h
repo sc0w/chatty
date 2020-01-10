@@ -5,13 +5,11 @@
  */
 
 
-#ifndef __XEPS_H_INCLUDE__
-#define __XEPS_H_INCLUDE__
-
-#include "purple.h"
+#ifndef __XEPS_0184_H_INCLUDE__
+#define __XEPS_0184_H_INCLUDE__
 
 
-void chatty_xeps_init (void);
-void chatty_xeps_close (void);
+void chatty_0184_init (void);
+void chatty_0184_close (void);
 
 #endif

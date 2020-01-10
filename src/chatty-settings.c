@@ -60,6 +60,7 @@ enum {
   PROP_INDICATE_UNKNOWN_CONTACTS,
   PROP_CONVERT_EMOTICONS,
   PROP_RETURN_SENDS_MESSAGE,
+  PROP_MAM_ENABLED,
   N_PROPS
 };
 
@@ -85,6 +86,10 @@ chatty_settings_get_property (GObject    *object,
 
     case PROP_MESSAGE_CARBONS:
       g_value_set_boolean (value, chatty_settings_get_message_carbons (self));
+      break;
+
+    case PROP_MAM_ENABLED:
+      g_value_set_boolean (value, chatty_settings_get_mam_enabled (self));
       break;
 
     case PROP_SEND_TYPING:
@@ -143,6 +148,11 @@ chatty_settings_set_property (GObject      *object,
                               g_value_get_boolean (value));
       break;
 
+    case PROP_MAM_ENABLED:
+      g_settings_set_boolean (self->settings, "mam-enabled",
+                              g_value_get_boolean (value));
+      break;
+
     case PROP_SEND_TYPING:
       g_settings_set_boolean (self->settings, "send-typing",
                               g_value_get_boolean (value));
@@ -190,6 +200,8 @@ chatty_settings_constructed (GObject *object)
                    self, "send-receipts", G_SETTINGS_BIND_DEFAULT);
   g_settings_bind (self->settings, "message-carbons",
                    self, "message-carbons", G_SETTINGS_BIND_DEFAULT);
+  g_settings_bind (self->settings, "mam-enabled",
+                   self, "mam-enabled", G_SETTINGS_BIND_DEFAULT);
   g_settings_bind (self->settings, "send-typing",
                    self, "send-typing", G_SETTINGS_BIND_DEFAULT);
   g_settings_bind (self->settings, "greyout-offline-buddies",
@@ -237,12 +249,19 @@ chatty_settings_class_init (ChattySettingsClass *klass)
                           FALSE,
                           G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 
-    properties[PROP_MESSAGE_CARBONS] =
-      g_param_spec_boolean ("message-carbons",
-                            "Message Carbons",
-                            "Share chat history among devices",
-                            FALSE,
-                            G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
+  properties[PROP_MESSAGE_CARBONS] =
+    g_param_spec_boolean ("message-carbons",
+                          "Message Carbons",
+                          "Share chat history among devices",
+                          FALSE,
+                          G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
+
+  properties[PROP_MAM_ENABLED] =
+    g_param_spec_boolean ("mam-enabled",
+                          "MAM is Enabled",
+                          "Synchronize MAM Message Archive",
+                          FALSE,
+                          G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 
     properties[PROP_SEND_TYPING] =
       g_param_spec_boolean ("send-typing",
@@ -367,6 +386,24 @@ chatty_settings_get_message_carbons (ChattySettings *self)
   g_return_val_if_fail (CHATTY_IS_SETTINGS (self), FALSE);
 
   return g_settings_get_boolean (self->settings, "message-carbons");
+}
+
+/**
+ * chatty_settings_get_mam_enabled:
+ * @self: A #ChattySettings
+ *
+ * Get if the application should use Message Archive Managemnent
+ * when its support is discovered.
+ *
+ * Returns: %TRUE if the MAM query should be sent.
+ * %FALSE otherwise.
+ */
+gboolean
+chatty_settings_get_mam_enabled (ChattySettings *self)
+{
+  g_return_val_if_fail (CHATTY_IS_SETTINGS (self), FALSE);
+
+  return g_settings_get_boolean (self->settings, "mam-enabled");
 }
 
 /**

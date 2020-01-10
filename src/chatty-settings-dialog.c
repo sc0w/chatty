@@ -77,6 +77,7 @@ struct _ChattySettingsDialog
   GtkWidget      *fingerprint_device_list;
 
   GtkWidget      *send_receipts_switch;
+  GtkWidget      *message_archive_switch;
   GtkWidget      *message_carbons_row;
   GtkWidget      *message_carbons_switch;
   GtkWidget      *typing_notification_switch;
@@ -680,6 +681,9 @@ chatty_settings_dialog_constructed (GObject *object)
   g_object_bind_property (settings, "send-receipts",
                           self->send_receipts_switch, "active",
                           G_BINDING_SYNC_CREATE | G_BINDING_BIDIRECTIONAL);
+  g_object_bind_property (settings, "mam-enabled",
+                          self->message_archive_switch, "active",
+                          G_BINDING_SYNC_CREATE | G_BINDING_BIDIRECTIONAL);
   g_object_bind_property (settings, "message-carbons",
                           self->message_carbons_switch, "active",
                           G_BINDING_SYNC_CREATE | G_BINDING_BIDIRECTIONAL);
@@ -764,6 +768,7 @@ chatty_settings_dialog_class_init (ChattySettingsDialogClass *klass)
   gtk_widget_class_bind_template_child (widget_class, ChattySettingsDialog, fingerprint_device_list);
 
   gtk_widget_class_bind_template_child (widget_class, ChattySettingsDialog, send_receipts_switch);
+  gtk_widget_class_bind_template_child (widget_class, ChattySettingsDialog, message_archive_switch);
   gtk_widget_class_bind_template_child (widget_class, ChattySettingsDialog, message_carbons_row);
   gtk_widget_class_bind_template_child (widget_class, ChattySettingsDialog, message_carbons_switch);
   gtk_widget_class_bind_template_child (widget_class, ChattySettingsDialog, typing_notification_switch);

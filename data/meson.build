@@ -43,9 +43,11 @@ if appstream_util.found()
   )
 endif
 
-compiled = gnome.compile_schemas(build_by_default: true)
+schema_src = 'sm.puri.Chatty.gschema.xml'
+compiled = gnome.compile_schemas(build_by_default: true,
+                                 depend_files: files(schema_src))
 
-install_data('sm.puri.Chatty.gschema.xml',
+install_data(schema_src,
   install_dir: join_paths(get_option('datadir'), 'glib-2.0/schemas')
 )
 

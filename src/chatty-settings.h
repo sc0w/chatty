@@ -41,5 +41,6 @@ gboolean        chatty_settings_get_blur_idle_buddies        (ChattySettings *se
 gboolean        chatty_settings_get_indicate_unkown_contacts (ChattySettings *self);
 gboolean        chatty_settings_get_convert_emoticons        (ChattySettings *self);
 gboolean        chatty_settings_get_return_sends_message     (ChattySettings *self);
+gboolean        chatty_settings_get_mam_enabled              (ChattySettings *self);
 
 G_END_DECLS
