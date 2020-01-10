@@ -723,6 +723,7 @@ chatty_blist_chat_list_select_first (void)
 
   if (row != NULL) {
     row_selected_cb (chatty_get_chats_list (), row, NULL);
+    gtk_list_box_select_row (chatty_get_chats_list (), row);
   } else {
     // The chats list is empty, go back to initial view
     chatty_window_update_sub_header_titlebar (NULL, NULL);
