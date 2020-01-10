@@ -821,6 +821,7 @@ chatty_dialogs_show_dialog_about_chatty (void)
     "Leland Carlye <leland.carlye@protonmail.com>",
     "Mohammed Sadiq https://www.sadiqpk.org/",
     "Richard Bayerle (OMEMO Plugin) https://github.com/gkdr/lurch",
+    "Ruslan Marchenko <me@ruff.mobi>",
     "and more...",
     NULL
   };
