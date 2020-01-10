@@ -77,7 +77,8 @@ cb_switch_omemo_state_changed (GtkSwitch  *widget,
 
 
 static void
-cb_switch_notify_state_changed (GtkSwitch  *widget,
+cb_switch_notify_state_changed (GtkSwitch  *widget,                                
+                                GParamSpec *pspec,
                                 gpointer    user_data)
 {
   PurpleBuddy        *buddy;
