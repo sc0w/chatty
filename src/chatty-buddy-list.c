@@ -709,19 +709,20 @@ chatty_blist_list_has_children (int list_type)
 
 
 /**
- * chatty_blist_chat_list_set_row:
+ * chatty_blist_chat_list_select_first:
  *
  * Activate the first entry in the chats list
  *
  */
-static void
-chatty_blist_chat_list_set_row (void)
+void
+chatty_blist_chat_list_select_first (void)
 {
   GtkListBoxRow *row;
 
-  row = gtk_list_box_get_row_at_index(chatty_get_chats_list (), 1);
+  row = gtk_list_box_get_row_at_index (chatty_get_chats_list (), 0);
 
   if (row != NULL) {
+    row_selected_cb (chatty_get_chats_list (), row, NULL);
     gtk_list_box_select_row (chatty_get_chats_list (), row);
   } else {
     // The chats list is empty, go back to initial view
@@ -903,7 +904,7 @@ chatty_blist_chat_list_leave_chat (void)
     chatty_blist_chats_remove_node (node);
   }
 
-  chatty_blist_chat_list_set_row ();
+  chatty_blist_chat_list_select_first ();
 }
 
 
@@ -1000,7 +1001,7 @@ chatty_blist_chat_list_remove_buddy (void)
       purple_blist_remove_chat (chat);
     }
 
-    chatty_blist_chat_list_set_row ();
+    chatty_blist_chat_list_select_first ();
 
     chatty_window_change_view (CHATTY_VIEW_CHAT_LIST);
   }
@@ -1092,30 +1093,6 @@ chatty_blist_set_chat_options (void)
   gtk_widget_set_sensitive (GTK_WIDGET(chatty->button_header_sub_menu), 
                             chatty_blist_list_has_children (CHATTY_LIST_CHATS) ? TRUE : FALSE);
 }
-
-
-/**
- * chatty_blist_chat_list_select_first:
- *
- * Selectes the first chat in the chat list
- *
- * Called from cb_leaflet_notify_fold in
- * chatty-window.c
- */
-void
-chatty_blist_chat_list_select_first (void)
-{
-  GtkListBox *listbox = chatty_get_chats_list ();
-  GtkListBoxRow *selected_row = gtk_list_box_get_selected_row (listbox);
-  GtkListBoxRow *row = gtk_list_box_get_row_at_index (listbox, 0);
-
-  if (selected_row != NULL)
-    return;
-
-  if (row != NULL)
-    gtk_list_box_select_row (listbox, row);
-}
-
 
 
 /**
@@ -1261,7 +1238,7 @@ chatty_blist_create_chat_list (void)
   gtk_list_box_set_sort_func (GTK_LIST_BOX (listbox), chatty_blist_sort, NULL, NULL);
 
   g_signal_connect (listbox,
-                    "row-selected",
+                    "row-activated",
                     G_CALLBACK (row_selected_cb),
                     NULL);
 
