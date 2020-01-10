@@ -33,6 +33,8 @@
 #include "chatty-lurch.h"
 #include "chatty-dialogs.h"
 #include "chatty-account.h"
+#include "chatty-utils.h"
+#include "chatty-pp-account.h"
 #include "chatty-icons.h"
 #include "chatty-settings.h"
 #include "chatty-settings-dialog.h"
@@ -90,7 +92,7 @@ struct _ChattySettingsDialog
   GtkWidget      *return_sends_switch;
 
   ChattySettings *settings;
-  PurpleAccount  *selected_account;
+  ChattyPpAccount *selected_account;
 };
 
 G_DEFINE_TYPE (ChattySettingsDialog, chatty_settings_dialog, HDY_TYPE_DIALOG)
@@ -98,15 +100,15 @@ G_DEFINE_TYPE (ChattySettingsDialog, chatty_settings_dialog, HDY_TYPE_DIALOG)
 
 static void
 chatty_settings_dialog_update_status (ChattySettingsDialog *self,
-                                      PurpleAccount        *account)
+                                      ChattyPpAccount      *account)
 {
   const gchar *status;
 
   g_assert (CHATTY_IS_SETTINGS_DIALOG (self));
 
-  if (purple_account_is_connected (account))
+  if (chatty_pp_account_is_connected (account))
     status = _("connected");
-  else if (purple_account_is_connecting (account))
+  else if (chatty_pp_account_is_connecting (account))
     status = _("connecting…");
   else
     status = _("disconnected");
@@ -136,17 +138,19 @@ settings_update_account_details (ChattySettingsDialog *self)
 {
   GdkPixbuf *pixbuf, *origin_pixbuf;
   PurpleStoredImage *image;
-  PurpleAccount *account;
+  ChattyPpAccount *account;
+  PurpleAccount *purple_account;
   GtkWidget *avatar;
   const char *account_name, *protocol_name;
 
   g_assert (CHATTY_IS_SETTINGS_DIALOG (self));
 
   account = self->selected_account;
-  account_name = purple_account_get_username (account);
-  protocol_name = purple_account_get_protocol_name (account);
+  account_name = chatty_pp_account_get_username (account);
+  protocol_name = chatty_pp_account_get_protocol_name (account);
 
-  image = purple_buddy_icons_find_account_icon (account);
+  purple_account = chatty_pp_account_get_account (account);
+  image = purple_buddy_icons_find_account_icon (purple_account);
   avatar = gtk_image_new ();
 
   gtk_entry_set_text (GTK_ENTRY (self->account_id_entry), account_name);
@@ -191,6 +195,7 @@ settings_update_account_details (ChattySettingsDialog *self)
 static void
 chatty_settings_add_clicked_cb (ChattySettingsDialog *self)
 {
+  ChattyPpAccount *pp_account;
   PurpleAccount *account;
   const char *user_id, *password, *server_url;
   gboolean is_matrix, is_telegram;
@@ -206,13 +211,13 @@ chatty_settings_add_clicked_cb (ChattySettingsDialog *self)
 
   if (is_matrix)
     {
-      account = purple_account_new (user_id, "prpl-matrix");
+      pp_account = chatty_pp_account_new (user_id, "prpl-matrix");
+      account = chatty_pp_account_get_account (pp_account);
       purple_account_set_string (account, "home_server", server_url);
     }
   else if (is_telegram)
     {
-      account = purple_account_new (user_id, "prpl-telegram");
-      purple_account_set_string (account, "password-two-factor", password);
+      pp_account = chatty_pp_account_new (user_id, "prpl-telegram");
     }
   else /* XMPP */
     {
@@ -223,17 +228,20 @@ chatty_settings_add_clicked_cb (ChattySettingsDialog *self)
         url_prefix = "@";
 
       name = g_strconcat (user_id, url_prefix, server_url, NULL);
-      account = purple_account_new (name, "prpl-jabber");
+      pp_account = chatty_pp_account_new (name, "prpl-jabber");
     }
 
-  if (!is_telegram && password && *password)
+  if (password)
     {
-      purple_account_set_password (account, password);
-      purple_account_set_remember_password (account, TRUE);
+      chatty_pp_account_set_password (pp_account, password);
+
+      if (!is_telegram)
+        chatty_pp_account_set_remember_password (pp_account, TRUE);
     }
 
-  purple_account_set_enabled (account, CHATTY_UI, TRUE);
+  account = chatty_pp_account_get_account (pp_account);
   purple_accounts_add (account);
+  chatty_pp_account_set_enabled (pp_account, TRUE);
 
   gtk_widget_hide (self->add_button);
   gtk_stack_set_visible_child_name (GTK_STACK (self->main_stack), "main-settings");
@@ -246,15 +254,15 @@ chatty_settings_save_clicked_cb (ChattySettingsDialog *self)
 
   g_assert (CHATTY_IS_SETTINGS_DIALOG (self));
 
-  purple_account_set_username (self->selected_account,
-                               gtk_entry_get_text (GTK_ENTRY (self->account_id_entry)));
+  chatty_pp_account_set_username (self->selected_account,
+                                  gtk_entry_get_text (GTK_ENTRY (self->account_id_entry)));
 
   password_entry = (GtkEntry *)self->password_entry;
-  purple_account_set_password (self->selected_account,
-                               gtk_entry_get_text (password_entry));
+  chatty_pp_account_set_password (self->selected_account,
+                                  gtk_entry_get_text (password_entry));
 
-  purple_account_set_remember_password (self->selected_account, TRUE);
-  purple_account_set_enabled (self->selected_account, CHATTY_UI, TRUE);
+  chatty_pp_account_set_remember_password (self->selected_account, TRUE);
+  chatty_pp_account_set_enabled (self->selected_account, TRUE);
 
   gtk_widget_hide (self->save_button);
   gtk_stack_set_visible_child_name (GTK_STACK (self->main_stack), "main-settings");
@@ -328,14 +336,17 @@ account_list_row_activated_cb (ChattySettingsDialog *self,
       gtk_stack_set_visible_child_name (GTK_STACK (self->main_stack),
                                         "edit-account-view");
 
-      protocol_id = purple_account_get_protocol_id (self->selected_account);
+      protocol_id = chatty_pp_account_get_protocol_id (self->selected_account);
 
       if (chatty_purple->plugin_lurch_loaded &&
           g_strcmp0 (protocol_id, "prpl-jabber") == 0)
         {
+          PurpleAccount *account;
+
+          account = chatty_pp_account_get_account (self->selected_account);
           gtk_widget_show (GTK_WIDGET (chatty_dialog->omemo.listbox_fp_own));
           gtk_widget_show (GTK_WIDGET (chatty_dialog->omemo.listbox_fp_own_dev));
-          chatty_lurch_get_fp_list_own (self->selected_account);
+          chatty_lurch_get_fp_list_own (account);
         }
 
       settings_update_account_details (self);
@@ -350,7 +361,6 @@ settings_message_carbons_changed_cb (ChattySettingsDialog *self)
   g_assert (CHATTY_IS_SETTINGS_DIALOG (self));
 
   active = gtk_switch_get_active (GTK_SWITCH (self->message_carbons_switch));
-  purple_prefs_set_bool (CHATTY_PREFS_ROOT "/plugins/message_carbons", active);
 
   if (active)
     chatty_purple_load_plugin ("core-riba-carbons");
@@ -419,17 +429,19 @@ settings_avatar_button_clicked_cb (ChattySettingsDialog *self)
     {
       PurplePluginProtocolInfo *prpl_info;
       GdkPixbuf *pixbuf, *origin_pixbuf;
+      PurpleAccount *account;
       GtkWidget *avatar;
       const char *protocol_id;
       guchar *buffer;
       size_t len;
 
-      protocol_id = purple_account_get_protocol_id (self->selected_account);
+      protocol_id = chatty_pp_account_get_protocol_id (self->selected_account);
       prpl_info = PURPLE_PLUGIN_PROTOCOL_INFO (purple_find_prpl (protocol_id));
 
       buffer = chatty_icon_get_data_from_pixbuf (file_name, prpl_info, &len);
 
-      purple_buddy_icons_set_account_icon (self->selected_account, buffer, len);
+      account = chatty_pp_account_get_account (self->selected_account);
+      purple_buddy_icons_set_account_icon (account, buffer, len);
 
       pixbuf = gdk_pixbuf_new_from_file (file_name, &error);
 
@@ -493,13 +505,11 @@ static void chatty_settings_dialog_popuplate_account_list (ChattySettingsDialog 
 static void
 settings_delete_account_clicked_cb (ChattySettingsDialog *self)
 {
-  PurpleAccount *account;
   GtkWidget *dialog;
   int response;
 
   g_assert (CHATTY_IS_SETTINGS_DIALOG (self));
 
-  account = self->selected_account;
   dialog = gtk_message_dialog_new ((GtkWindow*)self,
                                    GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
                                    GTK_MESSAGE_WARNING,
@@ -508,7 +518,7 @@ settings_delete_account_clicked_cb (ChattySettingsDialog *self)
 
   gtk_message_dialog_format_secondary_text (GTK_MESSAGE_DIALOG (dialog),
                                             _("Delete account %s?"),
-                                            purple_account_get_username (account));
+                                            chatty_pp_account_get_username (self->selected_account));
 
   gtk_dialog_set_default_response (GTK_DIALOG (dialog), GTK_RESPONSE_CANCEL);
   gtk_window_set_position (GTK_WINDOW (dialog), GTK_WIN_POS_CENTER_ON_PARENT);
@@ -517,6 +527,9 @@ settings_delete_account_clicked_cb (ChattySettingsDialog *self)
 
   if (response == GTK_RESPONSE_OK)
     {
+      PurpleAccount *account;
+
+      account = chatty_pp_account_get_account (self->selected_account);
       self->selected_account = NULL;
       purple_accounts_delete (account);
 
@@ -551,7 +564,7 @@ account_enabled_changed_cb (GtkListBoxRow *row,
                             GParamSpec    *pspec,
                             GtkSwitch     *enabled_switch)
 {
-  PurpleAccount *account;
+  ChattyPpAccount *account;
   gboolean enabled;
 
   g_assert (GTK_IS_LIST_BOX_ROW (row));
@@ -560,11 +573,11 @@ account_enabled_changed_cb (GtkListBoxRow *row,
   account = g_object_get_data (G_OBJECT (row), "row-account");
   enabled = gtk_switch_get_active (enabled_switch);
 
-  purple_account_set_enabled (account, CHATTY_UI, enabled);
+  chatty_pp_account_set_enabled (account, enabled);
 }
 
 static GtkWidget *
-chatty_account_row_new (PurpleAccount *account)
+chatty_account_row_new (ChattyPpAccount *account)
 {
   HdyActionRow   *row;
   GtkWidget      *account_enabled_switch;
@@ -577,7 +590,7 @@ chatty_account_row_new (PurpleAccount *account)
                      "row-account",
                      (gpointer) account);
 
-  protocol_id = purple_account_get_protocol_id (account);
+  protocol_id = chatty_pp_account_get_protocol_id (account);
 
   if ((g_strcmp0 (protocol_id, "prpl-jabber")) != 0 &&
       (g_strcmp0 (protocol_id, "prpl-matrix")) != 0 &&
@@ -604,7 +617,7 @@ chatty_account_row_new (PurpleAccount *account)
                  NULL);
 
   gtk_switch_set_state (GTK_SWITCH(account_enabled_switch),
-                        purple_account_get_enabled (account, CHATTY_UI));
+                        chatty_pp_account_get_enabled (account));
 
   g_signal_connect_object (account_enabled_switch,
                            "notify::active",
@@ -612,8 +625,8 @@ chatty_account_row_new (PurpleAccount *account)
                            (gpointer) row,
                            G_CONNECT_SWAPPED);
 
-  hdy_action_row_set_title (row, purple_account_get_username (account));
-  hdy_action_row_set_subtitle (row, purple_account_get_protocol_name (account));
+  hdy_action_row_set_title (row, chatty_pp_account_get_username (account));
+  hdy_action_row_set_subtitle (row, chatty_pp_account_get_protocol_name (account));
   hdy_action_row_add_action (row, account_enabled_switch);
   hdy_action_row_set_activatable_widget (row, NULL);
 
@@ -623,38 +636,35 @@ chatty_account_row_new (PurpleAccount *account)
 static void
 chatty_settings_dialog_popuplate_account_list (ChattySettingsDialog *self)
 {
+  GListModel *model;
+  chatty_data_t *chatty;
+  guint n_items;
   gint index = 0;
 
   chatty_account_list_clear (self, GTK_LIST_BOX (self->accounts_list_box));
 
-  for (GList *l = purple_accounts_get_all (); l != NULL; l = l->next) {
-    GtkWidget *row;
-    const gchar *protocol_id;
+  chatty = chatty_get_data ();
+  model = G_LIST_MODEL (chatty->account_list);
+  n_items = g_list_model_get_n_items (model);
 
-    protocol_id = purple_account_get_protocol_id ((PurpleAccount *)l->data);
+  for (guint i = 0; i < n_items; i++)
+    {
+      g_autoptr(ChattyPpAccount) account = NULL;
+      GtkWidget *row;
 
-    if (g_strcmp0 (protocol_id, "prpl-mm-sms") == 0)
-      continue;
+      account = g_list_model_get_item (model, i);
 
-    row = chatty_account_row_new (l->data);
+      if (chatty_pp_account_is_sms (account))
+        continue;
 
-    if (!row)
-      continue;
+      row = chatty_account_row_new (account);
 
-    gtk_list_box_insert (GTK_LIST_BOX (self->accounts_list_box), row, index);
-    index++;
-  }
-}
+      if (!row)
+        continue;
 
-
-void
-chatty_settings_update_accounts (GObject *object) 
-{
-  ChattySettingsDialog *self = (ChattySettingsDialog *)object;
-
-  g_return_if_fail (CHATTY_IS_SETTINGS_DIALOG(self));
-
-  chatty_settings_dialog_popuplate_account_list (self);
+      gtk_list_box_insert (GTK_LIST_BOX (self->accounts_list_box), row, index);
+      index++;
+    }
 }
 
 
@@ -796,6 +806,14 @@ static void
 chatty_settings_dialog_init (ChattySettingsDialog *self)
 {
   chatty_purple_data_t *chatty_purple;
+  chatty_data_t *chatty;
+
+  chatty = chatty_get_data ();
+
+  g_signal_connect_object (G_OBJECT (chatty->account_list),
+                           "items-changed",
+                           G_CALLBACK (chatty_settings_dialog_popuplate_account_list),
+                           self, G_CONNECT_SWAPPED);
 
   gtk_widget_init_template (GTK_WIDGET (self));
 

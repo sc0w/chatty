@@ -72,8 +72,6 @@ typedef struct {
   gboolean           im_account_connected;
   gboolean           sms_account_connected;
 
-  GtkWidget         *settings_dialog;
-
   GListStore        *account_list;
   ChattyCmlOptions   cml_options;
 

@@ -20,7 +20,9 @@
 #include "chatty-settings-dialog.h"
 #include "chatty-icons.h"
 #include "chatty-window.h"
+#include "chatty-utils.h"
 #include "chatty-account.h"
+#include "chatty-pp-account.h"
 #include "chatty-purple-init.h"
 
 
@@ -35,22 +37,23 @@ struct auth_request
   PurpleAccountRequestAuthorizationCb  deny_cb;
 };
 
-static void chatty_account_add_to_accounts_list (PurpleAccount *account,
-                                                 GtkListBox    *list,
-                                                 guint          list_type);
+static void chatty_account_add_to_accounts_list (ChattyPpAccount *account,
+                                                 GtkListBox      *list,
+                                                 guint            list_type);
 
 static void
 cb_account_added (PurpleAccount *account,
                   gpointer       user_data)
 {
-  chatty_data_t *chatty = chatty_get_data ();
-
   chatty_window_overlay_show (FALSE);
 
-  chatty_settings_update_accounts (G_OBJECT(chatty->settings_dialog));
-
   if (purple_accounts_find ("SMS", "prpl-mm-sms")) {
-    purple_account_set_enabled (account, CHATTY_UI, TRUE);
+    ChattyPpAccount *pp_account;
+
+    pp_account = chatty_pp_account_find (account);
+
+    if (CHATTY_IS_PP_ACCOUNT (pp_account))
+      chatty_pp_account_set_enabled (pp_account, TRUE);
   }
 }
 
@@ -60,11 +63,11 @@ cb_switch_on_off_state_changed (GtkSwitch  *widget,
                                 GParamSpec *pspec,
                                 gpointer    row)
 {
-  PurpleAccount *account;
+  ChattyPpAccount *account;
 
   account = g_object_get_data (G_OBJECT (row), "row-account");
 
-  purple_account_set_enabled (account, CHATTY_UI, gtk_switch_get_active (widget));
+  chatty_pp_account_set_enabled (account, gtk_switch_get_active (widget));
 }
 
 
@@ -73,14 +76,16 @@ cb_list_account_select_row_activated (GtkListBox    *box,
                                       GtkListBoxRow *row,
                                       gpointer       user_data)
 {
+  ChattyPpAccount *pp_account;
   PurpleAccount *account;
   GtkWidget     *prefix_radio;
 
   chatty_data_t *chatty = chatty_get_data ();
   chatty_dialog_data_t *chatty_dialog = chatty_get_dialog_data ();
 
-  account = g_object_get_data (G_OBJECT (row), "row-account");
+  pp_account = g_object_get_data (G_OBJECT (row), "row-account");
   prefix_radio = g_object_get_data (G_OBJECT(row), "row-prefix");
+  account = chatty_pp_account_get_account (pp_account);
 
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(prefix_radio), TRUE);
 
@@ -122,9 +127,9 @@ chatty_account_list_clear (GtkListBox *list)
 
 
 static void
-chatty_account_add_to_accounts_list (PurpleAccount *account,
-                                     GtkListBox    *list,
-                                     guint          list_type)
+chatty_account_add_to_accounts_list (ChattyPpAccount *account,
+                                     GtkListBox      *list,
+                                     guint            list_type)
 {
   HdyActionRow   *row;
   GtkWidget      *switch_account_enabled;
@@ -139,7 +144,7 @@ chatty_account_add_to_accounts_list (PurpleAccount *account,
                      "row-account",
                      (gpointer) account);
 
-  protocol_id = purple_account_get_protocol_id (account);
+  protocol_id = chatty_pp_account_get_protocol_id (account);
 
   // TODO list supported protocols here
   if ((g_strcmp0 (protocol_id, "prpl-jabber")) != 0 &&
@@ -164,7 +169,7 @@ chatty_account_add_to_accounts_list (PurpleAccount *account,
                    NULL);
 
     gtk_switch_set_state (GTK_SWITCH(switch_account_enabled),
-                          purple_account_get_enabled (account, CHATTY_UI));
+                          chatty_pp_account_get_enabled (account));
 
     g_signal_connect_object (switch_account_enabled,
                              "notify::active",
@@ -178,12 +183,12 @@ chatty_account_add_to_accounts_list (PurpleAccount *account,
                        "row-prefix",
                        (gpointer)spinner);
 
-    hdy_action_row_set_title (row, purple_account_get_username (account));
-    hdy_action_row_set_subtitle (row, purple_account_get_protocol_name (account));
+    hdy_action_row_set_title (row, chatty_pp_account_get_username (account));
+    hdy_action_row_set_subtitle (row, chatty_pp_account_get_protocol_name (account));
     hdy_action_row_add_action (row, GTK_WIDGET(switch_account_enabled));
     hdy_action_row_set_activatable_widget (row, NULL);
   } else {
-    if (purple_account_is_disconnected (account)) {
+    if (chatty_pp_account_is_disconnected (account)) {
       return;
     }
     
@@ -197,7 +202,7 @@ chatty_account_add_to_accounts_list (PurpleAccount *account,
                        (gpointer)prefix_radio_button);
 
     hdy_action_row_add_prefix (row, GTK_WIDGET(prefix_radio_button ));
-    hdy_action_row_set_title (row, purple_account_get_username (account));
+    hdy_action_row_set_title (row, chatty_pp_account_get_username (account));
   }
 
   gtk_container_add (GTK_CONTAINER(list), GTK_WIDGET(row));
@@ -217,14 +222,16 @@ chatty_account_populate_account_list (GtkListBox *list, guint type)
   chatty_account_list_clear (list);
 
   for (l = purple_accounts_get_all (); l != NULL; l = l->next) {
+    ChattyPpAccount *pp_account;
     ret = TRUE;
 
-    protocol_id = purple_account_get_protocol_id ((PurpleAccount *)l->data);
+    pp_account = chatty_pp_account_find (l->data);
+    protocol_id = chatty_pp_account_get_protocol_id (pp_account);
 
     switch (type) {
       case LIST_SELECT_MUC_ACCOUNT:
         if (!(g_strcmp0 (protocol_id, "prpl-mm-sms") == 0)) {
-          chatty_account_add_to_accounts_list ((PurpleAccount *)l->data,
+          chatty_account_add_to_accounts_list (pp_account,
                                                list,
                                                LIST_SELECT_MUC_ACCOUNT);
         }
@@ -235,7 +242,7 @@ chatty_account_populate_account_list (GtkListBox *list, guint type)
                           GINT_TO_POINTER(LIST_SELECT_MUC_ACCOUNT));
         break;
       case LIST_SELECT_CHAT_ACCOUNT:
-        chatty_account_add_to_accounts_list ((PurpleAccount *)l->data,
+        chatty_account_add_to_accounts_list (pp_account,
                                              list,
                                              LIST_SELECT_CHAT_ACCOUNT);
 
@@ -414,14 +421,18 @@ chatty_account_request_add (PurpleAccount *account,
 void
 chatty_account_add_sms_account (void)
 {
-  PurpleAccount *account;
+  ChattyPpAccount *account;
+  PurpleAccount *pp_account;
+  chatty_data_t *chatty = chatty_get_data ();
 
-  account = purple_account_new ("SMS", "prpl-mm-sms");
+  account = chatty_pp_account_new ("SMS", "prpl-mm-sms");
+  g_list_store_append (chatty->account_list, account);
 
-  purple_account_set_password (account, NULL);
-  purple_account_set_remember_password (account, TRUE);
+  chatty_pp_account_set_password (account, NULL);
+  chatty_pp_account_set_remember_password (account, TRUE);
 
-  purple_accounts_add (account);
+  pp_account = chatty_pp_account_get_account (account);
+  purple_accounts_add (pp_account);
 }
 
 
@@ -476,8 +487,17 @@ chatty_account_init (void)
 
   if (chatty->cml_options & CHATTY_CML_OPT_DISABLE) {
     for (accounts = purple_accounts_get_all (); accounts != NULL; accounts = accounts->next) {
-      PurpleAccount *account = accounts->data;
-      purple_account_set_enabled (account, CHATTY_UI, FALSE);
+      ChattyPpAccount *account;
+
+      account = chatty_pp_account_find (accounts->data);
+
+      if (!account)
+        {
+          account = chatty_pp_account_new_purple (accounts->data);
+          g_list_store_append (chatty->account_list, account);
+        }
+
+      chatty_pp_account_set_enabled (account, FALSE);
     }
   } else {
     purple_savedstatus_activate (purple_savedstatus_new (NULL, PURPLE_STATUS_AVAILABLE));
