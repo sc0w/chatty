@@ -9,6 +9,10 @@
 #define __UTILS_H_INCLUDE__
 
 #include <stdio.h>
+#include <gio/gio.h>
+
+#include "chatty-window.h"
+#include "chatty-pp-account.h"
 
 #define MAX_GMT_ISO_SIZE 256
 
@@ -24,5 +28,10 @@ char *chatty_utils_strip_cr_lf (const char *string);
 char *chatty_utils_format_phonenumber (const char *phone_number);
 void chatty_utils_generate_uuid (char **uuid);
 char *chatty_utils_time_ago_in_words (time_t time_stamp, ChattyTimeAgoFlags flags);
+gboolean chatty_utils_get_item_position (GListModel *list,
+                                         gpointer    item,
+                                         guint      *position);
+ChattyPpAccount *chatty_pp_account_find (PurpleAccount *account);
+gboolean       chatty_pp_account_remove (ChattyPpAccount *self);
 
 #endif
