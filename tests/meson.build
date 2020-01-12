@@ -12,6 +12,7 @@ env.set('MALLOC_CHECK_', '2')
 env.set('MALLOC_PERTURB_', '4')
 
 test_items = [
+  'account',
   'settings',
 ]
 
