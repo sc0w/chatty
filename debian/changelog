@@ -1,3 +1,81 @@
+chatty (0.1.5) amber-phone; urgency=high
+
+  [ Mohammed Sadiq ]
+  * window: Let F10 key open menu
+
+  [ Andrea Schaefer ]
+  * Don't pull 'chatty-status-msg' flag from IM nodes
+
+  [ Ruslan N. Marchenko ]
+  * Multiple memory leaks (msg-list, lurch, icons, requests)
+  * Multiple memory leaks (blist, xep0184)
+  * Multiple memory leaks (conversation)
+
+  [ Andrea Schaefer ]
+  * Remove auto-join switch from MUC details dialog
+  * Remove g_setting notify
+  * Change purple-cmd pref names
+  * Use notify::active instead of state-set
+  * Bind g_settings to pref_switches
+  * Convert newline chars to html linebreaks This preserves the formatting of help texts
+
+  [ Mohammed Sadiq ]
+  * Add chatty-settings-dialog class
+  * remove obsolete code
+  * connection: update account list only if non-NULL
+
+  [ Andrea Schaefer ]
+  * Fix issue #259 'Chatty quits demon mode'
+  * Update accounts list when adding new account
+  * Fix protocol issue in 'add account' dialog
+  * Code cleanup
+  * Add preference 'message carbons' to gsettings
+
+  [ Ruslan N. Marchenko ]
+  * fixup! Multiple memory leaks (conversation)
+  * Refactor ./xeps/ for more addons. Add bare discovery
+
+  [ Ruslan Marchenko ]
+  * Move add_history logic to chatty-history
+
+  [ Ruslan N. Marchenko ]
+  * Extend history timestamp call to check for duplicates
+  * Add initial MAM implementation - message parser
+  * message in history may be NULL with MAM
+  * Extend timestamp for older messages, add offline send (archived sent)
+  * Initial MAM Query implementation - sync on connect
+  * Implement sent messages dedup based on origin-id
+  * Add support for concurrency and state persistance
+  * Add mam prefs handle/sync
+  * Correct cleanup and add comments
+  * Add MAM Enabled gSetting
+  * Prevent messing up last_ts with MUC MAMQs
+
+  [ Andrea Schaefer ]
+  * Add pref-switch for mam
+
+  [ Mohammed Sadiq ]
+  * Remove obsolete code
+
+  [ Andrea Schaefer ]
+  * Fix issue #262 'Chatty opens first conv at start'
+  * Add developer to list of authors
+  * Mark rows when chatlist is unfold
+  * Fix segv that occurs when flipping notification switch
+  * Update po files
+
+  [ Guido Günther ]
+  * d/changelog: Fix syntax
+  * debian: Fix shlib dependency
+  * build: Use a rpath
+  * debian: Add autopktest
+  * gitlab-ci: Use prebuilt pipeline
+
+  [ Andrea Schaefer ]
+  * Fix issue in pt_BR.po file
+
+ -- Andrea Schaefer <andrea.schaefer@puri.sm>  Mon, 13 Jan 2020 16:57:41 +0100
+
 chatty (0.1.4) amber-phone; urgency=high
 
   [ Mohammed Sadiq ]
