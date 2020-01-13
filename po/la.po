@@ -7,8 +7,8 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2019-12-03 03:31+0000\n"
-"Last-Translator: Copied by Zanata <copied-by-zanata@zanata.org>\n"
+"PO-Revision-Date: 2019-12-07 08:45+0000\n"
+"Last-Translator: Josh <josh.public@protonmail.ch>\n"
 "Language-Team: Latin\n"
 "Language: la\n"
 "X-Generator: Zanata 4.6.2\n"
@@ -443,15 +443,15 @@ msgstr "Signum (facultativum)"
 
 #: src/ui/chatty-dialog-join-muc.ui:181
 msgid "Autojoin"
-msgstr ""
+msgstr "Auto-iugare"
 
 #: src/ui/chatty-dialog-join-muc.ui:182
 msgid "Join group chat at startup"
-msgstr ""
+msgstr "Iugare fabulam classis apud initio"
 
 #: src/ui/chatty-dialog-muc-info.ui:25
 msgid "Group Details"
-msgstr ""
+msgstr "Acus Classis"
 
 #: src/ui/chatty-dialog-muc-info.ui:50
 msgid "Invite Contact"
@@ -463,35 +463,35 @@ msgstr "Invitare"
 
 #: src/ui/chatty-dialog-muc-info.ui:162
 msgid "Room topic"
-msgstr ""
+msgstr "Materies spatii"
 
 #: src/ui/chatty-dialog-muc-info.ui:219
 msgid "Room settings"
-msgstr ""
+msgstr "Proprietates spatii"
 
 #: src/ui/chatty-dialog-muc-info.ui:242 src/ui/chatty-dialog-user-info.ui:207
 msgid "Notifications"
-msgstr ""
+msgstr "Notificationes"
 
 #: src/ui/chatty-dialog-muc-info.ui:243
 msgid "Show notification badge"
-msgstr ""
+msgstr "Indicare insigne notificationorum"
 
 #: src/ui/chatty-dialog-muc-info.ui:258
 msgid "Status Messages"
-msgstr "Epistulae Statu"
+msgstr "Epistulae Status"
 
 #: src/ui/chatty-dialog-muc-info.ui:259
 msgid "Show status messages in chat"
-msgstr ""
+msgstr "Indicare nuntia status in fabula"
 
 #: src/ui/chatty-dialog-muc-info.ui:274
 msgid "Edit topic"
-msgstr ""
+msgstr "Conrigere materiem"
 
 #: src/ui/chatty-dialog-muc-info.ui:275
 msgid "Users may change the topic"
-msgstr ""
+msgstr "Usores licent mutare materiem"
 
 #: src/ui/chatty-dialog-muc-info.ui:290
 msgid "Persistent"
@@ -499,15 +499,15 @@ msgstr "Perseverans"
 
 #: src/ui/chatty-dialog-muc-info.ui:291
 msgid "Room persists after the last user left"
-msgstr ""
+msgstr "Spatium perstat post proxi usor exiverat"
 
 #: src/ui/chatty-dialog-muc-info.ui:306
 msgid "Auto-join"
-msgstr ""
+msgstr "Auto-iugare"
 
 #: src/ui/chatty-dialog-muc-info.ui:307
 msgid "Join chat at startup"
-msgstr ""
+msgstr "Iugare fabulam apud initio"
 
 #: src/ui/chatty-dialog-muc-info.ui:329
 msgid "0 members"
@@ -515,11 +515,11 @@ msgstr "Nulla socii"
 
 #: src/ui/chatty-dialog-muc-info.ui:425
 msgid "Invite Message"
-msgstr ""
+msgstr "Epistula Invitationis"
 
 #: src/ui/chatty-dialog-new-chat.ui:25
 msgid "Start Chat"
-msgstr ""
+msgstr "Incipere Fabulam"
 
 #: src/ui/chatty-dialog-new-chat.ui:53
 msgid "New Contact"
@@ -531,11 +531,11 @@ msgstr "Addere Socium"
 
 #: src/ui/chatty-dialog-new-chat.ui:263
 msgid "Name (optional)"
-msgstr "Nomen "
+msgstr "Nomen (facultativus)"
 
 #: src/ui/chatty-dialog-new-chat.ui:300
 msgid "Add in GNOME Contacts"
-msgstr ""
+msgstr "Addere in GNOME Sociis"
 
 #: src/ui/chatty-dialog-settings.ui:22 src/ui/chatty-window.ui:57
 msgid "Preferences"
@@ -563,63 +563,63 @@ msgstr "Privatus"
 
 #: src/ui/chatty-dialog-settings.ui:155
 msgid "Message Receipts"
-msgstr ""
+msgstr "Destinatarii Epistulae"
 
 #: src/ui/chatty-dialog-settings.ui:156
 msgid "Confirm received messages"
-msgstr ""
+msgstr "Confirmare epistulas receptantes"
 
 #: src/ui/chatty-dialog-settings.ui:171
 msgid "Message Carbon Copies"
-msgstr ""
+msgstr "Carboneis Exemplares Epistulae"
 
 #: src/ui/chatty-dialog-settings.ui:172
 msgid "Share chat history among devices"
-msgstr ""
+msgstr "Communicare historiam fabulae inter machinationibus"
 
 #: src/ui/chatty-dialog-settings.ui:187
 msgid "Typing Notification"
-msgstr ""
+msgstr "Notificatio Scribendi"
 
 #: src/ui/chatty-dialog-settings.ui:188
 msgid "Send typing messages"
-msgstr ""
+msgstr "Mittere epistulas scribendi"
 
 #: src/ui/chatty-dialog-settings.ui:206
 msgid "Chats List"
-msgstr ""
+msgstr "Tabula Fabularum"
 
 #: src/ui/chatty-dialog-settings.ui:209
 msgid "Show Offline Contacts"
-msgstr ""
+msgstr "Indicare Socios Detelas"
 
 #: src/ui/chatty-dialog-settings.ui:210
 msgid "Show contacts in the chats list"
-msgstr ""
+msgstr "Indicare sociis in tabula fabularum"
 
 #: src/ui/chatty-dialog-settings.ui:225
 msgid "Indicate Offline Contacts"
-msgstr ""
+msgstr "Deprendere Socios Detelas"
 
 #: src/ui/chatty-dialog-settings.ui:226
 msgid "Grey out avatars from offline contacts"
-msgstr ""
+msgstr "Facere canus repraesentativos ab detelis sociis"
 
 #: src/ui/chatty-dialog-settings.ui:241
 msgid "Indicate Idle Contacts"
-msgstr ""
+msgstr "Deprendere Socios Resides"
 
 #: src/ui/chatty-dialog-settings.ui:242
 msgid "Blur avatars from offline contacts"
-msgstr ""
+msgstr "Confundere repraesentativos ab detelis sociis"
 
 #: src/ui/chatty-dialog-settings.ui:257
 msgid "Indicate Unknown Contacts"
-msgstr ""
+msgstr "Deprendere Socios Incognitos"
 
 #: src/ui/chatty-dialog-settings.ui:258
 msgid "Color unknown contact ID red"
-msgstr ""
+msgstr "Tingere ID socii incogniti ruber"
 
 #: src/ui/chatty-dialog-settings.ui:276
 msgid "Editor"
@@ -671,7 +671,7 @@ msgstr "Optare Modum"
 
 #: src/ui/chatty-dialog-settings.ui:621
 msgid "XMPP"
-msgstr ""
+msgstr "XMPP"
 
 #: src/ui/chatty-dialog-settings.ui:634
 msgid "Matrix"
@@ -687,11 +687,11 @@ msgstr "Moderatrum"
 
 #: src/ui/chatty-dialog-user-info.ui:12 src/ui/chatty-window.ui:98
 msgid "Chat Details"
-msgstr ""
+msgstr "Acus Fabulae"
 
 #: src/ui/chatty-dialog-user-info.ui:94
 msgid "XMPP ID"
-msgstr ""
+msgstr "XMPP ID"
 
 #: src/ui/chatty-dialog-user-info.ui:109 src/ui/chatty-dialog-user-info.ui:222
 msgid "Encryption"
@@ -715,7 +715,7 @@ msgstr "Non encryptandus"
 
 #: src/ui/chatty-window.ui:32
 msgid "New Direct Chat"
-msgstr ""
+msgstr "Nova Fabula Directa"
 
 #: src/ui/chatty-window.ui:70
 msgid "About Chats"
@@ -723,7 +723,7 @@ msgstr "De Fabulae"
 
 #: src/ui/chatty-window.ui:138
 msgid "Add to GNOME Contacts"
-msgstr ""
+msgstr "Addere ad GNOME Sociis"
 
 #: src/ui/chatty-window.ui:163
 msgid "Leave Chat"
