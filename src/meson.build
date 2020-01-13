@@ -69,4 +69,5 @@ executable('chatty', chatty_sources,
   dependencies: chatty_deps,
   link_with: libchatty,
   install: true,
+  install_rpath: purple_plugdir,
 )
