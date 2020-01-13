@@ -1,0 +1,4 @@
+Test-Command: xvfb-run /usr/bin/chatty --help
+Restrictions: superficial
+Depends: chatty, xauth, xvfb
+
