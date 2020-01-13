@@ -167,7 +167,7 @@ msgstr "Adicionar %s à lista de contatos"
 
 #: src/chatty-buddy-list.c:191
 msgid "Send to"
-msgstr "Enviar para\n"
+msgstr "Enviar para"
 
 #: src/chatty-buddy-list.c:949
 msgid "Disconnect group chat"
