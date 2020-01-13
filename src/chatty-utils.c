@@ -282,3 +282,93 @@ chatty_utils_generate_uuid(char **uuid){
     }
   }
 }
+
+gboolean
+chatty_utils_get_item_position (GListModel *list,
+                                gpointer    item,
+                                guint      *position)
+{
+  guint n_items;
+
+  g_return_val_if_fail (G_IS_LIST_MODEL (list), FALSE);
+  g_return_val_if_fail (item != NULL, FALSE);
+
+  n_items = g_list_model_get_n_items (list);
+
+  for (guint i = 0; i < n_items; i++)
+    {
+      g_autoptr(GObject) object = NULL;
+
+      object = g_list_model_get_item (list, i);
+
+      if (object == item)
+        {
+          if (position)
+            *position = i;
+
+          return TRUE;
+        }
+    }
+
+  return FALSE;
+}
+
+/* XXX: a helper API till the dust settles */
+ChattyPpAccount *
+chatty_pp_account_find (PurpleAccount *account)
+{
+  chatty_data_t *chatty;
+  PurpleAccount *pp_account;
+  GListModel *model;
+  guint n_items;
+
+  g_return_val_if_fail (account, NULL);
+
+  chatty = chatty_get_data ();
+  model = G_LIST_MODEL (chatty->account_list);
+  n_items = g_list_model_get_n_items (model);
+
+  for (guint i = 0; i < n_items; i++)
+    {
+      g_autoptr(ChattyPpAccount) object = NULL;
+
+      object = g_list_model_get_item (model, i);
+      pp_account = chatty_pp_account_get_account (object);
+
+      if (pp_account == account)
+        return object;
+    }
+
+  return NULL;
+}
+
+/* XXX: a helper API till the dust settles */
+gboolean
+chatty_pp_account_remove (ChattyPpAccount *self)
+{
+  chatty_data_t *chatty;
+  GListModel *model;
+  guint n_items;
+
+  g_return_val_if_fail (CHATTY_IS_PP_ACCOUNT (self), FALSE);
+
+  chatty = chatty_get_data ();
+  model = G_LIST_MODEL (chatty->account_list);
+  n_items = g_list_model_get_n_items (model);
+
+  for (guint i = 0; i < n_items; i++)
+    {
+      g_autoptr(ChattyPpAccount) object = NULL;
+
+      object = g_list_model_get_item (model, i);
+
+      if (object == self)
+        {
+          g_list_store_remove (chatty->account_list, i);
+
+          return TRUE;
+        }
+    }
+
+  return FALSE;
+}
