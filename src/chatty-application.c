@@ -28,6 +28,7 @@
 #include "chatty-config.h"
 #include "chatty-window.h"
 #include "chatty-pp-account.h"
+#include "chatty-manager.h"
 #include "chatty-application.h"
 #include "chatty-purple-init.h"
 #include "chatty-buddy-list.h"
@@ -160,6 +161,7 @@ chatty_application_startup (GApplication *application)
 
   chatty->uri = NULL;
   chatty->account_list = g_list_store_new (CHATTY_TYPE_PP_ACCOUNT);
+  chatty_manager_get_default ();
 
   G_APPLICATION_CLASS (chatty_application_parent_class)->startup (application);
 

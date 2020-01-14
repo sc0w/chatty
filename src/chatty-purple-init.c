@@ -23,6 +23,7 @@
 #include "chatty-purple-notify.h"
 #include "chatty-buddy-list.h"
 #include "chatty-connection.h"
+#include "chatty-manager.h"
 #include "chatty-conversation.h"
 #include "chatty-folks.h"
 
@@ -170,6 +171,7 @@ chatty_purple_ui_init (void)
   chatty_connection_init ();
   chatty_blist_init ();
   chatty_conversations_init ();
+  chatty_manager_purple_init (chatty_manager_get_default ());
 
   purple_accounts_set_ui_ops (chatty_accounts_get_ui_ops ());
   purple_request_set_ui_ops (chatty_request_get_ui_ops ());
