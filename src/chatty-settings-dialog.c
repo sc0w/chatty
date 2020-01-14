@@ -99,24 +99,6 @@ G_DEFINE_TYPE (ChattySettingsDialog, chatty_settings_dialog, HDY_TYPE_DIALOG)
 
 
 static void
-chatty_settings_dialog_update_status (ChattySettingsDialog *self,
-                                      ChattyPpAccount      *account)
-{
-  const gchar *status;
-
-  g_assert (CHATTY_IS_SETTINGS_DIALOG (self));
-
-  if (chatty_pp_account_is_connected (account))
-    status = _("connected");
-  else if (chatty_pp_account_is_connecting (account))
-    status = _("connecting…");
-  else
-    status = _("disconnected");
-
-  gtk_label_set_text (GTK_LABEL (self->status_label), status);
-}
-
-static void
 chatty_account_list_clear (ChattySettingsDialog *self,
                            GtkListBox           *list)
 {
@@ -305,6 +287,40 @@ settings_update_new_account_view (ChattySettingsDialog *self)
 }
 
 static void
+chatty_settings_dialog_update_status (GtkListBoxRow *row)
+{
+  ChattySettingsDialog *self;
+  ChattyPpAccount *account;
+  GtkWidget *dialog;
+  GtkSpinner *spinner;
+  ChattyStatus status;
+  const gchar *status_text;
+
+  g_assert (GTK_IS_LIST_BOX_ROW (row));
+
+  dialog = gtk_widget_get_toplevel (GTK_WIDGET (row));
+  self = CHATTY_SETTINGS_DIALOG (dialog);
+
+  spinner = g_object_get_data (G_OBJECT(row), "row-prefix");
+  account = g_object_get_data (G_OBJECT (row), "row-account");
+  status  = chatty_pp_account_get_status (account);
+
+  g_object_set (spinner,
+                "active", status == CHATTY_CONNECTING,
+                NULL);
+
+  if (status == CHATTY_CONNECTED)
+    status_text = _("connected");
+  else if (status == CHATTY_CONNECTING)
+    status_text = _("connecting…");
+  else
+    status_text = _("disconnected");
+
+  if (self->selected_account == account)
+    gtk_label_set_text (GTK_LABEL (self->status_label), status_text);
+}
+
+static void
 account_list_row_activated_cb (ChattySettingsDialog *self,
                                GtkListBoxRow        *row,
                                GtkListBox           *box)
@@ -332,7 +348,7 @@ account_list_row_activated_cb (ChattySettingsDialog *self,
       self->selected_account = g_object_get_data (G_OBJECT (row), "row-account");
       g_assert (self->selected_account != NULL);
 
-      chatty_settings_dialog_update_status (self, self->selected_account);
+      chatty_settings_dialog_update_status (row);
       gtk_stack_set_visible_child_name (GTK_STACK (self->main_stack),
                                         "edit-account-view");
 
@@ -663,6 +679,10 @@ chatty_settings_dialog_popuplate_account_list (ChattySettingsDialog *self)
         continue;
 
       gtk_list_box_insert (GTK_LIST_BOX (self->accounts_list_box), row, index);
+      g_signal_connect_object (account, "notify::status",
+                               G_CALLBACK (chatty_settings_dialog_update_status),
+                               row, G_CONNECT_SWAPPED);
+      chatty_settings_dialog_update_status (GTK_LIST_BOX_ROW (row));
       index++;
     }
 }
@@ -673,17 +693,14 @@ chatty_settings_dialog_constructed (GObject *object)
 {
   ChattySettingsDialog *self = (ChattySettingsDialog *)object;
   ChattySettings *settings;
-  chatty_data_t  *chatty;
   chatty_dialog_data_t *chatty_dialog;
 
   G_OBJECT_CLASS (chatty_settings_dialog_parent_class)->constructed (object);
 
-  chatty   = chatty_get_data ();
   chatty_dialog = chatty_get_dialog_data ();
 
   settings = chatty_settings_get_default ();
   self->settings = g_object_ref (settings);
-  chatty->list_manage_account = GTK_LIST_BOX (self->accounts_list_box);
 
   chatty_dialog->omemo.listbox_fp_own = GTK_LIST_BOX (self->fingerprint_list);
   chatty_dialog->omemo.listbox_fp_own_dev = GTK_LIST_BOX (self->fingerprint_device_list);
@@ -725,12 +742,8 @@ static void
 chatty_settings_dialog_finalize (GObject *object)
 {
   ChattySettingsDialog *self = (ChattySettingsDialog *)object;
-  chatty_data_t  *chatty;
-
-  chatty = chatty_get_data ();
 
   g_clear_object (&self->settings);
-  chatty->list_manage_account = NULL;
 
   G_OBJECT_CLASS (chatty_settings_dialog_parent_class)->finalize (object);
 }

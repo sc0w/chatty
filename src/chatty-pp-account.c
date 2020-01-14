@@ -47,10 +47,30 @@ enum {
   PROP_USERNAME,
   PROP_PROTOCOL_ID,
   PROP_PURPLE_ACCOUNT,
+  PROP_STATUS,
   N_PROPS
 };
 
 static GParamSpec *properties[N_PROPS];
+
+static void
+chatty_pp_account_get_property (GObject *object,
+                                guint    prop_id,
+                                GValue  *value,
+                                GParamSpec *pspec)
+{
+  ChattyPpAccount *self = (ChattyPpAccount *)object;
+
+  switch (prop_id)
+    {
+    case PROP_STATUS:
+      g_value_set_int (value, chatty_pp_account_get_status (self));
+      break;
+
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+    }
+}
 
 static void
 chatty_pp_account_set_property (GObject      *object,
@@ -106,6 +126,7 @@ chatty_pp_account_class_init (ChattyPpAccountClass *klass)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
 
+  object_class->get_property = chatty_pp_account_get_property;
   object_class->set_property = chatty_pp_account_set_property;
   object_class->constructed = chatty_pp_account_constructed;
   object_class->finalize = chatty_pp_account_finalize;
@@ -129,6 +150,15 @@ chatty_pp_account_class_init (ChattyPpAccountClass *klass)
                          "Purple Account",
                          "The PurpleAccount to be used to create the object",
                          G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY | G_PARAM_STATIC_STRINGS);
+
+  properties[PROP_STATUS] =
+    g_param_spec_int ("status",
+                      "Status",
+                      "Account connection status",
+                      CHATTY_DISCONNECTED,
+                      CHATTY_CONNECTED,
+                      CHATTY_DISCONNECTED,
+                      G_PARAM_READABLE | G_PARAM_STATIC_STRINGS);
 
   g_object_class_install_properties (object_class, N_PROPS, properties);
 }
@@ -180,28 +210,17 @@ chatty_pp_account_get_active_status (ChattyPpAccount *self)
   return purple_account_get_active_status (self->pp_account);
 }
 
-gboolean
-chatty_pp_account_is_disconnected (ChattyPpAccount *self)
+ChattyStatus
+chatty_pp_account_get_status (ChattyPpAccount *self)
 {
-  g_return_val_if_fail (CHATTY_IS_PP_ACCOUNT (self), TRUE);
+  g_return_val_if_fail (CHATTY_IS_PP_ACCOUNT (self), CHATTY_DISCONNECTED);
 
-  return purple_account_is_disconnected (self->pp_account);
-}
+  if (purple_account_is_connected (self->pp_account))
+    return CHATTY_CONNECTED;
+  if (purple_account_is_connecting (self->pp_account))
+    return CHATTY_CONNECTING;
 
-gboolean
-chatty_pp_account_is_connected (ChattyPpAccount *self)
-{
-  g_return_val_if_fail (CHATTY_IS_PP_ACCOUNT (self), FALSE);
-
-  return purple_account_is_connected (self->pp_account);
-}
-
-gboolean
-chatty_pp_account_is_connecting (ChattyPpAccount *self)
-{
-  g_return_val_if_fail (CHATTY_IS_PP_ACCOUNT (self), FALSE);
-
-  return purple_account_is_connecting (self->pp_account);
+  return CHATTY_DISCONNECTED;
 }
 
 gboolean

@@ -30,7 +30,6 @@ static GHashTable *auto_reconns = NULL;
 static gboolean sms_notifications = FALSE;
 
 static gboolean chatty_connection_sign_on (ChattyPpAccount *account);
-static void chatty_connection_account_spinner (ChattyPpAccount *account, gboolean spin);
 
 
 static void
@@ -51,7 +50,7 @@ cb_sms_modem_added (int status)
       g_list_store_append (chatty->account_list, pp_account);
     }
 
-  if (chatty_pp_account_is_disconnected (pp_account)) {
+  if (chatty_pp_account_get_status (pp_account) == CHATTY_DISCONNECTED) {
     info = g_hash_table_lookup (auto_reconns, account);
 
     if (info == NULL) {
@@ -95,19 +94,6 @@ cb_account_removed (PurpleAccount *account,
 
 
 static void
-cb_account_disabled (PurpleAccount *account,
-                     gpointer       user_data)
-{
-  if (account) {
-    ChattyPpAccount *pp_account;
-
-    pp_account = chatty_pp_account_find (account);
-    chatty_connection_account_spinner (pp_account, FALSE);
-  }
-}
-
-
-static void
 chatty_connection_update_ui (void)
 {
   GList *accounts;
@@ -130,7 +116,7 @@ chatty_connection_update_ui (void)
         g_list_store_append (chatty->account_list, account);
       }
 
-    if (chatty_pp_account_is_connected (account)) {
+    if (chatty_pp_account_get_status (account) == CHATTY_CONNECTED) {
       if (chatty_pp_account_is_sms (account)) {
         chatty->sms_account_connected = TRUE;
       }  else {
@@ -145,70 +131,6 @@ chatty_connection_update_ui (void)
                             chatty->sms_account_connected);
 
   chatty_window_overlay_show (!chatty_blist_list_has_children (CHATTY_LIST_CHATS));
-}
-
-
-static void
-chatty_connection_account_spinner (ChattyPpAccount *account,
-                                   gboolean         spin)
-{
-  GList         *children;
-  GList         *iter;
-  GtkWidget     *spinner;
-  HdyActionRow  *row;
-
-  chatty_data_t *chatty = chatty_get_data ();
-
-  if (!chatty->list_manage_account)
-    return;
-
-  children = gtk_container_get_children (GTK_CONTAINER(chatty->list_manage_account));
-
-  for (iter = children; iter != NULL; iter = g_list_next (iter)) {
-    row = HDY_ACTION_ROW(iter->data);
-
-    if (g_object_get_data (G_OBJECT (row), "row-account") == account) {
-      spinner = g_object_get_data (G_OBJECT(row), "row-prefix");
-
-      if (spinner && spin) {
-        gtk_spinner_start (GTK_SPINNER(spinner));
-      } else if (spinner && !spin) {
-        gtk_spinner_stop (GTK_SPINNER(spinner));
-      }
-
-      break;
-    }
-  }
-
-  g_list_free (children);
-}
-
-
-static void
-chatty_connection_connect_progress (PurpleConnection *gc,
-                                    const char       *text,
-                                    size_t            step,
-                                    size_t            step_count)
-{
-  PurpleAccount *account;
-
-  account = purple_connection_get_account (gc);
-
-  if ((int)step == 2) {
-    ChattyPpAccount *pp_account;
-
-    pp_account = chatty_pp_account_find (account);
-
-    if (!pp_account)
-      {
-        chatty_data_t *chatty = chatty_get_data ();
-
-        pp_account = chatty_pp_account_new_purple (account);
-        g_list_store_append (chatty->account_list, pp_account);
-      }
-
-    chatty_connection_account_spinner (pp_account, TRUE);
-  }
 }
 
 
@@ -264,8 +186,6 @@ chatty_connection_connected (PurpleConnection *gc)
   protocol_id = chatty_pp_account_get_protocol_id (pp_account);
 
   sms_match = !g_strcmp0 (protocol_id, "prpl-mm-sms");
-
-  chatty_connection_account_spinner (pp_account, FALSE);
 
   if (g_hash_table_contains (auto_reconns, account)) {
     message = g_strdup_printf ("Account %s reconnected", user_name);
@@ -344,7 +264,7 @@ chatty_connection_network_connected (void)
     ChattyPpAccount *account = chatty_pp_account_find (l->data);
     g_hash_table_remove (auto_reconns, l->data);
 
-    if (chatty_pp_account_is_disconnected (account)) {
+    if (chatty_pp_account_get_status (account) == CHATTY_DISCONNECTED) {
       chatty_connection_sign_on (account);
     }
 
@@ -426,8 +346,6 @@ chatty_connection_report_disconnect_reason (PurpleConnection     *gc,
     return;
   }
 
-  chatty_connection_account_spinner (pp_account, TRUE);
-
   info = g_hash_table_lookup (auto_reconns, account);
 
   if (!purple_connection_error_is_fatal (reason)) {
@@ -477,7 +395,7 @@ chatty_connection_info (PurpleConnection *gc,
 
 static PurpleConnectionUiOps connection_ui_ops =
 {
-  chatty_connection_connect_progress,
+  NULL,
   chatty_connection_connected,
   chatty_connection_disconnected,
   chatty_connection_info,
@@ -537,11 +455,6 @@ chatty_connection_init (void)
                          "account-removed",
                          chatty_connection_get_handle(),
                          PURPLE_CALLBACK (cb_account_removed), NULL);
-
-  purple_signal_connect (purple_accounts_get_handle(),
-                         "account-disabled",
-                         chatty_connection_get_handle(),
-                         PURPLE_CALLBACK (cb_account_disabled), NULL);
 }
 
 

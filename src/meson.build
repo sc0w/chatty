@@ -8,6 +8,7 @@ libsrc = [
 
 chatty_sources = [
   'main.c',
+  'chatty-manager.c',
   'chatty-application.c',
   'chatty-window.c',
   'chatty-dialogs.c',

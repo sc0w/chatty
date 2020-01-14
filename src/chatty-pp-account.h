@@ -14,6 +14,8 @@
 #include <glib-object.h>
 #include <purple.h>
 
+#include "chatty-enums.h"
+
 G_BEGIN_DECLS
 
 #define CHATTY_TYPE_PP_ACCOUNT (chatty_pp_account_get_type ())
@@ -25,9 +27,7 @@ ChattyPpAccount *chatty_pp_account_new                (const char      *username
 ChattyPpAccount *chatty_pp_account_new_purple         (PurpleAccount   *account);
 PurpleAccount   *chatty_pp_account_get_account        (ChattyPpAccount *self);
 PurpleStatus    *chatty_pp_account_get_active_status  (ChattyPpAccount *self);
-gboolean         chatty_pp_account_is_disconnected    (ChattyPpAccount *self);
-gboolean         chatty_pp_account_is_connected       (ChattyPpAccount *self);
-gboolean         chatty_pp_account_is_connecting      (ChattyPpAccount *self);
+ChattyStatus     chatty_pp_account_get_status         (ChattyPpAccount *self);
 gboolean         chatty_pp_account_is_sms             (ChattyPpAccount *self);
 
 const char      *chatty_pp_account_get_protocol_id    (ChattyPpAccount *self);
