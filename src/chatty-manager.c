@@ -74,6 +74,18 @@ manager_account_removed_cb (PurpleAccount *pp_account,
 }
 
 static void
+manager_account_changed_cb (PurpleAccount *pp_account,
+                            ChattyManager *self)
+{
+  ChattyPpAccount *account;
+
+  account = chatty_pp_account_find (pp_account);
+  g_return_if_fail (account);
+
+  g_object_notify (G_OBJECT (account), "enabled");
+}
+
+static void
 manager_connection_changed_cb (PurpleConnection *gc,
                                ChattyManager    *self)
 {
@@ -106,6 +118,13 @@ chatty_manager_intialize_libpurple (ChattyManager *self)
 
   for (GList *node = purple_accounts_get_all (); node; node = node->next)
     manager_account_added_cb (node->data, self);
+
+  purple_signal_connect (purple_accounts_get_handle(),
+                         "account-enabled", self,
+                         PURPLE_CALLBACK (manager_account_changed_cb), self);
+  purple_signal_connect (purple_accounts_get_handle(),
+                         "account-disabled", self,
+                         PURPLE_CALLBACK (manager_account_changed_cb), self);
 
   purple_signal_connect (purple_connections_get_handle(),
                          "signing-on", self,

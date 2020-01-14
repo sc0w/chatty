@@ -47,6 +47,7 @@ enum {
   PROP_USERNAME,
   PROP_PROTOCOL_ID,
   PROP_PURPLE_ACCOUNT,
+  PROP_ENABLED,
   PROP_STATUS,
   N_PROPS
 };
@@ -63,6 +64,10 @@ chatty_pp_account_get_property (GObject *object,
 
   switch (prop_id)
     {
+    case PROP_ENABLED:
+      g_value_set_boolean (value, chatty_pp_account_get_enabled (self));
+      break;
+
     case PROP_STATUS:
       g_value_set_int (value, chatty_pp_account_get_status (self));
       break;
@@ -92,6 +97,10 @@ chatty_pp_account_set_property (GObject      *object,
 
     case PROP_PURPLE_ACCOUNT:
       self->pp_account = g_value_get_pointer (value);
+      break;
+
+    case PROP_ENABLED:
+      chatty_pp_account_set_enabled (self, g_value_get_boolean (value));
       break;
 
     default:
@@ -150,6 +159,13 @@ chatty_pp_account_class_init (ChattyPpAccountClass *klass)
                          "Purple Account",
                          "The PurpleAccount to be used to create the object",
                          G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY | G_PARAM_STATIC_STRINGS);
+
+  properties[PROP_ENABLED] =
+    g_param_spec_boolean ("enabled",
+                          "Enabled",
+                          "Account Enabled or not",
+                          FALSE,
+                          G_PARAM_READWRITE | G_PARAM_EXPLICIT_NOTIFY | G_PARAM_STATIC_STRINGS);
 
   properties[PROP_STATUS] =
     g_param_spec_int ("status",

@@ -59,19 +59,6 @@ cb_account_added (PurpleAccount *account,
 
 
 static void
-cb_switch_on_off_state_changed (GtkSwitch  *widget,
-                                GParamSpec *pspec,
-                                gpointer    row)
-{
-  ChattyPpAccount *account;
-
-  account = g_object_get_data (G_OBJECT (row), "row-account");
-
-  chatty_pp_account_set_enabled (account, gtk_switch_get_active (widget));
-}
-
-
-static void
 cb_list_account_select_row_activated (GtkListBox    *box,
                                       GtkListBoxRow *row,
                                       gpointer       user_data)
@@ -132,10 +119,8 @@ chatty_account_add_to_accounts_list (ChattyPpAccount *account,
                                      guint            list_type)
 {
   HdyActionRow   *row;
-  GtkWidget      *switch_account_enabled;
   const gchar    *protocol_id;
   GtkWidget      *prefix_radio_button;
-  GtkWidget      *spinner;
 
   chatty_data_t *chatty = chatty_get_data ();
 
@@ -156,54 +141,21 @@ chatty_account_add_to_accounts_list (ChattyPpAccount *account,
     return;
   }
 
-  if (list_type == LIST_MANAGE_ACCOUNT) {
-    spinner = gtk_spinner_new ();
-    gtk_widget_show (GTK_WIDGET(spinner));
-
-    switch_account_enabled = gtk_switch_new ();
-    gtk_widget_show (GTK_WIDGET(switch_account_enabled));
-
-    g_object_set  (G_OBJECT(switch_account_enabled),
-                   "valign", GTK_ALIGN_CENTER,
-                   "halign", GTK_ALIGN_END,
-                   NULL);
-
-    gtk_switch_set_state (GTK_SWITCH(switch_account_enabled),
-                          chatty_pp_account_get_enabled (account));
-
-    g_signal_connect_object (switch_account_enabled,
-                             "notify::active",
-                             G_CALLBACK(cb_switch_on_off_state_changed),
-                             (gpointer) row,
-                             0);
-
-    hdy_action_row_add_prefix (row, GTK_WIDGET(spinner));
-
-    g_object_set_data (G_OBJECT(row),
-                       "row-prefix",
-                       (gpointer)spinner);
-
-    hdy_action_row_set_title (row, chatty_pp_account_get_username (account));
-    hdy_action_row_set_subtitle (row, chatty_pp_account_get_protocol_name (account));
-    hdy_action_row_add_action (row, GTK_WIDGET(switch_account_enabled));
-    hdy_action_row_set_activatable_widget (row, NULL);
-  } else {
-    if (chatty_pp_account_get_status (account) == CHATTY_DISCONNECTED) {
-      return;
-    }
-    
-    prefix_radio_button = gtk_radio_button_new_from_widget (GTK_RADIO_BUTTON(chatty->dummy_prefix_radio));
-    gtk_widget_show (GTK_WIDGET(prefix_radio_button));
-
-    gtk_widget_set_sensitive (prefix_radio_button, FALSE);
-
-    g_object_set_data (G_OBJECT(row),
-                       "row-prefix",
-                       (gpointer)prefix_radio_button);
-
-    hdy_action_row_add_prefix (row, GTK_WIDGET(prefix_radio_button ));
-    hdy_action_row_set_title (row, chatty_pp_account_get_username (account));
+  if (chatty_pp_account_get_status (account) == CHATTY_DISCONNECTED) {
+    return;
   }
+
+  prefix_radio_button = gtk_radio_button_new_from_widget (GTK_RADIO_BUTTON(chatty->dummy_prefix_radio));
+  gtk_widget_show (GTK_WIDGET(prefix_radio_button));
+
+  gtk_widget_set_sensitive (prefix_radio_button, FALSE);
+
+  g_object_set_data (G_OBJECT(row),
+                     "row-prefix",
+                     (gpointer)prefix_radio_button);
+
+  hdy_action_row_add_prefix (row, GTK_WIDGET(prefix_radio_button ));
+  hdy_action_row_set_title (row, chatty_pp_account_get_username (account));
 
   gtk_container_add (GTK_CONTAINER(list), GTK_WIDGET(row));
 
