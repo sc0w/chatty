@@ -188,7 +188,7 @@ chatty_account_add_to_accounts_list (ChattyPpAccount *account,
     hdy_action_row_add_action (row, GTK_WIDGET(switch_account_enabled));
     hdy_action_row_set_activatable_widget (row, NULL);
   } else {
-    if (chatty_pp_account_is_disconnected (account)) {
+    if (chatty_pp_account_get_status (account) == CHATTY_DISCONNECTED) {
       return;
     }
     
