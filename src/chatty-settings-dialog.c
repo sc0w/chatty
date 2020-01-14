@@ -575,23 +575,6 @@ settings_protocol_changed_cb (ChattySettingsDialog *self,
   gtk_widget_grab_focus (self->account_id_entry);
 }
 
-static void
-account_enabled_changed_cb (GtkListBoxRow *row,
-                            GParamSpec    *pspec,
-                            GtkSwitch     *enabled_switch)
-{
-  ChattyPpAccount *account;
-  gboolean enabled;
-
-  g_assert (GTK_IS_LIST_BOX_ROW (row));
-  g_assert (GTK_IS_SWITCH (enabled_switch));
-
-  account = g_object_get_data (G_OBJECT (row), "row-account");
-  enabled = gtk_switch_get_active (enabled_switch);
-
-  chatty_pp_account_set_enabled (account, enabled);
-}
-
 static GtkWidget *
 chatty_account_row_new (ChattyPpAccount *account)
 {
@@ -632,14 +615,9 @@ chatty_account_row_new (ChattyPpAccount *account)
                  "halign", GTK_ALIGN_END,
                  NULL);
 
-  gtk_switch_set_state (GTK_SWITCH(account_enabled_switch),
-                        chatty_pp_account_get_enabled (account));
-
-  g_signal_connect_object (account_enabled_switch,
-                           "notify::active",
-                           G_CALLBACK(account_enabled_changed_cb),
-                           (gpointer) row,
-                           G_CONNECT_SWAPPED);
+  g_object_bind_property (account, "enabled",
+                          account_enabled_switch, "active",
+                          G_BINDING_BIDIRECTIONAL | G_BINDING_SYNC_CREATE);
 
   hdy_action_row_set_title (row, chatty_pp_account_get_username (account));
   hdy_action_row_set_subtitle (row, chatty_pp_account_get_protocol_name (account));
