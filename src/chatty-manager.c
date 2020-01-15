@@ -187,6 +187,24 @@ chatty_manager_purple_init (ChattyManager *self)
   chatty_manager_intialize_libpurple (self);
 }
 
+void
+chatty_manager_enable_sms_account (ChattyManager *self)
+{
+  g_autoptr(ChattyPpAccount) account = NULL;
+  PurpleAccount *pp_account;
+
+  pp_account = purple_accounts_find ("SMS", "prpl-mm-sms");
+
+  /* SMS plugin already initialized */
+  if (pp_account)
+    return;
+
+  account = chatty_pp_account_new ("SMS", "prpl-mm-sms");
+  chatty_pp_account_set_password (account, NULL);
+  chatty_pp_account_set_remember_password (account, TRUE);
+  chatty_pp_account_save (account);
+}
+
 GListModel *
 chatty_manager_get_accounts (ChattyManager *self)
 {

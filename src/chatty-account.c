@@ -370,24 +370,6 @@ chatty_account_request_add (PurpleAccount *account,
 }
 
 
-void
-chatty_account_add_sms_account (void)
-{
-  ChattyPpAccount *account;
-  PurpleAccount *pp_account;
-  chatty_data_t *chatty = chatty_get_data ();
-
-  account = chatty_pp_account_new ("SMS", "prpl-mm-sms");
-  g_list_store_append (chatty->account_list, account);
-
-  chatty_pp_account_set_password (account, NULL);
-  chatty_pp_account_set_remember_password (account, TRUE);
-
-  pp_account = chatty_pp_account_get_account (account);
-  purple_accounts_add (pp_account);
-}
-
-
 static PurpleAccountUiOps ui_ops =
 {
   chatty_account_notify_added,

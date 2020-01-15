@@ -294,20 +294,6 @@ chatty_purple_unload_plugin (const char *name)
 }
 
 
-
-void
-chatty_purple_check_sms_plugin (void)
-{
-  PurpleAccount *account;
-
-  account = purple_accounts_find ("SMS", "prpl-mm-sms");
-
-  if (account == NULL) {
-    chatty_account_add_sms_account ();
-  }
-}
-
-
 void
 libpurple_init (void)
 {
@@ -370,6 +356,8 @@ libpurple_init (void)
   chatty_xeps_init ();
 
   chatty_purple->plugin_mm_sms_loaded = chatty_purple_load_plugin ("prpl-mm-sms");
+  if (chatty_purple->plugin_mm_sms_loaded)
+    chatty_manager_enable_sms_account (chatty_manager_get_default ());
 
   purple_savedstatus_activate (purple_savedstatus_get_startup());
   purple_accounts_restore_current_statuses ();
