@@ -224,28 +224,29 @@ chatty_utils_strip_cr_lf (const char *string)
 
 
 char* 
-chatty_utils_format_phonenumber (const char *phone_number)
+chatty_utils_check_phonenumber (const char *phone_number)
 {
   EPhoneNumber      *number;
-  char              *region;
   g_autofree char   *stripped = NULL;
   char              *result;
   g_autoptr(GError)  err = NULL;
 
   stripped = chatty_utils_strip_blanks (phone_number);
 
-  region = e_phone_number_get_default_region (NULL);
-  number = e_phone_number_from_string (stripped, region, &err);
+  number = e_phone_number_from_string (stripped, NULL, &err);
 
   if (!number || !e_phone_number_is_supported ()) {
-    g_debug ("Skipped parsing %s: %s", phone_number, err->message);
+    g_debug ("%s %s: %s\n", __func__, phone_number, err->message);
 
     result = NULL;
   } else {
-    result = e_phone_number_to_string (number, E_PHONE_NUMBER_FORMAT_E164);
+    if (g_strrstr (phone_number, "+")) {
+      result = e_phone_number_to_string (number, E_PHONE_NUMBER_FORMAT_E164);
+    } else {
+      result = e_phone_number_get_national_number (number);
+    }
   }
 
-  g_free (region);
   e_phone_number_free (number);
 
   return result;

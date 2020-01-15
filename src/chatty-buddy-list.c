@@ -157,7 +157,7 @@ cb_search_entry_contacts_changed (GtkSearchEntry *entry,
   static ChattyContactRow *new_row;
   GList                   *children, *l;
   const gchar             *number;
-  gchar                   *number_e164;
+  gchar                   *number_verif;
   int                      num_rows = 0;
 
   account = purple_accounts_find ("SMS", "prpl-mm-sms");
@@ -178,22 +178,22 @@ cb_search_entry_contacts_changed (GtkSearchEntry *entry,
   number = gtk_entry_get_text (GTK_ENTRY(entry));
 
   if ((num_rows == 0) && !new_row) {
-    number_e164 = chatty_utils_format_phonenumber (number);
+    number_verif = chatty_utils_check_phonenumber (number);
 
-    if (!new_row && number_e164) {
-      number_e164 = chatty_utils_format_phonenumber (number);
+    if (!new_row && number_verif) {
+      number_verif = chatty_utils_check_phonenumber (number);
 
-      if (number_e164) {
+      if (number_verif) {
         listbox = chatty_get_contacts_list ();
 
         new_row = CHATTY_CONTACT_ROW (chatty_contact_row_new (NULL,
                                                               NULL,
                                                               _("Send to"),
-                                                              number,
+                                                              number_verif,
                                                               NULL,
                                                               NULL,
                                                               NULL,
-                                                              number_e164));
+                                                              number_verif));
 
         gtk_list_box_row_set_selectable (GTK_LIST_BOX_ROW (new_row), FALSE);
 
@@ -203,12 +203,12 @@ cb_search_entry_contacts_changed (GtkSearchEntry *entry,
       }
     }
   } else if (new_row && num_rows == 1 && !(*number == '\0')) {
-    number_e164 = chatty_utils_format_phonenumber (number);
+    number_verif = chatty_utils_check_phonenumber (number);
 
-    if (number_e164) {
+    if (number_verif) {
       g_object_set (new_row,
                     "description", number,
-                    "phone_number", number_e164,
+                    "phone_number", number_verif,
                     NULL);
     }
   } else {
@@ -759,7 +759,7 @@ chatty_blist_add_buddy_from_uri (const char *uri)
     return;
   }
 
-  who = chatty_utils_format_phonenumber (uri);
+  who = chatty_utils_check_phonenumber (uri);
 
   folks_id = chatty_folks_has_individual_with_phonenumber (uri);
   alias = chatty_folks_get_individual_name_by_id (folks_id);
@@ -828,7 +828,7 @@ chatty_blist_contact_list_add_buddy (void)
   if (chatty_blist_protocol_is_sms (account)) {
     who = purple_buddy_get_name (buddy);
 
-    number = chatty_utils_format_phonenumber (who);
+    number = chatty_utils_check_phonenumber (who);
 
     folks_id = chatty_folks_has_individual_with_phonenumber (number);
 
@@ -864,7 +864,7 @@ chatty_blist_gnome_contacts_add_buddy (void)
   contact = purple_buddy_get_contact (buddy);
   alias = purple_contact_get_alias (contact);
 
-  number = chatty_utils_format_phonenumber (who);
+  number = chatty_utils_check_phonenumber (who);
 
   chatty_dbus_gc_write_contact (alias, number);
 }
