@@ -38,6 +38,7 @@ struct _ChattyManager
   GObject          parent_instance;
 
   GListStore      *account_list;
+  gboolean         disable_auto_login;
 };
 
 G_DEFINE_TYPE (ChattyManager, chatty_manager, G_TYPE_OBJECT)
@@ -55,6 +56,9 @@ manager_account_added_cb (PurpleAccount *pp_account,
   account = chatty_pp_account_new_purple (pp_account);
   g_object_notify (G_OBJECT (account), "status");
   g_list_store_append (self->account_list, account);
+
+  if (self->disable_auto_login)
+    chatty_pp_account_set_enabled (account, FALSE);
 
   if (chatty_pp_account_is_sms (account))
     chatty_pp_account_set_enabled (account, TRUE);
@@ -187,6 +191,9 @@ chatty_manager_purple_init (ChattyManager *self)
 {
   g_return_if_fail (CHATTY_IS_MANAGER (self));
 
+  if (!self->disable_auto_login)
+    purple_savedstatus_activate (purple_savedstatus_new (NULL, PURPLE_STATUS_AVAILABLE));
+
   chatty_manager_intialize_libpurple (self);
 }
 
@@ -214,4 +221,32 @@ chatty_manager_get_accounts (ChattyManager *self)
   g_return_val_if_fail (CHATTY_IS_MANAGER (self), NULL);
 
   return G_LIST_MODEL (self->account_list);
+}
+
+/**
+ * chatty_manager_disable_auto_login:
+ * @self: A #ChattyManager
+ * @disable: whether to disable auto-login
+ *
+ * Set whether to disable automatic login when accounts are
+ * loaded/added.  By default, auto-login is enabled if the
+ * account is enabled with chatty_pp_account_set_enabled().
+ *
+ * This is not applicable to SMS accounts.
+ */
+void
+chatty_manager_disable_auto_login (ChattyManager *self,
+                                   gboolean       disable)
+{
+  g_return_if_fail (CHATTY_IS_MANAGER (self));
+
+  self->disable_auto_login = !!disable;
+}
+
+gboolean
+chatty_manager_get_disable_auto_login (ChattyManager *self)
+{
+  g_return_val_if_fail (CHATTY_IS_MANAGER (self), TRUE);
+
+  return self->disable_auto_login;
 }

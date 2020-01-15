@@ -35,6 +35,7 @@
 #include "chatty-account.h"
 #include "chatty-utils.h"
 #include "chatty-pp-account.h"
+#include "chatty-manager.h"
 #include "chatty-icons.h"
 #include "chatty-settings.h"
 #include "chatty-settings-dialog.h"
@@ -177,6 +178,7 @@ settings_update_account_details (ChattySettingsDialog *self)
 static void
 chatty_settings_add_clicked_cb (ChattySettingsDialog *self)
 {
+  ChattyManager *manager;
   ChattyPpAccount *pp_account;
   PurpleAccount *account;
   const char *user_id, *password, *server_url;
@@ -184,6 +186,7 @@ chatty_settings_add_clicked_cb (ChattySettingsDialog *self)
 
   g_assert (CHATTY_IS_SETTINGS_DIALOG (self));
 
+  manager  = chatty_manager_get_default ();
   user_id  = gtk_entry_get_text (GTK_ENTRY (self->new_account_id_entry));
   password = gtk_entry_get_text (GTK_ENTRY (self->new_password_entry));
   server_url = gtk_entry_get_text (GTK_ENTRY (self->server_url_entry));
@@ -223,7 +226,9 @@ chatty_settings_add_clicked_cb (ChattySettingsDialog *self)
 
   account = chatty_pp_account_get_account (pp_account);
   purple_accounts_add (account);
-  chatty_pp_account_set_enabled (pp_account, TRUE);
+
+  if (!chatty_manager_get_disable_auto_login (manager))
+    chatty_pp_account_set_enabled (pp_account, TRUE);
 
   gtk_widget_hide (self->add_button);
   gtk_stack_set_visible_child_name (GTK_STACK (self->main_stack), "main-settings");

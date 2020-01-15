@@ -383,33 +383,6 @@ chatty_account_get_handle (void) {
 
 
 void
-chatty_account_init (void)
-{
-  GList *accounts;
-
-  chatty_data_t *chatty = chatty_get_data ();
-
-  if (chatty->cml_options & CHATTY_CML_OPT_DISABLE) {
-    for (accounts = purple_accounts_get_all (); accounts != NULL; accounts = accounts->next) {
-      ChattyPpAccount *account;
-
-      account = chatty_pp_account_find (accounts->data);
-
-      if (!account)
-        {
-          account = chatty_pp_account_new_purple (accounts->data);
-          g_list_store_append (chatty->account_list, account);
-        }
-
-      chatty_pp_account_set_enabled (account, FALSE);
-    }
-  } else {
-    purple_savedstatus_activate (purple_savedstatus_new (NULL, PURPLE_STATUS_AVAILABLE));
-  }
-}
-
-
-void
 chatty_account_uninit (void)
 {
   purple_signals_disconnect_by_handle (chatty_account_get_handle());

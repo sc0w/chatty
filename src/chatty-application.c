@@ -91,15 +91,10 @@ chatty_application_command_line (GApplication            *application,
 {
   ChattyApplication *self = (ChattyApplication *)application;
   GVariantDict  *options;
-  chatty_data_t *chatty;
   g_auto(GStrv) arguments = NULL;
   gint argc;
 
-  chatty = chatty_get_data ();
   options = g_application_command_line_get_options_dict (command_line);
-
-  if (!g_application_command_line_get_is_remote (command_line))
-    chatty->cml_options = CHATTY_CML_OPT_NONE;
 
   if (g_variant_dict_contains (options, "daemon")) {
     if (!g_application_command_line_get_is_remote (command_line)) {
@@ -111,7 +106,7 @@ chatty_application_command_line (GApplication            *application,
   }
 
   if (g_variant_dict_contains (options, "nologin")) {
-    chatty->cml_options |= CHATTY_CML_OPT_DISABLE;
+    chatty_manager_disable_auto_login (chatty_manager_get_default (), TRUE);
   } else if (g_variant_dict_contains (options, "debug")) {
     self->enable_debug = TRUE;
   } else if (g_variant_dict_contains (options, "verbose")) {
