@@ -19,6 +19,7 @@
 #include "chatty-utils.h"
 #include "chatty-icons.h"
 #include "chatty-window.h"
+#include <libebook-contacts/libebook-contacts.h>
 
 
 static chatty_folks_data_t chatty_folks_data;
@@ -420,7 +421,10 @@ chatty_folks_individual_has_phonenumber (FolksIndividual *individual,
   GeeSet            *phone_numbers;
   GeeIterator       *iter;
   FolksPhoneDetails *phone_details;
+  EPhoneNumberMatch  number_match;
   gboolean           result = FALSE;
+
+  g_autoptr(GError) error = NULL;
 
   g_return_val_if_fail (FOLKS_IS_INDIVIDUAL (individual), FALSE);
 
@@ -430,22 +434,24 @@ chatty_folks_individual_has_phonenumber (FolksIndividual *individual,
 
   while (gee_iterator_next (iter)) {
     FolksPhoneFieldDetails *field_details;
-    char                   *num_e164_1, *num_e164_2;
     char                   *number;
 
     field_details = gee_iterator_get (iter);
     number = folks_phone_field_details_get_normalised (field_details);
 
-    num_e164_1 = chatty_utils_format_phonenumber (phone_number);
-    num_e164_2 = chatty_utils_format_phonenumber (number);
+    number_match = e_phone_number_compare_strings (phone_number, number, &error);
 
-    if (!g_strcmp0 (num_e164_1, num_e164_2)) {
+    if (error != NULL) {
+      g_error ("Could not compare numbers: %s", error->message);
+    }
+
+    if (number_match == E_PHONE_NUMBER_MATCH_EXACT ||
+        number_match == E_PHONE_NUMBER_MATCH_NATIONAL) {
+          
       result = TRUE;
     }
 
     g_free (number);
-    g_free (num_e164_1);
-    g_free (num_e164_2);
   }
 
   return result;
@@ -510,7 +516,7 @@ chatty_folks_has_individual_with_name (const char *name)
     return NULL;
   }
 
-	iter = gee_map_map_iterator (chatty_folks->individuals);
+  iter = gee_map_map_iterator (chatty_folks->individuals);
 
   while (gee_map_iterator_next (iter)) {
     individual = gee_map_iterator_get_value (iter);
@@ -676,7 +682,7 @@ chatty_folks_individual_add_contact_rows (FolksIndividual *individual)
     field_details = gee_iterator_get (iter);
     number = folks_phone_field_details_get_normalised (field_details);
 
-    number_e164 = chatty_utils_format_phonenumber (number);
+    number_e164 = chatty_utils_check_phonenumber (number);
 
     type_number = g_strconcat (chatty_folks_get_phone_type (field_details),
                                ": ",
