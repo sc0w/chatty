@@ -41,14 +41,7 @@ cb_sms_modem_added (int status)
 
   account = purple_accounts_find ("SMS", "prpl-mm-sms");
   pp_account = chatty_pp_account_find (account);
-
-  if (!pp_account)
-    {
-      chatty_data_t *chatty = chatty_get_data ();
-
-      pp_account = chatty_pp_account_new_purple (account);
-      g_list_store_append (chatty->account_list, pp_account);
-    }
+  g_return_if_fail (CHATTY_IS_PP_ACCOUNT (pp_account));
 
   if (chatty_pp_account_get_status (pp_account) == CHATTY_DISCONNECTED) {
     info = g_hash_table_lookup (auto_reconns, account);
@@ -75,20 +68,6 @@ static void
 cb_account_removed (PurpleAccount *account,
                     gpointer       user_data)
 {
-  ChattyPpAccount *pp_account;
-
-  pp_account = chatty_pp_account_find (account);
-
-  if (pp_account)
-    {
-      chatty_data_t *chatty = chatty_get_data ();
-      guint index;
-
-      chatty_utils_get_item_position (G_LIST_MODEL (chatty->account_list),
-                                      pp_account, &index);
-      g_list_store_remove (chatty->account_list, index);
-    }
-
   g_hash_table_remove (auto_reconns, account);
 }
 
@@ -110,10 +89,11 @@ chatty_connection_update_ui (void)
 
     account = chatty_pp_account_find (accounts->data);
 
-    if (!account)
+    /* The account should exist */
+    if (!CHATTY_IS_PP_ACCOUNT (account))
       {
-        account = chatty_pp_account_new_purple (accounts->data);
-        g_list_store_append (chatty->account_list, account);
+        g_warn_if_reached ();
+        continue;
       }
 
     if (chatty_pp_account_get_status (account) == CHATTY_CONNECTED) {
@@ -175,12 +155,7 @@ chatty_connection_connected (PurpleConnection *gc)
 
   account = purple_connection_get_account (gc);
   pp_account = chatty_pp_account_find (account);
-
-  if (!pp_account)
-    {
-      pp_account = chatty_pp_account_new_purple (account);
-      g_list_store_append (chatty->account_list, pp_account);
-    }
+  g_return_if_fail (CHATTY_IS_PP_ACCOUNT (pp_account));
 
   user_name = chatty_pp_account_get_username (pp_account),
   protocol_id = chatty_pp_account_get_protocol_id (pp_account);
@@ -320,14 +295,7 @@ chatty_connection_report_disconnect_reason (PurpleConnection     *gc,
 
   account = purple_connection_get_account (gc);
   pp_account = chatty_pp_account_find (account);
-
-  if (!pp_account)
-    {
-      chatty_data_t *chatty = chatty_get_data ();
-
-      pp_account = chatty_pp_account_new_purple (account);
-      g_list_store_append (chatty->account_list, pp_account);
-    }
+  g_return_if_fail (CHATTY_IS_PP_ACCOUNT (pp_account));
 
   user_name = chatty_pp_account_get_username (pp_account);
   protocol_id = chatty_pp_account_get_protocol_id (pp_account);
