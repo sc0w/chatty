@@ -167,7 +167,6 @@ chatty_purple_quit (void)
 static void
 chatty_purple_ui_init (void)
 {
-  chatty_account_init ();
   chatty_connection_init ();
   chatty_blist_init ();
   chatty_conversations_init ();

@@ -16,13 +16,6 @@
 #include <handy.h>
 
 
-typedef enum {
-  CHATTY_CML_OPT_NONE     = 0,
-  CHATTY_CML_OPT_DISABLE  = 1 << 0,
-  CHATTY_CML_OPT_DEBUG    = 1 << 1,
-  CHATTY_CML_OPT_VERBOSE  = 1 << 2
-} ChattyCmlOptions;
-
 typedef struct {
   /* Listboxes for sidebar and contact list */
   GtkListBox        *listbox_chats;
@@ -73,7 +66,6 @@ typedef struct {
   gboolean           sms_account_connected;
 
   GListStore        *account_list;
-  ChattyCmlOptions   cml_options;
 
   char        *uri;
 

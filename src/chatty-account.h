@@ -19,7 +19,6 @@ enum {
 PurpleAccountUiOps *chatty_accounts_get_ui_ops(void);
 
 void *chatty_account_get_handle (void);
-void chatty_account_init (void);
 void chatty_account_uninit (void);
 void chatty_account_create_account_select_list (void);
 void chatty_account_connect (const char *account_name, const char *account_pwd);

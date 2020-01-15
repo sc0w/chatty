@@ -13,6 +13,8 @@
 
 #include <glib-object.h>
 
+#include "chatty-pp-account.h"
+
 G_BEGIN_DECLS
 
 #define CHATTY_TYPE_MANAGER (chatty_manager_get_type ())
@@ -23,5 +25,10 @@ ChattyManager  *chatty_manager_get_default        (void);
 void            chatty_manager_purple_init        (ChattyManager *self);
 void            chatty_manager_enable_sms_account (ChattyManager *self);
 GListModel     *chatty_manager_get_accounts       (ChattyManager *self);
+void            chatty_manager_disable_auto_login    (ChattyManager *self,
+                                                      gboolean       disable);
+gboolean        chatty_manager_get_disable_auto_login (ChattyManager *self);
+gboolean        chatty_manager_is_account_supported (ChattyManager   *self,
+                                                     ChattyPpAccount *account);
 
 G_END_DECLS
