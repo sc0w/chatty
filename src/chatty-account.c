@@ -42,23 +42,6 @@ static void chatty_account_add_to_accounts_list (ChattyPpAccount *account,
                                                  guint            list_type);
 
 static void
-cb_account_added (PurpleAccount *account,
-                  gpointer       user_data)
-{
-  chatty_window_overlay_show (FALSE);
-
-  if (purple_accounts_find ("SMS", "prpl-mm-sms")) {
-    ChattyPpAccount *pp_account;
-
-    pp_account = chatty_pp_account_find (account);
-
-    if (CHATTY_IS_PP_ACCOUNT (pp_account))
-      chatty_pp_account_set_enabled (pp_account, TRUE);
-  }
-}
-
-
-static void
 cb_list_account_select_row_activated (GtkListBox    *box,
                                       GtkListBoxRow *row,
                                       gpointer       user_data)
@@ -405,19 +388,6 @@ chatty_account_init (void)
   GList *accounts;
 
   chatty_data_t *chatty = chatty_get_data ();
-
-  purple_signal_register (chatty_account_get_handle(), "account-modified",
-                          purple_marshal_VOID__POINTER, NULL, 1,
-                          purple_value_new (PURPLE_TYPE_SUBTYPE,
-                          PURPLE_SUBTYPE_ACCOUNT));
-
-  purple_prefs_add_none (CHATTY_PREFS_ROOT "/accounts");
-
-  purple_signal_connect (purple_accounts_get_handle(),
-                         "account-added",
-                         chatty_account_get_handle(),
-                         PURPLE_CALLBACK (cb_account_added),
-                         NULL);
 
   if (chatty->cml_options & CHATTY_CML_OPT_DISABLE) {
     for (accounts = purple_accounts_get_all (); accounts != NULL; accounts = accounts->next) {

@@ -55,6 +55,9 @@ manager_account_added_cb (PurpleAccount *pp_account,
   account = chatty_pp_account_new_purple (pp_account);
   g_object_notify (G_OBJECT (account), "status");
   g_list_store_append (self->account_list, account);
+
+  if (chatty_pp_account_is_sms (account))
+    chatty_pp_account_set_enabled (account, TRUE);
 }
 
 static void
