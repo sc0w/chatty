@@ -208,6 +208,23 @@ chatty_pp_account_new_purple (PurpleAccount *account)
                        NULL);
 }
 
+/**
+ * chatty_pp_account_save:
+ * @self: A #ChattyPpAccount
+ *
+ * Save @self to accounts store, which is saved to disk.
+ * If the account is already saved, the function simply
+ * returns.
+ */
+void
+chatty_pp_account_save (ChattyPpAccount *self)
+{
+  g_return_if_fail (CHATTY_IS_PP_ACCOUNT (self));
+
+  /* purple adds the account only if not yet added */
+  purple_accounts_add (self->pp_account);
+}
+
 /* XXX: a helper API till the dust settles */
 PurpleAccount *
 chatty_pp_account_get_account (ChattyPpAccount *self)

@@ -21,6 +21,7 @@ G_DECLARE_FINAL_TYPE (ChattyManager, chatty_manager, CHATTY, MANAGER, GObject)
 
 ChattyManager  *chatty_manager_get_default        (void);
 void            chatty_manager_purple_init        (ChattyManager *self);
+void            chatty_manager_enable_sms_account (ChattyManager *self);
 GListModel     *chatty_manager_get_accounts       (ChattyManager *self);
 
 G_END_DECLS

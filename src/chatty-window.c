@@ -292,10 +292,6 @@ chatty_window_init_data (void)
 
   libpurple_init ();
 
-  // now the account-list widgets are instantiated and we can add
-  // the SMS account if the plugin && ModemManager is present
-  chatty_purple_check_sms_plugin ();
-
   hdy_leaflet_set_visible_child_name (chatty->content_box, "sidebar");
 
   hdy_search_bar_connect_entry (chatty->search_bar_chats,
