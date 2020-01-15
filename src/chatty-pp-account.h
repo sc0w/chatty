@@ -25,6 +25,7 @@ G_DECLARE_FINAL_TYPE (ChattyPpAccount, chatty_pp_account, CHATTY, PP_ACCOUNT, GO
 ChattyPpAccount *chatty_pp_account_new                (const char      *username,
                                                        const char      *protocol_id);
 ChattyPpAccount *chatty_pp_account_new_purple         (PurpleAccount   *account);
+void             chatty_pp_account_save               (ChattyPpAccount *self);
 PurpleAccount   *chatty_pp_account_get_account        (ChattyPpAccount *self);
 PurpleStatus    *chatty_pp_account_get_active_status  (ChattyPpAccount *self);
 ChattyStatus     chatty_pp_account_get_status         (ChattyPpAccount *self);
