@@ -30,6 +30,8 @@
  * This class hides all the complexities surrounding it.
  */
 
+#define RECONNECT_DELAY 5000 /* milliseconds */
+
 struct _ChattyPpAccount
 {
   GObject         parent_instance;
@@ -38,6 +40,7 @@ struct _ChattyPpAccount
   gchar          *protocol_id;
 
   PurpleAccount  *pp_account;
+  guint           connect_id;
 };
 
 G_DEFINE_TYPE (ChattyPpAccount, chatty_pp_account, G_TYPE_OBJECT)
@@ -53,6 +56,18 @@ enum {
 };
 
 static GParamSpec *properties[N_PROPS];
+
+static gboolean
+account_connect (ChattyPpAccount *self)
+{
+  g_assert (CHATTY_IS_PP_ACCOUNT (self));
+
+  g_clear_handle_id (&self->connect_id, g_source_remove);
+
+  chatty_pp_account_connect (self, FALSE);
+
+  return G_SOURCE_REMOVE;
+}
 
 static void
 chatty_pp_account_get_property (GObject *object,
@@ -124,6 +139,7 @@ chatty_pp_account_finalize (GObject *object)
 {
   ChattyPpAccount *self = (ChattyPpAccount *)object;
 
+  g_clear_handle_id (&self->connect_id, g_source_remove);
   g_free (self->username);
   g_free (self->protocol_id);
 
@@ -361,4 +377,70 @@ chatty_pp_account_get_remember_password (ChattyPpAccount *self)
   g_return_val_if_fail (CHATTY_IS_PP_ACCOUNT (self), FALSE);
 
   return purple_account_get_remember_password (self->pp_account);
+}
+
+/**
+ * chatty_pp_account_connect:
+ * @self: A #ChattyPpAccount
+ * @delay: Whether to delay connection
+ *
+ * connection to @self.  If @delay is %TRUE, the connection
+ * is initiated after some delay, which can be useful when
+ * trying to connect after a connection failure.
+ *
+ * If the account is not enabled, or if account status is
+ * set to offline, or if already connected, the function
+ * simply returns.
+ */
+void
+chatty_pp_account_connect (ChattyPpAccount *self,
+                           gboolean         delay)
+{
+  PurpleStatus *pp_status;
+  ChattyStatus status;
+
+  g_return_if_fail (CHATTY_IS_PP_ACCOUNT (self));
+
+  g_clear_handle_id (&self->connect_id, g_source_remove);
+
+  if (!chatty_pp_account_get_enabled (self))
+    return;
+
+  status = chatty_pp_account_get_status (self);
+
+  if (status != CHATTY_DISCONNECTED)
+    return;
+
+  pp_status = chatty_pp_account_get_active_status (self);
+
+  if (!purple_status_is_online (pp_status))
+    return;
+
+  if (!delay)
+    purple_account_connect (self->pp_account);
+  else
+    self->connect_id = g_timeout_add (RECONNECT_DELAY,
+                                      G_SOURCE_FUNC (account_connect),
+                                      self);
+}
+
+void
+chatty_pp_account_disconnect (ChattyPpAccount *self)
+{
+  g_autofree char *password = NULL;
+  ChattyStatus status;
+
+  g_return_if_fail (CHATTY_IS_PP_ACCOUNT (self));
+
+  if (chatty_pp_account_is_sms (self))
+    return;
+
+  status = chatty_pp_account_get_status (self);
+
+  if (status == CHATTY_DISCONNECTED)
+    return;
+
+  password = g_strdup (chatty_pp_account_get_password (self));
+  purple_account_disconnect (self->pp_account);
+  chatty_pp_account_set_password (self, password);
 }
