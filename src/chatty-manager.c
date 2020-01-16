@@ -39,6 +39,7 @@ struct _ChattyManager
 
   GListStore      *account_list;
   gboolean         disable_auto_login;
+  gboolean         network_available;
 };
 
 G_DEFINE_TYPE (ChattyManager, chatty_manager, G_TYPE_OBJECT)
@@ -93,6 +94,25 @@ manager_account_changed_cb (PurpleAccount *pp_account,
 }
 
 static void
+manager_account_connection_failed_cb (PurpleAccount         *pp_account,
+                                      PurpleConnectionError  error,
+                                      const gchar           *error_msg,
+                                      ChattyManager         *self)
+{
+  ChattyPpAccount *account;
+
+  g_assert (CHATTY_IS_MANAGER (self));
+
+  /* account should exist in the store */
+  account = chatty_pp_account_find (pp_account);
+  g_return_if_fail (account);
+
+  if (error == PURPLE_CONNECTION_ERROR_NETWORK_ERROR &&
+      self->network_available)
+    chatty_pp_account_connect (account, TRUE);
+}
+
+static void
 manager_connection_changed_cb (PurpleConnection *gc,
                                ChattyManager    *self)
 {
@@ -111,9 +131,58 @@ manager_connection_changed_cb (PurpleConnection *gc,
 }
 
 static void
+manager_sms_modem_added_cb (gint status)
+{
+  ChattyPpAccount *account;
+  PurpleAccount   *pp_account;
+
+  pp_account = purple_accounts_find ("SMS", "prpl-mm-sms");
+  account = chatty_pp_account_find (pp_account);
+  g_return_if_fail (CHATTY_IS_PP_ACCOUNT (account));
+
+  chatty_pp_account_connect (account, TRUE);
+}
+
+static void
+manager_network_changed_cb (GNetworkMonitor *network_monitor,
+                            gboolean         network_available,
+                            ChattyManager   *self)
+{
+  GListModel *list;
+  guint n_items;
+
+  g_assert (G_IS_NETWORK_MONITOR (network_monitor));
+  g_assert (CHATTY_IS_MANAGER (self));
+
+  if (network_available == self->network_available)
+    return;
+
+  self->network_available = network_available;
+  list = G_LIST_MODEL (self->account_list);
+  n_items = g_list_model_get_n_items (list);
+
+  for (guint i = 0; i < n_items; i++)
+    {
+      g_autoptr(ChattyPpAccount) account = NULL;
+
+      account = g_list_model_get_item (list, i);
+
+      if (network_available)
+        chatty_pp_account_connect (account, FALSE);
+      else
+        chatty_pp_account_disconnect (account);
+    }
+}
+
+static void
 chatty_manager_intialize_libpurple (ChattyManager *self)
 {
+  GNetworkMonitor *network_monitor;
+
   g_assert (CHATTY_IS_MANAGER (self));
+
+  network_monitor = g_network_monitor_get_default ();
+  self->network_available = g_network_monitor_get_network_available (network_monitor);
 
   purple_signal_connect (purple_accounts_get_handle(),
                          "account-added", self,
@@ -132,6 +201,9 @@ chatty_manager_intialize_libpurple (ChattyManager *self)
   purple_signal_connect (purple_accounts_get_handle(),
                          "account-disabled", self,
                          PURPLE_CALLBACK (manager_account_changed_cb), self);
+  purple_signal_connect (purple_accounts_get_handle(),
+                         "account-connection-error", self,
+                         PURPLE_CALLBACK (manager_account_connection_failed_cb), self);
 
   purple_signal_connect (purple_connections_get_handle(),
                          "signing-on", self,
@@ -142,6 +214,14 @@ chatty_manager_intialize_libpurple (ChattyManager *self)
   purple_signal_connect (purple_connections_get_handle(),
                          "signed-off", self,
                          PURPLE_CALLBACK (manager_connection_changed_cb), self);
+
+  purple_signal_connect (purple_plugins_get_handle (),
+                         "mm-sms-modem-added", self,
+                         PURPLE_CALLBACK (manager_sms_modem_added_cb), NULL);
+
+  g_signal_connect_object (network_monitor, "network-changed",
+                           G_CALLBACK (manager_network_changed_cb), self,
+                           G_CONNECT_AFTER);
 }
 
 static void
