@@ -25,53 +25,6 @@
 #define MAX_RECON_DELAY          300
 
 
-static GHashTable *auto_reconns = NULL;
-
-static gboolean sms_notifications = FALSE;
-
-static gboolean chatty_connection_sign_on (ChattyPpAccount *account);
-
-
-static void
-cb_sms_modem_added (int status)
-{
-  ChattyPpAccount *pp_account;
-  PurpleAccount   *account;
-  ChattyAutoRecon *info;
-
-  account = purple_accounts_find ("SMS", "prpl-mm-sms");
-  pp_account = chatty_pp_account_find (account);
-  g_return_if_fail (CHATTY_IS_PP_ACCOUNT (pp_account));
-
-  if (chatty_pp_account_get_status (pp_account) == CHATTY_DISCONNECTED) {
-    info = g_hash_table_lookup (auto_reconns, account);
-
-    if (info == NULL) {
-      info = g_new0 (ChattyAutoRecon, 1);
-
-      g_hash_table_insert (auto_reconns, account, info);
-    }
-
-    info->delay = g_random_int_range (INITIAL_RECON_DELAY_MIN,
-                                      INITIAL_RECON_DELAY_MAX);
-
-    info->timeout = g_timeout_add_seconds (info->delay,
-                                           (GSourceFunc)chatty_connection_sign_on,
-                                           pp_account);
-  }
-
-  g_debug ("%s modem state: %i", __func__, status);
-}
-
-
-static void
-cb_account_removed (PurpleAccount *account,
-                    gpointer       user_data)
-{
-  g_hash_table_remove (auto_reconns, account);
-}
-
-
 static void
 chatty_connection_update_ui (void)
 {
@@ -146,10 +99,6 @@ chatty_connection_connected (PurpleConnection *gc)
 {
   ChattyPpAccount  *pp_account;
   PurpleAccount    *account;
-  g_autofree gchar *message = NULL;
-  const char       *user_name;
-  const char       *protocol_id;
-  int               sms_match;
 
   chatty_data_t *chatty = chatty_get_data ();
 
@@ -157,34 +106,18 @@ chatty_connection_connected (PurpleConnection *gc)
   pp_account = chatty_pp_account_find (account);
   g_return_if_fail (CHATTY_IS_PP_ACCOUNT (pp_account));
 
-  user_name = chatty_pp_account_get_username (pp_account),
-  protocol_id = chatty_pp_account_get_protocol_id (pp_account);
+  if (chatty_pp_account_is_sms (pp_account))
+    {
+      chatty_blist_enable_folks_contacts ();
 
-  sms_match = !g_strcmp0 (protocol_id, "prpl-mm-sms");
-
-  if (g_hash_table_contains (auto_reconns, account)) {
-    message = g_strdup_printf ("Account %s reconnected", user_name);
-
-    if (!sms_match || (sms_match && sms_notifications)) {
-      chatty_notify_show_notification (NULL, message, CHATTY_NOTIFY_ACCOUNT_CONNECTED, NULL, NULL);
+      // we are ready to open URI links now
+      if (chatty->uri) {
+        chatty_blist_add_buddy_from_uri (chatty->uri);
+        chatty->uri = NULL;
+      }
     }
-  }
-
-  if (sms_match) {
-    sms_notifications = TRUE;
-
-    chatty_blist_enable_folks_contacts ();
-
-    // we are ready to open URI links now
-    if (chatty->uri) {
-      chatty_blist_add_buddy_from_uri (chatty->uri);
-      chatty->uri = NULL;
-    }
-  }
 
   chatty_connection_update_ui ();
-
-  g_hash_table_remove (auto_reconns, account);
 
   g_debug ("%s account: %s", __func__, chatty_pp_account_get_username (pp_account));
 }
@@ -199,87 +132,6 @@ chatty_connection_disconnected (PurpleConnection *gc)
 }
 
 
-static gboolean
-chatty_connection_sign_on (ChattyPpAccount *pp_account)
-{
-  PurpleAccount   *account;
-  ChattyAutoRecon *info;
-  PurpleStatus    *status;
-
-  g_return_val_if_fail (CHATTY_IS_PP_ACCOUNT (pp_account), FALSE);
-
-  account = chatty_pp_account_get_account (pp_account);
-  info = g_hash_table_lookup (auto_reconns, pp_account);
-
-  if (info) {
-    info->timeout = 0;
-  }
-
-  status = chatty_pp_account_get_active_status (pp_account);
-
-  if (purple_status_is_online (status)) {
-    g_debug ("%s: Connect %s", __func__, chatty_pp_account_get_username (pp_account));
-    purple_account_connect (account);
-  }
-
-  return FALSE;
-}
-
-
-static void
-chatty_connection_network_connected (void)
-{
-  GList *list, *l;
-
-  l = list = purple_accounts_get_all_active ();
-
-  g_debug ("%s", __func__);
-
-  while (l) {
-    ChattyPpAccount *account = chatty_pp_account_find (l->data);
-    g_hash_table_remove (auto_reconns, l->data);
-
-    if (chatty_pp_account_get_status (account) == CHATTY_DISCONNECTED) {
-      chatty_connection_sign_on (account);
-    }
-
-    l = l->next;
-  }
-
-  g_list_free (list);
-}
-
-
-static void
-chatty_connection_network_disconnected (void)
-{
-  GList *list, *l;
-
-  l = list = purple_accounts_get_all_active();
-
-  g_debug ("%s", __func__);
-
-  while (l) {
-    PurpleAccount *a = (PurpleAccount*)l->data;
-
-    if (!chatty_blist_protocol_is_sms (a)) {
-      if (!purple_account_is_disconnected (a)) {
-        char *password = g_strdup(purple_account_get_password (a));
-
-        purple_account_disconnect (a);
-        purple_account_set_password (a, password);
-
-        g_free (password);
-      }
-    }
-
-    l = l->next;
-  }
-
-  g_list_free(list);
-}
-
-
 static void
 chatty_connection_report_disconnect_reason (PurpleConnection     *gc,
                                             PurpleConnectionError reason,
@@ -287,8 +139,6 @@ chatty_connection_report_disconnect_reason (PurpleConnection     *gc,
 {
   ChattyPpAccount  *pp_account;
   PurpleAccount    *account;
-  GNetworkMonitor  *monitor;
-  ChattyAutoRecon  *info;
   g_autofree gchar *message = NULL;
   const char       *user_name;
   const char       *protocol_id;
@@ -303,53 +153,8 @@ chatty_connection_report_disconnect_reason (PurpleConnection     *gc,
   g_debug ("Disconnected: \"%s\" (%s)\nError: %d\nReason: %s",
            user_name, protocol_id, reason, text);
 
-  if (!g_strcmp0 (protocol_id, "prpl-mm-sms")) {
-    // the SMS account gets included in auto_reconns
-    // in the 'cb_sms_modem_added' callback
-    if (sms_notifications) {
-      message = g_strdup_printf ("SMS disconnected: %s", text);
-      chatty_notify_show_notification (user_name, message, CHATTY_NOTIFY_ACCOUNT_GENERIC, NULL, NULL);
-    }
-
-    return;
-  }
-
-  info = g_hash_table_lookup (auto_reconns, account);
-
-  if (!purple_connection_error_is_fatal (reason)) {
-    if (info == NULL) {
-      info = g_new0 (ChattyAutoRecon, 1);
-
-      g_hash_table_insert (auto_reconns, account, info);
-
-      info->delay = g_random_int_range (INITIAL_RECON_DELAY_MIN,
-                                        INITIAL_RECON_DELAY_MAX);
-    } else {
-      info->delay = MIN(2 * info->delay, MAX_RECON_DELAY);
-
-      if (info->timeout != 0) {
-        g_source_remove(info->timeout);
-      }
-    }
-
-    info->timeout = g_timeout_add_seconds (info->delay,
-                                           (GSourceFunc)chatty_connection_sign_on,
-                                           pp_account);
-  } else {
-    if (info != NULL) {
-      g_hash_table_remove (auto_reconns, account);
-    }
-
+  if (purple_connection_error_is_fatal (reason))
     chatty_connection_error_dialog (pp_account, text);
-    chatty_pp_account_set_enabled (pp_account, FALSE);
-  }
-
-  monitor = g_network_monitor_get_default ();
-
-  if (g_network_monitor_get_connectivity (monitor) == G_NETWORK_CONNECTIVITY_FULL) {
-    message = g_strdup_printf ("Account %s disconnected: %s", user_name, text);
-    chatty_notify_show_notification (NULL, message, CHATTY_NOTIFY_ACCOUNT_DISCONNECTED, NULL, NULL);
-  }
 }
 
 
@@ -368,8 +173,8 @@ static PurpleConnectionUiOps connection_ui_ops =
   chatty_connection_disconnected,
   chatty_connection_info,
   NULL,
-  chatty_connection_network_connected,
-  chatty_connection_network_disconnected,
+  NULL,
+  NULL,
   chatty_connection_report_disconnect_reason,
   NULL,
   NULL,
@@ -381,55 +186,4 @@ PurpleConnectionUiOps *
 chatty_connection_get_ui_ops (void)
 {
   return &connection_ui_ops;
-}
-
-
-void *
-chatty_connection_get_handle (void)
-{
-  static int handle;
-
-  return &handle;
-}
-
-
-static void
-chatty_connection_free_auto_recon (gpointer data)
-{
-  ChattyAutoRecon *info = data;
-
-  if (info->timeout != 0) {
-    g_source_remove (info->timeout);
-  }
-
-  g_free (info);
-}
-
-
-void
-chatty_connection_init (void)
-{
-  auto_reconns = g_hash_table_new_full (g_direct_hash,
-                                        g_direct_equal,
-                                        NULL,
-                                        chatty_connection_free_auto_recon);
-
-  purple_signal_connect (purple_plugins_get_handle (),
-                         "mm-sms-modem-added",
-                         chatty_connection_get_handle (),
-                         PURPLE_CALLBACK (cb_sms_modem_added), NULL);
-
-  purple_signal_connect (purple_accounts_get_handle(),
-                         "account-removed",
-                         chatty_connection_get_handle(),
-                         PURPLE_CALLBACK (cb_account_removed), NULL);
-}
-
-
-void
-chatty_connection_uninit (void)
-{
-  purple_signals_disconnect_by_handle (chatty_connection_get_handle());
-
-  g_hash_table_destroy (auto_reconns);
 }
