@@ -655,11 +655,11 @@ cb_chatty_mam_msg_received (PurpleConnection *pc,
   }
 
   if(node_result != NULL || node_sid != NULL) {
+    int dts;
+    const char *msg_type;
     if(node_result != NULL) {
       xmlnode    *node_fwd;
       xmlnode    *node_delay;
-      const char *msg_type;
-      int dts;
       query_id = xmlnode_get_attrib (node_result, "queryid");
       stanza_id = xmlnode_get_attrib (node_result, "id");
       user = purple_account_get_username(pa);
@@ -685,54 +685,10 @@ cb_chatty_mam_msg_received (PurpleConnection *pc,
         return FALSE; // Now this is bizare
 
       node_delay = xmlnode_get_child (node_fwd, "delay");
-      peer = xmlnode_get_attrib (message, "from");
       if(node_delay != NULL) {
         stamp = xmlnode_get_attrib (node_delay, "stamp");
         /* Copy delay down for the parser */
         xmlnode_insert_child (message, xmlnode_copy (node_delay));
-      }
-      // check history and drop the dup
-      msg_type = xmlnode_get_attrib(message, "type");
-      if(from && msg_type && g_strcmp0(msg_type, "groupchat") == 0) {
-        dts = get_chat_timestamp_for_uuid(stanza_id, from);
-      } else {
-        dts = get_im_timestamp_for_uuid(stanza_id, user);
-      }
-      if(dts < INT_MAX) {
-        g_debug ("Message id %s for acc %s is already stored on %d", stanza_id, user, dts);
-        return TRUE; // note - true means stop processing
-      }
-      // Swap from/to for outgoing messages
-      if(peer) {
-        char *bare_peer = chatty_utils_jabber_id_strip(peer);
-        if(g_strcmp0(user, bare_peer) == 0) {
-          // FIXME: It could be communication between user's resources
-          char *msg_to = g_strdup (xmlnode_get_attrib (message, "to"));
-          xmlnode_set_attrib (message, "to", peer);
-          xmlnode_set_attrib (message, "from", msg_to);
-          g_free (msg_to);
-          flags |= PURPLE_MESSAGE_SEND;
-          peer = xmlnode_get_attrib (message, "from");
-        }
-        g_free (bare_peer);
-      } else {
-        xmlnode_set_attrib (message, "from", xmlnode_get_attrib (message, "to"));
-        peer = xmlnode_get_attrib (message, "from");
-        flags |= PURPLE_MESSAGE_SEND;
-      }
-      if(flags & PURPLE_MESSAGE_SEND) {
-        // For sent messages need to attempt dedup based on origin-id
-        xmlnode *node_oid = xmlnode_get_child_with_namespace (message, "origin-id", NS_SIDv0);
-        if(node_oid) {
-          const char *uuid = xmlnode_get_attrib (node_oid, "id");
-          if(uuid) {
-            dts = get_im_timestamp_for_uuid(uuid, user);
-            if(dts < INT_MAX) {
-              g_debug ("Message id %s for acc %s is already stored on %d", uuid, user, dts);
-              return TRUE; // note - true means stop processing
-            }
-          }
-        }
       }
       g_debug ("Received result %s for query_id %s dated %s", stanza_id, query_id, stamp);
     } else {
@@ -742,6 +698,50 @@ cb_chatty_mam_msg_received (PurpleConnection *pc,
       message = msg;
       peer = from;
       g_debug ("Received forward id %s from %s", stanza_id, peer);
+    }
+    // check history and drop the dup
+    msg_type = xmlnode_get_attrib(message, "type");
+    if(from && msg_type && g_strcmp0(msg_type, "groupchat") == 0) {
+      dts = get_chat_timestamp_for_uuid(stanza_id, from);
+    } else {
+      dts = get_im_timestamp_for_uuid(stanza_id, user);
+    }
+    if(dts < INT_MAX) {
+      g_debug ("Message id %s for acc %s is already stored on %d", stanza_id, user, dts);
+      return TRUE; // note - true means stop processing
+    }
+    // Swap from/to for outgoing messages
+    peer = xmlnode_get_attrib (message, "from");
+    if(peer) {
+      char *bare_peer = chatty_utils_jabber_id_strip(peer);
+      if(g_strcmp0(user, bare_peer) == 0) {
+        // FIXME: It could be communication between user's resources
+        char *msg_to = g_strdup (xmlnode_get_attrib (message, "to"));
+        xmlnode_set_attrib (message, "to", peer);
+        xmlnode_set_attrib (message, "from", msg_to);
+        g_free (msg_to);
+        flags |= PURPLE_MESSAGE_SEND;
+        peer = xmlnode_get_attrib (message, "from");
+      }
+      g_free (bare_peer);
+    } else {
+      xmlnode_set_attrib (message, "from", xmlnode_get_attrib (message, "to"));
+      peer = xmlnode_get_attrib (message, "from");
+      flags |= PURPLE_MESSAGE_SEND;
+    }
+    if(flags & PURPLE_MESSAGE_SEND) {
+      // For sent messages need to attempt dedup based on origin-id
+      xmlnode *node_oid = xmlnode_get_child_with_namespace (message, "origin-id", NS_SIDv0);
+      if(node_oid) {
+        const char *uuid = xmlnode_get_attrib (node_oid, "id");
+        if(uuid) {
+          dts = get_im_timestamp_for_uuid(uuid, user);
+          if(dts < INT_MAX) {
+            g_debug ("Message id %s for acc %s is already stored on %d", uuid, user, dts);
+            return TRUE; // note - true means stop processing
+          }
+        }
+      }
     }
   } else {
     // The server does not support MAM but we still need to handle history
