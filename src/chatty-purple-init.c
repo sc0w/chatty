@@ -144,7 +144,6 @@ chatty_purple_quit (void)
 {
   chatty_conversations_uninit ();
   chatty_blist_uninit ();
-  chatty_connection_uninit();
   chatty_account_uninit();
 
   purple_conversations_set_ui_ops (NULL);
@@ -167,7 +166,6 @@ chatty_purple_quit (void)
 static void
 chatty_purple_ui_init (void)
 {
-  chatty_connection_init ();
   chatty_blist_init ();
   chatty_conversations_init ();
   chatty_manager_purple_init (chatty_manager_get_default ());

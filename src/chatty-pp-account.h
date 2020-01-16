@@ -53,12 +53,8 @@ void             chatty_pp_account_add_buddy          (ChattyPpAccount *self,
 void             chatty_pp_account_add_buddy_and_invite (ChattyPpAccount *self,
                                                          PurpleBuddy     *buddy);
 
-/* void             chatty_pp_account_connect_async      (ChattyPpAccount *self, */
-/*                                                        GCancellable    *cancellable, */
-/*                                                        GAsyncReadyCallback callback, */
-/*                                                        gpointer         user_data); */
-/* gboolean         chatty_pp_account_connect_finish     (ChattyPpAccount *self, */
-/*                                                        GAsyncResult    *result, */
-/*                                                        GError         **error); */
+void             chatty_pp_account_connect              (ChattyPpAccount *self,
+                                                         gboolean          delay);
+void             chatty_pp_account_disconnect           (ChattyPpAccount *self);
 
 G_END_DECLS
