@@ -144,7 +144,6 @@ chatty_purple_quit (void)
 {
   chatty_conversations_uninit ();
   chatty_blist_uninit ();
-  chatty_account_uninit();
 
   purple_conversations_set_ui_ops (NULL);
   purple_connections_set_ui_ops (NULL);
