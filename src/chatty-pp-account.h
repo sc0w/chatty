@@ -14,13 +14,14 @@
 #include <glib-object.h>
 #include <purple.h>
 
+#include "chatty-user.h"
 #include "chatty-enums.h"
 
 G_BEGIN_DECLS
 
 #define CHATTY_TYPE_PP_ACCOUNT (chatty_pp_account_get_type ())
 
-G_DECLARE_FINAL_TYPE (ChattyPpAccount, chatty_pp_account, CHATTY, PP_ACCOUNT, GObject)
+G_DECLARE_FINAL_TYPE (ChattyPpAccount, chatty_pp_account, CHATTY, PP_ACCOUNT, ChattyUser)
 
 ChattyPpAccount *chatty_pp_account_new                (const char      *username,
                                                        const char      *protocol_id);
