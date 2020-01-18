@@ -60,11 +60,29 @@ static GParamSpec *properties[N_PROPS];
 static gboolean
 account_connect (ChattyPpAccount *self)
 {
+  PurpleStatus *pp_status;
+  ChattyStatus status;
+
   g_assert (CHATTY_IS_PP_ACCOUNT (self));
 
   g_clear_handle_id (&self->connect_id, g_source_remove);
 
-  chatty_pp_account_connect (self, FALSE);
+  if (!chatty_pp_account_get_enabled (self))
+    return G_SOURCE_REMOVE;
+
+  status = chatty_pp_account_get_status (self);
+
+  if (status == CHATTY_CONNECTED ||
+      status == CHATTY_CONNECTING)
+    return G_SOURCE_REMOVE;
+
+  pp_status = chatty_pp_account_get_active_status (self);
+
+  if (!purple_status_is_online (pp_status))
+    return G_SOURCE_REMOVE;
+
+  g_debug ("connecting to %s", chatty_pp_account_get_username (self));
+  purple_account_connect (self->pp_account);
 
   return G_SOURCE_REMOVE;
 }
@@ -396,28 +414,12 @@ void
 chatty_pp_account_connect (ChattyPpAccount *self,
                            gboolean         delay)
 {
-  PurpleStatus *pp_status;
-  ChattyStatus status;
-
   g_return_if_fail (CHATTY_IS_PP_ACCOUNT (self));
 
   g_clear_handle_id (&self->connect_id, g_source_remove);
 
-  if (!chatty_pp_account_get_enabled (self))
-    return;
-
-  status = chatty_pp_account_get_status (self);
-
-  if (status != CHATTY_DISCONNECTED)
-    return;
-
-  pp_status = chatty_pp_account_get_active_status (self);
-
-  if (!purple_status_is_online (pp_status))
-    return;
-
   if (!delay)
-    purple_account_connect (self->pp_account);
+    account_connect (self);
   else
     self->connect_id = g_timeout_add (RECONNECT_DELAY,
                                       G_SOURCE_FUNC (account_connect),
