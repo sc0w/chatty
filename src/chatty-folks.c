@@ -442,11 +442,11 @@ chatty_folks_individual_has_phonenumber (FolksIndividual *individual,
     number_match = e_phone_number_compare_strings (phone_number, number, &error);
 
     if (error != NULL) {
-      g_error ("Could not compare numbers: %s", error->message);
-    }
+      g_debug ("Error comparing numbers: %s", error->message);
+      result = strcmp (phone_number, number) == 0;
 
-    if (number_match == E_PHONE_NUMBER_MATCH_EXACT ||
-        number_match == E_PHONE_NUMBER_MATCH_NATIONAL) {
+    } else if (number_match == E_PHONE_NUMBER_MATCH_EXACT ||
+               number_match == E_PHONE_NUMBER_MATCH_NATIONAL) {
           
       result = TRUE;
     }
