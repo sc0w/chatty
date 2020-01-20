@@ -387,16 +387,16 @@ chatty_folks_load_avatar (FolksIndividual  *individual,
     g_object_unref (pixbuf);
 
     return;
+  } else {
+    data = g_slice_new0 (AvatarData);
+    data->row = row;
+    data->mode = mode;
+    data->size = size;
+    data->purple_account = account;
+    data->purple_user_name = user_name;
+
+    g_loadable_icon_load_async (avatar, size, NULL, cb_icon_load_async_ready, data);
   }
-
-  data = g_slice_new0 (AvatarData);
-  data->row = row;
-  data->mode = mode;
-  data->size = size;
-  data->purple_account = account;
-  data->purple_user_name = user_name;
-
-  g_loadable_icon_load_async (avatar, size, NULL, cb_icon_load_async_ready, data);
 }
 
 
