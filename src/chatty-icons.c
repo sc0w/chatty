@@ -19,27 +19,28 @@ chatty_icon_pixbuf_from_data (const guchar *buf,
 {
   GdkPixbuf       *pixbuf;
   GdkPixbufLoader *loader;
-
-  g_autoptr(GError) error = NULL;
+  GError          *error = NULL;
 
   loader = gdk_pixbuf_loader_new ();
 
   if (!gdk_pixbuf_loader_write (loader, buf, count, &error)) {
-    g_error ("%s: pixbuf_loder_write failed: %s", __func__, error->message);
+    g_debug ("%s: pixbuf_loder_write failed: %s", __func__, error->message);
     g_object_unref (G_OBJECT(loader));
+    g_error_free (error);
     return NULL;
   }
 
   if (!gdk_pixbuf_loader_close (loader, &error)) {
-    g_error ("%s: pixbuf_loder_close failed: %s", __func__, error->message);
+    g_debug ("%s: pixbuf_loder_close failed: %s", __func__, error->message);
     g_object_unref (G_OBJECT(loader));
+    g_error_free (error);
     return NULL;
   }
 
   pixbuf = gdk_pixbuf_loader_get_pixbuf (loader);
 
   if (!pixbuf) {
-    g_error ("%s: pixbuf creation failed", __func__);
+    g_debug ("%s: pixbuf creation failed", __func__);
     g_object_unref (G_OBJECT(loader));
     return NULL;
   }
@@ -391,13 +392,13 @@ chatty_icon_get_gicon_from_pixbuf (GdkPixbuf *pixbuf)
   GBytes *bytes;
   gchar  *buffer;
   gsize   size;
-
-  g_autoptr(GError) error = NULL;
+  GError *error = NULL;
 
   gdk_pixbuf_save_to_buffer (pixbuf, &buffer, &size, "png", &error, NULL);
 
   if (error != NULL) {
-    g_error ("%s: Could not save pixbuf to buffer: %s", __func__, error->message);
+    g_debug ("%s: Could not save pixbuf to buffer: %s", __func__, error->message);
+    g_error_free (error);
 
     return NULL;
   }
@@ -422,9 +423,9 @@ chatty_icon_get_data_from_pixbuf (const char               *file_name,
   PurpleBuddyIconSpec *icon_spec;
   gsize                size;
   gchar               *buffer;
+  GError              *error = NULL;
   int                  icon_width, icon_height;
 
-  g_autoptr(GError) error = NULL;
 
   icon_spec = &prpl_info->icon_spec;
 
@@ -435,7 +436,9 @@ chatty_icon_get_data_from_pixbuf (const char               *file_name,
     pixbuf = gdk_pixbuf_new_from_file (file_name, &error);
 
     if (error != NULL) {
-      g_error ("%s: Could not create pixbuf from file: %s", __func__, error->message);
+      g_debug ("%s: Could not create pixbuf from file: %s", __func__, error->message);
+      g_error_free (error);
+
       return NULL;
     }
 
@@ -455,12 +458,16 @@ chatty_icon_get_data_from_pixbuf (const char               *file_name,
     g_object_unref (pixbuf);
 
     if (error != NULL) {
-      g_error ("%s: Could not save pixbuf to buffer: %s", __func__, error->message);
+      g_debug ("%s: Could not save pixbuf to buffer: %s", __func__, error->message);
+      g_error_free (error);
+
       return NULL;
     }
   } else {
     if (!g_file_get_contents (file_name, &buffer, &size, &error)) {
-      g_error ("%s: Could not get file content: %s", __func__, error->message);
+      g_debug ("%s: Could not get file content: %s", __func__, error->message);
+      g_error_free (error);
+
       return NULL;
     }
 
