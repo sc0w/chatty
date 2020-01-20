@@ -32,13 +32,15 @@ cb_bus_connected (GObject      *source_object,
                   gpointer      user_data)
 {
   g_autoptr (GDBusConnection) connection = NULL;
-  g_autoptr (GError) error = NULL;
   g_autoptr (GDBusActionGroup) action_group = NULL;
+  GError *error = NULL;
 
   connection = g_bus_get_finish (res, &error);
 
   if (connection == NULL || error != NULL) {
-    g_error ("%s Could not get dbus connection: %s", __func__, error->message);
+    g_debug ("%s Could not get dbus connection: %s", __func__, error->message);
+    g_error_free (error);
+    
     return;
   }
 

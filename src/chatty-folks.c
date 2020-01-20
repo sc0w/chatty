@@ -251,15 +251,14 @@ cb_pixbuf_from_stream_ready (GObject      *source_object,
   PurpleBuddy   *buddy;
   gchar         *buffer;
   size_t         size;
-
-  g_autoptr(GError) error = NULL;
+  GError        *error = NULL;
 
   pixbuf = gdk_pixbuf_new_from_stream_finish (result, &error);
 
   if (error != NULL) {
-    g_error ("Could not get pixbuf from stream: %s", error->message);
-
+    g_debug ("Could not get pixbuf from stream: %s", error->message);
     g_slice_free (AvatarData, data);
+    g_error_free (error);
 
     return;
   }
@@ -277,9 +276,9 @@ cb_pixbuf_from_stream_ready (GObject      *source_object,
       gdk_pixbuf_save_to_buffer (pixbuf, &buffer, &size, "png", &error, NULL);
 
       if (error != NULL) {
-        g_error ("Could not save pixbuf to buffer: %s", error->message);
-
+        g_debug ("Could not save pixbuf to buffer: %s", error->message);
         g_slice_free (AvatarData, data);
+        g_error_free (error);
 
         return;
       }
@@ -310,15 +309,14 @@ cb_icon_load_async_ready (GObject      *source_object,
   GLoadableIcon *icon = G_LOADABLE_ICON (source_object);
   AvatarData    *data = avatar_data;
   GInputStream  *stream;
-
-  g_autoptr(GError) error = NULL;
+  GError        *error = NULL;
 
   stream = g_loadable_icon_load_finish (icon, result, NULL, &error);
 
   if (error != NULL) {
-    g_error ("Could not load icon: %s", error->message);
-
+    g_debug ("Could not load icon: %s", error->message);
     g_slice_free (AvatarData, data);
+    g_error_free (error);
 
     return;
   }
@@ -389,16 +387,16 @@ chatty_folks_load_avatar (FolksIndividual  *individual,
     g_object_unref (pixbuf);
 
     return;
+  } else if (G_IS_LOADABLE_ICON(avatar)) {
+    data = g_slice_new0 (AvatarData);
+    data->row = row;
+    data->mode = mode;
+    data->size = size;
+    data->purple_account = account;
+    data->purple_user_name = user_name;
+
+    g_loadable_icon_load_async (avatar, size, NULL, cb_icon_load_async_ready, data);
   }
-
-  data = g_slice_new0 (AvatarData);
-  data->row = row;
-  data->mode = mode;
-  data->size = size;
-  data->purple_account = account;
-  data->purple_user_name = user_name;
-
-  g_loadable_icon_load_async (avatar, size, NULL, cb_icon_load_async_ready, data);
 }
 
 
@@ -423,8 +421,8 @@ chatty_folks_individual_has_phonenumber (FolksIndividual *individual,
   FolksPhoneDetails *phone_details;
   EPhoneNumberMatch  number_match;
   gboolean           result = FALSE;
+  GError            *error = NULL;
 
-  g_autoptr(GError) error = NULL;
 
   g_return_val_if_fail (FOLKS_IS_INDIVIDUAL (individual), FALSE);
 
@@ -442,11 +440,13 @@ chatty_folks_individual_has_phonenumber (FolksIndividual *individual,
     number_match = e_phone_number_compare_strings (phone_number, number, &error);
 
     if (error != NULL) {
-      g_error ("Could not compare numbers: %s", error->message);
-    }
+      g_debug ("Error comparing numbers: %s", error->message);
+      g_error_free (error);
+      
+      result = strcmp (phone_number, number) == 0;
 
-    if (number_match == E_PHONE_NUMBER_MATCH_EXACT ||
-        number_match == E_PHONE_NUMBER_MATCH_NATIONAL) {
+    } else if (number_match == E_PHONE_NUMBER_MATCH_EXACT ||
+               number_match == E_PHONE_NUMBER_MATCH_NATIONAL) {
           
       result = TRUE;
     }

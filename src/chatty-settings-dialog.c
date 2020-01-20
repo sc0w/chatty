@@ -442,7 +442,7 @@ static void
 settings_avatar_button_clicked_cb (ChattySettingsDialog *self)
 {
   g_autofree char *file_name = NULL;
-  g_autoptr(GError) error = NULL;
+  GError          *error = NULL;
 
   file_name = settings_show_dialog_load_avatar ();
 
@@ -468,7 +468,9 @@ settings_avatar_button_clicked_cb (ChattySettingsDialog *self)
 
       if (error != NULL)
         {
-          g_error ("Could not create pixbuf from file: %s", error->message);
+          g_debug ("Could not create pixbuf from file: %s", error->message);
+          g_error_free (error);
+          
           return;
         }
 
