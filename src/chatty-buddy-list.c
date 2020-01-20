@@ -547,22 +547,9 @@ cb_chat_joined (PurpleConversation *conv,
 
 
 static void
-chatty_prefs_changed_cb (void)
+cb_chatty_prefs_changed (void)
 {
-  PurpleBlistNode *node;
-  PurpleBuddyList *list;
-
-  list = purple_get_blist ();
-  node = list->root;
-
-  while (node)
-  {
-    if (PURPLE_BLIST_NODE_IS_BUDDY (node) || PURPLE_BLIST_NODE_IS_CHAT (node)) {
-      chatty_blist_update (list, node);
-    }
-
-    node = purple_blist_node_next (node, FALSE);
-  }
+  chatty_blist_refresh ();
 }
 
 
@@ -603,7 +590,7 @@ cb_auto_join_chats (gpointer data)
 static gboolean
 cb_chatty_blist_refresh_timer (PurpleBuddyList *list)
 {
-  chatty_prefs_changed_cb ();
+  cb_chatty_prefs_changed ();
 
   return TRUE;
 }
@@ -683,6 +670,26 @@ chatty_blist_protocol_is_sms (PurpleAccount *account)
     return TRUE; 
   } else {
     return FALSE;
+  }
+}
+
+
+void
+chatty_blist_refresh (void)
+{
+  PurpleBlistNode *node;
+  PurpleBuddyList *list;
+
+  list = purple_get_blist ();
+  node = list->root;
+
+  while (node)
+  {
+    if (PURPLE_BLIST_NODE_IS_BUDDY (node) || PURPLE_BLIST_NODE_IS_CHAT (node)) {
+      chatty_blist_update (list, node);
+    }
+
+    node = purple_blist_node_next (node, FALSE);
   }
 }
 
@@ -2020,9 +2027,9 @@ void chatty_blist_init (void)
 
   settings = chatty_settings_get_default ();
   g_object_connect (settings,
-                    "signal::notify::indicate-unkown-contacts", G_CALLBACK (chatty_prefs_changed_cb), NULL,
-                    "signal::notify::blur-idle-buddies", G_CALLBACK (chatty_prefs_changed_cb), NULL,
-                    "signal::notify::greyout-offline-buddies", G_CALLBACK (chatty_prefs_changed_cb), NULL,
+                    "signal::notify::indicate-unkown-contacts", G_CALLBACK (cb_chatty_prefs_changed), NULL,
+                    "signal::notify::blur-idle-buddies", G_CALLBACK (cb_chatty_prefs_changed), NULL,
+                    "signal::notify::greyout-offline-buddies", G_CALLBACK (cb_chatty_prefs_changed), NULL,
                     NULL);
 
   purple_signal_register (chatty_blist_handle,
