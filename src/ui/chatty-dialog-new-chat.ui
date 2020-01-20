@@ -297,7 +297,7 @@
                               <object class="GtkButton" id="button_add_gnome_contact">
                                 <property name="has_default">True</property>
                                 <property name="can_default">True</property>
-                                <property name="label" translatable="yes">Add in GNOME Contacts</property>
+                                <property name="label" translatable="yes">Add to Contacts</property>
                                 <property name="visible">True</property>
                                 <style>
                                   <class name="suggested-action"/>
