@@ -374,19 +374,3 @@ chatty_accounts_get_ui_ops (void)
 {
   return &ui_ops;
 }
-
-
-void *
-chatty_account_get_handle (void) {
-  static int handle;
-
-  return &handle;
-}
-
-
-void
-chatty_account_uninit (void)
-{
-  purple_signals_disconnect_by_handle (chatty_account_get_handle());
-  purple_signals_unregister_by_instance (chatty_account_get_handle());
-}
