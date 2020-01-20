@@ -19,6 +19,7 @@
 #include "chatty-utils.h"
 #include "chatty-icons.h"
 #include "chatty-window.h"
+#include "chatty-buddy-list.h"
 #include <libebook-contacts/libebook-contacts.h>
 
 
@@ -237,6 +238,8 @@ cb_aggregator_individuals_changed (FolksIndividualAggregator *aggregator,
   g_clear_object (&iter);
   g_object_unref (added);
   g_object_unref (removed);
+
+  chatty_blist_refresh ();
 }
 
 
