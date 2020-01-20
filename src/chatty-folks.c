@@ -387,7 +387,7 @@ chatty_folks_load_avatar (FolksIndividual  *individual,
     g_object_unref (pixbuf);
 
     return;
-  } else {
+  } else if (G_IS_LOADABLE_ICON(avatar)) {
     data = g_slice_new0 (AvatarData);
     data->row = row;
     data->mode = mode;
