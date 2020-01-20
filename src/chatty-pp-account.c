@@ -34,7 +34,7 @@
 
 struct _ChattyPpAccount
 {
-  GObject         parent_instance;
+  ChattyUser      parent_instance;
 
   gchar          *username;
   gchar          *protocol_id;
@@ -43,7 +43,7 @@ struct _ChattyPpAccount
   guint           connect_id;
 };
 
-G_DEFINE_TYPE (ChattyPpAccount, chatty_pp_account, G_TYPE_OBJECT)
+G_DEFINE_TYPE (ChattyPpAccount, chatty_pp_account, CHATTY_TYPE_USER)
 
 enum {
   PROP_0,
@@ -85,6 +85,33 @@ account_connect (ChattyPpAccount *self)
   purple_account_connect (self->pp_account);
 
   return G_SOURCE_REMOVE;
+}
+
+static const char *
+chatty_pp_account_get_name (ChattyUser *user)
+{
+  ChattyPpAccount *self = (ChattyPpAccount *)user;
+  const char *name;
+
+  g_assert (CHATTY_IS_PP_ACCOUNT (self));
+
+  name = purple_account_get_alias (self->pp_account);
+
+  if (name && *name)
+    return name;
+
+  return purple_account_get_username (self->pp_account);
+}
+
+static void
+chatty_pp_account_set_name (ChattyUser *user,
+                            const char *name)
+{
+  ChattyPpAccount *self = (ChattyPpAccount *)user;
+
+  g_assert (CHATTY_IS_PP_ACCOUNT (self));
+
+  purple_account_set_alias (self->pp_account, name);
 }
 
 static void
@@ -167,12 +194,16 @@ chatty_pp_account_finalize (GObject *object)
 static void
 chatty_pp_account_class_init (ChattyPpAccountClass *klass)
 {
-  GObjectClass *object_class = G_OBJECT_CLASS (klass);
+  GObjectClass *object_class  = G_OBJECT_CLASS (klass);
+  ChattyUserClass *user_class = CHATTY_USER_CLASS (klass);
 
   object_class->get_property = chatty_pp_account_get_property;
   object_class->set_property = chatty_pp_account_set_property;
   object_class->constructed = chatty_pp_account_constructed;
   object_class->finalize = chatty_pp_account_finalize;
+
+  user_class->get_name = chatty_pp_account_get_name;
+  user_class->set_name = chatty_pp_account_set_name;
 
   properties[PROP_USERNAME] =
     g_param_spec_string ("username",
