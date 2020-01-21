@@ -27,9 +27,12 @@ struct _ChattyUserClass
   const char      *(*get_name)            (ChattyUser           *self);
   void             (*set_name)            (ChattyUser           *self,
                                            const char           *name);
+  GdkPixbuf       *(*get_avatar)          (ChattyUser           *self);
 };
 
 const char      *chatty_user_get_name            (ChattyUser           *self);
 void             chatty_user_set_name            (ChattyUser           *self,
                                                   const char           *name);
+GdkPixbuf       *chatty_user_get_avatar          (ChattyUser           *self);
+
 G_END_DECLS
