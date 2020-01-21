@@ -246,9 +246,7 @@ chatty_manager_class_init (ChattyManagerClass *klass)
 static void
 chatty_manager_init (ChattyManager *self)
 {
-  chatty_data_t *chatty = chatty_get_data ();
-
-  self->account_list = g_object_ref (chatty->account_list);
+  self->account_list = g_list_store_new (CHATTY_TYPE_PP_ACCOUNT);
 }
 
 ChattyManager *
