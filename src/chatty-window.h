@@ -65,8 +65,6 @@ typedef struct {
   gboolean           im_account_connected;
   gboolean           sms_account_connected;
 
-  GListStore        *account_list;
-
   char        *uri;
 
   struct {

@@ -28,7 +28,6 @@
 #include <glib/gi18n.h>
 
 #include "chatty-config.h"
-#include "chatty-window.h"
 #include "chatty-purple-init.h"
 #include "chatty-lurch.h"
 #include "chatty-dialogs.h"
@@ -638,14 +637,12 @@ static void
 chatty_settings_dialog_popuplate_account_list (ChattySettingsDialog *self)
 {
   GListModel *model;
-  chatty_data_t *chatty;
   guint n_items;
   gint index = 0;
 
   chatty_account_list_clear (self, GTK_LIST_BOX (self->accounts_list_box));
 
-  chatty = chatty_get_data ();
-  model = G_LIST_MODEL (chatty->account_list);
+  model = chatty_manager_get_accounts (chatty_manager_get_default ());
   n_items = g_list_model_get_n_items (model);
 
   for (guint i = 0; i < n_items; i++)
@@ -803,12 +800,12 @@ chatty_settings_dialog_class_init (ChattySettingsDialogClass *klass)
 static void
 chatty_settings_dialog_init (ChattySettingsDialog *self)
 {
+  ChattyManager *manager;
   chatty_purple_data_t *chatty_purple;
-  chatty_data_t *chatty;
 
-  chatty = chatty_get_data ();
+  manager = chatty_manager_get_default ();
 
-  g_signal_connect_object (G_OBJECT (chatty->account_list),
+  g_signal_connect_object (G_OBJECT (chatty_manager_get_accounts (manager)),
                            "items-changed",
                            G_CALLBACK (chatty_settings_dialog_popuplate_account_list),
                            self, G_CONNECT_SWAPPED);
