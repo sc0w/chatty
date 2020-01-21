@@ -9,6 +9,7 @@
 #include <glib/gi18n.h>
 #include <glib-object.h>
 #include "chatty-window.h"
+#include "chatty-manager.h"
 #include "chatty-account.h"
 #include "chatty-buddy-list.h"
 #include "chatty-conversation.h"
@@ -688,6 +689,7 @@ chatty_dialogs_update_user_avatar (PurpleBuddy *buddy,
 void
 chatty_dialogs_show_dialog_user_info (ChattyConversation *chatty_conv)
 {
+  ChattyManager  *manager;
   PurpleBuddy    *buddy;
   PurpleAccount  *account;
   PurplePresence *presence;
@@ -706,9 +708,9 @@ chatty_dialogs_show_dialog_user_info (ChattyConversation *chatty_conv)
   const char     *protocol_id;
   const char     *alias;
 
-  chatty_purple_data_t *chatty_purple = chatty_get_purple_data ();
   chatty_dialog_data_t *chatty_dialog = chatty_get_dialog_data ();
 
+  manager = chatty_manager_get_default ();
   builder = gtk_builder_new_from_resource ("/sm/puri/chatty/ui/chatty-dialog-user-info.ui");
 
   chatty_dialog->button_user_avatar = GTK_WIDGET (gtk_builder_get_object (builder, "button-user-avatar"));
@@ -721,7 +723,7 @@ chatty_dialogs_show_dialog_user_info (ChattyConversation *chatty_conv)
   account = purple_conversation_get_account (chatty_conv->conv);
   protocol_id = purple_account_get_protocol_id (account);
 
-  if (chatty_purple->plugin_lurch_loaded && (!g_strcmp0 (protocol_id, "prpl-jabber"))) {
+  if (chatty_manager_lurch_plugin_is_loaded (manager) && (!g_strcmp0 (protocol_id, "prpl-jabber"))) {
     label_encryption = GTK_WIDGET (gtk_builder_get_object (builder, "label_encryption"));
     chatty_dialog->omemo.switch_on_off = GTK_SWITCH (gtk_builder_get_object (builder, "switch_omemo"));
     chatty_dialog->omemo.label_status_msg = GTK_WIDGET (gtk_builder_get_object (builder, "label_encryption_msg"));

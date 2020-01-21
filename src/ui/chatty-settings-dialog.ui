@@ -150,7 +150,6 @@
                           <object class="GtkSwitch" id="message_carbons_switch">
                             <property name="visible">True</property>
                             <property name="valign">center</property>
-                            <signal name="notify::active" handler="settings_message_carbons_changed_cb" swapped="yes"/>
                           </object>
                         </child>
                       </object>
