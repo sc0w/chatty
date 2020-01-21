@@ -155,6 +155,7 @@ cb_search_entry_contacts_changed (GtkSearchEntry *entry,
                                   GtkListBox     *listbox)
 {
   PurpleAccount           *account;
+  GdkPixbuf               *avatar;
   static ChattyContactRow *new_row;
   GList                   *children, *l;
   const gchar             *number;
@@ -178,6 +179,12 @@ cb_search_entry_contacts_changed (GtkSearchEntry *entry,
 
   number = gtk_entry_get_text (GTK_ENTRY(entry));
 
+  avatar = chatty_icon_get_buddy_icon (NULL,
+                                       "+",
+                                       CHATTY_ICON_SIZE_MEDIUM,
+                                       CHATTY_COLOR_GREY,
+                                       FALSE);
+
   if ((num_rows == 0) && !new_row) {
     number_verif = chatty_utils_check_phonenumber (number);
 
@@ -188,7 +195,7 @@ cb_search_entry_contacts_changed (GtkSearchEntry *entry,
         listbox = chatty_get_contacts_list ();
 
         new_row = CHATTY_CONTACT_ROW (chatty_contact_row_new (NULL,
-                                                              NULL,
+                                                              avatar,
                                                               _("Send to"),
                                                               number_verif,
                                                               NULL,
@@ -217,6 +224,10 @@ cb_search_entry_contacts_changed (GtkSearchEntry *entry,
       gtk_widget_destroy (GTK_WIDGET(new_row));
       new_row = NULL;
     }
+  }
+
+  if (avatar) {
+    g_object_unref (avatar);
   }
 
   g_list_free (children);
