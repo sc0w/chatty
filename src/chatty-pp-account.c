@@ -40,6 +40,8 @@ struct _ChattyPpAccount
   gchar          *protocol_id;
 
   PurpleAccount  *pp_account;
+  PurpleStoredImage *pp_avatar;
+  GdkPixbuf         *avatar;
   guint           connect_id;
 };
 
@@ -114,6 +116,57 @@ chatty_pp_account_set_name (ChattyUser *user,
   purple_account_set_alias (self->pp_account, name);
 }
 
+static GdkPixbuf *
+chatty_icon_from_data (const guchar *buf,
+                       gsize         size)
+{
+  g_autoptr(GdkPixbufLoader) loader = NULL;
+  g_autoptr(GError) error = NULL;
+  GdkPixbuf *pixbuf = NULL;
+
+  loader = gdk_pixbuf_loader_new ();
+  gdk_pixbuf_loader_write (loader, buf, size, &error);
+
+  if (!error)
+    gdk_pixbuf_loader_close (loader, &error);
+
+  if (error)
+    g_warning ("Error: %s: %s", __func__, error->message);
+  else
+    pixbuf = gdk_pixbuf_loader_get_pixbuf (loader);
+
+  if (!pixbuf)
+    g_warning ("%s: pixbuf creation failed", __func__);
+
+  return g_object_ref (pixbuf);
+}
+
+static GdkPixbuf *
+chatty_pp_account_get_avatar (ChattyUser *user)
+{
+  ChattyPpAccount *self = (ChattyPpAccount *)user;
+  PurpleStoredImage *img;
+
+  g_assert (CHATTY_IS_PP_ACCOUNT (self));
+
+  img = purple_buddy_icons_find_account_icon (self->pp_account);
+
+  if (img == NULL)
+    return NULL;
+
+  if (img == self->pp_avatar && self->avatar)
+    return self->avatar;
+
+  purple_imgstore_unref (self->pp_avatar);
+  g_clear_object (&self->avatar);
+  self->pp_avatar = img;
+
+  if (img != NULL)
+    self->avatar = chatty_icon_from_data (purple_imgstore_get_data (img),
+                                          purple_imgstore_get_size (img));
+  return self->avatar;
+}
+
 static void
 chatty_pp_account_get_property (GObject *object,
                                 guint    prop_id,
@@ -185,6 +238,11 @@ chatty_pp_account_finalize (GObject *object)
   ChattyPpAccount *self = (ChattyPpAccount *)object;
 
   g_clear_handle_id (&self->connect_id, g_source_remove);
+
+  if (self->pp_avatar)
+    purple_imgstore_unref (self->pp_avatar);
+
+  g_clear_object (&self->avatar);
   g_free (self->username);
   g_free (self->protocol_id);
 
@@ -204,6 +262,7 @@ chatty_pp_account_class_init (ChattyPpAccountClass *klass)
 
   user_class->get_name = chatty_pp_account_get_name;
   user_class->set_name = chatty_pp_account_set_name;
+  user_class->get_avatar = chatty_pp_account_get_avatar;
 
   properties[PROP_USERNAME] =
     g_param_spec_string ("username",
