@@ -24,8 +24,6 @@
 
 #include <libebook-contacts/libebook-contacts.h>
 
-static void chatty_dialogs_reset_new_contact_dialog (void);
-static void chatty_dialogs_reset_invite_contact_dialog (void);
 static char *chatty_dialogs_show_dialog_load_avatar (void);
 static void chatty_dialogs_update_user_avatar (PurpleBuddy *buddy, const char *color);
 
@@ -35,6 +33,18 @@ chatty_dialog_data_t *chatty_get_dialog_data (void)
 {
   return &chatty_dialog_data;
 }
+
+
+static gboolean
+cb_dialog_delete (GtkWidget *widget,
+                  GdkEvent  *event,
+                  gpointer   user_data)
+{
+  gtk_widget_hide_on_delete (widget);
+
+  return TRUE;
+}
+
 
 static void
 cb_switch_prefs_state_changed (GtkSwitch  *widget,
@@ -94,28 +104,6 @@ cb_switch_notify_state_changed (GtkSwitch  *widget,
 }
 
 
-static gboolean
-cb_dialog_delete (GtkWidget *widget,
-                  GdkEvent  *event,
-                  gpointer   user_data)
-{
-  gtk_widget_hide_on_delete (widget);
-
-  return TRUE;
-}
-
-
-static void
-cb_button_new_chat_back_clicked (GtkButton *sender,
-                                 gpointer   data)
-{
-  chatty_dialog_data_t *chatty_dialog = chatty_get_dialog_data ();
-
-  gtk_stack_set_visible_child_name (chatty_dialog->stack_panes_new_chat,
-                                    "view-new-chat");
-}
-
-
 static void
 cb_button_muc_info_back_clicked (GtkButton *sender,
                                  gpointer   data)
@@ -162,16 +150,6 @@ cb_contact_name_insert_text (GtkEntry    *entry,
 
 
 static void
-cb_contact_name_delete_text (GtkEntry    *entry,
-                             gint         start_pos,
-                             gint         end_pos,
-                             gpointer     data)
-{
-  chatty_entry_contact_name_check (entry, GTK_WIDGET(data));
-}
-
-
-static void
 cb_invite_name_insert_text (GtkEntry    *entry,
                             const gchar *text,
                             gint         length,
@@ -192,60 +170,7 @@ cb_invite_name_delete_text (GtkEntry    *entry,
 }
 
 
-static void
-cb_button_show_add_contact_clicked (GtkButton *sender,
-                                    gpointer   data)
-{
-  chatty_dialog_data_t *chatty_dialog = chatty_get_dialog_data ();
 
-  chatty_dialogs_reset_new_contact_dialog ();
-
-  gtk_stack_set_visible_child_name (chatty_dialog->stack_panes_new_chat,
-                                    "view-new-contact");
-}
-
-
-static void
-cb_button_add_gnome_contact_clicked (GtkButton *sender,
-                                     gpointer   data)
-{
-  chatty_dialog_data_t *chatty_dialog = chatty_get_dialog_data ();
-
-  chatty_dbus_gc_write_contact ("", "");
-   
-  gtk_stack_set_visible_child_name (chatty_dialog->stack_panes_new_chat,
-                                    "view-new-chat");
-}
-
-static void
-cb_button_add_contact_clicked (GtkButton *sender,
-                               gpointer   data)
-{
-  char              *who;
-  const char        *alias;
-  g_autoptr(GError)  err = NULL;
-
-  chatty_data_t        *chatty = chatty_get_data ();
-
-  chatty_dialog_data_t *chatty_dialog = chatty_get_dialog_data ();
-
-  who = g_strdup (gtk_entry_get_text (GTK_ENTRY(chatty_dialog->entry_contact_name)));
-  alias = gtk_entry_get_text (GTK_ENTRY(chatty_dialog->entry_contact_nick));
-
-  chatty_blist_add_buddy (chatty->selected_account, who, alias);
-
-  chatty_conv_im_with_buddy (chatty->selected_account, g_strdup (who));
-
-  gtk_widget_hide (GTK_WIDGET(chatty->dialog_new_chat));
-
-  g_free (who);
-
-  gtk_entry_set_text (GTK_ENTRY(chatty_dialog->entry_contact_name), "");
-  gtk_entry_set_text (GTK_ENTRY(chatty_dialog->entry_contact_nick), "");
-
-  gtk_stack_set_visible_child_name (chatty_dialog->stack_panes_new_chat,
-                                    "view-new-chat");
-}
 
 
 static void
@@ -254,7 +179,7 @@ cb_button_show_invite_contact_clicked (GtkButton *sender,
 {
   chatty_dialog_data_t *chatty_dialog = chatty_get_dialog_data ();
 
-  chatty_dialogs_reset_invite_contact_dialog ();
+  //chatty_dialogs_reset_invite_contact_dialog ();
 
   gtk_widget_grab_focus (GTK_WIDGET(chatty_dialog->entry_invite_name));
 
@@ -372,105 +297,6 @@ cb_textview_key_released (GtkWidget   *widget,
 }
 
 
-static void
-chatty_dialogs_reset_new_contact_dialog (void)
-{
-  chatty_dialog_data_t *chatty_dialog = chatty_get_dialog_data ();
-
-  gtk_entry_set_text (GTK_ENTRY(chatty_dialog->entry_contact_name), "");
-  gtk_entry_set_text (GTK_ENTRY(chatty_dialog->entry_contact_nick), "");
-
-  chatty_account_populate_account_list (chatty_dialog->list_select_account,
-                                        LIST_SELECT_CHAT_ACCOUNT);
-}
-
-
-static void
-chatty_dialogs_reset_invite_contact_dialog (void)
-{
-  chatty_dialog_data_t *chatty_dialog = chatty_get_dialog_data ();
-
-  chatty_account_populate_account_list (chatty_dialog->list_select_account,
-                                        LIST_SELECT_CHAT_ACCOUNT);
-}
-
-
-GtkWidget *
-chatty_dialogs_create_dialog_new_chat (void)
-{
-  GtkBuilder *builder;
-  GtkWidget  *dialog;
-  GtkWidget  *button_back;
-  GtkWidget  *button_show_add_contact;
-  GtkWindow  *window;
-
-  chatty_data_t        *chatty = chatty_get_data ();
-  chatty_dialog_data_t *chatty_dialog = chatty_get_dialog_data ();
-
-  builder = gtk_builder_new_from_resource ("/sm/puri/chatty/ui/chatty-dialog-new-chat.ui");
-
-  dialog = GTK_WIDGET (gtk_builder_get_object (builder, "dialog"));
-
-  chatty->pane_view_new_chat = GTK_BOX (gtk_builder_get_object (builder, "pane_view_new_chat"));
-  chatty->search_entry_contacts = GTK_ENTRY (gtk_builder_get_object (builder, "search_entry_contacts"));
-  chatty_dialog->grid_edit_contact = GTK_WIDGET (gtk_builder_get_object (builder, "grid_edit_contact"));
-  chatty_dialog->button_add_gnome_contact = GTK_WIDGET (gtk_builder_get_object (builder, "button_add_gnome_contact"));
-  chatty_dialog->stack_panes_new_chat = GTK_STACK (gtk_builder_get_object (builder, "stack_panes_new_chat"));
-  chatty_dialog->list_select_account = GTK_LIST_BOX (gtk_builder_get_object (builder, "list_select_chat_account"));
-  chatty_dialog->entry_contact_name = GTK_ENTRY (gtk_builder_get_object (builder, "entry_contact_name"));
-  chatty_dialog->entry_contact_nick = GTK_ENTRY (gtk_builder_get_object (builder, "entry_contact_alias"));
-  chatty_dialog->button_add_contact = GTK_WIDGET (gtk_builder_get_object (builder, "button_add_contact"));
-  button_back = GTK_WIDGET (gtk_builder_get_object (builder, "button_back"));
-  button_show_add_contact = GTK_WIDGET (gtk_builder_get_object (builder, "button_show_add_contact"));
-
-  g_signal_connect (G_OBJECT(dialog),
-                    "delete-event",
-                    G_CALLBACK(cb_dialog_delete),
-                    NULL);
-
-  g_signal_connect (G_OBJECT(button_back),
-                    "clicked",
-                    G_CALLBACK(cb_button_new_chat_back_clicked),
-                    NULL);
-
-  g_signal_connect (G_OBJECT(button_show_add_contact),
-                    "clicked",
-                    G_CALLBACK(cb_button_show_add_contact_clicked),
-                    NULL);
-
-  g_signal_connect (G_OBJECT(chatty_dialog->button_add_contact),
-                    "clicked",
-                    G_CALLBACK(cb_button_add_contact_clicked),
-                    NULL);
-
-  g_signal_connect (G_OBJECT(chatty_dialog->button_add_gnome_contact),
-                    "clicked",
-                    G_CALLBACK(cb_button_add_gnome_contact_clicked),
-                    NULL);
-
-  gtk_list_box_set_header_func (chatty_dialog->list_select_account,
-                                hdy_list_box_separator_header,
-                                NULL, NULL);
-
-  g_signal_connect_after (G_OBJECT(chatty_dialog->entry_contact_name),
-                          "insert_text",
-                          G_CALLBACK(cb_contact_name_insert_text),
-                          (gpointer)chatty_dialog->button_add_contact);
-
-  g_signal_connect_after (G_OBJECT(chatty_dialog->entry_contact_name),
-                          "delete_text",
-                          G_CALLBACK(cb_contact_name_delete_text),
-                          (gpointer)chatty_dialog->button_add_contact);
-
-  window = gtk_application_get_active_window (GTK_APPLICATION (g_application_get_default ()));
-  gtk_window_set_transient_for (GTK_WINDOW(dialog), window);
-
-  g_object_unref (builder);
-
-  return dialog;
-}
-
-
 GtkWidget *
 chatty_dialogs_create_dialog_muc_info (void)
 {
@@ -559,10 +385,6 @@ chatty_dialogs_create_dialog_muc_info (void)
                     "clicked",
                     G_CALLBACK (cb_button_invite_contact_clicked),
                     NULL);
-
-  gtk_list_box_set_header_func (chatty_dialog->list_select_account,
-                                hdy_list_box_separator_header,
-                                NULL, NULL);
 
   g_signal_connect_after (G_OBJECT(chatty_dialog->entry_invite_name),
                           "insert_text",

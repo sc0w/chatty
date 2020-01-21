@@ -24,7 +24,7 @@
 #include "chatty-account.h"
 #include "chatty-pp-account.h"
 #include "chatty-purple-init.h"
-
+#include "chatty-new-chat-dialog.h"
 
 struct auth_request
 {
@@ -51,7 +51,6 @@ cb_list_account_select_row_activated (GtkListBox    *box,
   GtkWidget     *prefix_radio;
 
   chatty_data_t *chatty = chatty_get_data ();
-  chatty_dialog_data_t *chatty_dialog = chatty_get_dialog_data ();
 
   pp_account = g_object_get_data (G_OBJECT (row), "row-account");
   prefix_radio = g_object_get_data (G_OBJECT(row), "row-prefix");
@@ -69,13 +68,9 @@ cb_list_account_select_row_activated (GtkListBox    *box,
   }
 
   if (chatty_blist_protocol_is_sms (account)) {
-    gtk_widget_hide (GTK_WIDGET(chatty_dialog->grid_edit_contact));
-    gtk_widget_hide (GTK_WIDGET(chatty_dialog->button_add_contact));
-    gtk_widget_show (GTK_WIDGET(chatty_dialog->button_add_gnome_contact));
+    chatty_new_chat_set_edit_mode (CHATTY_NEW_CHAT_DIALOG(chatty->dialog_new_chat), FALSE);
   } else {
-    gtk_widget_show (GTK_WIDGET(chatty_dialog->grid_edit_contact));
-    gtk_widget_show (GTK_WIDGET(chatty_dialog->button_add_contact));
-    gtk_widget_hide (GTK_WIDGET(chatty_dialog->button_add_gnome_contact));
+    chatty_new_chat_set_edit_mode (CHATTY_NEW_CHAT_DIALOG(chatty->dialog_new_chat), TRUE);
   }
 }
 

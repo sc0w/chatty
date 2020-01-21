@@ -43,7 +43,6 @@ typedef struct {
 
 chatty_dialog_data_t *chatty_get_dialog_data(void);
 
-GtkWidget *chatty_dialogs_create_dialog_new_chat (void);
 GtkWidget *chatty_dialogs_create_dialog_muc_info (void);
 void chatty_dialogs_show_dialog_new_contact (void);
 void chatty_dialogs_show_dialog_join_muc (void);

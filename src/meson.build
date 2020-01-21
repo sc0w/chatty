@@ -14,6 +14,7 @@ chatty_sources = [
   'chatty-window.c',
   'chatty-dialogs.c',
   'chatty-settings-dialog.c',
+  'chatty-new-chat-dialog.c',
   'chatty-account.c',
   'chatty-message-list.c',
   'chatty-contact-row.c',

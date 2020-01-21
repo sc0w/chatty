@@ -18,6 +18,7 @@
 #include "chatty-purple-init.h"
 #include "chatty-icons.h"
 #include "chatty-popover-actions.h"
+#include "chatty-new-chat-dialog.h"
 
 static chatty_data_t chatty_data;
 
@@ -165,6 +166,7 @@ chatty_window_show_chat_info (void)
   }
 }
 
+
 static void
 chatty_window_show_settings_dialog (void)
 {
@@ -177,6 +179,20 @@ chatty_window_show_settings_dialog (void)
 
   gtk_widget_destroy (dialog);
 }
+
+
+static GtkWidget *
+chatty_window_create_new_chat_dialog (void)
+{
+  GtkWindow *window;
+  GtkWidget *dialog;
+
+  window = gtk_application_get_active_window (GTK_APPLICATION (g_application_get_default ()));
+  dialog = chatty_new_chat_dialog_new (window);
+
+  return dialog;
+}
+
 
 void
 chatty_window_change_view (ChattyWindowState view)
@@ -287,7 +303,7 @@ chatty_window_init_data (void)
   chatty->dummy_prefix_radio = gtk_radio_button_new_from_widget (GTK_RADIO_BUTTON (NULL));
 
   // These dialogs need to be created before purple_blist_show()
-  chatty->dialog_new_chat = chatty_dialogs_create_dialog_new_chat ();
+  chatty->dialog_new_chat = chatty_window_create_new_chat_dialog ();
   chatty->dialog_muc_info = chatty_dialogs_create_dialog_muc_info ();
 
   libpurple_init ();
