@@ -13,9 +13,10 @@
 #include <glib-object.h>
 #include "chatty-window.h"
 #include "chatty-dialogs.h"
-#include "chatty-account.h"
+#include "chatty-pp-account.h"
 #include "chatty-buddy-list.h"
 #include "chatty-dbus.h"
+#include "chatty-utils.h"
 #include "chatty-new-chat-dialog.h"
 
 
@@ -38,6 +39,7 @@ struct _ChattyNewChatDialog
   GtkWidget *button_add_contact;
   GtkWidget *button_back;
   GtkWidget *button_show_add_contact;
+  GtkWidget *dummy_prefix_radio;
 };
 
 
@@ -117,13 +119,31 @@ cb_contact_name_text_changed (ChattyNewChatDialog *self)
 
 
 static void
-chatty_new_chat_dialog_reset (ChattyNewChatDialog *self)
+cb_account_list_row_activated (GtkListBox    *box,
+                               GtkListBoxRow *row,
+                               gpointer       user_data)
 {
-  gtk_entry_set_text (GTK_ENTRY(self->entry_contact_name), "");
-  gtk_entry_set_text (GTK_ENTRY(self->entry_contact_alias), "");
+  ChattyPpAccount *pp_account;
+  PurpleAccount   *account;
+  GtkWidget       *prefix_radio;
 
-  chatty_account_populate_account_list (GTK_LIST_BOX(self->list_select_chat_account),
-                                        LIST_SELECT_CHAT_ACCOUNT);
+  chatty_data_t *chatty = chatty_get_data ();
+
+  pp_account = g_object_get_data (G_OBJECT (row), "row-account");
+  prefix_radio = g_object_get_data (G_OBJECT(row), "row-prefix");
+  account = chatty_pp_account_get_account (pp_account);
+
+  g_return_if_fail (account != NULL);
+
+  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(prefix_radio), TRUE);
+
+  chatty->selected_account = account;
+
+  if (chatty_blist_protocol_is_sms (account)) {
+    chatty_new_chat_set_edit_mode (CHATTY_NEW_CHAT_DIALOG(chatty->dialog_new_chat), FALSE);
+  } else {
+    chatty_new_chat_set_edit_mode (CHATTY_NEW_CHAT_DIALOG(chatty->dialog_new_chat), TRUE);
+  }
 }
 
 
@@ -165,6 +185,115 @@ chatty_new_chat_set_edit_mode (ChattyNewChatDialog *self,
     gtk_widget_hide (GTK_WIDGET(self->button_add_contact));
     gtk_widget_show (GTK_WIDGET(self->button_add_gnome_contact));
   }
+}
+
+
+
+static void
+chatty_new_chat_add_account_to_list (ChattyNewChatDialog *self,
+                                     ChattyPpAccount     *account)
+{
+  HdyActionRow   *row;
+  const gchar    *protocol_id;
+  GtkWidget      *prefix_radio_button;
+
+  row = hdy_action_row_new ();
+  g_object_set_data (G_OBJECT(row),
+                     "row-account",
+                     (gpointer) account);
+
+  protocol_id = chatty_pp_account_get_protocol_id (account);
+
+  // TODO list supported protocols here
+  if ((g_strcmp0 (protocol_id, "prpl-jabber")) != 0 &&
+      (g_strcmp0 (protocol_id, "prpl-matrix")) != 0 &&
+      (g_strcmp0 (protocol_id, "prpl-telegram")) != 0 &&
+      (g_strcmp0 (protocol_id, "prpl-delta")) != 0 &&
+      (g_strcmp0 (protocol_id, "prpl-threepl")) != 0 &&
+      (g_strcmp0 (protocol_id, "prpl-mm-sms")) != 0) {
+    return;
+  }
+
+  if (chatty_pp_account_get_status (account) == CHATTY_DISCONNECTED) {
+    return;
+  }
+
+  prefix_radio_button = gtk_radio_button_new_from_widget (GTK_RADIO_BUTTON(self->dummy_prefix_radio));
+  gtk_widget_show (GTK_WIDGET(prefix_radio_button));
+
+  gtk_widget_set_sensitive (prefix_radio_button, FALSE);
+
+  g_object_set_data (G_OBJECT(row),
+                     "row-prefix",
+                     (gpointer)prefix_radio_button);
+
+  hdy_action_row_add_prefix (row, GTK_WIDGET(prefix_radio_button ));
+  hdy_action_row_set_title (row, chatty_pp_account_get_username (account));
+
+  gtk_container_add (GTK_CONTAINER(self->list_select_chat_account), GTK_WIDGET(row));
+
+  gtk_widget_show (GTK_WIDGET(row));
+}
+
+
+static void
+chatty_new_chat_account_list_clear (GtkWidget *list)
+{
+  GList *children;
+  GList *iter;
+
+  children = gtk_container_get_children (GTK_CONTAINER(list));
+
+  for (iter = children; iter != NULL; iter = g_list_next (iter)) {
+    gtk_container_remove (GTK_CONTAINER(list), GTK_WIDGET(iter->data));
+  }
+
+  g_list_free (children);
+}
+
+
+static gboolean
+chatty_new_chat_populate_account_list (ChattyNewChatDialog *self)
+{
+  GList         *l;
+  gboolean       ret = FALSE;
+  HdyActionRow  *row;
+
+  chatty_new_chat_account_list_clear (self->list_select_chat_account);
+
+  for (l = purple_accounts_get_all (); l != NULL; l = l->next) {
+    ChattyPpAccount *pp_account;
+    ret = TRUE;
+
+    pp_account = chatty_pp_account_find (l->data);
+
+    chatty_new_chat_add_account_to_list (self, pp_account);
+
+    g_signal_connect (G_OBJECT(self->list_select_chat_account),
+                      "row-activated",
+                      G_CALLBACK(cb_account_list_row_activated),
+                      NULL);
+  }
+
+  row = HDY_ACTION_ROW(gtk_list_box_get_row_at_index (GTK_LIST_BOX(self->list_select_chat_account), 0));
+
+  if (row) {
+    cb_account_list_row_activated (GTK_LIST_BOX(self->list_select_chat_account), 
+                                   GTK_LIST_BOX_ROW(row), 
+                                   NULL);
+  }
+
+  return ret;
+}
+
+
+static void
+chatty_new_chat_dialog_reset (ChattyNewChatDialog *self)
+{
+  gtk_entry_set_text (GTK_ENTRY(self->entry_contact_name), "");
+  gtk_entry_set_text (GTK_ENTRY(self->entry_contact_alias), "");
+
+  chatty_new_chat_populate_account_list (self);
 }
 
 
@@ -239,6 +368,8 @@ chatty_new_chat_dialog_init (ChattyNewChatDialog *self)
   gtk_list_box_set_header_func (GTK_LIST_BOX(self->list_select_chat_account),
                                 hdy_list_box_separator_header,
                                 NULL, NULL);
+
+  self->dummy_prefix_radio = gtk_radio_button_new_from_widget (GTK_RADIO_BUTTON (NULL));
 }
 
 
