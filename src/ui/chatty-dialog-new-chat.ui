@@ -143,6 +143,8 @@
                               <object class="GtkSearchEntry" id="search_entry_contacts">
                                 <property name="visible">True</property>
                                 <property name="hexpand">True</property>
+                                <property name="receives_default">False</property>
+                                <property name="placeholder-text" translatable="yes">Send To:</property>
                               </object>
                             </child>
                           </object>
