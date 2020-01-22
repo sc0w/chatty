@@ -237,7 +237,7 @@
                                     <property name="can_focus">False</property>
                                     <property name="expand">True</property>
                                     <property name="selection-mode">none</property>
-                                    <signal name="row-activated" handler="cb_account_list_row_activated" swapped="no"/>
+                                    <signal name="row-activated" handler="cb_account_list_row_activated" swapped="yes"/>
                                   </object>
                                 </child>
                               </object>
