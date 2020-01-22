@@ -311,25 +311,9 @@ chatty_new_chat_get_search_entry (ChattyNewChatDialog *self)
 
 
 static void
-chatty_new_chat_dialog_constructed (GObject *object)
-{
-  G_OBJECT_CLASS (chatty_new_chat_dialog_parent_class)->constructed (object);
-}
-
-static void
-chatty_new_chat_dialog_finalize (GObject *object)
-{
-  G_OBJECT_CLASS (chatty_new_chat_dialog_parent_class)->finalize (object);
-}
-
-static void
 chatty_new_chat_dialog_class_init (ChattyNewChatDialogClass *klass)
 {
   GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
-  GObjectClass   *object_class = G_OBJECT_CLASS (klass);
-
-  object_class->constructed  = chatty_new_chat_dialog_constructed;
-  object_class->finalize = chatty_new_chat_dialog_finalize;
 
   gtk_widget_class_set_template_from_resource (widget_class,
                                                "/sm/puri/chatty/"
