@@ -1,17 +1,18 @@
 # Amos Batto <amosbatto@yahoo.com>, 2019. #zanata
 # Maximilian <maxi.madlung@gmx.de>, 2019. #zanata
+# miguejim <miguejim@mailbox.org>, 2020. #zanata
 msgid ""
 msgstr ""
 "Project-Id-Version: purism-chatty\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-01-13 12:59+0100\n"
-"PO-Revision-Date: 2019-11-02 10:58+0000\n"
-"Last-Translator: Amos Batto <amosbatto@yahoo.com>\n"
-"Language-Team: Spanish\n"
-"Language: es\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"PO-Revision-Date: 2020-01-20 10:37+0000\n"
+"Last-Translator: miguejim <miguejim@mailbox.org>\n"
+"Language-Team: Spanish\n"
+"Language: es\n"
 "X-Generator: Zanata 4.6.2\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
 
@@ -34,7 +35,8 @@ msgstr "Ventana de mensajes de Chats"
 
 #: data/sm.puri.Chatty.appdata.xml.in:29
 msgid "Initial development release of chatty with support for xmpp and sms."
-msgstr "El versión inicial en desarrollo de chatty con soporte de XMPP y SMS  "
+msgstr ""
+"El versión inicial en desarrollo de chatty con soporte de XMPP y SMS  "
 
 #: data/sm.puri.Chatty.desktop.in:5
 msgid "sm.puri.Chatty"
@@ -50,21 +52,19 @@ msgstr "XMPP;SMS;conversaciones;jabber;mensajería;módem"
 
 #: data/sm.puri.Chatty.gschema.xml:7 data/sm.puri.Chatty.gschema.xml:8
 msgid "Whether the application is launching the first time"
-msgstr ""
+msgstr "Si la aplicación está iniciando por primera vez"
 
 #: data/sm.puri.Chatty.gschema.xml:13
-#, fuzzy
 msgid "Send message read receipts"
-msgstr "Recibos de mensajes"
+msgstr "Enviar confirmación de lectura"
 
 #: data/sm.puri.Chatty.gschema.xml:14
 msgid "Whether to send the status of the message if read"
-msgstr ""
+msgstr "Si se debe enviar el estado del mensaje si se lee"
 
 #: data/sm.puri.Chatty.gschema.xml:19
-#, fuzzy
 msgid "Message carbon copies"
-msgstr "Copias exactas de mensaje"
+msgstr "Copia de carbón del mensaje"
 
 #: data/sm.puri.Chatty.gschema.xml:20 src/ui/chatty-settings-dialog.ui:148
 msgid "Share chat history among devices"
@@ -72,51 +72,47 @@ msgstr "Compartir el historial de chat entre dispositivos"
 
 #: data/sm.puri.Chatty.gschema.xml:25
 msgid "Enable Message Archive Management"
-msgstr ""
+msgstr "Habilitar gestión de archivo de mensajes"
 
 #: data/sm.puri.Chatty.gschema.xml:26
 msgid "Enable MAM archive synchronization from the server"
-msgstr ""
+msgstr "Habilitar sincronización de archivo MAM del servidor"
 
 #: data/sm.puri.Chatty.gschema.xml:31
-#, fuzzy
 msgid "Send typing notifications"
-msgstr "Notificación de tecleo"
+msgstr "Enviar notificación de escritura"
 
 #: data/sm.puri.Chatty.gschema.xml:32
-#, fuzzy
 msgid "Whether to Send typing notifications"
-msgstr "Notificación de tecleo"
+msgstr "Si se envía notificación de escritura"
 
 #: data/sm.puri.Chatty.gschema.xml:37 data/sm.puri.Chatty.gschema.xml:38
 msgid "Mark offline users differently"
-msgstr ""
+msgstr "Marcar a los usuarios desconectados de manera diferente"
 
 #: data/sm.puri.Chatty.gschema.xml:43 data/sm.puri.Chatty.gschema.xml:44
 msgid "Mark Idle users differently"
-msgstr ""
+msgstr "Marcar a los usuarios inactivos de manera diferente"
 
 #: data/sm.puri.Chatty.gschema.xml:49 data/sm.puri.Chatty.gschema.xml:50
-#, fuzzy
 msgid "Indicate unknown contacts"
 msgstr "Indicar contactos desconocidos"
 
 #: data/sm.puri.Chatty.gschema.xml:55
-#, fuzzy
 msgid "Convert text to emoticons"
-msgstr "Convertir iconos gestuales de ASCII"
+msgstr "Reemplazar texto a emoticonos"
 
 #: data/sm.puri.Chatty.gschema.xml:56
 msgid "Convert text matching emoticons as real emoticons"
-msgstr ""
+msgstr "Reemplazar emoticonos textuales que coincidan"
 
 #: data/sm.puri.Chatty.gschema.xml:61
 msgid "Enter key sends the message"
-msgstr ""
+msgstr "La tecla intro envía el mensaje"
 
 #: data/sm.puri.Chatty.gschema.xml:62
 msgid "Whether pressing Enter key sends the message"
-msgstr ""
+msgstr "Si presionar la tecla Intro enviá el mensaje"
 
 #: src/chatty-application.c:54
 msgid "Show release version"
@@ -167,7 +163,7 @@ msgstr "Agregar %s a la lista de contactos"
 
 #: src/chatty-buddy-list.c:191
 msgid "Send to"
-msgstr ""
+msgstr "Enviar a"
 
 #: src/chatty-buddy-list.c:949
 msgid "Disconnect group chat"
@@ -242,7 +238,7 @@ msgstr "reconocimiento-de-traductores"
 
 #: src/chatty-dialogs.c:868 src/chatty-settings-dialog.c:390
 msgid "Set Avatar"
-msgstr ""
+msgstr "Establecer avatar"
 
 #: src/chatty-dialogs.c:871 src/chatty-purple-request.c:189
 #: src/chatty-settings-dialog.c:393
@@ -251,19 +247,19 @@ msgstr "Abrir"
 
 #: src/chatty-folks.c:613
 msgid "Mobile"
-msgstr ""
+msgstr "Móvil"
 
 #: src/chatty-folks.c:615
 msgid "Work"
-msgstr ""
+msgstr "Trabajo"
 
 #: src/chatty-folks.c:617
 msgid "Home"
-msgstr ""
+msgstr "Casa"
 
 #: src/chatty-folks.c:619
 msgid "Other"
-msgstr ""
+msgstr "Otro"
 
 #: src/chatty-lurch.c:116
 msgid "Encryption not available"
@@ -370,9 +366,8 @@ msgid "Select Protocol"
 msgstr "Seleccionar protocolo"
 
 #: src/chatty-settings-dialog.c:292
-#, fuzzy
 msgid "Add XMPP account"
-msgstr "Agregar cuenta"
+msgstr "Añadir cuenta XMPP"
 
 #: src/chatty-settings-dialog.c:507 src/ui/chatty-settings-dialog.ui:462
 msgid "Delete Account"
@@ -493,16 +488,15 @@ msgstr ""
 
 #: src/chatty-window.c:49
 msgid "Start a <b>SMS</b> chat with with the \"+\" button in the titlebar."
-msgstr ""
-"Empezar un chat de <b>SMS</b> con el botón \"+\" en la barra de título."
+msgstr "Empezar un chat de <b>SMS</b> con el botón \"+\" en la barra de título."
 
 #: src/chatty-window.c:50 src/chatty-window.c:53
 msgid ""
-"For <b>Instant Messaging</b> add or activate an account in <i>\"preferences"
-"\"</i>."
+"For <b>Instant Messaging</b> add or activate an account in "
+"<i>\"preferences\"</i>."
 msgstr ""
-"Para usar <b>Mensajería instantánea</b> agregar o activar una cuenta en <i>"
-"\"Preferencias\"</i>."
+"Para usar <b>Mensajería instantánea</b> agregar o activar una cuenta en "
+"<i>\"Preferencias\"</i>."
 
 #: src/chatty-window.c:52
 msgid "Start chatting"
@@ -602,7 +596,7 @@ msgstr "Nombre (opcional)"
 
 #: src/ui/chatty-dialog-new-chat.ui:300
 msgid "Add in GNOME Contacts"
-msgstr ""
+msgstr "Añadir a Contactos"
 
 #: src/ui/chatty-dialog-user-info.ui:12 src/ui/chatty-window.ui:98
 msgid "Chat Details"
@@ -642,14 +636,13 @@ msgstr "Preferencias"
 
 #: src/ui/chatty-settings-dialog.ui:21
 msgid "Back"
-msgstr ""
+msgstr "Retroceder"
 
 #: src/ui/chatty-settings-dialog.ui:41
 msgid "_Add"
-msgstr ""
+msgstr "Añadir"
 
 #: src/ui/chatty-settings-dialog.ui:54
-#, fuzzy
 msgid "_Save"
 msgstr "Guardar"
 
@@ -675,11 +668,11 @@ msgstr "Confirmar la recepción de mensajes"
 
 #: src/ui/chatty-settings-dialog.ui:133
 msgid "Message Archive Management"
-msgstr ""
+msgstr "Gestión de archivo de mensajes"
 
 #: src/ui/chatty-settings-dialog.ui:134
 msgid "Sync conversations with chat server"
-msgstr ""
+msgstr "Sincronizar conversaciones con el servidor"
 
 #: src/ui/chatty-settings-dialog.ui:147
 msgid "Message Carbon Copies"
@@ -775,7 +768,7 @@ msgstr "Telegram"
 
 #: src/ui/chatty-settings-dialog.ui:676
 msgid "Provider"
-msgstr ""
+msgstr "Proveedor"
 
 #: src/ui/chatty-window.ui:32
 msgid "New Direct Chat"
@@ -787,7 +780,7 @@ msgstr "Acerca de Chats"
 
 #: src/ui/chatty-window.ui:138
 msgid "Add to GNOME Contacts"
-msgstr ""
+msgstr "Añadir a contactos"
 
 #: src/ui/chatty-window.ui:163
 msgid "Leave Chat"
@@ -796,45 +789,3 @@ msgstr "Salir del chat"
 #: src/ui/chatty-window.ui:176
 msgid "Delete Chat"
 msgstr "Borrar chat"
-
-#~ msgid ""
-#~ "<b>SMS</b> Chat is set up by default. Start a chat with the \"+\" button "
-#~ "in the titlebar."
-#~ msgstr ""
-#~ "Chatear por <b>SMS</b> es configurado por defecto. Empezar de chatear con "
-#~ "el botón \"+\" en la barra de título."
-
-#~ msgid ""
-#~ "Add <b>Instant Messaging</b> by selecting \n"
-#~ "<i>\"Add new account\"</i> in <i>\"preferences\"</i>."
-#~ msgstr ""
-#~ "Seleccionar <i>\"Agregar una cuenta nueva\"</i> en <i>\"preferencias\"</"
-#~ "i>\n"
-#~ "para agregar la <b>Mensajería instantánea</b>."
-
-#~ msgid "Autojoin"
-#~ msgstr "Unirse automáticamente"
-
-#~ msgid "Join group chat at startup"
-#~ msgstr "Unirse a chat en grupo al inicio"
-
-#~ msgid "Auto-join"
-#~ msgstr "Unirse automáticamente"
-
-#~ msgid "Join chat at startup"
-#~ msgstr "Unirse al chat al inicio"
-
-#~ msgid "Edit Account"
-#~ msgstr "Editar cuenta"
-
-#~ msgid "Add"
-#~ msgstr "Agregar"
-
-#~ msgid "Show Offline Contacts"
-#~ msgstr "Mostrar contactos fuera de línea"
-
-#~ msgid "Show contacts in the chats list"
-#~ msgstr "Mostrar contactos en la lista de chats"
-
-#~ msgid "Server"
-#~ msgstr "Servidor"

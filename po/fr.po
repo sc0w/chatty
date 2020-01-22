@@ -5,13 +5,13 @@ msgstr ""
 "Project-Id-Version: purism-chatty\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-01-13 12:59+0100\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
 "PO-Revision-Date: 2019-11-22 09:45+0000\n"
 "Last-Translator: Valéry Febvre <vfebvre@easter-eggs.com>\n"
 "Language-Team: French\n"
 "Language: fr\n"
-"MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Zanata 4.6.2\n"
 "Plural-Forms: nplurals=2; plural=(n > 1)\n"
 
@@ -55,18 +55,16 @@ msgid "Whether the application is launching the first time"
 msgstr ""
 
 #: data/sm.puri.Chatty.gschema.xml:13
-#, fuzzy
 msgid "Send message read receipts"
-msgstr "Accusés de réception"
+msgstr ""
 
 #: data/sm.puri.Chatty.gschema.xml:14
 msgid "Whether to send the status of the message if read"
 msgstr ""
 
 #: data/sm.puri.Chatty.gschema.xml:19
-#, fuzzy
 msgid "Message carbon copies"
-msgstr "Synchronisation des messages sur tous les appareils"
+msgstr ""
 
 #: data/sm.puri.Chatty.gschema.xml:20 src/ui/chatty-settings-dialog.ui:148
 msgid "Share chat history among devices"
@@ -81,14 +79,12 @@ msgid "Enable MAM archive synchronization from the server"
 msgstr ""
 
 #: data/sm.puri.Chatty.gschema.xml:31
-#, fuzzy
 msgid "Send typing notifications"
-msgstr "Notification d'écriture"
+msgstr ""
 
 #: data/sm.puri.Chatty.gschema.xml:32
-#, fuzzy
 msgid "Whether to Send typing notifications"
-msgstr "Notification d'écriture"
+msgstr ""
 
 #: data/sm.puri.Chatty.gschema.xml:37 data/sm.puri.Chatty.gschema.xml:38
 msgid "Mark offline users differently"
@@ -99,14 +95,12 @@ msgid "Mark Idle users differently"
 msgstr ""
 
 #: data/sm.puri.Chatty.gschema.xml:49 data/sm.puri.Chatty.gschema.xml:50
-#, fuzzy
 msgid "Indicate unknown contacts"
-msgstr "Indiquer les contacts inconnus"
+msgstr ""
 
 #: data/sm.puri.Chatty.gschema.xml:55
-#, fuzzy
 msgid "Convert text to emoticons"
-msgstr "Convertir les émoticônes ASCII"
+msgstr ""
 
 #: data/sm.puri.Chatty.gschema.xml:56
 msgid "Convert text matching emoticons as real emoticons"
@@ -372,9 +366,8 @@ msgid "Select Protocol"
 msgstr "Choisir le protocole"
 
 #: src/chatty-settings-dialog.c:292
-#, fuzzy
 msgid "Add XMPP account"
-msgstr "Ajouter un compte"
+msgstr ""
 
 #: src/chatty-settings-dialog.c:507 src/ui/chatty-settings-dialog.ui:462
 msgid "Delete Account"
@@ -490,8 +483,8 @@ msgid ""
 "Select an <b>Instant Message</b> contact with the \"+\" button in the "
 "titlebar."
 msgstr ""
-"Sélectionnez un contact  de <b>messagerie instantanée</b> avec le bouton \"+"
-"\" dans la barre de titre."
+"Sélectionnez un contact  de <b>messagerie instantanée</b> avec le bouton "
+"\"+\" dans la barre de titre."
 
 #: src/chatty-window.c:49
 msgid "Start a <b>SMS</b> chat with with the \"+\" button in the titlebar."
@@ -501,8 +494,8 @@ msgstr ""
 
 #: src/chatty-window.c:50 src/chatty-window.c:53
 msgid ""
-"For <b>Instant Messaging</b> add or activate an account in <i>\"preferences"
-"\"</i>."
+"For <b>Instant Messaging</b> add or activate an account in "
+"<i>\"preferences\"</i>."
 msgstr ""
 "Pour utiliser la <b>messagerie instantanée</b>, ajoutez ou activez un compte "
 "dans les <i>\"préférences\"</i>."
@@ -652,9 +645,8 @@ msgid "_Add"
 msgstr ""
 
 #: src/ui/chatty-settings-dialog.ui:54
-#, fuzzy
 msgid "_Save"
-msgstr "Enregistrer"
+msgstr ""
 
 #: src/ui/chatty-settings-dialog.ui:88
 msgid "Accounts"
@@ -799,44 +791,3 @@ msgstr "Quitter la discussion"
 #: src/ui/chatty-window.ui:176
 msgid "Delete Chat"
 msgstr "Supprimer la discussion"
-
-#~ msgid ""
-#~ "<b>SMS</b> Chat is set up by default. Start a chat with the \"+\" button "
-#~ "in the titlebar."
-#~ msgstr ""
-#~ "<b>Le conversation par SMS</ b> est configurée par défaut. Commencez une "
-#~ "conversation avec le bouton \"+\" dans la barre de titre."
-
-#~ msgid ""
-#~ "Add <b>Instant Messaging</b> by selecting \n"
-#~ "<i>\"Add new account\"</i> in <i>\"preferences\"</i>."
-#~ msgstr ""
-#~ "Ajoutez une <b>messagerie instantanée</ b> en sélectionnant <i>\"Ajouter "
-#~ "un nouveau compte\"</ i> dans les préférences."
-
-#~ msgid "Autojoin"
-#~ msgstr "Rejoindre automatiquement"
-
-#~ msgid "Join group chat at startup"
-#~ msgstr "Rejoindre le groupe de discussion au démarrage"
-
-#~ msgid "Auto-join"
-#~ msgstr "Rejoindre automatiquement"
-
-#~ msgid "Join chat at startup"
-#~ msgstr "Rejoindre la discussion au démarrage"
-
-#~ msgid "Edit Account"
-#~ msgstr "Éditer le compte"
-
-#~ msgid "Add"
-#~ msgstr "Ajouter"
-
-#~ msgid "Show Offline Contacts"
-#~ msgstr "Afficher les contacts hors ligne"
-
-#~ msgid "Show contacts in the chats list"
-#~ msgstr "Afficher les contacts dans la liste des discussions"
-
-#~ msgid "Server"
-#~ msgstr "Serveur"
