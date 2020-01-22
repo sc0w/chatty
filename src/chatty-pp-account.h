@@ -26,6 +26,12 @@ G_DECLARE_FINAL_TYPE (ChattyPpAccount, chatty_pp_account, CHATTY, PP_ACCOUNT, Ch
 ChattyPpAccount *chatty_pp_account_new                (const char      *username,
                                                        const char      *protocol_id);
 ChattyPpAccount *chatty_pp_account_new_purple         (PurpleAccount   *account);
+ChattyPpAccount *chatty_pp_account_new_xmpp           (const char      *username,
+                                                       const char      *server_url);
+ChattyPpAccount *chatty_pp_account_new_matrix         (const char      *username,
+                                                       const char      *server_url);
+ChattyPpAccount *chatty_pp_account_new_telegram       (const char      *username);
+
 void             chatty_pp_account_save               (ChattyPpAccount *self);
 PurpleAccount   *chatty_pp_account_get_account        (ChattyPpAccount *self);
 PurpleStatus    *chatty_pp_account_get_active_status  (ChattyPpAccount *self);
