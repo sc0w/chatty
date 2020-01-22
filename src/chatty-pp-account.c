@@ -59,6 +59,39 @@ enum {
 
 static GParamSpec *properties[N_PROPS];
 
+static gpointer
+chatty_icon_get_data_from_image (const char  *file_name,
+                                 int          width,
+                                 int          height,
+                                 size_t      *len,
+                                 GError     **error)
+{
+  g_autoptr(GdkPixbuf) pixbuf = NULL;
+  GdkPixbufFormat *format;
+  gchar *buffer = NULL;
+  gsize size = 0;
+  int icon_width, icon_height;
+
+  format = gdk_pixbuf_get_file_info (file_name, &icon_width, &icon_height);
+
+  if (!format)
+    return NULL;
+
+  pixbuf = gdk_pixbuf_new_from_file_at_scale (file_name,
+                                              MIN (width, icon_width),
+                                              MIN (height, icon_height),
+                                              TRUE, error);
+
+  if (!error || !*error)
+    gdk_pixbuf_save_to_buffer (pixbuf, &buffer, &size, "png", error, NULL);
+
+  if (!error || !*error)
+    if (len)
+      *len = size;
+
+  return buffer;
+}
+
 static gboolean
 account_connect (ChattyPpAccount *self)
 {
@@ -168,6 +201,49 @@ chatty_pp_account_get_avatar (ChattyUser *user)
 }
 
 static void
+chatty_pp_account_set_avatar_async (ChattyUser          *user,
+                                    const char          *file_name,
+                                    GCancellable        *cancellable,
+                                    GAsyncReadyCallback  callback,
+                                    gpointer             user_data)
+{
+  ChattyPpAccount *self = (ChattyPpAccount *)user;
+  PurplePluginProtocolInfo *prpl_info;
+  g_autoptr(GTask) task = NULL;
+  g_autoptr(GError) error = NULL;
+  const char *protocol_id;
+  guchar *data;
+  int width, height;
+  size_t len;
+
+  g_assert (CHATTY_IS_PP_ACCOUNT (self));
+  g_assert (!cancellable || G_IS_CANCELLABLE (cancellable));
+
+  task = g_task_new (self, cancellable, callback, user_data);
+  g_task_set_source_tag (task, chatty_user_set_avatar_async);
+
+  protocol_id = chatty_pp_account_get_protocol_id (self);
+  prpl_info = PURPLE_PLUGIN_PROTOCOL_INFO (purple_find_prpl (protocol_id));
+  width  = prpl_info->icon_spec.max_width;
+  height = prpl_info->icon_spec.max_height;
+  data   = chatty_icon_get_data_from_image (file_name, width, height, &len, &error);
+
+  if (error)
+    {
+      g_task_return_error (task, g_steal_pointer (&error));
+      g_debug ("Error: %s", error->message);
+
+      return;
+    }
+
+  /* Purple does not support multi-thread. So do it sync */
+  purple_buddy_icons_set_account_icon (self->pp_account, data, len);
+
+  g_signal_emit_by_name (self, "avatar-changed");
+  g_task_return_boolean (task, TRUE);
+}
+
+static void
 chatty_pp_account_get_property (GObject *object,
                                 guint    prop_id,
                                 GValue  *value,
@@ -263,6 +339,7 @@ chatty_pp_account_class_init (ChattyPpAccountClass *klass)
   user_class->get_name = chatty_pp_account_get_name;
   user_class->set_name = chatty_pp_account_set_name;
   user_class->get_avatar = chatty_pp_account_get_avatar;
+  user_class->set_avatar_async = chatty_pp_account_set_avatar_async;
 
   properties[PROP_USERNAME] =
     g_param_spec_string ("username",
