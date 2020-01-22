@@ -405,23 +405,8 @@ settings_avatar_button_clicked_cb (ChattySettingsDialog *self)
   file_name = settings_show_dialog_load_avatar ();
 
   if (file_name)
-    {
-      PurplePluginProtocolInfo *prpl_info;
-      PurpleAccount *account;
-      const char *protocol_id;
-      guchar *buffer;
-      size_t len;
-
-      protocol_id = chatty_pp_account_get_protocol_id (self->selected_account);
-      prpl_info = PURPLE_PLUGIN_PROTOCOL_INFO (purple_find_prpl (protocol_id));
-
-      buffer = chatty_icon_get_data_from_pixbuf (file_name, prpl_info, &len);
-
-      account = chatty_pp_account_get_account (self->selected_account);
-      purple_buddy_icons_set_account_icon (account, buffer, len);
-      /* XXX: Remove once we have API to set avatar */
-      g_signal_emit_by_name (self->selected_account, "avatar-changed");
-   }
+    chatty_user_set_avatar_async (CHATTY_USER (self->selected_account),
+                                  file_name, NULL, NULL, NULL);
 }
 
 static void
