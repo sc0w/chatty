@@ -268,11 +268,6 @@ chatty_new_chat_populate_account_list (ChattyNewChatDialog *self)
     pp_account = chatty_pp_account_find (l->data);
 
     chatty_new_chat_add_account_to_list (self, pp_account);
-
-    g_signal_connect (G_OBJECT(self->list_select_chat_account),
-                      "row-activated",
-                      G_CALLBACK(cb_account_list_row_activated),
-                      NULL);
   }
 
   row = HDY_ACTION_ROW(gtk_list_box_get_row_at_index (GTK_LIST_BOX(self->list_select_chat_account), 0));
@@ -357,6 +352,7 @@ chatty_new_chat_dialog_class_init (ChattyNewChatDialogClass *klass)
   gtk_widget_class_bind_template_callback (widget_class, cb_button_add_contact_clicked);
   gtk_widget_class_bind_template_callback (widget_class, cb_button_add_gnome_contact_clicked);
   gtk_widget_class_bind_template_callback (widget_class, cb_contact_name_text_changed);
+  gtk_widget_class_bind_template_callback (widget_class, cb_account_list_row_activated);
 }
 
 
