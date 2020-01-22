@@ -20,7 +20,7 @@
 #include "chatty-new-chat-dialog.h"
 
 
-static void chatty_new_chat_dialog_reset (ChattyNewChatDialog *self);
+static void chatty_new_chat_dialog_update (ChattyNewChatDialog *self);
 static void chatty_entry_contact_name_check (GtkEntry  *entry, GtkWidget *button);
 
 
@@ -61,7 +61,7 @@ cb_button_show_add_contact_clicked (ChattyNewChatDialog *self)
 {
   g_assert (CHATTY_IS_NEW_CHAT_DIALOG (self));
 
-  chatty_new_chat_dialog_reset (self);
+  chatty_new_chat_dialog_update (self);
 
   gtk_stack_set_visible_child_name (GTK_STACK(self->stack_panes_new_chat),
                                     "view-new-contact");
@@ -283,7 +283,7 @@ chatty_new_chat_populate_account_list (ChattyNewChatDialog *self)
 
 
 static void
-chatty_new_chat_dialog_reset (ChattyNewChatDialog *self)
+chatty_new_chat_dialog_update (ChattyNewChatDialog *self)
 {
   gtk_entry_set_text (GTK_ENTRY(self->entry_contact_name), "");
   gtk_entry_set_text (GTK_ENTRY(self->entry_contact_alias), "");
