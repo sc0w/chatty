@@ -36,6 +36,7 @@ enum {
 
 enum {
   AVATAR_CHANGED,
+  DELETED,
   N_SIGNALS
 };
 
@@ -140,6 +141,20 @@ chatty_user_class_init (ChattyUserClass *klass)
    */
   signals [AVATAR_CHANGED] =
     g_signal_new ("avatar-changed",
+                  G_TYPE_FROM_CLASS (klass),
+                  G_SIGNAL_RUN_LAST,
+                  0, NULL, NULL, NULL,
+                  G_TYPE_NONE, 0);
+
+  /**
+   * ChattyUser::deleted:
+   * @self: a #ChattyUser
+   *
+   * deleted signal is emitted when the account
+   * is deleted
+   */
+  signals [DELETED] =
+    g_signal_new ("deleted",
                   G_TYPE_FROM_CLASS (klass),
                   G_SIGNAL_RUN_LAST,
                   0, NULL, NULL, NULL,

@@ -281,8 +281,14 @@ chatty_avatar_set_user (ChattyAvatar *self,
     return;
 
   /* We don’t emit notify signals as we don’t need it */
-  g_signal_connect_object (self->user, "avatar-changed",
-                           G_CALLBACK (gtk_widget_queue_draw), self,
-                           G_CONNECT_SWAPPED);
+  if (self->user)
+    {
+      g_signal_connect_swapped (self->user, "deleted",
+                                G_CALLBACK (g_clear_object), &self->user);
+      g_signal_connect_object (self->user, "avatar-changed",
+                               G_CALLBACK (gtk_widget_queue_draw), self,
+                               G_CONNECT_SWAPPED);
+    }
+
   gtk_widget_queue_draw (GTK_WIDGET (self));
 }
