@@ -444,8 +444,8 @@ chatty_folks_individual_has_phonenumber (FolksIndividual *individual,
 
     if (error != NULL) {
       g_debug ("Error comparing numbers: %s", error->message);
-      g_error_free (error);
-      
+      g_clear_error (&error);
+
       result = strcmp (phone_number, number) == 0;
 
     } else if (number_match == E_PHONE_NUMBER_MATCH_EXACT ||
