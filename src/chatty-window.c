@@ -19,6 +19,7 @@
 #include "chatty-icons.h"
 #include "chatty-popover-actions.h"
 #include "chatty-new-chat-dialog.h"
+#include "chatty-new-muc-dialog.h"
 
 static chatty_data_t chatty_data;
 
@@ -181,6 +182,20 @@ chatty_window_show_settings_dialog (void)
 }
 
 
+static void
+chatty_window_show_new_muc_dialog (void)
+{
+  GtkWindow *window;
+  GtkWidget *dialog;
+
+  window = gtk_application_get_active_window (GTK_APPLICATION (g_application_get_default ()));
+  dialog = chatty_new_muc_dialog_new (window);
+  gtk_dialog_run (GTK_DIALOG (dialog));
+
+  gtk_widget_destroy (dialog);
+}
+
+
 static GtkWidget *
 chatty_window_create_new_chat_dialog (void)
 {
@@ -207,7 +222,7 @@ chatty_window_change_view (ChattyWindowState view)
       chatty_dialogs_show_dialog_about_chatty ();
       break;
     case CHATTY_VIEW_JOIN_CHAT:
-      chatty_dialogs_show_dialog_join_muc ();
+      chatty_window_show_new_muc_dialog ();
       break;
     case CHATTY_VIEW_NEW_CHAT:
       gtk_widget_show (GTK_WIDGET(chatty->dialog_new_chat));
