@@ -278,7 +278,7 @@
                                   <object class="GtkEntry" id="entry_contact_name">
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
-                                    <signal name="insert-text" handler="cb_contact_name_text_changed" after="yes" swapped="yes" />
+                                    <signal name="changed" handler="cb_contact_name_text_changed" after="yes" swapped="yes" />
                                   </object>
                                   <packing>
                                     <property name="left_attach">1</property>
