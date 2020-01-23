@@ -36,7 +36,7 @@ struct _ChattyNewChatDialog
   GtkWidget *grid_edit_contact;
   GtkWidget *button_add_gnome_contact;
   GtkWidget *stack_panes_new_chat;
-  GtkWidget *list_select_chat_account;
+  GtkWidget *list_select_account;
   GtkWidget *entry_contact_name;
   GtkWidget *entry_contact_alias;
   GtkWidget *button_add_contact;
@@ -52,7 +52,7 @@ G_DEFINE_TYPE (ChattyNewChatDialog, chatty_new_chat_dialog, HDY_TYPE_DIALOG)
 
 
 static void
-cb_button_new_chat_back_clicked (ChattyNewChatDialog *self)
+button_new_chat_back_clicked_cb (ChattyNewChatDialog *self)
 {
   g_assert (CHATTY_IS_NEW_CHAT_DIALOG(self));
 
@@ -62,7 +62,7 @@ cb_button_new_chat_back_clicked (ChattyNewChatDialog *self)
 
 
 static void
-cb_button_show_add_contact_clicked (ChattyNewChatDialog *self)
+button_show_add_contact_clicked_cb (ChattyNewChatDialog *self)
 {
   g_assert (CHATTY_IS_NEW_CHAT_DIALOG(self));
 
@@ -74,7 +74,7 @@ cb_button_show_add_contact_clicked (ChattyNewChatDialog *self)
 
 
 static void
-cb_button_add_gnome_contact_clicked (ChattyNewChatDialog *self)
+button_add_gnome_contact_clicked_cb (ChattyNewChatDialog *self)
 {
   g_assert (CHATTY_IS_NEW_CHAT_DIALOG(self));
 
@@ -86,7 +86,7 @@ cb_button_add_gnome_contact_clicked (ChattyNewChatDialog *self)
 
 
 static void
-cb_button_add_contact_clicked (ChattyNewChatDialog *self)
+button_add_contact_clicked_cb (ChattyNewChatDialog *self)
 {
   PurpleAccount     *account;
   char              *who;
@@ -116,7 +116,7 @@ cb_button_add_contact_clicked (ChattyNewChatDialog *self)
 
 
 static void
-cb_contact_name_text_changed (ChattyNewChatDialog *self)
+contact_name_text_changed_cb (ChattyNewChatDialog *self)
 {
   g_assert (CHATTY_IS_NEW_CHAT_DIALOG(self));
 
@@ -127,7 +127,7 @@ cb_contact_name_text_changed (ChattyNewChatDialog *self)
 
 
 static void
-cb_account_list_row_activated (ChattyNewChatDialog *self,
+account_list_row_activated_cb (ChattyNewChatDialog *self,
                                GtkListBoxRow       *row,
                                GtkListBox          *box)
 {
@@ -239,7 +239,7 @@ chatty_new_chat_add_account_to_list (ChattyNewChatDialog *self,
   hdy_action_row_add_prefix (row, GTK_WIDGET(prefix_radio_button ));
   hdy_action_row_set_title (row, chatty_pp_account_get_username (account));
 
-  gtk_container_add (GTK_CONTAINER(self->list_select_chat_account), GTK_WIDGET(row));
+  gtk_container_add (GTK_CONTAINER(self->list_select_account), GTK_WIDGET(row));
 
   gtk_widget_show (GTK_WIDGET(row));
 }
@@ -272,7 +272,7 @@ chatty_new_chat_populate_account_list (ChattyNewChatDialog *self)
 
   g_return_val_if_fail (CHATTY_IS_NEW_CHAT_DIALOG(self), FALSE);
 
-  chatty_new_chat_account_list_clear (self->list_select_chat_account);
+  chatty_new_chat_account_list_clear (self->list_select_account);
 
   for (l = purple_accounts_get_all (); l != NULL; l = l->next) {
     ChattyPpAccount *pp_account;
@@ -283,12 +283,12 @@ chatty_new_chat_populate_account_list (ChattyNewChatDialog *self)
     chatty_new_chat_add_account_to_list (self, pp_account);
   }
 
-  row = HDY_ACTION_ROW(gtk_list_box_get_row_at_index (GTK_LIST_BOX(self->list_select_chat_account), 0));
+  row = HDY_ACTION_ROW(gtk_list_box_get_row_at_index (GTK_LIST_BOX(self->list_select_account), 0));
 
   if (row) {
-    cb_account_list_row_activated (self,
+    account_list_row_activated_cb (self,
                                    GTK_LIST_BOX_ROW(row), 
-                                   GTK_LIST_BOX(self->list_select_chat_account));
+                                   GTK_LIST_BOX(self->list_select_account));
   }
 
   return ret;
@@ -339,19 +339,19 @@ chatty_new_chat_dialog_class_init (ChattyNewChatDialogClass *klass)
   gtk_widget_class_bind_template_child (widget_class, ChattyNewChatDialog, grid_edit_contact);
   gtk_widget_class_bind_template_child (widget_class, ChattyNewChatDialog, button_add_gnome_contact);
   gtk_widget_class_bind_template_child (widget_class, ChattyNewChatDialog, stack_panes_new_chat);
-  gtk_widget_class_bind_template_child (widget_class, ChattyNewChatDialog, list_select_chat_account);
+  gtk_widget_class_bind_template_child (widget_class, ChattyNewChatDialog, list_select_account);
   gtk_widget_class_bind_template_child (widget_class, ChattyNewChatDialog, entry_contact_name);
   gtk_widget_class_bind_template_child (widget_class, ChattyNewChatDialog, entry_contact_alias);
   gtk_widget_class_bind_template_child (widget_class, ChattyNewChatDialog, button_add_contact);
   gtk_widget_class_bind_template_child (widget_class, ChattyNewChatDialog, button_back);
   gtk_widget_class_bind_template_child (widget_class, ChattyNewChatDialog, button_show_add_contact);
 
-  gtk_widget_class_bind_template_callback (widget_class, cb_button_new_chat_back_clicked);
-  gtk_widget_class_bind_template_callback (widget_class, cb_button_show_add_contact_clicked);
-  gtk_widget_class_bind_template_callback (widget_class, cb_button_add_contact_clicked);
-  gtk_widget_class_bind_template_callback (widget_class, cb_button_add_gnome_contact_clicked);
-  gtk_widget_class_bind_template_callback (widget_class, cb_contact_name_text_changed);
-  gtk_widget_class_bind_template_callback (widget_class, cb_account_list_row_activated);
+  gtk_widget_class_bind_template_callback (widget_class, button_new_chat_back_clicked_cb);
+  gtk_widget_class_bind_template_callback (widget_class, button_show_add_contact_clicked_cb);
+  gtk_widget_class_bind_template_callback (widget_class, button_add_contact_clicked_cb);
+  gtk_widget_class_bind_template_callback (widget_class, button_add_gnome_contact_clicked_cb);
+  gtk_widget_class_bind_template_callback (widget_class, contact_name_text_changed_cb);
+  gtk_widget_class_bind_template_callback (widget_class, account_list_row_activated_cb);
 }
 
 
@@ -360,7 +360,7 @@ chatty_new_chat_dialog_init (ChattyNewChatDialog *self)
 {
   gtk_widget_init_template (GTK_WIDGET(self));
 
-  gtk_list_box_set_header_func (GTK_LIST_BOX(self->list_select_chat_account),
+  gtk_list_box_set_header_func (GTK_LIST_BOX(self->list_select_account),
                                 hdy_list_box_separator_header,
                                 NULL, NULL);
 

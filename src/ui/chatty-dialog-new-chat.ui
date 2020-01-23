@@ -29,7 +29,7 @@
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="receives_default">False</property>
-                    <signal name="clicked" handler="cb_button_show_add_contact_clicked" swapped="yes" />
+                    <signal name="clicked" handler="button_show_add_contact_clicked_cb" swapped="yes" />
                     <style>
                       <class name="image-button"/>
                     </style>
@@ -59,7 +59,7 @@
                     <property name="can_focus">False</property>
                     <property name="receives_default">False</property>
                     <property name="visible">True</property>
-                    <signal name="clicked" handler="cb_button_new_chat_back_clicked" swapped="yes" />
+                    <signal name="clicked" handler="button_new_chat_back_clicked_cb" swapped="yes" />
                     <style>
                       <class name="image-button"/>
                     </style>
@@ -83,7 +83,7 @@
                     <property name="label" translatable="yes">Add Contact</property>
                     <property name="sensitive">False</property>
                     <property name="visible">True</property>
-                    <signal name="clicked" handler="cb_button_add_contact_clicked" swapped="yes" />
+                    <signal name="clicked" handler="button_add_contact_clicked_cb" swapped="yes" />
                     <style>
                       <class name="suggested-action"/>
                     </style>
@@ -232,12 +232,12 @@
                                 <property name="expand">True</property>
                                 <property name="margin-bottom">32</property>
                                 <child>
-                                  <object class="GtkListBox" id="list_select_chat_account">
+                                  <object class="GtkListBox" id="list_select_account">
                                     <property name="visible">True</property>
                                     <property name="can_focus">False</property>
                                     <property name="expand">True</property>
                                     <property name="selection-mode">none</property>
-                                    <signal name="row-activated" handler="cb_account_list_row_activated" swapped="yes"/>
+                                    <signal name="row-activated" handler="account_list_row_activated_cb" swapped="yes"/>
                                   </object>
                                 </child>
                               </object>
@@ -278,7 +278,7 @@
                                   <object class="GtkEntry" id="entry_contact_name">
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
-                                    <signal name="changed" handler="cb_contact_name_text_changed" after="yes" swapped="yes" />
+                                    <signal name="changed" handler="contact_name_text_changed_cb" after="yes" swapped="yes" />
                                   </object>
                                   <packing>
                                     <property name="left_attach">1</property>
@@ -307,7 +307,7 @@
                                 <property name="can_default">True</property>
                                 <property name="label" translatable="yes">Add to Contacts</property>
                                 <property name="visible">True</property>
-                                <signal name="clicked" handler="cb_button_add_gnome_contact_clicked" swapped="yes" />
+                                <signal name="clicked" handler="button_add_gnome_contact_clicked_cb" swapped="yes" />
                                 <style>
                                   <class name="suggested-action"/>
                                 </style>
