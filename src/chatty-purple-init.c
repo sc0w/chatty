@@ -223,64 +223,6 @@ chatty_core_get_ui_ops (void)
 }
 
 
-gboolean
-chatty_purple_load_plugin (const char *name)
-{
-  GList    *iter;
-  gboolean  result = FALSE;
-
-  iter = purple_plugins_get_all ();
-
-  for (; iter; iter = iter->next) {
-    PurplePlugin      *plugin = iter->data;
-    PurplePluginInfo  *info = plugin->info;
-
-    if (g_strcmp0 (info->id, name) == 0) {
-      result = TRUE;
-      g_debug ("Found plugin %s", info->name);
-
-      if (!purple_plugin_is_loaded (plugin)) {
-        result = purple_plugin_load (plugin);
-        purple_plugins_save_loaded (CHATTY_PREFS_ROOT "/plugins/loaded");
-        g_debug ("Loaded plugin %s", info->name);
-      }
-    }
-  }
-
-  return result;
-}
-
-
-gboolean
-chatty_purple_unload_plugin (const char *name)
-{
-  PurplePlugin  *plugin;
-  gboolean       result = FALSE;
-
-  plugin = purple_plugins_find_with_id (name);
-
-  if (plugin != NULL) {
-    result = purple_plugin_unload (plugin);
-
-    purple_plugin_disable (plugin);
-
-    purple_plugins_save_loaded (CHATTY_PREFS_ROOT "/plugins/loaded");
-  } else {
-    g_debug ("Plugin %s couldn't be unloaded, it wasn't found", name);
-    return FALSE;
-  }
-
-  if (result) {
-    g_debug ("Unloaded plugin %s", name);
-  } else {
-    g_debug ("Plugin %s couldn't be unloaded now, "
-             "it will be unloaded after a restart", name);
-  }
-
-  return result;
-}
-
-
 void
 libpurple_init (void)
 {
