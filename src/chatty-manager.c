@@ -52,6 +52,40 @@ struct _ChattyManager
 G_DEFINE_TYPE (ChattyManager, chatty_manager, G_TYPE_OBJECT)
 
 
+static gboolean
+chatty_manager_load_plugin (PurplePlugin *plugin)
+{
+  gboolean loaded;
+
+  if (!plugin || purple_plugin_is_loaded (plugin))
+    return TRUE;
+
+  loaded = purple_plugin_load (plugin);
+  purple_plugins_save_loaded (CHATTY_PREFS_ROOT "/plugins/loaded");
+  g_debug ("plugin %s%s Loaded",
+           purple_plugin_get_name (plugin),
+           loaded ? "" : " Not");
+
+  return loaded;
+}
+
+static void
+chatty_manager_unload_plugin (PurplePlugin *plugin)
+{
+  gboolean unloaded;
+
+  if (!plugin || !purple_plugin_is_loaded (plugin))
+    return;
+
+  unloaded = purple_plugin_unload (plugin);
+  purple_plugin_disable (plugin);
+  purple_plugins_save_loaded (CHATTY_PREFS_ROOT "/plugins/loaded");
+  /* Failing to unload may mean that the application require restart to do so. */
+  g_debug ("plugin %s%s Unloaded",
+           purple_plugin_get_name (plugin),
+           unloaded ? "" : " Not");
+}
+
 static void
 manager_message_carbons_changed (ChattyManager  *self,
                                  GParamSpec     *pspect,
@@ -60,10 +94,13 @@ manager_message_carbons_changed (ChattyManager  *self,
   g_assert (CHATTY_IS_MANAGER (self));
   g_assert (CHATTY_IS_SETTINGS (settings));
 
+  if (!self->carbon_plugin)
+    return;
+
   if (chatty_settings_get_message_carbons (settings))
-    chatty_purple_load_plugin ("core-riba-carbons");
+    chatty_manager_load_plugin (self->carbon_plugin);
   else
-    chatty_purple_unload_plugin ("core-riba-carbons");
+    chatty_manager_unload_plugin (self->carbon_plugin);
 }
 
 static void
@@ -362,12 +399,12 @@ chatty_manager_load_plugins (ChattyManager *self)
   purple_plugins_probe (G_MODULE_SUFFIX);
 
   self->sms_plugin = purple_plugins_find_with_id ("prpl-mm-sms");
-  self->lurch_plugin = purple_plugins_find_with_id ("core-riba-carbons");
+  self->lurch_plugin = purple_plugins_find_with_id ("core-riba-lurch");
   self->carbon_plugin = purple_plugins_find_with_id ("core-riba-carbons");
   self->file_upload_plugin = purple_plugins_find_with_id ("xep-http-file-upload");
 
-  chatty_purple_load_plugin ("core-riba-lurch");
-  chatty_purple_load_plugin ("xep-http-file-upload");
+  chatty_manager_load_plugin (self->lurch_plugin);
+  chatty_manager_load_plugin (self->file_upload_plugin);
 
   purple_plugins_init ();
   purple_network_force_online();
@@ -375,7 +412,7 @@ chatty_manager_load_plugins (ChattyManager *self)
 
   chatty_xeps_init ();
 
-  if (chatty_purple_load_plugin ("prpl-mm-sms"))
+  if (chatty_manager_load_plugin (self->sms_plugin))
     chatty_manager_enable_sms_account (self);
 
   settings = chatty_settings_get_default ();
