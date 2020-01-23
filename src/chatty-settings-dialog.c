@@ -138,8 +138,7 @@ static void
 chatty_settings_add_clicked_cb (ChattySettingsDialog *self)
 {
   ChattyManager *manager;
-  ChattyPpAccount *pp_account;
-  PurpleAccount *account;
+  ChattyPpAccount *account;
   const char *user_id, *password, *server_url;
   gboolean is_matrix, is_telegram;
 
@@ -154,40 +153,24 @@ chatty_settings_add_clicked_cb (ChattySettingsDialog *self)
   is_telegram = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (self->telegram_radio_button));
 
   if (is_matrix)
-    {
-      pp_account = chatty_pp_account_new (user_id, "prpl-matrix");
-      account = chatty_pp_account_get_account (pp_account);
-      purple_account_set_string (account, "home_server", server_url);
-    }
+    account = chatty_pp_account_new_matrix (user_id, server_url);
   else if (is_telegram)
-    {
-      pp_account = chatty_pp_account_new (user_id, "prpl-telegram");
-    }
+    account = chatty_pp_account_new_telegram (user_id);
   else /* XMPP */
-    {
-      g_autofree char *name = NULL;
-      const gchar *url_prefix = NULL;
-
-      if (server_url && *server_url)
-        url_prefix = "@";
-
-      name = g_strconcat (user_id, url_prefix, server_url, NULL);
-      pp_account = chatty_pp_account_new (name, "prpl-jabber");
-    }
+    account = chatty_pp_account_new_xmpp (user_id, server_url);
 
   if (password)
     {
-      chatty_pp_account_set_password (pp_account, password);
+      chatty_pp_account_set_password (account, password);
 
       if (!is_telegram)
-        chatty_pp_account_set_remember_password (pp_account, TRUE);
+        chatty_pp_account_set_remember_password (account, TRUE);
     }
 
-  account = chatty_pp_account_get_account (pp_account);
-  purple_accounts_add (account);
+  chatty_pp_account_save (account);
 
   if (!chatty_manager_get_disable_auto_login (manager))
-    chatty_pp_account_set_enabled (pp_account, TRUE);
+    chatty_pp_account_set_enabled (account, TRUE);
 
   gtk_widget_hide (self->add_button);
   gtk_stack_set_visible_child_name (GTK_STACK (self->main_stack), "main-settings");

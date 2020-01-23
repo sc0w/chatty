@@ -332,6 +332,47 @@ chatty_pp_account_new_purple (PurpleAccount *account)
                        NULL);
 }
 
+ChattyPpAccount *
+chatty_pp_account_new_xmpp (const char *username,
+                            const char *server_url)
+{
+  g_autofree char *name = NULL;
+  const gchar *url_prefix = NULL;
+
+  g_return_val_if_fail (username || *username, NULL);
+
+  if (!strchr (username, '@'))
+    url_prefix = "@";
+  else if (!username || !*server_url)
+    g_return_val_if_reached (NULL);
+
+  name = g_strconcat (username, url_prefix, server_url, NULL);
+
+  return chatty_pp_account_new (name, "prpl-jabber");
+}
+
+ChattyPpAccount *
+chatty_pp_account_new_matrix (const char *username,
+                              const char *server_url)
+{
+  ChattyPpAccount *self;
+
+  g_return_val_if_fail (username || *username, NULL);
+  g_return_val_if_fail (server_url || *server_url, NULL);
+
+  self = chatty_pp_account_new (username, "prpl-matrix");
+  purple_account_set_string (self->pp_account, "home_server", server_url);
+
+  return self;
+}
+
+ChattyPpAccount *
+chatty_pp_account_new_telegram (const char *username)
+{
+  g_return_val_if_fail (username || *username, NULL);
+
+  return chatty_pp_account_new (username, "prpl-telegram");
+}
 /**
  * chatty_pp_account_save:
  * @self: A #ChattyPpAccount
