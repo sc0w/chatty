@@ -338,17 +338,11 @@ void
 chatty_manager_enable_sms_account (ChattyManager *self)
 {
   g_autoptr(ChattyPpAccount) account = NULL;
-  PurpleAccount *pp_account;
 
-  pp_account = purple_accounts_find ("SMS", "prpl-mm-sms");
-
-  /* SMS plugin already initialized */
-  if (pp_account)
+  if (purple_accounts_find ("SMS", "prpl-mm-sms"))
     return;
 
-  account = chatty_pp_account_new ("SMS", "prpl-mm-sms");
-  chatty_pp_account_set_password (account, NULL);
-  chatty_pp_account_set_remember_password (account, TRUE);
+  account = chatty_pp_account_new_sms ("SMS");
   chatty_pp_account_save (account);
 }
 
