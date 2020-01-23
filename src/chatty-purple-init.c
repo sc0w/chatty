@@ -177,7 +177,6 @@ chatty_purple_prefs_init (void)
   purple_prefs_add_none ("/plugins/chatty");
 
   purple_prefs_add_none (CHATTY_PREFS_ROOT "/plugins");
-  purple_prefs_add_bool (CHATTY_PREFS_ROOT "/plugins/message_carbons", TRUE);
   purple_prefs_add_path_list (CHATTY_PREFS_ROOT "/plugins/loaded", NULL);
 
   purple_prefs_add_none (CHATTY_PREFS_ROOT "/filelocations");

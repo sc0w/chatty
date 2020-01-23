@@ -683,8 +683,7 @@ cb_chatty_cmd (PurpleConversation  *conv,
       g_object_set (settings, "send-receipts", TRUE, NULL);
       msg = g_strdup ("Message receipts will be sent");
     } else if (!g_strcmp0 (args[0], "msg_carbons")) {
-      chatty_purple_load_plugin ("core-riba-carbons");
-      purple_prefs_set_bool (CHATTY_PREFS_ROOT "/plugins/message_carbons", TRUE);
+      g_object_set (settings, "message-carbons", TRUE, NULL);
       msg = g_strdup ("Chat history will be shared");
     } else if (!g_strcmp0 (args[0], "emoticons")) {
       g_object_set (settings, "convert-emoticons", TRUE, NULL);
@@ -710,8 +709,7 @@ cb_chatty_cmd (PurpleConversation  *conv,
       g_object_set (settings, "send-receipts", FALSE, NULL);
       msg = g_strdup ("Message receipts won't be sent");
     } else if (!g_strcmp0 (args[0], "msg_carbons")) {
-      chatty_purple_unload_plugin ("core-riba-carbons");
-      purple_prefs_set_bool (CHATTY_PREFS_ROOT "/plugins/message_carbons", FALSE);
+      g_object_set (settings, "message-carbons", FALSE, NULL);
       msg = g_strdup ("Chat history won't be shared");
     } else if (!g_strcmp0 (args[0], "emoticons")) {
       g_object_set (settings, "convert-emoticons", FALSE, NULL);
