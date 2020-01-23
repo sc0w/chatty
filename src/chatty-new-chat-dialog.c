@@ -131,21 +131,19 @@ cb_account_list_row_activated (ChattyNewChatDialog *self,
                                GtkListBoxRow       *row,
                                GtkListBox          *box)
 {
-  ChattyPpAccount *pp_account;
-  PurpleAccount   *account;
+  ChattyPpAccount *account;
   GtkWidget       *prefix_radio;
 
   g_assert (CHATTY_IS_NEW_CHAT_DIALOG(self));
 
-  pp_account = g_object_get_data (G_OBJECT(row), "row-account");
+  account = g_object_get_data (G_OBJECT(row), "row-account");
   prefix_radio = g_object_get_data (G_OBJECT(row), "row-prefix");
 
-  self->selected_account = pp_account;
-  account = chatty_pp_account_get_account (pp_account);
+  self->selected_account = account;
 
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(prefix_radio), TRUE);
 
-  if (chatty_blist_protocol_is_sms (account)) {
+  if (chatty_pp_account_is_sms (account)) {
     chatty_new_chat_set_edit_mode (self, FALSE);
   } else {
     chatty_new_chat_set_edit_mode (self, TRUE);
