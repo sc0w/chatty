@@ -116,40 +116,6 @@ cb_button_muc_info_back_clicked (GtkButton *sender,
 
 
 static void
-chatty_entry_contact_name_check (GtkEntry  *entry,
-                                 GtkWidget *button)
-{
-  PurpleBuddy *buddy;
-  const char  *name;
-
-  chatty_data_t *chatty = chatty_get_data ();
-
-  name = gtk_entry_get_text (entry);
-
-  if ((*name != '\0') && chatty->selected_account) {
-    buddy = purple_find_buddy (chatty->selected_account, name);
-  }
-
-  if ((*name != '\0') && !buddy) {
-    gtk_widget_set_sensitive (button, TRUE);
-  } else {
-    gtk_widget_set_sensitive (button, FALSE);
-  }
-}
-
-
-static void
-cb_contact_name_insert_text (GtkEntry    *entry,
-                             const gchar *text,
-                             gint         length,
-                             gint        *position,
-                             gpointer     data)
-{
-  chatty_entry_contact_name_check (entry, GTK_WIDGET(data));
-}
-
-
-static void
 cb_invite_name_insert_text (GtkEntry    *entry,
                             const gchar *text,
                             gint         length,
@@ -405,61 +371,6 @@ chatty_dialogs_create_dialog_muc_info (void)
 }
 
 
-void
-chatty_dialogs_show_dialog_join_muc (void)
-{
-  GtkBuilder *builder;
-  GtkWidget  *dialog;
-  GtkWidget  *button_join_chat;
-  GtkWindow  *window;
-  GtkListBox *list_select_muc_account;
-  GtkEntry   *entry_group_chat_id;
-  GtkEntry   *entry_group_chat_room_alias;
-  GtkEntry   *entry_group_chat_user_alias;
-  GtkEntry   *entry_group_chat_pw;
-  int         response;
-
-  chatty_data_t *chatty = chatty_get_data ();
-
-  builder = gtk_builder_new_from_resource ("/sm/puri/chatty/ui/chatty-dialog-join-muc.ui");
-
-  dialog = GTK_WIDGET (gtk_builder_get_object (builder, "dialog"));
-
-  list_select_muc_account = GTK_LIST_BOX (gtk_builder_get_object (builder, "list_select_muc_account"));
-  button_join_chat = GTK_WIDGET (gtk_builder_get_object (builder, "button_join_chat"));
-  entry_group_chat_id = GTK_ENTRY (gtk_builder_get_object (builder, "entry_group_chat_id"));
-  entry_group_chat_room_alias = GTK_ENTRY (gtk_builder_get_object (builder, "entry_group_chat_room_alias"));
-  entry_group_chat_user_alias = GTK_ENTRY (gtk_builder_get_object (builder, "entry_group_chat_user_alias"));
-  entry_group_chat_pw = GTK_ENTRY (gtk_builder_get_object (builder, "entry_group_chat_pw"));
-
-  gtk_list_box_set_header_func (list_select_muc_account,
-                                hdy_list_box_separator_header,
-                                NULL, NULL);
-
-  g_signal_connect (G_OBJECT(entry_group_chat_id),
-                    "insert_text",
-                    G_CALLBACK(cb_contact_name_insert_text),
-                    (gpointer)button_join_chat);
-
-  chatty_account_populate_account_list (list_select_muc_account,
-                                        LIST_SELECT_MUC_ACCOUNT);
-
-  window = gtk_application_get_active_window (GTK_APPLICATION (g_application_get_default ()));
-  gtk_window_set_transient_for (GTK_WINDOW(dialog), window);
-
-  response = gtk_dialog_run (GTK_DIALOG(dialog));
-
-  if (response == GTK_RESPONSE_OK) {
-    chatty_blist_join_group_chat (chatty->selected_account,
-                                  gtk_entry_get_text (entry_group_chat_id),
-                                  gtk_entry_get_text (entry_group_chat_room_alias),
-                                  gtk_entry_get_text (entry_group_chat_user_alias),
-                                  gtk_entry_get_text (entry_group_chat_pw));
-  }
-
-  gtk_widget_destroy (dialog);
-  g_object_unref (builder);
-}
 
 
 static void 
