@@ -31,4 +31,9 @@ gboolean        chatty_manager_get_disable_auto_login (ChattyManager *self);
 gboolean        chatty_manager_is_account_supported (ChattyManager   *self,
                                                      ChattyPpAccount *account);
 
+void            chatty_manager_load_plugins           (ChattyManager   *self);
+gboolean        chatty_manager_has_carbons_plugin     (ChattyManager   *self);
+gboolean        chatty_manager_has_file_upload_plugin (ChattyManager   *self);
+gboolean        chatty_manager_lurch_plugin_is_loaded (ChattyManager   *self);
+
 G_END_DECLS

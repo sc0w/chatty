@@ -29,14 +29,6 @@
 
 static GHashTable *ui_info = NULL;
 
-static chatty_purple_data_t chatty_purple_data;
-
-chatty_purple_data_t *chatty_get_purple_data (void)
-{
-  return &chatty_purple_data;
-}
-
-
 typedef struct _PurpleGLibIOClosure
 {
   PurpleInputFunction function;
@@ -295,8 +287,6 @@ libpurple_init (void)
 {
   gchar         *search_path;
 
-  chatty_purple_data_t *chatty_purple = chatty_get_purple_data ();
-
   signal (SIGCHLD, SIG_IGN);
   signal (SIGPIPE, SIG_IGN);
 
@@ -324,36 +314,7 @@ libpurple_init (void)
   purple_blist_load ();
   purple_plugins_load_saved (CHATTY_PREFS_ROOT "/plugins/loaded");
 
-  purple_plugins_probe (G_MODULE_SUFFIX);
-
-  if (purple_plugins_find_with_id ("core-riba-carbons") != NULL) {
-    chatty_purple->plugin_carbons_available = TRUE;
-  } else {
-    chatty_purple->plugin_carbons_available = FALSE;
-  }
-
-  if (purple_prefs_get_bool (CHATTY_PREFS_ROOT "/plugins/message_carbons")) {
-    chatty_purple->plugin_carbons_loaded = chatty_purple_load_plugin ("core-riba-carbons");
-  }
-
-  if (purple_plugins_find_with_id ("xep-http-file-upload") != NULL) {
-    chatty_purple->plugin_file_upload_available = TRUE;
-  } else {
-    chatty_purple->plugin_file_upload_available = FALSE;
-  }
-
-  chatty_purple->plugin_lurch_loaded = chatty_purple_load_plugin ("core-riba-lurch");
-  chatty_purple->plugin_file_upload_loaded = chatty_purple_load_plugin ("xep-http-file-upload");
-
-  purple_plugins_init ();
-  purple_network_force_online();
-  purple_pounces_load ();
-
-  chatty_xeps_init ();
-
-  chatty_purple->plugin_mm_sms_loaded = chatty_purple_load_plugin ("prpl-mm-sms");
-  if (chatty_purple->plugin_mm_sms_loaded)
-    chatty_manager_enable_sms_account (chatty_manager_get_default ());
+  chatty_manager_load_plugins (chatty_manager_get_default ());
 
   purple_savedstatus_activate (purple_savedstatus_get_startup());
   purple_accounts_restore_current_statuses ();

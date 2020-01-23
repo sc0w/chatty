@@ -289,13 +289,14 @@ account_list_row_activated_cb (ChattySettingsDialog *self,
                                GtkListBoxRow        *row,
                                GtkListBox           *box)
 {
+  ChattyManager *manager;
   chatty_dialog_data_t *chatty_dialog = chatty_get_dialog_data ();
-  chatty_purple_data_t *chatty_purple = chatty_get_purple_data ();
 
   g_assert (CHATTY_IS_SETTINGS_DIALOG (self));
   g_assert (GTK_IS_LIST_BOX_ROW (row));
   g_assert (GTK_IS_LIST_BOX (box));
 
+  manager = chatty_manager_get_default ();
   gtk_widget_set_sensitive (self->add_button, FALSE);
   gtk_widget_set_sensitive (self->save_button, FALSE);
   gtk_widget_set_sensitive (self->password_entry, FALSE);
@@ -318,7 +319,7 @@ account_list_row_activated_cb (ChattySettingsDialog *self,
 
       protocol_id = chatty_pp_account_get_protocol_id (self->selected_account);
 
-      if (chatty_purple->plugin_lurch_loaded &&
+      if (chatty_manager_lurch_plugin_is_loaded (manager) &&
           g_strcmp0 (protocol_id, "prpl-jabber") == 0)
         {
           PurpleAccount *account;
@@ -331,21 +332,6 @@ account_list_row_activated_cb (ChattySettingsDialog *self,
 
       settings_update_account_details (self);
     }
-}
-
-static void
-settings_message_carbons_changed_cb (ChattySettingsDialog *self)
-{
-  gboolean active;
-
-  g_assert (CHATTY_IS_SETTINGS_DIALOG (self));
-
-  active = gtk_switch_get_active (GTK_SWITCH (self->message_carbons_switch));
-
-  if (active)
-    chatty_purple_load_plugin ("core-riba-carbons");
-  else
-    chatty_purple_unload_plugin ("core-riba-carbons");
 }
 
 static void
@@ -613,6 +599,10 @@ chatty_settings_dialog_constructed (GObject *object)
   chatty_dialog->omemo.listbox_fp_own = GTK_LIST_BOX (self->fingerprint_list);
   chatty_dialog->omemo.listbox_fp_own_dev = GTK_LIST_BOX (self->fingerprint_device_list);
 
+  g_object_bind_property (settings, "message-carbons",
+                          self->message_carbons_switch, "active",
+                          G_BINDING_SYNC_CREATE | G_BINDING_BIDIRECTIONAL);
+
   g_object_bind_property (settings, "send-receipts",
                           self->send_receipts_switch, "active",
                           G_BINDING_SYNC_CREATE | G_BINDING_BIDIRECTIONAL);
@@ -715,7 +705,6 @@ chatty_settings_dialog_class_init (ChattySettingsDialogClass *klass)
   gtk_widget_class_bind_template_callback (widget_class, chatty_settings_add_clicked_cb);
   gtk_widget_class_bind_template_callback (widget_class, chatty_settings_save_clicked_cb);
   gtk_widget_class_bind_template_callback (widget_class, account_list_row_activated_cb);
-  gtk_widget_class_bind_template_callback (widget_class, settings_message_carbons_changed_cb);
   gtk_widget_class_bind_template_callback (widget_class, chatty_settings_back_clicked_cb);
   gtk_widget_class_bind_template_callback (widget_class, settings_avatar_button_clicked_cb);
   gtk_widget_class_bind_template_callback (widget_class, settings_account_id_changed_cb);
@@ -728,7 +717,6 @@ static void
 chatty_settings_dialog_init (ChattySettingsDialog *self)
 {
   ChattyManager *manager;
-  chatty_purple_data_t *chatty_purple;
 
   manager = chatty_manager_get_default ();
 
@@ -751,9 +739,8 @@ chatty_settings_dialog_init (ChattySettingsDialog *self)
   gtk_list_box_set_header_func (GTK_LIST_BOX (self->new_account_settings_list),
                                 hdy_list_box_separator_header, NULL, NULL);
 
-  chatty_purple = chatty_get_purple_data ();
   gtk_widget_set_visible (self->message_carbons_row,
-                          chatty_purple->plugin_carbons_available);
+                          chatty_manager_has_carbons_plugin (manager));
 }
 
 GtkWidget *

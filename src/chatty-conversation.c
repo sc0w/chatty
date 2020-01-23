@@ -9,6 +9,7 @@
 
 #include <glib/gi18n.h>
 #include "chatty-window.h"
+#include "chatty-manager.h"
 #include "chatty-icons.h"
 #include "chatty-lurch.h"
 #include "chatty-buddy-list.h"
@@ -2630,6 +2631,7 @@ static GtkWidget *
 chatty_conv_setup_pane (ChattyConversation *chatty_conv,
                         guint               msg_type)
 {
+  ChattyManager *manager;
   PurpleConversationType  type;
   const char             *protocol_id;
   GtkBuilder             *builder;
@@ -2639,11 +2641,10 @@ chatty_conv_setup_pane (ChattyConversation *chatty_conv,
   GtkWidget              *msg_view_list;
   GtkStyleContext        *sc;
 
-  chatty_purple_data_t *chatty_purple = chatty_get_purple_data ();
-
   gtk_icon_theme_add_resource_path (gtk_icon_theme_get_default (),
                                     "/sm/puri/chatty/icons/ui/");
 
+  manager = chatty_manager_get_default ();
   builder = gtk_builder_new_from_resource ("/sm/puri/chatty/ui/chatty-pane-msg-view.ui");
 
   chatty_conv->input.entry = GTK_WIDGET(gtk_builder_get_object (builder, "text_input"));
@@ -2658,7 +2659,8 @@ chatty_conv_setup_pane (ChattyConversation *chatty_conv,
 
   protocol_id = purple_account_get_protocol_id (purple_conversation_get_account (chatty_conv->conv));
 
-  if (chatty_purple->plugin_file_upload_available && !g_strcmp0 (protocol_id, "prpl-jabber")) {
+  if (chatty_manager_has_file_upload_plugin (manager) &&
+      !g_strcmp0 (protocol_id, "prpl-jabber")) {
     PurplePluginProtocolInfo *prpl_info;
     PurpleConnection         *gc;
     PurpleBlistNode          *node;
