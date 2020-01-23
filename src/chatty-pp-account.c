@@ -373,6 +373,22 @@ chatty_pp_account_new_telegram (const char *username)
 
   return chatty_pp_account_new (username, "prpl-telegram");
 }
+
+ChattyPpAccount *
+chatty_pp_account_new_sms (const char *username)
+{
+  ChattyPpAccount *self;
+
+  g_return_val_if_fail (username || *username, NULL);
+
+  self = chatty_pp_account_new (username, "prpl-mm-sms");
+
+  chatty_pp_account_set_password (self, NULL);
+  chatty_pp_account_set_remember_password (self, TRUE);
+
+  return NULL;
+}
+
 /**
  * chatty_pp_account_save:
  * @self: A #ChattyPpAccount
