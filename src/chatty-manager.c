@@ -104,6 +104,18 @@ manager_message_carbons_changed (ChattyManager  *self,
 }
 
 static void
+chatty_manager_enable_sms_account (ChattyManager *self)
+{
+  g_autoptr(ChattyPpAccount) account = NULL;
+
+  if (purple_accounts_find ("SMS", "prpl-mm-sms"))
+    return;
+
+  account = chatty_pp_account_new_sms ("SMS");
+  chatty_pp_account_save (account);
+}
+
+static void
 manager_account_added_cb (PurpleAccount *pp_account,
                           ChattyManager *self)
 {
@@ -332,18 +344,6 @@ chatty_manager_purple_init (ChattyManager *self)
     purple_savedstatus_activate (purple_savedstatus_new (NULL, PURPLE_STATUS_AVAILABLE));
 
   chatty_manager_intialize_libpurple (self);
-}
-
-void
-chatty_manager_enable_sms_account (ChattyManager *self)
-{
-  g_autoptr(ChattyPpAccount) account = NULL;
-
-  if (purple_accounts_find ("SMS", "prpl-mm-sms"))
-    return;
-
-  account = chatty_pp_account_new_sms ("SMS");
-  chatty_pp_account_save (account);
 }
 
 GListModel *
