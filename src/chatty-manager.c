@@ -88,7 +88,7 @@ chatty_manager_unload_plugin (PurplePlugin *plugin)
 
 static void
 manager_message_carbons_changed (ChattyManager  *self,
-                                 GParamSpec     *pspect,
+                                 GParamSpec     *pspec,
                                  ChattySettings *settings)
 {
   g_assert (CHATTY_IS_MANAGER (self));
