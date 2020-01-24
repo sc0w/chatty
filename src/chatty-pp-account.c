@@ -389,7 +389,7 @@ chatty_pp_account_new_sms (const char *username)
   chatty_pp_account_set_password (self, NULL);
   chatty_pp_account_set_remember_password (self, TRUE);
 
-  return NULL;
+  return self;
 }
 
 /**
