@@ -339,7 +339,7 @@ chatty_pp_account_new_xmpp (const char *username,
   g_autofree char *name = NULL;
   const gchar *url_prefix = NULL;
 
-  g_return_val_if_fail (username || *username, NULL);
+  g_return_val_if_fail (username && *username, NULL);
 
   if (!strchr (username, '@'))
     url_prefix = "@";
@@ -360,8 +360,8 @@ chatty_pp_account_new_matrix (const char *username,
 {
   ChattyPpAccount *self;
 
-  g_return_val_if_fail (username || *username, NULL);
-  g_return_val_if_fail (server_url || *server_url, NULL);
+  g_return_val_if_fail (username && *username, NULL);
+  g_return_val_if_fail (server_url && *server_url, NULL);
 
   self = chatty_pp_account_new (username, "prpl-matrix");
   purple_account_set_string (self->pp_account, "home_server", server_url);
@@ -372,7 +372,7 @@ chatty_pp_account_new_matrix (const char *username,
 ChattyPpAccount *
 chatty_pp_account_new_telegram (const char *username)
 {
-  g_return_val_if_fail (username || *username, NULL);
+  g_return_val_if_fail (username && *username, NULL);
 
   return chatty_pp_account_new (username, "prpl-telegram");
 }
@@ -382,7 +382,7 @@ chatty_pp_account_new_sms (const char *username)
 {
   ChattyPpAccount *self;
 
-  g_return_val_if_fail (username || *username, NULL);
+  g_return_val_if_fail (username && *username, NULL);
 
   self = chatty_pp_account_new (username, "prpl-mm-sms");
 
