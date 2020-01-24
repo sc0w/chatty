@@ -437,5 +437,8 @@ chatty_manager_lurch_plugin_is_loaded (ChattyManager *self)
 {
   g_return_val_if_fail (CHATTY_IS_MANAGER (self), FALSE);
 
+  if (!self->lurch_plugin)
+    return FALSE;
+
   return purple_plugin_is_loaded (self->lurch_plugin);
 }
