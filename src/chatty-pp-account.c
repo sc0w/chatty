@@ -343,9 +343,12 @@ chatty_pp_account_new_xmpp (const char *username,
 
   if (!strchr (username, '@'))
     url_prefix = "@";
-  else if (!username || !*server_url)
-    g_return_val_if_reached (NULL);
 
+  if (url_prefix &&
+      !(server_url && *server_url))
+      g_return_val_if_reached (NULL);
+
+  /* If username includes ‘@’ server_url is ignored */
   name = g_strconcat (username, url_prefix, server_url, NULL);
 
   return chatty_pp_account_new (name, "prpl-jabber");
