@@ -22,6 +22,11 @@ Architecture: any
 Depends:
  ${misc:Depends},
  ${shlibs:Depends},
+Recommends:
+ purple-carbons,
+ purple-lurch,
+ purple-mm-sms,
+ purple-xmpp-http-upload,
 Suggests:
  calls,
 Description: XMPP and SMS messaging
