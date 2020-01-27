@@ -98,6 +98,18 @@ switch_notify_changed_cb (ChattyUserInfoDialog *self)
 
 
 static void
+list_fps_changed_cb (ChattyUserInfoDialog *self)
+{
+  if (gtk_list_box_get_row_at_index (GTK_LIST_BOX(self->listbox_fps), 0)) {
+
+    gtk_widget_show (GTK_WIDGET(self->listbox_fps));
+  } else {
+    gtk_widget_hide (GTK_WIDGET(self->listbox_fps));
+  }
+}
+
+
+static void
 switch_encryption_changed_cb (ChattyUserInfoDialog *self)
 {
   gboolean active;
@@ -147,9 +159,9 @@ encrypt_set_disable_cb (int      err,
 
 
 static void
-encrypt_fp_list_cb  (int         err,
-                     GHashTable *id_fp_table,
-                     gpointer    user_data)
+encrypt_fp_list_cb (int         err,
+                    GHashTable *id_fp_table,
+                    gpointer    user_data)
 {
   GList       *key_list = NULL;
   const GList *curr_p = NULL;
@@ -181,8 +193,6 @@ encrypt_fp_list_cb  (int         err,
       }
     }
   }
-
-  gtk_widget_show (GTK_WIDGET(self->listbox_fps));
 
   g_list_free (key_list);
 }
@@ -487,6 +497,7 @@ chatty_user_info_dialog_class_init (ChattyUserInfoDialogClass *klass)
   gtk_widget_class_bind_template_callback (widget_class, button_avatar_clicked_cb);
   gtk_widget_class_bind_template_callback (widget_class, switch_notify_changed_cb);
   gtk_widget_class_bind_template_callback (widget_class, switch_encryption_changed_cb);
+  gtk_widget_class_bind_template_callback (widget_class, list_fps_changed_cb);
 }
 
 

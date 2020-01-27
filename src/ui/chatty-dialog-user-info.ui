@@ -263,6 +263,8 @@
                             <property name="can_focus">False</property>
                             <property name="expand">True</property>
                             <property name="selection-mode">none</property>
+                            <signal name="add" handler="list_fps_changed_cb" swapped="yes"/>
+                            <signal name="remove" handler="list_fps_changed_cb" swapped="yes"/>
                             <style>
                               <class name="frame"/>
                             </style>
