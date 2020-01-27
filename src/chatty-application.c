@@ -27,7 +27,7 @@
 
 #include "chatty-config.h"
 #include "chatty-window.h"
-#include "chatty-pp-account.h"
+#include "users/chatty-pp-account.h"
 #include "chatty-manager.h"
 #include "chatty-application.h"
 #include "chatty-purple-init.h"

@@ -33,7 +33,7 @@
 #include "chatty-dialogs.h"
 #include "chatty-account.h"
 #include "chatty-utils.h"
-#include "chatty-pp-account.h"
+#include "users/chatty-pp-account.h"
 #include "chatty-manager.h"
 #include "chatty-icons.h"
 #include "chatty-avatar.h"
