@@ -388,47 +388,7 @@ chatty_user_info_dialog_get_property (GObject      *object,
 
 
 static void
-chatty_user_info_dialog_class_init (ChattyUserInfoDialogClass *klass)
-{
-  GObjectClass *object_class = G_OBJECT_CLASS(klass);
-  GtkWidgetClass *widget_class = GTK_WIDGET_CLASS(klass);
-
-  object_class->set_property = chatty_user_info_dialog_set_property;
-  object_class->get_property = chatty_user_info_dialog_get_property;
-
-  props[PROP_CHATTY_CONV] =
-    g_param_spec_pointer ("chatty-conv",
-                          "CHATTY_CONVERSATION",
-                          "A Chatty conversation",
-                          G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY | G_PARAM_STATIC_STRINGS);
-
-  g_object_class_install_properties (object_class, PROP_LAST, props);
-
-  gtk_widget_class_set_template_from_resource (widget_class,
-                                               "/sm/puri/chatty/"
-                                               "ui/chatty-dialog-user-info.ui");
-
-  gtk_widget_class_bind_template_child (widget_class, ChattyUserInfoDialog, button_avatar);
-  gtk_widget_class_bind_template_child (widget_class, ChattyUserInfoDialog, label_user_id);
-  gtk_widget_class_bind_template_child (widget_class, ChattyUserInfoDialog, label_alias);
-  gtk_widget_class_bind_template_child (widget_class, ChattyUserInfoDialog, label_jid);
-  gtk_widget_class_bind_template_child (widget_class, ChattyUserInfoDialog, label_user_status);
-  gtk_widget_class_bind_template_child (widget_class, ChattyUserInfoDialog, label_status_msg);
-  gtk_widget_class_bind_template_child (widget_class, ChattyUserInfoDialog, switch_notify);
-  gtk_widget_class_bind_template_child (widget_class, ChattyUserInfoDialog, label_encrypt);
-  gtk_widget_class_bind_template_child (widget_class, ChattyUserInfoDialog, label_encrypt_status);
-  gtk_widget_class_bind_template_child (widget_class, ChattyUserInfoDialog, switch_encrypt);
-  gtk_widget_class_bind_template_child (widget_class, ChattyUserInfoDialog, listbox_prefs);
-  gtk_widget_class_bind_template_child (widget_class, ChattyUserInfoDialog, listbox_fps);
-
-  gtk_widget_class_bind_template_callback (widget_class, button_avatar_clicked_cb);
-  gtk_widget_class_bind_template_callback (widget_class, switch_notify_changed_cb);
-  gtk_widget_class_bind_template_callback (widget_class, switch_encryption_changed_cb);
-}
-
-
-static void
-chatty_user_info_dialog_init (ChattyUserInfoDialog *self)
+chatty_user_info_dialog_constructed (GObject *object)
 {
   PurpleAccount  *account;
   PurplePresence *presence;
@@ -436,20 +396,9 @@ chatty_user_info_dialog_init (ChattyUserInfoDialog *self)
   const char     *protocol_id;
 
   chatty_purple_data_t *chatty_purple = chatty_get_purple_data ();
+  ChattyUserInfoDialog *self = (ChattyUserInfoDialog *)object;
 
-  // TODO: remove when property issue got fixed
-  chatty_data_t *chatty = chatty_get_data ();
-  self->chatty_conv = chatty_conv_container_get_active_chatty_conv (GTK_NOTEBOOK(chatty->pane_view_message_list));
-
-  gtk_widget_init_template (GTK_WIDGET(self));
-
-  gtk_list_box_set_header_func (GTK_LIST_BOX(self->listbox_fps),
-                                hdy_list_box_separator_header,
-                                NULL, NULL);
-
-  gtk_list_box_set_header_func (GTK_LIST_BOX(self->listbox_prefs),
-                                hdy_list_box_separator_header,
-                                NULL, NULL);
+  G_OBJECT_CLASS (chatty_user_info_dialog_parent_class)->constructed (object);
 
   account = purple_conversation_get_account (self->chatty_conv->conv);
   protocol_id = purple_account_get_protocol_id (account);
@@ -496,6 +445,63 @@ chatty_user_info_dialog_init (ChattyUserInfoDialog *self)
 
   gtk_label_set_text (GTK_LABEL(self->label_alias), chatty_utils_jabber_id_strip (self->alias));
   gtk_label_set_text (GTK_LABEL(self->label_jid), self->chatty_conv->conv->name);
+}
+
+
+static void
+chatty_user_info_dialog_class_init (ChattyUserInfoDialogClass *klass)
+{
+  GObjectClass *object_class = G_OBJECT_CLASS(klass);
+  GtkWidgetClass *widget_class = GTK_WIDGET_CLASS(klass);
+
+  object_class->constructed  = chatty_user_info_dialog_constructed;
+
+  object_class->set_property = chatty_user_info_dialog_set_property;
+  object_class->get_property = chatty_user_info_dialog_get_property;
+
+  props[PROP_CHATTY_CONV] =
+    g_param_spec_pointer ("chatty-conv",
+                          "CHATTY_CONVERSATION",
+                          "A Chatty conversation",
+                          G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY | G_PARAM_STATIC_STRINGS);
+
+  g_object_class_install_properties (object_class, PROP_LAST, props);
+
+  gtk_widget_class_set_template_from_resource (widget_class,
+                                               "/sm/puri/chatty/"
+                                               "ui/chatty-dialog-user-info.ui");
+
+  gtk_widget_class_bind_template_child (widget_class, ChattyUserInfoDialog, button_avatar);
+  gtk_widget_class_bind_template_child (widget_class, ChattyUserInfoDialog, label_user_id);
+  gtk_widget_class_bind_template_child (widget_class, ChattyUserInfoDialog, label_alias);
+  gtk_widget_class_bind_template_child (widget_class, ChattyUserInfoDialog, label_jid);
+  gtk_widget_class_bind_template_child (widget_class, ChattyUserInfoDialog, label_user_status);
+  gtk_widget_class_bind_template_child (widget_class, ChattyUserInfoDialog, label_status_msg);
+  gtk_widget_class_bind_template_child (widget_class, ChattyUserInfoDialog, switch_notify);
+  gtk_widget_class_bind_template_child (widget_class, ChattyUserInfoDialog, label_encrypt);
+  gtk_widget_class_bind_template_child (widget_class, ChattyUserInfoDialog, label_encrypt_status);
+  gtk_widget_class_bind_template_child (widget_class, ChattyUserInfoDialog, switch_encrypt);
+  gtk_widget_class_bind_template_child (widget_class, ChattyUserInfoDialog, listbox_prefs);
+  gtk_widget_class_bind_template_child (widget_class, ChattyUserInfoDialog, listbox_fps);
+
+  gtk_widget_class_bind_template_callback (widget_class, button_avatar_clicked_cb);
+  gtk_widget_class_bind_template_callback (widget_class, switch_notify_changed_cb);
+  gtk_widget_class_bind_template_callback (widget_class, switch_encryption_changed_cb);
+}
+
+
+static void
+chatty_user_info_dialog_init (ChattyUserInfoDialog *self)
+{
+  gtk_widget_init_template (GTK_WIDGET(self));
+
+  gtk_list_box_set_header_func (GTK_LIST_BOX(self->listbox_fps),
+                                hdy_list_box_separator_header,
+                                NULL, NULL);
+
+  gtk_list_box_set_header_func (GTK_LIST_BOX(self->listbox_prefs),
+                                hdy_list_box_separator_header,
+                                NULL, NULL);
 }
 
 
