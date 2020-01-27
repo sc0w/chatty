@@ -15,17 +15,9 @@
 #include "chatty-purple-init.h"
 #include "chatty-config.h"
 #include "chatty-dialogs.h"
-#include "chatty-lurch.h"
 #include "chatty-utils.h"
-#include "chatty-icons.h"
-#include "chatty-dbus.h"
-#include "chatty-folks.h"
 #include "version.h"
 
-#include <libebook-contacts/libebook-contacts.h>
-
-static char *chatty_dialogs_show_dialog_load_avatar (void);
-static void chatty_dialogs_update_user_avatar (PurpleBuddy *buddy, const char *color);
 
 static chatty_dialog_data_t chatty_dialog_data;
 
@@ -72,39 +64,6 @@ cb_switch_prefs_state_changed (GtkSwitch  *widget,
 
 
 static void
-cb_switch_omemo_state_changed (GtkSwitch  *widget,
-                               GParamSpec *pspec,
-                               gpointer    user_data)
-{
-  PurpleConversation *conv;
-
-  conv = (PurpleConversation *) user_data;
-
-  gtk_switch_get_active (widget) ? chatty_lurch_enable (conv) : chatty_lurch_disable (conv);
-
-  chatty_lurch_get_status (conv);
-}
-
-
-static void
-cb_switch_notify_state_changed (GtkSwitch  *widget,                                
-                                GParamSpec *pspec,
-                                gpointer    user_data)
-{
-  PurpleBuddy        *buddy;
-  PurpleConversation *conv;
-
-  conv = (PurpleConversation *) user_data;
-
-  buddy = purple_find_buddy (conv->account, conv->name);
-
-  purple_blist_node_set_bool (PURPLE_BLIST_NODE(buddy), 
-                              "chatty-notifications", 
-                              gtk_switch_get_active (widget));
-}
-
-
-static void
 cb_button_muc_info_back_clicked (GtkButton *sender,
                                  gpointer   data)
 {
@@ -134,9 +93,6 @@ cb_invite_name_delete_text (GtkEntry    *entry,
 {
   gtk_widget_set_sensitive (GTK_WIDGET(data), start_pos ? TRUE : FALSE);
 }
-
-
-
 
 
 static void
@@ -217,27 +173,6 @@ cb_button_edit_topic_clicked (GtkToggleButton *sender,
   gtk_text_view_set_editable (GTK_TEXT_VIEW(chatty_dialog->textview_muc_topic), edit_mode);
   gtk_text_view_set_cursor_visible (GTK_TEXT_VIEW(chatty_dialog->textview_muc_topic), edit_mode);
   gtk_widget_set_can_focus (GTK_WIDGET(chatty_dialog->textview_muc_topic), edit_mode);
-}
-
-
-static void
-cb_button_user_avatar_clicked (GtkButton *sender,
-                               gpointer   data)
-{
-  PurpleContact *contact;
-  char          *file_name = NULL;
-  
-  file_name = chatty_dialogs_show_dialog_load_avatar ();
-
-  if (file_name) {
-    contact = purple_buddy_get_contact ((PurpleBuddy*)data);
-
-    purple_buddy_icons_node_set_custom_icon_from_file ((PurpleBlistNode*)contact, file_name);
-
-    chatty_dialogs_update_user_avatar ((PurpleBuddy*)data, CHATTY_COLOR_BLUE);
-  }
-
-  g_free (file_name);
 }
 
 
@@ -371,176 +306,6 @@ chatty_dialogs_create_dialog_muc_info (void)
 }
 
 
-
-
-static void 
-chatty_dialogs_update_user_avatar (PurpleBuddy *buddy,
-                                   const char  *color)
-{
-  PurpleContact *contact;
-  GdkPixbuf     *icon;
-  GtkWidget     *avatar;
-  const char    *alias;
-  const char    *buddy_alias;
-  const char    *contact_alias;
-
-  chatty_dialog_data_t *chatty_dialog = chatty_get_dialog_data ();
-
-  alias = purple_buddy_get_alias (buddy);
-
-  icon = chatty_icon_get_buddy_icon (PURPLE_BLIST_NODE(buddy),
-                                     alias,
-                                     CHATTY_ICON_SIZE_LARGE,
-                                     color,
-                                     FALSE);
-  
-  if (icon != NULL) {
-    avatar = gtk_image_new ();
-    gtk_image_set_from_pixbuf (GTK_IMAGE(avatar), icon);
-    gtk_button_set_image (GTK_BUTTON(chatty_dialog->button_user_avatar), GTK_WIDGET(avatar));
-  }
-
-  g_object_unref (icon);
-
-  contact = purple_buddy_get_contact (buddy);
-  buddy_alias = purple_buddy_get_alias (buddy);
-  contact_alias = purple_contact_get_alias (contact);
-
-  icon = chatty_icon_get_buddy_icon (PURPLE_BLIST_NODE(buddy),
-                                     alias,
-                                     CHATTY_ICON_SIZE_SMALL,
-                                     color,
-                                     FALSE);
-
-  chatty_window_update_sub_header_titlebar (icon, contact_alias ? contact_alias : buddy_alias);
-
-  g_object_unref (icon);
-}
-
-
-void
-chatty_dialogs_show_dialog_user_info (ChattyConversation *chatty_conv)
-{
-  PurpleBuddy    *buddy;
-  PurpleAccount  *account;
-  PurplePresence *presence;
-  PurpleStatus   *status;
-  GtkBuilder     *builder;
-  GtkWidget      *dialog;
-  GtkWidget      *label_alias;
-  GtkWidget      *label_jid;
-  GtkWidget      *label_encryption;
-  GtkWidget      *label_user_id;
-  GtkWidget      *label_user_status;
-  GtkWidget      *label_status_msg;
-  GtkWindow      *window;
-  GtkSwitch      *switch_notify;
-  GtkListBox     *listbox_prefs;
-  const char     *protocol_id;
-  const char     *alias;
-
-  chatty_purple_data_t *chatty_purple = chatty_get_purple_data ();
-  chatty_dialog_data_t *chatty_dialog = chatty_get_dialog_data ();
-
-  builder = gtk_builder_new_from_resource ("/sm/puri/chatty/ui/chatty-dialog-user-info.ui");
-
-  chatty_dialog->button_user_avatar = GTK_WIDGET (gtk_builder_get_object (builder, "button-user-avatar"));
-  label_alias = GTK_WIDGET (gtk_builder_get_object (builder, "label_alias"));
-  label_user_id = GTK_WIDGET (gtk_builder_get_object (builder, "label_user_id"));
-  label_jid = GTK_WIDGET (gtk_builder_get_object (builder, "label_jid"));
-  switch_notify = GTK_SWITCH (gtk_builder_get_object (builder, "switch_notify"));
-  listbox_prefs = GTK_LIST_BOX (gtk_builder_get_object (builder, "listbox_prefs"));
-
-  account = purple_conversation_get_account (chatty_conv->conv);
-  protocol_id = purple_account_get_protocol_id (account);
-
-  if (chatty_purple->plugin_lurch_loaded && (!g_strcmp0 (protocol_id, "prpl-jabber"))) {
-    label_encryption = GTK_WIDGET (gtk_builder_get_object (builder, "label_encryption"));
-    chatty_dialog->omemo.switch_on_off = GTK_SWITCH (gtk_builder_get_object (builder, "switch_omemo"));
-    chatty_dialog->omemo.label_status_msg = GTK_WIDGET (gtk_builder_get_object (builder, "label_encryption_msg"));
-    chatty_dialog->omemo.listbox_fp_contact = GTK_LIST_BOX (gtk_builder_get_object (builder, "listbox_fp"));
-
-    gtk_widget_show (GTK_WIDGET(listbox_prefs));
-    gtk_widget_show (GTK_WIDGET(chatty_dialog->omemo.listbox_fp_contact));
-    gtk_widget_show (GTK_WIDGET(label_encryption));
-    gtk_widget_show (GTK_WIDGET(chatty_dialog->omemo.label_status_msg));
-
-    gtk_list_box_set_header_func (chatty_dialog->omemo.listbox_fp_contact,
-                                  hdy_list_box_separator_header,
-                                  NULL, NULL);
-
-    gtk_label_set_text (GTK_LABEL(label_user_id), "XMPP ID");
-
-    chatty_lurch_get_status (chatty_conv->conv);
-    chatty_lurch_get_fp_list_contact (chatty_conv->conv);
-
-    gtk_switch_set_state (chatty_dialog->omemo.switch_on_off, chatty_conv->omemo.enabled);
-
-    g_signal_connect (chatty_dialog->omemo.switch_on_off,
-                      "notify::active",
-                      G_CALLBACK(cb_switch_omemo_state_changed),
-                      (gpointer)chatty_conv->conv);
-  }
-
-  if (!g_strcmp0 (protocol_id, "prpl-mm-sms")) {
-    gtk_label_set_text (GTK_LABEL(label_user_id), _("Phone Number:"));
-  }
-
-  gtk_list_box_set_header_func (listbox_prefs,
-                                hdy_list_box_separator_header,
-                                NULL, NULL);
-
-  buddy = purple_find_buddy (chatty_conv->conv->account, chatty_conv->conv->name);
-  alias = purple_buddy_get_alias (buddy);
-
-  if (chatty_blist_protocol_is_sms (account)) {
-    chatty_dialogs_update_user_avatar (buddy, CHATTY_COLOR_GREEN);
-  } else {
-    chatty_dialogs_update_user_avatar (buddy, CHATTY_COLOR_BLUE);
-
-    g_signal_connect (G_OBJECT(chatty_dialog->button_user_avatar),
-                      "clicked",
-                      G_CALLBACK (cb_button_user_avatar_clicked),
-                      buddy);
-  } 
-  
-  gtk_switch_set_state (switch_notify,
-                        purple_blist_node_get_bool (PURPLE_BLIST_NODE(buddy),
-                        "chatty-notifications"));
-
-  g_signal_connect (switch_notify,
-                    "notify::active",
-                    G_CALLBACK(cb_switch_notify_state_changed),
-                    (gpointer)chatty_conv->conv);
-
-  gtk_label_set_text (GTK_LABEL(label_alias), chatty_utils_jabber_id_strip (alias));
-  gtk_label_set_text (GTK_LABEL(label_jid), chatty_conv->conv->name);
-
-  if (!g_strcmp0 (protocol_id, "prpl-jabber")) {
-    label_user_status = GTK_WIDGET (gtk_builder_get_object (builder, "label_user_status"));
-    label_status_msg = GTK_WIDGET (gtk_builder_get_object (builder, "label_status_msg"));
-    
-    gtk_widget_show (GTK_WIDGET(label_user_status));
-    gtk_widget_show (GTK_WIDGET(label_status_msg));
-
-    presence = purple_buddy_get_presence (buddy);
-    status = purple_presence_get_active_status (presence);
-
-    gtk_label_set_text (GTK_LABEL(label_status_msg), purple_status_get_name (status));
-  }
-
-  dialog = GTK_WIDGET (gtk_builder_get_object (builder, "dialog"));
-
-  window = gtk_application_get_active_window (GTK_APPLICATION (g_application_get_default ()));
-  gtk_window_set_transient_for (GTK_WINDOW(dialog), window);
-
-  gtk_dialog_run (GTK_DIALOG(dialog));
-
-  gtk_widget_destroy (dialog);
-  g_object_unref (builder);
-}
-
-
 void
 chatty_dialogs_show_dialog_about_chatty (void)
 {
@@ -588,7 +353,7 @@ chatty_dialogs_show_dialog_about_chatty (void)
 }
 
 
-static char * 
+char * 
 chatty_dialogs_show_dialog_load_avatar (void) 
 {
   GtkWindow            *window;

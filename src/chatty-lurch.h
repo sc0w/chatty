@@ -23,11 +23,9 @@ enum {
 } e_lurch_status;
 
 
-void chatty_lurch_enable (PurpleConversation *conv);
-void chatty_lurch_disable (PurpleConversation *conv);
 void chatty_lurch_get_status (PurpleConversation *conv);
 void chatty_lurch_fp_device_get (PurpleConversation *conv);
 void chatty_lurch_get_fp_list_own (PurpleAccount *account);
-void chatty_lurch_get_fp_list_contact (PurpleConversation *conv);
+GtkWidget* chatty_lurch_create_fingerprint_row (const char *fp, guint id);
 
 #endif

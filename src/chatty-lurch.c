@@ -13,10 +13,9 @@
 #include "chatty-utils.h"
 #include "chatty-dialogs.h"
 #include "chatty-lurch.h"
+#include "chatty-user-info-dialog.h"
 #include "chatty-conversation.h"
 
-
-static GtkWidget* chatty_lurch_create_fingerprint_row (const char *fp, guint id);
 
 
 static void
@@ -100,90 +99,6 @@ cb_get_fp_list_own (int         err,
 
 
 static void
-cb_get_fp_list_contact (int         err,
-                        GHashTable *id_fp_table,
-                        gpointer    user_data)
-{
-  GList       *key_list = NULL;
-  const GList *curr_p = NULL;
-  const char  *fp = NULL;
-  GtkWidget   *row;
-
-  chatty_dialog_data_t *chatty_dialog = chatty_get_dialog_data ();
-
-  if (err || !id_fp_table) {
-    gtk_widget_hide (GTK_WIDGET(chatty_dialog->omemo.listbox_fp_contact));
-    gtk_label_set_text (GTK_LABEL(chatty_dialog->omemo.label_status_msg), _("Encryption not available"));
-
-    return;
-  }
-
-  if (chatty_dialog->omemo.listbox_fp_contact) {
-    key_list = g_hash_table_get_keys(id_fp_table);
-
-    for (curr_p = key_list; curr_p; curr_p = curr_p->next) {
-      fp = (char *) g_hash_table_lookup(id_fp_table, curr_p->data);
-
-      g_debug ("DeviceId: %i fingerprint:\n%s\n", *((guint32 *) curr_p->data),
-               fp ? fp : "(no session)");
-
-      row = chatty_lurch_create_fingerprint_row (fp, *((guint32 *) curr_p->data));
-
-      if (row) {
-        gtk_container_add (GTK_CONTAINER(chatty_dialog->omemo.listbox_fp_contact), row);
-      }
-    }
-  }
-
-  g_list_free (key_list);
-}
-
-
-static void
-cb_set_enable (int      err,
-               gpointer user_data)
-{
-  PurpleConversation *conv;
-  ChattyConversation *chatty_conv;
-
-  chatty_dialog_data_t *chatty_dialog = chatty_get_dialog_data ();
-
-  if (err) {
-    g_debug ("Failed to enable OMEMO for this conversation.");
-    return;
-  }
-
-  conv = (PurpleConversation *) user_data;
-  chatty_conv = CHATTY_CONVERSATION(conv);
-
-  gtk_switch_set_state (chatty_dialog->omemo.switch_on_off, TRUE);
-  chatty_conv->omemo.enabled = TRUE;
-}
-
-
-static void
-cb_set_disable (int      err,
-                gpointer user_data)
-{
-  PurpleConversation *conv;
-  ChattyConversation *chatty_conv;
-
-  chatty_dialog_data_t *chatty_dialog = chatty_get_dialog_data ();
-
-  if (err) {
-    g_debug ("Failed to disable OMEMO for this conversation.");
-    return;
-  }
-
-  conv = (PurpleConversation *) user_data;
-  chatty_conv = CHATTY_CONVERSATION(conv);
-
-  gtk_switch_set_state (chatty_dialog->omemo.switch_on_off, FALSE);
-  chatty_conv->omemo.enabled = FALSE;
-}
-
-
-static void
 cb_get_status (int      err,
                int      status,
                gpointer user_data)
@@ -191,9 +106,6 @@ cb_get_status (int      err,
   PurpleConversation *conv = (PurpleConversation *) user_data;
   ChattyConversation *chatty_conv;
   GtkStyleContext    *sc;
-  const char         *status_msg;
-
-  chatty_dialog_data_t *chatty_dialog = chatty_get_dialog_data ();
 
   if (err) {
     g_debug ("Failed to get the OMEMO status.");
@@ -205,22 +117,14 @@ cb_get_status (int      err,
   sc = gtk_widget_get_style_context (GTK_WIDGET(chatty_conv->omemo.symbol_encrypt));
 
   switch (status) {
-    case LURCH_STATUS_DISABLED:
-      status_msg = _("This chat is not encrypted");
-      break;
-    case LURCH_STATUS_NOT_SUPPORTED:
-      status_msg = _("Encryption is not available");
-      break;
     case LURCH_STATUS_NO_SESSION:
-      status_msg = _("This chat is not encrypted");
       chatty_conv->omemo.enabled = FALSE;
       break;
     case LURCH_STATUS_OK:
-      status_msg = _("This chat is encrypted");
       chatty_conv->omemo.enabled = TRUE;
       break;
     default:
-      g_debug ("Received unknown status code.");
+      ;
   }
 
   gtk_image_set_from_icon_name (chatty_conv->omemo.symbol_encrypt,
@@ -231,15 +135,11 @@ cb_get_status (int      err,
   gtk_style_context_remove_class (sc, chatty_conv->omemo.enabled ? "unencrypt" : "encrypt");
   gtk_style_context_add_class (sc, chatty_conv->omemo.enabled ? "encrypt" : "unencrypt");
 
-  if (chatty_dialog->omemo.label_status_msg) {
-    gtk_label_set_text (GTK_LABEL(chatty_dialog->omemo.label_status_msg), status_msg);
-  }
-
   chatty_conv->omemo.status = status;
 }
 
 
-static GtkWidget*
+GtkWidget*
 chatty_lurch_create_fingerprint_row (const char *fp,
                                      guint       id)
 {
@@ -345,30 +245,6 @@ chatty_lurch_get_fp_list_own (PurpleAccount *account)
 
 
 void
-chatty_lurch_get_fp_list_contact (PurpleConversation *conv)
-{
-  PurpleAccount          *account;
-  PurpleConversationType  type;
-  const char             *name;
-
-  void * plugins_handle = purple_plugins_get_handle();
-
-  account = purple_conversation_get_account (conv);
-  type = purple_conversation_get_type (conv);
-  name = purple_conversation_get_name (conv);
-
-  if (type == PURPLE_CONV_TYPE_IM) {
-    purple_signal_emit (plugins_handle,
-                        "lurch-fp-other",
-                        account,
-                        chatty_utils_jabber_id_strip (name),
-                        cb_get_fp_list_contact,
-                        conv);
-  }
-}
-
-
-void
 chatty_lurch_fp_device_get (PurpleConversation *conv)
 {
   PurpleAccount * account;
@@ -380,50 +256,6 @@ chatty_lurch_fp_device_get (PurpleConversation *conv)
                       account,
                       cb_get_fingerprint,
                       conv);
-}
-
-
-void
-chatty_lurch_enable (PurpleConversation *conv)
-{
-  PurpleAccount          *account;
-  PurpleConversationType  type;
-  const char             *name;
-
-  account = purple_conversation_get_account (conv);
-  type = purple_conversation_get_type (conv);
-  name = purple_conversation_get_name (conv);
-
-  if (type == PURPLE_CONV_TYPE_IM) {
-    purple_signal_emit (purple_plugins_get_handle(),
-                        "lurch-enable-im",
-                        account,
-                        chatty_utils_jabber_id_strip (name),
-                        cb_set_enable,
-                        conv);
-  }
-}
-
-
-void
-chatty_lurch_disable (PurpleConversation *conv)
-{
-  PurpleAccount          *account;
-  PurpleConversationType  type;
-  const char             *name;
-
-  account = purple_conversation_get_account (conv);
-  type = purple_conversation_get_type (conv);
-  name = purple_conversation_get_name (conv);
-
-  if (type == PURPLE_CONV_TYPE_IM) {
-    purple_signal_emit (purple_plugins_get_handle(),
-                        "lurch-disable-im",
-                        account,
-                        chatty_utils_jabber_id_strip (name),
-                        cb_set_disable,
-                        conv);
-  }
 }
 
 
