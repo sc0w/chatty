@@ -8,9 +8,7 @@
 #include <glib.h>
 #include <glib/gi18n.h>
 #include "chatty-config.h"
-#include "chatty-dialogs.h"
 #include "chatty-window.h"
-#include "chatty-settings-dialog.h"
 #include "chatty-message-list.h"
 #include "chatty-buddy-list.h"
 #include "chatty-conversation.h"
@@ -18,9 +16,11 @@
 #include "chatty-purple-init.h"
 #include "chatty-icons.h"
 #include "chatty-popover-actions.h"
-#include "chatty-new-chat-dialog.h"
-#include "chatty-new-muc-dialog.h"
-#include "chatty-user-info-dialog.h"
+#include "dialogs/chatty-dialogs.h"
+#include "dialogs/chatty-settings-dialog.h"
+#include "dialogs/chatty-new-chat-dialog.h"
+#include "dialogs/chatty-new-muc-dialog.h"
+#include "dialogs/chatty-user-info-dialog.h"
 
 static chatty_data_t chatty_data;
 
