@@ -3,6 +3,7 @@ version_h = vcs_tag(input: 'version.h.in',
 
 libsrc = [
   'users/chatty-user.c',
+  'users/chatty-account.c',
   'users/chatty-pp-account.c',
   'chatty-settings.c',
 ]
