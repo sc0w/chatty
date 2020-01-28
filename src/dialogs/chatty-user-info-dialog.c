@@ -19,7 +19,6 @@
 #include "chatty-buddy-list.h"
 #include "chatty-conversation.h"
 #include "chatty-icons.h"
-#include "chatty-lurch.h"
 #include "chatty-purple-init.h"
 #include "chatty-user-info-dialog.h"
 

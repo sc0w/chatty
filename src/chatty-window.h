@@ -132,6 +132,14 @@ enum {
 } ChattyActiveAccounts;
 
 
+enum {
+  LURCH_STATUS_DISABLED = 0,  // manually disabled
+  LURCH_STATUS_NOT_SUPPORTED, // no OMEMO support, i.e. there is no devicelist node
+  LURCH_STATUS_NO_SESSION,    // OMEMO is supported, but there is no libsignal session yet
+  LURCH_STATUS_OK             // OMEMO is supported and session exists
+} e_lurch_status;
+
+
 typedef enum {
   CHATTY_VIEW_NEW_CHAT,
   CHATTY_VIEW_CHAT_LIST,
@@ -147,6 +155,7 @@ typedef enum {
   CHATTY_MESSAGE_MODE_XMPP,
   CHATTY_MESSAGE_MODE_SMS
 } ChattyWindowMessageMode;
+
 
 void chatty_window_change_view (guint state);
 void chatty_window_overlay_show (gboolean show);

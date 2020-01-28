@@ -32,7 +32,6 @@ chatty_sources = [
   'chatty-icons.c',
   'chatty-history.c',
   'chatty-dbus.c',
-  'chatty-lurch.c',
   'chatty-utils.c',
   'chatty-folks.c',
   'chatty-notify.c',
