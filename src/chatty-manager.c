@@ -129,10 +129,10 @@ manager_account_added_cb (PurpleAccount *pp_account,
   g_list_store_append (self->account_list, account);
 
   if (self->disable_auto_login)
-    chatty_pp_account_set_enabled (account, FALSE);
+    chatty_account_set_enabled (CHATTY_ACCOUNT (account), FALSE);
 
   if (chatty_pp_account_is_sms (account))
-    chatty_pp_account_set_enabled (account, TRUE);
+    chatty_account_set_enabled (CHATTY_ACCOUNT (account), TRUE);
 }
 
 static void

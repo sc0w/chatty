@@ -49,7 +49,7 @@ chatty_connection_update_ui (void)
         continue;
       }
 
-    if (chatty_pp_account_get_status (account) == CHATTY_CONNECTED) {
+    if (chatty_account_get_status (CHATTY_ACCOUNT (account)) == CHATTY_CONNECTED) {
       if (chatty_pp_account_is_sms (account)) {
         chatty->sms_account_connected = TRUE;
       }  else {

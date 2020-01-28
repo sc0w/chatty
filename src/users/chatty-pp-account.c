@@ -34,7 +34,7 @@
 
 struct _ChattyPpAccount
 {
-  ChattyUser      parent_instance;
+  ChattyAccount   parent_instance;
 
   gchar          *username;
   gchar          *protocol_id;
@@ -45,15 +45,13 @@ struct _ChattyPpAccount
   guint           connect_id;
 };
 
-G_DEFINE_TYPE (ChattyPpAccount, chatty_pp_account, CHATTY_TYPE_USER)
+G_DEFINE_TYPE (ChattyPpAccount, chatty_pp_account, CHATTY_TYPE_ACCOUNT)
 
 enum {
   PROP_0,
   PROP_USERNAME,
   PROP_PROTOCOL_ID,
   PROP_PURPLE_ACCOUNT,
-  PROP_ENABLED,
-  PROP_STATUS,
   N_PROPS
 };
 
@@ -102,10 +100,10 @@ account_connect (ChattyPpAccount *self)
 
   g_clear_handle_id (&self->connect_id, g_source_remove);
 
-  if (!chatty_pp_account_get_enabled (self))
+  if (!chatty_account_get_enabled (CHATTY_ACCOUNT (self)))
     return G_SOURCE_REMOVE;
 
-  status = chatty_pp_account_get_status (self);
+  status = chatty_account_get_status (CHATTY_ACCOUNT (self));
 
   if (status == CHATTY_CONNECTED ||
       status == CHATTY_CONNECTING)
@@ -120,6 +118,90 @@ account_connect (ChattyPpAccount *self)
   purple_account_connect (self->pp_account);
 
   return G_SOURCE_REMOVE;
+}
+
+static ChattyStatus
+chatty_pp_account_get_status (ChattyAccount *account)
+{
+  ChattyPpAccount *self = (ChattyPpAccount *)account;
+
+  g_assert (CHATTY_IS_PP_ACCOUNT (self));
+
+  if (purple_account_is_connected (self->pp_account))
+    return CHATTY_CONNECTED;
+  if (purple_account_is_connecting (self->pp_account))
+    return CHATTY_CONNECTING;
+
+  return CHATTY_DISCONNECTED;
+}
+
+static gboolean
+chatty_pp_account_get_enabled (ChattyAccount *account)
+{
+  ChattyPpAccount *self = (ChattyPpAccount *)account;
+
+  g_assert (CHATTY_IS_PP_ACCOUNT (self));
+
+  return purple_account_get_enabled (self->pp_account, CHATTY_UI);
+}
+
+static void
+chatty_pp_account_set_enabled (ChattyAccount *account,
+                               gboolean       enable)
+{
+  ChattyPpAccount *self = (ChattyPpAccount *)account;
+
+  g_assert (CHATTY_IS_PP_ACCOUNT (self));
+
+  purple_account_set_enabled (self->pp_account, CHATTY_UI, !!enable);
+}
+
+static const char *
+chatty_pp_account_get_password (ChattyAccount *account)
+{
+  ChattyPpAccount *self = (ChattyPpAccount *)account;
+
+  g_assert (CHATTY_IS_PP_ACCOUNT (self));
+
+  return purple_account_get_password (self->pp_account);
+}
+
+static void
+chatty_pp_account_set_password (ChattyAccount *account,
+                                const char    *password)
+{
+  ChattyPpAccount *self = (ChattyPpAccount *)account;
+  const char *id;
+
+  g_assert (CHATTY_IS_PP_ACCOUNT (self));
+
+  id = chatty_pp_account_get_protocol_id (self);
+
+  if (g_str_equal (id, "prpl-telegram"))
+    purple_account_set_string (self->pp_account, "password-two-factor", password);
+  else
+    purple_account_set_password (self->pp_account, password);
+}
+
+static void
+chatty_pp_account_set_remember_password (ChattyAccount *account,
+                                         gboolean       remember)
+{
+  ChattyPpAccount *self = (ChattyPpAccount *)account;
+
+  g_assert (CHATTY_IS_PP_ACCOUNT (self));
+
+  purple_account_set_remember_password (self->pp_account, !!remember);
+}
+
+static gboolean
+chatty_pp_account_get_remember_password (ChattyAccount *account)
+{
+  ChattyPpAccount *self = (ChattyPpAccount *)account;
+
+  g_assert (CHATTY_IS_PP_ACCOUNT (self));
+
+  return purple_account_get_remember_password (self->pp_account);
 }
 
 static const char *
@@ -244,29 +326,6 @@ chatty_pp_account_set_avatar_async (ChattyUser          *user,
 }
 
 static void
-chatty_pp_account_get_property (GObject *object,
-                                guint    prop_id,
-                                GValue  *value,
-                                GParamSpec *pspec)
-{
-  ChattyPpAccount *self = (ChattyPpAccount *)object;
-
-  switch (prop_id)
-    {
-    case PROP_ENABLED:
-      g_value_set_boolean (value, chatty_pp_account_get_enabled (self));
-      break;
-
-    case PROP_STATUS:
-      g_value_set_int (value, chatty_pp_account_get_status (self));
-      break;
-
-    default:
-      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
-    }
-}
-
-static void
 chatty_pp_account_set_property (GObject      *object,
                                 guint         prop_id,
                                 const GValue *value,
@@ -286,10 +345,6 @@ chatty_pp_account_set_property (GObject      *object,
 
     case PROP_PURPLE_ACCOUNT:
       self->pp_account = g_value_get_pointer (value);
-      break;
-
-    case PROP_ENABLED:
-      chatty_pp_account_set_enabled (self, g_value_get_boolean (value));
       break;
 
     default:
@@ -330,8 +385,8 @@ chatty_pp_account_class_init (ChattyPpAccountClass *klass)
 {
   GObjectClass *object_class  = G_OBJECT_CLASS (klass);
   ChattyUserClass *user_class = CHATTY_USER_CLASS (klass);
+  ChattyAccountClass *account_class = CHATTY_ACCOUNT_CLASS (klass);
 
-  object_class->get_property = chatty_pp_account_get_property;
   object_class->set_property = chatty_pp_account_set_property;
   object_class->constructed = chatty_pp_account_constructed;
   object_class->finalize = chatty_pp_account_finalize;
@@ -340,6 +395,14 @@ chatty_pp_account_class_init (ChattyPpAccountClass *klass)
   user_class->set_name = chatty_pp_account_set_name;
   user_class->get_avatar = chatty_pp_account_get_avatar;
   user_class->set_avatar_async = chatty_pp_account_set_avatar_async;
+
+  account_class->get_status   = chatty_pp_account_get_status;
+  account_class->get_enabled  = chatty_pp_account_get_enabled;
+  account_class->set_enabled  = chatty_pp_account_set_enabled;
+  account_class->get_password = chatty_pp_account_get_password;
+  account_class->set_password = chatty_pp_account_set_password;
+  account_class->get_remember_password = chatty_pp_account_get_remember_password;
+  account_class->set_remember_password = chatty_pp_account_set_remember_password;
 
   properties[PROP_USERNAME] =
     g_param_spec_string ("username",
@@ -360,22 +423,6 @@ chatty_pp_account_class_init (ChattyPpAccountClass *klass)
                          "Purple Account",
                          "The PurpleAccount to be used to create the object",
                          G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY | G_PARAM_STATIC_STRINGS);
-
-  properties[PROP_ENABLED] =
-    g_param_spec_boolean ("enabled",
-                          "Enabled",
-                          "Account Enabled or not",
-                          FALSE,
-                          G_PARAM_READWRITE | G_PARAM_EXPLICIT_NOTIFY | G_PARAM_STATIC_STRINGS);
-
-  properties[PROP_STATUS] =
-    g_param_spec_int ("status",
-                      "Status",
-                      "Account connection status",
-                      CHATTY_DISCONNECTED,
-                      CHATTY_CONNECTED,
-                      CHATTY_DISCONNECTED,
-                      G_PARAM_READABLE | G_PARAM_STATIC_STRINGS);
 
   g_object_class_install_properties (object_class, N_PROPS, properties);
 }
@@ -463,8 +510,8 @@ chatty_pp_account_new_sms (const char *username)
 
   self = chatty_pp_account_new (username, "prpl-mm-sms");
 
-  chatty_pp_account_set_password (self, NULL);
-  chatty_pp_account_set_remember_password (self, TRUE);
+  chatty_account_set_password (CHATTY_ACCOUNT (self), NULL);
+  chatty_account_set_remember_password (CHATTY_ACCOUNT (self), TRUE);
 
   return self;
 }
@@ -504,19 +551,6 @@ chatty_pp_account_get_active_status (ChattyPpAccount *self)
   return purple_account_get_active_status (self->pp_account);
 }
 
-ChattyStatus
-chatty_pp_account_get_status (ChattyPpAccount *self)
-{
-  g_return_val_if_fail (CHATTY_IS_PP_ACCOUNT (self), CHATTY_DISCONNECTED);
-
-  if (purple_account_is_connected (self->pp_account))
-    return CHATTY_CONNECTED;
-  if (purple_account_is_connecting (self->pp_account))
-    return CHATTY_CONNECTING;
-
-  return CHATTY_DISCONNECTED;
-}
-
 gboolean
 chatty_pp_account_is_sms (ChattyPpAccount *self)
 {
@@ -550,23 +584,6 @@ chatty_pp_account_get_protocol_name (ChattyPpAccount *self)
 }
 
 void
-chatty_pp_account_set_enabled (ChattyPpAccount *self,
-                               gboolean         enable)
-{
-  g_return_if_fail (CHATTY_IS_PP_ACCOUNT (self));
-
-  purple_account_set_enabled (self->pp_account, CHATTY_UI, !!enable);
-}
-
-gboolean
-chatty_pp_account_get_enabled (ChattyPpAccount *self)
-{
-  g_return_val_if_fail (CHATTY_IS_PP_ACCOUNT (self), FALSE);
-
-  return purple_account_get_enabled (self->pp_account, CHATTY_UI);
-}
-
-void
 chatty_pp_account_set_username (ChattyPpAccount *self,
                                 const char      *username)
 {
@@ -581,47 +598,6 @@ chatty_pp_account_get_username (ChattyPpAccount *self)
   g_return_val_if_fail (CHATTY_IS_PP_ACCOUNT (self), NULL);
 
   return purple_account_get_username (self->pp_account);
-}
-
-void
-chatty_pp_account_set_password (ChattyPpAccount *self,
-                                const char      *password)
-{
-  const char *id;
-
-  g_return_if_fail (CHATTY_IS_PP_ACCOUNT (self));
-
-  id = chatty_pp_account_get_protocol_id (self);
-
-  if (g_str_equal (id, "prpl-telegram"))
-    purple_account_set_string (self->pp_account, "password-two-factor", password);
-  else
-    purple_account_set_password (self->pp_account, password);
-}
-
-const char *
-chatty_pp_account_get_password (ChattyPpAccount *self)
-{
-  g_return_val_if_fail (CHATTY_IS_PP_ACCOUNT (self), NULL);
-
-  return purple_account_get_password (self->pp_account);
-}
-
-void
-chatty_pp_account_set_remember_password (ChattyPpAccount *self,
-                                         gboolean         remember)
-{
-  g_return_if_fail (CHATTY_IS_PP_ACCOUNT (self));
-
-  purple_account_set_remember_password (self->pp_account, !!remember);
-}
-
-gboolean
-chatty_pp_account_get_remember_password (ChattyPpAccount *self)
-{
-  g_return_val_if_fail (CHATTY_IS_PP_ACCOUNT (self), FALSE);
-
-  return purple_account_get_remember_password (self->pp_account);
 }
 
 /**
@@ -664,12 +640,12 @@ chatty_pp_account_disconnect (ChattyPpAccount *self)
   if (chatty_pp_account_is_sms (self))
     return;
 
-  status = chatty_pp_account_get_status (self);
+  status = chatty_account_get_status (CHATTY_ACCOUNT (self));
 
   if (status == CHATTY_DISCONNECTED)
     return;
 
-  password = g_strdup (chatty_pp_account_get_password (self));
+  password = g_strdup (chatty_account_get_password (CHATTY_ACCOUNT (self)));
   purple_account_disconnect (self->pp_account);
-  chatty_pp_account_set_password (self, password);
+  chatty_account_set_password (CHATTY_ACCOUNT (self), password);
 }

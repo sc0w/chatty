@@ -161,16 +161,16 @@ chatty_settings_add_clicked_cb (ChattySettingsDialog *self)
 
   if (password)
     {
-      chatty_pp_account_set_password (account, password);
+      chatty_account_set_password (CHATTY_ACCOUNT (account), password);
 
       if (!is_telegram)
-        chatty_pp_account_set_remember_password (account, TRUE);
+        chatty_account_set_remember_password (CHATTY_ACCOUNT (account), TRUE);
     }
 
   chatty_pp_account_save (account);
 
   if (!chatty_manager_get_disable_auto_login (manager))
-    chatty_pp_account_set_enabled (account, TRUE);
+    chatty_account_set_enabled (CHATTY_ACCOUNT (account), TRUE);
 
   gtk_widget_hide (self->add_button);
   gtk_stack_set_visible_child_name (GTK_STACK (self->main_stack), "main-settings");
@@ -187,11 +187,11 @@ chatty_settings_save_clicked_cb (ChattySettingsDialog *self)
                                   gtk_entry_get_text (GTK_ENTRY (self->account_id_entry)));
 
   password_entry = (GtkEntry *)self->password_entry;
-  chatty_pp_account_set_password (self->selected_account,
-                                  gtk_entry_get_text (password_entry));
+  chatty_account_set_password (CHATTY_ACCOUNT (self->selected_account),
+                               gtk_entry_get_text (password_entry));
 
-  chatty_pp_account_set_remember_password (self->selected_account, TRUE);
-  chatty_pp_account_set_enabled (self->selected_account, TRUE);
+  chatty_account_set_remember_password (CHATTY_ACCOUNT (self->selected_account), TRUE);
+  chatty_account_set_enabled (CHATTY_ACCOUNT (self->selected_account), TRUE);
 
   gtk_widget_hide (self->save_button);
   gtk_stack_set_visible_child_name (GTK_STACK (self->main_stack), "main-settings");
@@ -250,7 +250,7 @@ chatty_settings_dialog_update_status (GtkListBoxRow *row)
 
   spinner = g_object_get_data (G_OBJECT(row), "row-prefix");
   account = g_object_get_data (G_OBJECT (row), "row-account");
-  status  = chatty_pp_account_get_status (account);
+  status  = chatty_account_get_status (CHATTY_ACCOUNT (account));
 
   g_object_set (spinner,
                 "active", status == CHATTY_CONNECTING,
