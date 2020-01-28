@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: purism-chatty\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-01-13 12:59+0100\n"
+"POT-Creation-Date: 2020-01-22 12:15+0100\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -113,49 +113,49 @@ msgstr "Klávesa Enter odešle zprávu"
 msgid "Whether pressing Enter key sends the message"
 msgstr "Zdali zmáčknutí klávesy Enter odešle zprávu"
 
-#: src/chatty-application.c:54
+#: src/chatty-application.c:56
 msgid "Show release version"
 msgstr "Zobrazit verzi"
 
-#: src/chatty-application.c:55
+#: src/chatty-application.c:57
 msgid "Start in daemon mode"
 msgstr "Spustit v módu démona"
 
-#: src/chatty-application.c:56
+#: src/chatty-application.c:58
 msgid "Disable all accounts"
 msgstr "Deaktivovat všechny účty"
 
-#: src/chatty-application.c:57
+#: src/chatty-application.c:59
 msgid "Enable libpurple debug messages"
 msgstr "Zapnout debugovací zprávy libpurple"
 
-#: src/chatty-application.c:58
+#: src/chatty-application.c:60
 msgid "Enable verbose libpurple debug messages"
 msgstr "Zapnout detailnější debugovací zprávy libpurple"
 
-#: src/chatty-account.c:279
+#: src/chatty-account.c:223
 msgid "Contact added"
 msgstr "Kontakt přidán"
 
-#: src/chatty-account.c:283
+#: src/chatty-account.c:227
 #, c-format
 msgid "User %s has added %s to the contacts"
 msgstr "Uživatel %s přidal %s do kontaktů"
 
-#: src/chatty-account.c:344
+#: src/chatty-account.c:288
 #, c-format
 msgid "Authorize %s?"
 msgstr "Autorizovat %s?"
 
-#: src/chatty-account.c:348
+#: src/chatty-account.c:292
 msgid "Reject"
 msgstr "Odmítnout"
 
-#: src/chatty-account.c:350
+#: src/chatty-account.c:294
 msgid "Accept"
 msgstr "Přijmout"
 
-#: src/chatty-account.c:355
+#: src/chatty-account.c:299
 #, c-format
 msgid "Add %s to contact list"
 msgstr "Přidat %s do seznamu kontaktů"
@@ -164,41 +164,41 @@ msgstr "Přidat %s do seznamu kontaktů"
 msgid "Send to"
 msgstr "Příjemce"
 
-#: src/chatty-buddy-list.c:949
+#: src/chatty-buddy-list.c:956
 msgid "Disconnect group chat"
 msgstr "Odpojit skupinovou konverzaci"
 
-#: src/chatty-buddy-list.c:950
+#: src/chatty-buddy-list.c:957
 msgid "This removes chat from chats list"
 msgstr "Tímto odstraníte koverzaci ze seznamu"
 
-#: src/chatty-buddy-list.c:954
+#: src/chatty-buddy-list.c:961
 msgid "Delete chat with"
 msgstr "Smazat chat s"
 
-#: src/chatty-buddy-list.c:955
+#: src/chatty-buddy-list.c:962
 msgid "This deletes the conversation history"
 msgstr "Toto vymaže historii konverzace"
 
-#: src/chatty-buddy-list.c:967 src/chatty-dialogs.c:872
-#: src/chatty-purple-request.c:187 src/chatty-settings-dialog.c:394
+#: src/chatty-buddy-list.c:974 src/chatty-dialogs.c:872
+#: src/chatty-purple-request.c:187 src/chatty-settings-dialog.c:384
 #: src/ui/chatty-dialog-join-muc.ui:16 src/ui/chatty-dialog-muc-info.ui:54
 msgid "Cancel"
 msgstr "Zrušit"
 
-#: src/chatty-buddy-list.c:969
+#: src/chatty-buddy-list.c:976
 msgid "Delete"
 msgstr "Smazat"
 
-#: src/chatty-buddy-list.c:1618
+#: src/chatty-buddy-list.c:1625
 msgid "Me: "
 msgstr "Já:"
 
-#: src/chatty-connection.c:176
+#: src/chatty-connection.c:80
 msgid "Login failed"
 msgstr "Přihlášení selhalo"
 
-#: src/chatty-connection.c:182
+#: src/chatty-connection.c:86
 msgid "Please check ID and password"
 msgstr "Prosim, zkontolujte své ID a heslo"
 
@@ -235,28 +235,28 @@ msgstr "SMS a XMPP konverzační klient"
 msgid "translator-credits"
 msgstr "překladatel"
 
-#: src/chatty-dialogs.c:868 src/chatty-settings-dialog.c:390
+#: src/chatty-dialogs.c:868 src/chatty-settings-dialog.c:380
 msgid "Set Avatar"
 msgstr "Nastavit avatara"
 
 #: src/chatty-dialogs.c:871 src/chatty-purple-request.c:189
-#: src/chatty-settings-dialog.c:393
+#: src/chatty-settings-dialog.c:383
 msgid "Open"
 msgstr "Otevřít"
 
-#: src/chatty-folks.c:613
+#: src/chatty-folks.c:622
 msgid "Mobile"
 msgstr "Mobil"
 
-#: src/chatty-folks.c:615
+#: src/chatty-folks.c:624
 msgid "Work"
 msgstr "Zaměstnání"
 
-#: src/chatty-folks.c:617
+#: src/chatty-folks.c:626
 msgid "Home"
 msgstr "Domov"
 
-#: src/chatty-folks.c:619
+#: src/chatty-folks.c:628
 msgid "Other"
 msgstr "Ostatní"
 
@@ -348,120 +348,120 @@ msgstr "Otevřít soubor..."
 msgid "Save"
 msgstr "Uložit"
 
-#: src/chatty-settings-dialog.c:108
-msgid "connected"
-msgstr "připojeno"
-
-#: src/chatty-settings-dialog.c:110
-msgid "connecting…"
-msgstr "připojování…"
-
-#: src/chatty-settings-dialog.c:112
-msgid "disconnected"
-msgstr "odpojeno"
-
-#: src/chatty-settings-dialog.c:287
+#: src/chatty-settings-dialog.c:241
 msgid "Select Protocol"
 msgstr "Vybrat protokol"
 
-#: src/chatty-settings-dialog.c:292
+#: src/chatty-settings-dialog.c:246
 msgid "Add XMPP account"
 msgstr "Přidat XMPP účet"
 
-#: src/chatty-settings-dialog.c:507 src/ui/chatty-settings-dialog.ui:462
+#: src/chatty-settings-dialog.c:277
+msgid "connected"
+msgstr "připojeno"
+
+#: src/chatty-settings-dialog.c:279
+msgid "connecting…"
+msgstr "připojování…"
+
+#: src/chatty-settings-dialog.c:281
+msgid "disconnected"
+msgstr "odpojeno"
+
+#: src/chatty-settings-dialog.c:465 src/ui/chatty-settings-dialog.ui:461
 msgid "Delete Account"
 msgstr "Odstranit účet"
 
-#: src/chatty-settings-dialog.c:510
+#: src/chatty-settings-dialog.c:468
 #, c-format
 msgid "Delete account %s?"
 msgstr "Odstranit účet %s?"
 
-#: src/chatty-utils.c:47
+#: src/chatty-utils.c:48
 msgid "About "
 msgstr "O aplikaci"
 
-#: src/chatty-utils.c:48
+#: src/chatty-utils.c:49
 msgid "Less than "
 msgstr "Méně než"
 
-#: src/chatty-utils.c:49
+#: src/chatty-utils.c:50
 msgid " seconds"
 msgstr "sekundy"
 
-#: src/chatty-utils.c:50
+#: src/chatty-utils.c:51
 msgid " minute"
 msgstr "minuta"
 
-#: src/chatty-utils.c:51
+#: src/chatty-utils.c:52
 msgid " minutes"
 msgstr "minuty"
 
-#: src/chatty-utils.c:52
+#: src/chatty-utils.c:53
 msgid " hour"
 msgstr "hodina"
 
-#: src/chatty-utils.c:53
+#: src/chatty-utils.c:54
 msgid " hours"
 msgstr "hodiny"
 
-#: src/chatty-utils.c:54
+#: src/chatty-utils.c:55
 msgid " day"
 msgstr "den"
 
-#: src/chatty-utils.c:55
+#: src/chatty-utils.c:56
 msgid " days"
 msgstr "dny"
 
-#: src/chatty-utils.c:56
+#: src/chatty-utils.c:57
 msgid " month"
 msgstr "měsíc"
 
-#: src/chatty-utils.c:57
+#: src/chatty-utils.c:58
 msgid " months"
 msgstr "měsíce"
 
-#: src/chatty-utils.c:58
+#: src/chatty-utils.c:59
 msgid " year"
 msgstr "rok"
 
-#: src/chatty-utils.c:59
+#: src/chatty-utils.c:60
 msgid " years"
 msgstr "léta"
 
-#: src/chatty-utils.c:63
+#: src/chatty-utils.c:64
 msgid "s"
 msgstr "s"
 
-#: src/chatty-utils.c:64 src/chatty-utils.c:65
+#: src/chatty-utils.c:65 src/chatty-utils.c:66
 msgid "m"
 msgstr "m"
 
-#: src/chatty-utils.c:66 src/chatty-utils.c:67
+#: src/chatty-utils.c:67 src/chatty-utils.c:68
 msgid "h"
 msgstr "h"
 
-#: src/chatty-utils.c:68 src/chatty-utils.c:69
+#: src/chatty-utils.c:69 src/chatty-utils.c:70
 msgid "d"
 msgstr "d"
 
-#: src/chatty-utils.c:70
+#: src/chatty-utils.c:71
 msgid "mo"
 msgstr "měs"
 
-#: src/chatty-utils.c:71
+#: src/chatty-utils.c:72
 msgid "mos"
 msgstr "měs"
 
-#: src/chatty-utils.c:72 src/chatty-utils.c:73
+#: src/chatty-utils.c:73 src/chatty-utils.c:74
 msgid "y"
 msgstr "r"
 
-#: src/chatty-utils.c:176
+#: src/chatty-utils.c:177
 msgid "Over"
 msgstr "Více než"
 
-#: src/chatty-utils.c:180
+#: src/chatty-utils.c:181
 msgid "Almost"
 msgstr "Téměř"
 
@@ -591,9 +591,9 @@ msgstr "Přidat kontakt"
 msgid "Name (optional)"
 msgstr "Jméno (volitelně)"
 
-#: src/ui/chatty-dialog-new-chat.ui:300
-msgid "Add in GNOME Contacts"
-msgstr "Přidat do Kontaktů GNOME"
+#: src/ui/chatty-dialog-new-chat.ui:300 src/ui/chatty-window.ui:138
+msgid "Add to Contacts"
+msgstr ""
 
 #: src/ui/chatty-dialog-user-info.ui:12 src/ui/chatty-window.ui:98
 msgid "Chat Details"
@@ -607,7 +607,7 @@ msgstr "XMPP ID"
 msgid "Encryption"
 msgstr "Šifrování"
 
-#: src/ui/chatty-dialog-user-info.ui:126 src/ui/chatty-settings-dialog.ui:380
+#: src/ui/chatty-dialog-user-info.ui:126 src/ui/chatty-settings-dialog.ui:379
 msgid "Status"
 msgstr "Status"
 
@@ -731,39 +731,39 @@ msgstr "Enter = Odeslat zprávu"
 msgid "Send message with return key"
 msgstr "Odesílat zprávy klávesou Enter"
 
-#: src/ui/chatty-settings-dialog.ui:318
+#: src/ui/chatty-settings-dialog.ui:317
 msgid "Account ID"
 msgstr "ID účtu"
 
-#: src/ui/chatty-settings-dialog.ui:351
+#: src/ui/chatty-settings-dialog.ui:350
 msgid "Protocol"
 msgstr "Protokol"
 
-#: src/ui/chatty-settings-dialog.ui:409 src/ui/chatty-settings-dialog.ui:702
+#: src/ui/chatty-settings-dialog.ui:408 src/ui/chatty-settings-dialog.ui:701
 msgid "Password"
 msgstr "Heslo"
 
-#: src/ui/chatty-settings-dialog.ui:479
+#: src/ui/chatty-settings-dialog.ui:478
 msgid "Own Fingerprint"
 msgstr "Vlastní otisk"
 
-#: src/ui/chatty-settings-dialog.ui:505
+#: src/ui/chatty-settings-dialog.ui:504
 msgid "Other Devices"
 msgstr "Jiná zařízení"
 
-#: src/ui/chatty-settings-dialog.ui:589
+#: src/ui/chatty-settings-dialog.ui:588
 msgid "XMPP"
 msgstr "XMPP"
 
-#: src/ui/chatty-settings-dialog.ui:603
+#: src/ui/chatty-settings-dialog.ui:602
 msgid "Matrix"
 msgstr "Matrix"
 
-#: src/ui/chatty-settings-dialog.ui:618
+#: src/ui/chatty-settings-dialog.ui:617
 msgid "Telegram"
 msgstr "Telegram"
 
-#: src/ui/chatty-settings-dialog.ui:676
+#: src/ui/chatty-settings-dialog.ui:675
 msgid "Provider"
 msgstr "Poskytovatel"
 
@@ -774,10 +774,6 @@ msgstr "Nová přímá konverzace"
 #: src/ui/chatty-window.ui:70
 msgid "About Chats"
 msgstr "O aplikaci Chats"
-
-#: src/ui/chatty-window.ui:138
-msgid "Add to GNOME Contacts"
-msgstr "Přidat do kontaktů GNOME"
 
 #: src/ui/chatty-window.ui:163
 msgid "Leave Chat"
