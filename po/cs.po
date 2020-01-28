@@ -1,17 +1,18 @@
 # Jaroslav Svoboda <multi.flexi@seznam.cz>, 2018. #zanata
 # Jaroslav Svoboda <multi.flexi@seznam.cz>, 2019. #zanata
+# Jaroslav Svoboda <multi.flexi@seznam.cz>, 2020. #zanata
 msgid ""
 msgstr ""
 "Project-Id-Version: purism-chatty\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-01-13 12:59+0100\n"
-"PO-Revision-Date: 2019-10-11 04:04+0000\n"
-"Last-Translator: Jaroslav Svoboda <multi.flexi@seznam.cz>\n"
-"Language-Team: Czech\n"
-"Language: cs\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"PO-Revision-Date: 2020-01-14 12:50+0000\n"
+"Last-Translator: Jaroslav Svoboda <multi.flexi@seznam.cz>\n"
+"Language-Team: Czech\n"
+"Language: cs\n"
 "X-Generator: Zanata 4.6.2\n"
 "Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2\n"
 
@@ -26,7 +27,7 @@ msgstr "Komunikační aplikace"
 
 #: data/sm.puri.Chatty.appdata.xml.in:9
 msgid "Chats is a messaging application supporting XMPP and SMS."
-msgstr ""
+msgstr "Chats je aplikace na posílání XMPP a SMS zpráv"
 
 #: data/sm.puri.Chatty.appdata.xml.in:16
 msgid "Chats message window"
@@ -34,7 +35,7 @@ msgstr "Okno zprávy Chats"
 
 #: data/sm.puri.Chatty.appdata.xml.in:29
 msgid "Initial development release of chatty with support for xmpp and sms."
-msgstr ""
+msgstr "Prvotní vývojářská verze Chatty bude podoporovat XMPP a SMS."
 
 #: data/sm.puri.Chatty.desktop.in:5
 msgid "sm.puri.Chatty"
@@ -50,20 +51,19 @@ msgstr "XMPP;SMS;chat;jabber;messaging;modem"
 
 #: data/sm.puri.Chatty.gschema.xml:7 data/sm.puri.Chatty.gschema.xml:8
 msgid "Whether the application is launching the first time"
-msgstr ""
+msgstr "Zdali je aplikace spouštěna poprvé"
 
 #: data/sm.puri.Chatty.gschema.xml:13
-#, fuzzy
 msgid "Send message read receipts"
-msgstr "Doručenky"
+msgstr "Odesílat potvrzení o přečtení zprávy"
 
 #: data/sm.puri.Chatty.gschema.xml:14
 msgid "Whether to send the status of the message if read"
-msgstr ""
+msgstr "Zdali odesílat stav zprávy po přečtení"
 
 #: data/sm.puri.Chatty.gschema.xml:19
 msgid "Message carbon copies"
-msgstr ""
+msgstr "Kopie zpráv"
 
 #: data/sm.puri.Chatty.gschema.xml:20 src/ui/chatty-settings-dialog.ui:148
 msgid "Share chat history among devices"
@@ -71,51 +71,47 @@ msgstr "Sdílet historii konverzací se všemi zařízeními"
 
 #: data/sm.puri.Chatty.gschema.xml:25
 msgid "Enable Message Archive Management"
-msgstr ""
+msgstr "Zapnout správu archivu zpráv"
 
 #: data/sm.puri.Chatty.gschema.xml:26
 msgid "Enable MAM archive synchronization from the server"
-msgstr ""
+msgstr "Zapnout MAM synchronizaci archivu ze serveru"
 
 #: data/sm.puri.Chatty.gschema.xml:31
-#, fuzzy
 msgid "Send typing notifications"
-msgstr "Upozornění na psaní"
+msgstr "Odesílat upozornění o psaní"
 
 #: data/sm.puri.Chatty.gschema.xml:32
-#, fuzzy
 msgid "Whether to Send typing notifications"
-msgstr "Upozornění na psaní"
+msgstr "Zdali odesílat upozornění o psaní"
 
 #: data/sm.puri.Chatty.gschema.xml:37 data/sm.puri.Chatty.gschema.xml:38
 msgid "Mark offline users differently"
-msgstr ""
+msgstr "Označit offline uživatele jinak"
 
 #: data/sm.puri.Chatty.gschema.xml:43 data/sm.puri.Chatty.gschema.xml:44
 msgid "Mark Idle users differently"
-msgstr ""
+msgstr "Označit nečinné uživatele jinak"
 
 #: data/sm.puri.Chatty.gschema.xml:49 data/sm.puri.Chatty.gschema.xml:50
-#, fuzzy
 msgid "Indicate unknown contacts"
-msgstr "Označit neznámé kontakty"
+msgstr "Označovat neznámé kontakty"
 
 #: data/sm.puri.Chatty.gschema.xml:55
-#, fuzzy
 msgid "Convert text to emoticons"
-msgstr "Konvertovat ASCII emotikony"
+msgstr "Převést text na emotikony"
 
 #: data/sm.puri.Chatty.gschema.xml:56
 msgid "Convert text matching emoticons as real emoticons"
-msgstr ""
+msgstr "Převést odpovídající emotikony v textu na opravdové emotikony"
 
 #: data/sm.puri.Chatty.gschema.xml:61
 msgid "Enter key sends the message"
-msgstr ""
+msgstr "Klávesa Enter odešle zprávu"
 
 #: data/sm.puri.Chatty.gschema.xml:62
 msgid "Whether pressing Enter key sends the message"
-msgstr ""
+msgstr "Zdali zmáčknutí klávesy Enter odešle zprávu"
 
 #: src/chatty-application.c:54
 msgid "Show release version"
@@ -166,7 +162,7 @@ msgstr "Přidat %s do seznamu kontaktů"
 
 #: src/chatty-buddy-list.c:191
 msgid "Send to"
-msgstr ""
+msgstr "Příjemce"
 
 #: src/chatty-buddy-list.c:949
 msgid "Disconnect group chat"
@@ -237,11 +233,11 @@ msgstr "SMS a XMPP konverzační klient"
 
 #: src/chatty-dialogs.c:853
 msgid "translator-credits"
-msgstr ""
+msgstr "překladatel"
 
 #: src/chatty-dialogs.c:868 src/chatty-settings-dialog.c:390
 msgid "Set Avatar"
-msgstr ""
+msgstr "Nastavit avatara"
 
 #: src/chatty-dialogs.c:871 src/chatty-purple-request.c:189
 #: src/chatty-settings-dialog.c:393
@@ -250,19 +246,19 @@ msgstr "Otevřít"
 
 #: src/chatty-folks.c:613
 msgid "Mobile"
-msgstr ""
+msgstr "Mobil"
 
 #: src/chatty-folks.c:615
 msgid "Work"
-msgstr ""
+msgstr "Zaměstnání"
 
 #: src/chatty-folks.c:617
 msgid "Home"
-msgstr ""
+msgstr "Domov"
 
 #: src/chatty-folks.c:619
 msgid "Other"
-msgstr ""
+msgstr "Ostatní"
 
 #: src/chatty-lurch.c:116
 msgid "Encryption not available"
@@ -314,7 +310,7 @@ msgstr "Otevřít zprávu"
 
 #: src/chatty-notify.c:80
 msgid "Message Received"
-msgstr ""
+msgstr "Zpráva obdržena"
 
 #: src/chatty-notify.c:86
 msgid "Message Error"
@@ -369,9 +365,8 @@ msgid "Select Protocol"
 msgstr "Vybrat protokol"
 
 #: src/chatty-settings-dialog.c:292
-#, fuzzy
 msgid "Add XMPP account"
-msgstr "Přidat účet"
+msgstr "Přidat XMPP účet"
 
 #: src/chatty-settings-dialog.c:507 src/ui/chatty-settings-dialog.ui:462
 msgid "Delete Account"
@@ -384,91 +379,91 @@ msgstr "Odstranit účet %s?"
 
 #: src/chatty-utils.c:47
 msgid "About "
-msgstr ""
+msgstr "O aplikaci"
 
 #: src/chatty-utils.c:48
 msgid "Less than "
-msgstr ""
+msgstr "Méně než"
 
 #: src/chatty-utils.c:49
 msgid " seconds"
-msgstr ""
+msgstr "sekundy"
 
 #: src/chatty-utils.c:50
 msgid " minute"
-msgstr ""
+msgstr "minuta"
 
 #: src/chatty-utils.c:51
 msgid " minutes"
-msgstr ""
+msgstr "minuty"
 
 #: src/chatty-utils.c:52
 msgid " hour"
-msgstr ""
+msgstr "hodina"
 
 #: src/chatty-utils.c:53
 msgid " hours"
-msgstr ""
+msgstr "hodiny"
 
 #: src/chatty-utils.c:54
 msgid " day"
-msgstr ""
+msgstr "den"
 
 #: src/chatty-utils.c:55
 msgid " days"
-msgstr ""
+msgstr "dny"
 
 #: src/chatty-utils.c:56
 msgid " month"
-msgstr ""
+msgstr "měsíc"
 
 #: src/chatty-utils.c:57
 msgid " months"
-msgstr ""
+msgstr "měsíce"
 
 #: src/chatty-utils.c:58
 msgid " year"
-msgstr ""
+msgstr "rok"
 
 #: src/chatty-utils.c:59
 msgid " years"
-msgstr ""
+msgstr "léta"
 
 #: src/chatty-utils.c:63
 msgid "s"
-msgstr ""
+msgstr "s"
 
 #: src/chatty-utils.c:64 src/chatty-utils.c:65
 msgid "m"
-msgstr ""
+msgstr "m"
 
 #: src/chatty-utils.c:66 src/chatty-utils.c:67
 msgid "h"
-msgstr ""
+msgstr "h"
 
 #: src/chatty-utils.c:68 src/chatty-utils.c:69
 msgid "d"
-msgstr ""
+msgstr "d"
 
 #: src/chatty-utils.c:70
 msgid "mo"
-msgstr ""
+msgstr "měs"
 
 #: src/chatty-utils.c:71
 msgid "mos"
-msgstr ""
+msgstr "měs"
 
 #: src/chatty-utils.c:72 src/chatty-utils.c:73
 msgid "y"
-msgstr ""
+msgstr "r"
 
 #: src/chatty-utils.c:176
 msgid "Over"
-msgstr ""
+msgstr "Více než"
 
 #: src/chatty-utils.c:180
 msgid "Almost"
-msgstr ""
+msgstr "Téměř"
 
 #: src/chatty-window.c:40 src/chatty-window.c:44 src/chatty-window.c:48
 msgid "Choose a contact"
@@ -479,22 +474,26 @@ msgid ""
 "Select an <b>SMS</b> or <b>Instant Message</b> contact with the <b>\"+\"</b> "
 "button in the titlebar."
 msgstr ""
+"Vyberte kontakt pro <b>SMS</b> nebo <b>Instant Message</b> tlačítkem "
+"<b>\"+\"</b> v záhlaví."
 
 #: src/chatty-window.c:45
 msgid ""
 "Select an <b>Instant Message</b> contact with the \"+\" button in the "
 "titlebar."
-msgstr ""
+msgstr "Vyberte kontakt pro <b>Instant Message</b> tlačítkem \"+\"  v záhlaví."
 
 #: src/chatty-window.c:49
 msgid "Start a <b>SMS</b> chat with with the \"+\" button in the titlebar."
-msgstr ""
+msgstr "Vyberte kontakt pro <b>SMS</b> tlačítkem \"+\"  v záhlaví."
 
 #: src/chatty-window.c:50 src/chatty-window.c:53
 msgid ""
-"For <b>Instant Messaging</b> add or activate an account in <i>\"preferences"
-"\"</i>."
+"For <b>Instant Messaging</b> add or activate an account in "
+"<i>\"preferences\"</i>."
 msgstr ""
+"Pro <b>Instant Messaging</b> přidejte nebo aktivujte účet v "
+"<i>\"nastavení\"</i>."
 
 #: src/chatty-window.c:52
 msgid "Start chatting"
@@ -594,7 +593,7 @@ msgstr "Jméno (volitelně)"
 
 #: src/ui/chatty-dialog-new-chat.ui:300
 msgid "Add in GNOME Contacts"
-msgstr ""
+msgstr "Přidat do Kontaktů GNOME"
 
 #: src/ui/chatty-dialog-user-info.ui:12 src/ui/chatty-window.ui:98
 msgid "Chat Details"
@@ -634,16 +633,15 @@ msgstr "Předvolby"
 
 #: src/ui/chatty-settings-dialog.ui:21
 msgid "Back"
-msgstr ""
+msgstr "Zpět"
 
 #: src/ui/chatty-settings-dialog.ui:41
 msgid "_Add"
-msgstr ""
+msgstr "_Přidat"
 
 #: src/ui/chatty-settings-dialog.ui:54
-#, fuzzy
 msgid "_Save"
-msgstr "Uložit"
+msgstr "_Uložit"
 
 #: src/ui/chatty-settings-dialog.ui:88
 msgid "Accounts"
@@ -667,15 +665,15 @@ msgstr "Potvrdit doručení zprávy"
 
 #: src/ui/chatty-settings-dialog.ui:133
 msgid "Message Archive Management"
-msgstr ""
+msgstr "Správa archivu zpráv"
 
 #: src/ui/chatty-settings-dialog.ui:134
 msgid "Sync conversations with chat server"
-msgstr ""
+msgstr "Synchronizovat konverzace s chat serverem"
 
 #: src/ui/chatty-settings-dialog.ui:147
 msgid "Message Carbon Copies"
-msgstr ""
+msgstr "Kopie zpráv"
 
 #: src/ui/chatty-settings-dialog.ui:162
 msgid "Typing Notification"
@@ -767,7 +765,7 @@ msgstr "Telegram"
 
 #: src/ui/chatty-settings-dialog.ui:676
 msgid "Provider"
-msgstr ""
+msgstr "Poskytovatel"
 
 #: src/ui/chatty-window.ui:32
 msgid "New Direct Chat"
@@ -775,11 +773,11 @@ msgstr "Nová přímá konverzace"
 
 #: src/ui/chatty-window.ui:70
 msgid "About Chats"
-msgstr ""
+msgstr "O aplikaci Chats"
 
 #: src/ui/chatty-window.ui:138
 msgid "Add to GNOME Contacts"
-msgstr ""
+msgstr "Přidat do kontaktů GNOME"
 
 #: src/ui/chatty-window.ui:163
 msgid "Leave Chat"
@@ -788,30 +786,3 @@ msgstr "Odejít z konverzace"
 #: src/ui/chatty-window.ui:176
 msgid "Delete Chat"
 msgstr "Smazat konverzaci"
-
-#~ msgid "Autojoin"
-#~ msgstr "Automatické připojení"
-
-#~ msgid "Join group chat at startup"
-#~ msgstr "Připojit se při spuštění do hromadné konverzace"
-
-#~ msgid "Auto-join"
-#~ msgstr "Auto-připojení"
-
-#~ msgid "Join chat at startup"
-#~ msgstr "Připojit do konverzace při spuštění"
-
-#~ msgid "Edit Account"
-#~ msgstr "Upravit účet"
-
-#~ msgid "Add"
-#~ msgstr "Přidat"
-
-#~ msgid "Show Offline Contacts"
-#~ msgstr "Zobrazit off-line kontakty"
-
-#~ msgid "Show contacts in the chats list"
-#~ msgstr "Zobrazit kontakty v seznamu konverzací"
-
-#~ msgid "Server"
-#~ msgstr "Server"

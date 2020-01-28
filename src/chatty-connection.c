@@ -11,7 +11,7 @@
 #include "purple.h"
 #include "chatty-window.h"
 #include "chatty-connection.h"
-#include "chatty-pp-account.h"
+#include "users/chatty-pp-account.h"
 #include "chatty-buddy-list.h"
 #include "chatty-purple-init.h"
 #include "chatty-utils.h"

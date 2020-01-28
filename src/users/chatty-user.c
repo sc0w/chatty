@@ -34,7 +34,14 @@ enum {
   N_PROPS
 };
 
+enum {
+  AVATAR_CHANGED,
+  DELETED,
+  N_SIGNALS
+};
+
 static GParamSpec *properties[N_PROPS];
+static guint signals[N_SIGNALS];
 
 static const char *
 chatty_user_real_get_name (ChattyUser *self)
@@ -51,6 +58,42 @@ chatty_user_real_set_name (ChattyUser *self,
   g_assert (CHATTY_IS_USER (self));
 
   /* Do Nothing */
+}
+
+static GdkPixbuf *
+chatty_user_real_get_avatar (ChattyUser *self)
+{
+  g_assert (CHATTY_IS_USER (self));
+
+  return NULL;
+}
+
+static void
+chatty_user_real_set_avatar_async (ChattyUser          *self,
+                                   const char          *filename,
+                                   GCancellable        *cancellable,
+                                   GAsyncReadyCallback  callback,
+                                   gpointer             user_data)
+{
+  g_assert (CHATTY_IS_USER (self));
+  g_assert (!cancellable || G_IS_CANCELLABLE (cancellable));
+
+  g_task_report_new_error (self, callback, user_data,
+                           chatty_user_real_set_avatar_async,
+                           G_IO_ERROR,
+                           G_IO_ERROR_NOT_SUPPORTED,
+                           "Setting Custom avatar not supported");
+}
+
+static gboolean
+chatty_user_real_set_avatar_finish (ChattyUser    *self,
+                                    GAsyncResult  *result,
+                                    GError       **error)
+{
+  g_assert (CHATTY_IS_USER (self));
+  g_assert (G_IS_TASK (result));
+
+  return g_task_propagate_boolean (G_TASK (result), error);
 }
 
 static void
@@ -101,6 +144,9 @@ chatty_user_class_init (ChattyUserClass *klass)
 
   klass->get_name = chatty_user_real_get_name;
   klass->set_name = chatty_user_real_set_name;
+  klass->get_avatar = chatty_user_real_get_avatar;
+  klass->set_avatar_async  = chatty_user_real_set_avatar_async;
+  klass->set_avatar_finish = chatty_user_real_set_avatar_finish;
 
   /**
    * ChattyUser:name:
@@ -116,6 +162,33 @@ chatty_user_class_init (ChattyUserClass *klass)
 
   g_object_class_install_properties (object_class, N_PROPS, properties);
 
+  /**
+   * ChattyUser::avatar-changed:
+   * @self: a #ChattyUser
+   *
+   * avatar-changed signal is emitted when the user’s
+   * avatar change.
+   */
+  signals [AVATAR_CHANGED] =
+    g_signal_new ("avatar-changed",
+                  G_TYPE_FROM_CLASS (klass),
+                  G_SIGNAL_RUN_LAST,
+                  0, NULL, NULL, NULL,
+                  G_TYPE_NONE, 0);
+
+  /**
+   * ChattyUser::deleted:
+   * @self: a #ChattyUser
+   *
+   * deleted signal is emitted when the account
+   * is deleted
+   */
+  signals [DELETED] =
+    g_signal_new ("deleted",
+                  G_TYPE_FROM_CLASS (klass),
+                  G_SIGNAL_RUN_LAST,
+                  0, NULL, NULL, NULL,
+                  G_TYPE_NONE, 0);
 }
 
 static void
@@ -154,4 +227,36 @@ chatty_user_set_name (ChattyUser *self,
   g_return_if_fail (CHATTY_IS_USER (self));
 
   CHATTY_USER_GET_CLASS (self)->set_name (self, name);
+}
+
+GdkPixbuf *
+chatty_user_get_avatar (ChattyUser *self)
+{
+  g_return_val_if_fail (CHATTY_IS_USER (self), NULL);
+
+  return CHATTY_USER_GET_CLASS (self)->get_avatar (self);
+}
+
+void
+chatty_user_set_avatar_async (ChattyUser          *self,
+                              const char          *file_name,
+                              GCancellable        *cancellable,
+                              GAsyncReadyCallback  callback,
+                              gpointer             user_data)
+{
+  g_return_if_fail (CHATTY_IS_USER (self));
+
+  CHATTY_USER_GET_CLASS (self)->set_avatar_async (self, file_name, cancellable,
+                                                  callback, user_data);
+}
+
+gboolean
+chatty_user_set_avatar_finish (ChattyUser    *self,
+                               GAsyncResult  *result,
+                               GError       **error)
+{
+  g_return_val_if_fail (CHATTY_IS_USER (self), FALSE);
+  g_return_val_if_fail (G_IS_TASK (result), FALSE);
+
+  return CHATTY_USER_GET_CLASS (self)->set_avatar_finish (self, result, error);
 }

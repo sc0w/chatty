@@ -5,16 +5,16 @@ msgstr ""
 "Project-Id-Version: purism-chatty\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-01-13 12:59+0100\n"
-"PO-Revision-Date: 2019-11-06 08:44+0000\n"
-"Last-Translator: Lighting <glighting@gmail.com>\n"
-"Language-Team: Russian\n"
-"Language: ru\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"PO-Revision-Date: 2019-11-06 08:40+0000\n"
+"Last-Translator: Lighting <glighting@gmail.com>\n"
+"Language-Team: Russian\n"
+"Language: ru\n"
 "X-Generator: Zanata 4.6.2\n"
-"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
-"%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2)\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
+"n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2)\n"
 
 #: data/sm.puri.Chatty.appdata.xml.in:6 data/sm.puri.Chatty.desktop.in:3
 #: src/chatty-dialogs.c:844 src/ui/chatty-window.ui:210
@@ -54,18 +54,16 @@ msgid "Whether the application is launching the first time"
 msgstr ""
 
 #: data/sm.puri.Chatty.gschema.xml:13
-#, fuzzy
 msgid "Send message read receipts"
-msgstr "Получение сообщений"
+msgstr ""
 
 #: data/sm.puri.Chatty.gschema.xml:14
 msgid "Whether to send the status of the message if read"
 msgstr ""
 
 #: data/sm.puri.Chatty.gschema.xml:19
-#, fuzzy
 msgid "Message carbon copies"
-msgstr "Копирование сообщений"
+msgstr ""
 
 #: data/sm.puri.Chatty.gschema.xml:20 src/ui/chatty-settings-dialog.ui:148
 msgid "Share chat history among devices"
@@ -80,14 +78,12 @@ msgid "Enable MAM archive synchronization from the server"
 msgstr ""
 
 #: data/sm.puri.Chatty.gschema.xml:31
-#, fuzzy
 msgid "Send typing notifications"
-msgstr "Уведомление о наборе"
+msgstr ""
 
 #: data/sm.puri.Chatty.gschema.xml:32
-#, fuzzy
 msgid "Whether to Send typing notifications"
-msgstr "Уведомление о наборе"
+msgstr ""
 
 #: data/sm.puri.Chatty.gschema.xml:37 data/sm.puri.Chatty.gschema.xml:38
 msgid "Mark offline users differently"
@@ -98,14 +94,12 @@ msgid "Mark Idle users differently"
 msgstr ""
 
 #: data/sm.puri.Chatty.gschema.xml:49 data/sm.puri.Chatty.gschema.xml:50
-#, fuzzy
 msgid "Indicate unknown contacts"
-msgstr "Помечать неизвестные контакты"
+msgstr ""
 
 #: data/sm.puri.Chatty.gschema.xml:55
-#, fuzzy
 msgid "Convert text to emoticons"
-msgstr "Преобразование ASCII смайлов"
+msgstr ""
 
 #: data/sm.puri.Chatty.gschema.xml:56
 msgid "Convert text matching emoticons as real emoticons"
@@ -371,9 +365,8 @@ msgid "Select Protocol"
 msgstr "Выбранный протокол"
 
 #: src/chatty-settings-dialog.c:292
-#, fuzzy
 msgid "Add XMPP account"
-msgstr "Добавить уч. запись"
+msgstr ""
 
 #: src/chatty-settings-dialog.c:507 src/ui/chatty-settings-dialog.ui:462
 msgid "Delete Account"
@@ -498,8 +491,8 @@ msgstr "Начните чат <b>СМС</b> с помощью кнопки \"+\"
 
 #: src/chatty-window.c:50 src/chatty-window.c:53
 msgid ""
-"For <b>Instant Messaging</b> add or activate an account in <i>\"preferences"
-"\"</i>."
+"For <b>Instant Messaging</b> add or activate an account in "
+"<i>\"preferences\"</i>."
 msgstr ""
 "Для обмена <b>Мгновенными сообщениями</b> добавьте и активируйте уч.запись в "
 "<i>\"Настройках\"</i>."
@@ -649,9 +642,8 @@ msgid "_Add"
 msgstr ""
 
 #: src/ui/chatty-settings-dialog.ui:54
-#, fuzzy
 msgid "_Save"
-msgstr "Сохранить"
+msgstr ""
 
 #: src/ui/chatty-settings-dialog.ui:88
 msgid "Accounts"
@@ -796,44 +788,3 @@ msgstr "Покинуть чат"
 #: src/ui/chatty-window.ui:176
 msgid "Delete Chat"
 msgstr "Удалить чат"
-
-#~ msgid ""
-#~ "<b>SMS</b> Chat is set up by default. Start a chat with the \"+\" button "
-#~ "in the titlebar."
-#~ msgstr ""
-#~ "По умолчанию настроен <b>СМС</b> чат. Начните чат с помощью кнопки \"+\" "
-#~ "в заголовке."
-
-#~ msgid ""
-#~ "Add <b>Instant Messaging</b> by selecting \n"
-#~ "<i>\"Add new account\"</i> in <i>\"preferences\"</i>."
-#~ msgstr ""
-#~ "Добавьте обмен <b>Мгновенными сообщениями</b>, выбрав \n"
-#~ "<i>\"Добавить новую уч.запись\"</i> в <i>\"Настройках\"</i>."
-
-#~ msgid "Autojoin"
-#~ msgstr "Авто присоединение"
-
-#~ msgid "Join group chat at startup"
-#~ msgstr "Присоединяться к групповому чату при запуске"
-
-#~ msgid "Auto-join"
-#~ msgstr "Авто присоединение"
-
-#~ msgid "Join chat at startup"
-#~ msgstr "Присоединяться к чату при запуске"
-
-#~ msgid "Edit Account"
-#~ msgstr "Редактировать уч. запись"
-
-#~ msgid "Add"
-#~ msgstr "Добавить"
-
-#~ msgid "Show Offline Contacts"
-#~ msgstr "Показать контакты не в сети"
-
-#~ msgid "Show contacts in the chats list"
-#~ msgstr "Показать контакты в списке чатов"
-
-#~ msgid "Server"
-#~ msgstr "Сервер"

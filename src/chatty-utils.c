@@ -7,6 +7,7 @@
 
 #include <glib.h>
 #include <glib/gi18n.h>
+#include "chatty-manager.h"
 #include "chatty-utils.h"
 #include <libebook-contacts/libebook-contacts.h>
 
@@ -318,15 +319,13 @@ chatty_utils_get_item_position (GListModel *list,
 ChattyPpAccount *
 chatty_pp_account_find (PurpleAccount *account)
 {
-  chatty_data_t *chatty;
   PurpleAccount *pp_account;
   GListModel *model;
   guint n_items;
 
   g_return_val_if_fail (account, NULL);
 
-  chatty = chatty_get_data ();
-  model = G_LIST_MODEL (chatty->account_list);
+  model = chatty_manager_get_accounts (chatty_manager_get_default ());
   n_items = g_list_model_get_n_items (model);
 
   for (guint i = 0; i < n_items; i++)
@@ -347,14 +346,12 @@ chatty_pp_account_find (PurpleAccount *account)
 gboolean
 chatty_pp_account_remove (ChattyPpAccount *self)
 {
-  chatty_data_t *chatty;
   GListModel *model;
   guint n_items;
 
   g_return_val_if_fail (CHATTY_IS_PP_ACCOUNT (self), FALSE);
 
-  chatty = chatty_get_data ();
-  model = G_LIST_MODEL (chatty->account_list);
+  model = chatty_manager_get_accounts (chatty_manager_get_default ());
   n_items = g_list_model_get_n_items (model);
 
   for (guint i = 0; i < n_items; i++)
@@ -365,7 +362,7 @@ chatty_pp_account_remove (ChattyPpAccount *self)
 
       if (object == self)
         {
-          g_list_store_remove (chatty->account_list, i);
+          g_list_store_remove (G_LIST_STORE (model), i);
 
           return TRUE;
         }

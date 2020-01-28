@@ -40,6 +40,8 @@ struct _ChattyPpAccount
   gchar          *protocol_id;
 
   PurpleAccount  *pp_account;
+  PurpleStoredImage *pp_avatar;
+  GdkPixbuf         *avatar;
   guint           connect_id;
 };
 
@@ -56,6 +58,39 @@ enum {
 };
 
 static GParamSpec *properties[N_PROPS];
+
+static gpointer
+chatty_icon_get_data_from_image (const char  *file_name,
+                                 int          width,
+                                 int          height,
+                                 size_t      *len,
+                                 GError     **error)
+{
+  g_autoptr(GdkPixbuf) pixbuf = NULL;
+  GdkPixbufFormat *format;
+  gchar *buffer = NULL;
+  gsize size = 0;
+  int icon_width, icon_height;
+
+  format = gdk_pixbuf_get_file_info (file_name, &icon_width, &icon_height);
+
+  if (!format)
+    return NULL;
+
+  pixbuf = gdk_pixbuf_new_from_file_at_scale (file_name,
+                                              MIN (width, icon_width),
+                                              MIN (height, icon_height),
+                                              TRUE, error);
+
+  if (!error || !*error)
+    gdk_pixbuf_save_to_buffer (pixbuf, &buffer, &size, "png", error, NULL);
+
+  if (!error || !*error)
+    if (len)
+      *len = size;
+
+  return buffer;
+}
 
 static gboolean
 account_connect (ChattyPpAccount *self)
@@ -112,6 +147,100 @@ chatty_pp_account_set_name (ChattyUser *user,
   g_assert (CHATTY_IS_PP_ACCOUNT (self));
 
   purple_account_set_alias (self->pp_account, name);
+}
+
+static GdkPixbuf *
+chatty_icon_from_data (const guchar *buf,
+                       gsize         size)
+{
+  g_autoptr(GdkPixbufLoader) loader = NULL;
+  g_autoptr(GError) error = NULL;
+  GdkPixbuf *pixbuf = NULL;
+
+  loader = gdk_pixbuf_loader_new ();
+  gdk_pixbuf_loader_write (loader, buf, size, &error);
+
+  if (!error)
+    gdk_pixbuf_loader_close (loader, &error);
+
+  if (error)
+    g_warning ("Error: %s: %s", __func__, error->message);
+  else
+    pixbuf = gdk_pixbuf_loader_get_pixbuf (loader);
+
+  if (!pixbuf)
+    g_warning ("%s: pixbuf creation failed", __func__);
+
+  return g_object_ref (pixbuf);
+}
+
+static GdkPixbuf *
+chatty_pp_account_get_avatar (ChattyUser *user)
+{
+  ChattyPpAccount *self = (ChattyPpAccount *)user;
+  PurpleStoredImage *img;
+
+  g_assert (CHATTY_IS_PP_ACCOUNT (self));
+
+  img = purple_buddy_icons_find_account_icon (self->pp_account);
+
+  if (img == NULL)
+    return NULL;
+
+  if (img == self->pp_avatar && self->avatar)
+    return self->avatar;
+
+  purple_imgstore_unref (self->pp_avatar);
+  g_clear_object (&self->avatar);
+  self->pp_avatar = img;
+
+  if (img != NULL)
+    self->avatar = chatty_icon_from_data (purple_imgstore_get_data (img),
+                                          purple_imgstore_get_size (img));
+  return self->avatar;
+}
+
+static void
+chatty_pp_account_set_avatar_async (ChattyUser          *user,
+                                    const char          *file_name,
+                                    GCancellable        *cancellable,
+                                    GAsyncReadyCallback  callback,
+                                    gpointer             user_data)
+{
+  ChattyPpAccount *self = (ChattyPpAccount *)user;
+  PurplePluginProtocolInfo *prpl_info;
+  g_autoptr(GTask) task = NULL;
+  g_autoptr(GError) error = NULL;
+  const char *protocol_id;
+  guchar *data;
+  int width, height;
+  size_t len;
+
+  g_assert (CHATTY_IS_PP_ACCOUNT (self));
+  g_assert (!cancellable || G_IS_CANCELLABLE (cancellable));
+
+  task = g_task_new (self, cancellable, callback, user_data);
+  g_task_set_source_tag (task, chatty_user_set_avatar_async);
+
+  protocol_id = chatty_pp_account_get_protocol_id (self);
+  prpl_info = PURPLE_PLUGIN_PROTOCOL_INFO (purple_find_prpl (protocol_id));
+  width  = prpl_info->icon_spec.max_width;
+  height = prpl_info->icon_spec.max_height;
+  data   = chatty_icon_get_data_from_image (file_name, width, height, &len, &error);
+
+  if (error)
+    {
+      g_task_return_error (task, g_steal_pointer (&error));
+      g_debug ("Error: %s", error->message);
+
+      return;
+    }
+
+  /* Purple does not support multi-thread. So do it sync */
+  purple_buddy_icons_set_account_icon (self->pp_account, data, len);
+
+  g_signal_emit_by_name (self, "avatar-changed");
+  g_task_return_boolean (task, TRUE);
 }
 
 static void
@@ -185,6 +314,11 @@ chatty_pp_account_finalize (GObject *object)
   ChattyPpAccount *self = (ChattyPpAccount *)object;
 
   g_clear_handle_id (&self->connect_id, g_source_remove);
+
+  if (self->pp_avatar)
+    purple_imgstore_unref (self->pp_avatar);
+
+  g_clear_object (&self->avatar);
   g_free (self->username);
   g_free (self->protocol_id);
 
@@ -204,6 +338,8 @@ chatty_pp_account_class_init (ChattyPpAccountClass *klass)
 
   user_class->get_name = chatty_pp_account_get_name;
   user_class->set_name = chatty_pp_account_set_name;
+  user_class->get_avatar = chatty_pp_account_get_avatar;
+  user_class->set_avatar_async = chatty_pp_account_set_avatar_async;
 
   properties[PROP_USERNAME] =
     g_param_spec_string ("username",
@@ -271,6 +407,66 @@ chatty_pp_account_new_purple (PurpleAccount *account)
   return g_object_new (CHATTY_TYPE_PP_ACCOUNT,
                        "purple-account", account,
                        NULL);
+}
+
+ChattyPpAccount *
+chatty_pp_account_new_xmpp (const char *username,
+                            const char *server_url)
+{
+  g_autofree char *name = NULL;
+  const gchar *url_prefix = NULL;
+
+  g_return_val_if_fail (username && *username, NULL);
+
+  if (!strchr (username, '@'))
+    url_prefix = "@";
+
+  if (url_prefix &&
+      !(server_url && *server_url))
+      g_return_val_if_reached (NULL);
+
+  /* If username includes ‘@’ server_url is ignored */
+  name = g_strconcat (username, url_prefix, server_url, NULL);
+
+  return chatty_pp_account_new (name, "prpl-jabber");
+}
+
+ChattyPpAccount *
+chatty_pp_account_new_matrix (const char *username,
+                              const char *server_url)
+{
+  ChattyPpAccount *self;
+
+  g_return_val_if_fail (username && *username, NULL);
+  g_return_val_if_fail (server_url && *server_url, NULL);
+
+  self = chatty_pp_account_new (username, "prpl-matrix");
+  purple_account_set_string (self->pp_account, "home_server", server_url);
+
+  return self;
+}
+
+ChattyPpAccount *
+chatty_pp_account_new_telegram (const char *username)
+{
+  g_return_val_if_fail (username && *username, NULL);
+
+  return chatty_pp_account_new (username, "prpl-telegram");
+}
+
+ChattyPpAccount *
+chatty_pp_account_new_sms (const char *username)
+{
+  ChattyPpAccount *self;
+
+  g_return_val_if_fail (username && *username, NULL);
+
+  self = chatty_pp_account_new (username, "prpl-mm-sms");
+
+  chatty_pp_account_set_password (self, NULL);
+  chatty_pp_account_set_remember_password (self, TRUE);
+
+  return self;
 }
 
 /**

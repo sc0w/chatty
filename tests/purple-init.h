@@ -44,8 +44,7 @@ test_purple_init (void)
   const char *build_dir;
   g_autofree char *path = NULL;
 
-  build_dir = g_getenv ("G_TEST_BUILDDIR");
-  g_warn_if_fail (build_dir);
+  build_dir = g_test_get_dir (G_TEST_BUILT);
   path = g_build_path (G_DIR_SEPARATOR_S, build_dir, ".purple", NULL);
   purple_util_set_user_dir (path);
 

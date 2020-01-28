@@ -150,7 +150,6 @@
                           <object class="GtkSwitch" id="message_carbons_switch">
                             <property name="visible">True</property>
                             <property name="valign">center</property>
-                            <signal name="notify::active" handler="settings_message_carbons_changed_cb" swapped="yes"/>
                           </object>
                         </child>
                       </object>
@@ -297,10 +296,9 @@
                             <property name="margin_bottom">24</property>
                             <signal name="clicked" handler="settings_avatar_button_clicked_cb" swapped="yes"/>
                             <child>
-                              <object class="GtkImage">
+                              <object class="ChattyAvatar" id="avatar_image">
                                 <property name="visible">True</property>
                                 <property name="pixel_size">96</property>
-                                <property name="icon_name">avatar-default-symbolic</property>
                               </object>
                             </child>
                           </object>

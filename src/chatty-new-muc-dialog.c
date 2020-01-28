@@ -13,7 +13,7 @@
 #include <glib-object.h>
 #include "chatty-window.h"
 #include "chatty-dialogs.h"
-#include "chatty-pp-account.h"
+#include "users/chatty-pp-account.h"
 #include "chatty-buddy-list.h"
 #include "chatty-dbus.h"
 #include "chatty-utils.h"

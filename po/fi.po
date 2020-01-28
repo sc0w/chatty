@@ -1,17 +1,18 @@
 # JR-Fi <juho@reivo.fi>, 2019. #zanata
 # M J <emjay.accounts+zanata@mailbox.org>, 2019. #zanata
+# JR-Fi <juho@reivo.fi>, 2020. #zanata
 msgid ""
 msgstr ""
 "Project-Id-Version: purism-chatty\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-01-13 12:59+0100\n"
-"PO-Revision-Date: 2019-11-26 07:20+0000\n"
-"Last-Translator: JR-Fi <juho@reivo.fi>\n"
-"Language-Team: Finnish\n"
-"Language: fi\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"PO-Revision-Date: 2020-01-18 10:12+0000\n"
+"Last-Translator: JR-Fi <juho@reivo.fi>\n"
+"Language-Team: Finnish\n"
+"Language: fi\n"
 "X-Generator: Zanata 4.6.2\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
 
@@ -28,6 +29,7 @@ msgstr "Viestitysohjelma"
 msgid "Chats is a messaging application supporting XMPP and SMS."
 msgstr ""
 "Chats on viestitysohjelma, joka tukee XMPP ja SMS (tekstiviesti) protokollia."
+""
 
 #: data/sm.puri.Chatty.appdata.xml.in:16
 msgid "Chats message window"
@@ -51,19 +53,17 @@ msgstr "XMPP;SMS;chat;jabber;messaging;modem"
 
 #: data/sm.puri.Chatty.gschema.xml:7 data/sm.puri.Chatty.gschema.xml:8
 msgid "Whether the application is launching the first time"
-msgstr ""
+msgstr "Mikäli ohjelma käynnistyy ensimmäistä kertaa"
 
 #: data/sm.puri.Chatty.gschema.xml:13
-#, fuzzy
 msgid "Send message read receipts"
-msgstr "Viestien kuittaus"
+msgstr "Lähetä viestinluvusta kuittaus"
 
 #: data/sm.puri.Chatty.gschema.xml:14
 msgid "Whether to send the status of the message if read"
-msgstr ""
+msgstr "Lähetetäänkö viestin tilatieto, mikäli se on luettu"
 
 #: data/sm.puri.Chatty.gschema.xml:19
-#, fuzzy
 msgid "Message carbon copies"
 msgstr "Viestien kopiot"
 
@@ -73,51 +73,47 @@ msgstr "Jaa keskusteluhistoria laitteiden välillä"
 
 #: data/sm.puri.Chatty.gschema.xml:25
 msgid "Enable Message Archive Management"
-msgstr ""
+msgstr "Käytä viestien arkistoinnin hallintaa"
 
 #: data/sm.puri.Chatty.gschema.xml:26
 msgid "Enable MAM archive synchronization from the server"
-msgstr ""
+msgstr "Käytä viestien arkiston synkronisointia palvelimelta"
 
 #: data/sm.puri.Chatty.gschema.xml:31
-#, fuzzy
 msgid "Send typing notifications"
-msgstr "Kirjoitusilmoitukset"
+msgstr "Lähetä tieto kirjoittamisesta"
 
 #: data/sm.puri.Chatty.gschema.xml:32
-#, fuzzy
 msgid "Whether to Send typing notifications"
-msgstr "Kirjoitusilmoitukset"
+msgstr "Lähetetäänkö tieto, mikäli olet kirjoittamassa viestiä"
 
 #: data/sm.puri.Chatty.gschema.xml:37 data/sm.puri.Chatty.gschema.xml:38
 msgid "Mark offline users differently"
-msgstr ""
+msgstr "Merkitse offline-käyttäjät toisella tavalla "
 
 #: data/sm.puri.Chatty.gschema.xml:43 data/sm.puri.Chatty.gschema.xml:44
 msgid "Mark Idle users differently"
-msgstr ""
+msgstr "Merkitse passiiviset käyttäjät toisella tavalla"
 
 #: data/sm.puri.Chatty.gschema.xml:49 data/sm.puri.Chatty.gschema.xml:50
-#, fuzzy
 msgid "Indicate unknown contacts"
-msgstr "Merkitse tuntemattomat kontaktit"
+msgstr "Merkitse  tuntemattomat kontaktit"
 
 #: data/sm.puri.Chatty.gschema.xml:55
-#, fuzzy
 msgid "Convert text to emoticons"
-msgstr "Muuta ASCII-tekstikuvakkeet"
+msgstr "Muuta teksti hymiöiksi"
 
 #: data/sm.puri.Chatty.gschema.xml:56
 msgid "Convert text matching emoticons as real emoticons"
-msgstr ""
+msgstr "Muuta teksti hymiöt vastaaviksi hymiöiköneiksi"
 
 #: data/sm.puri.Chatty.gschema.xml:61
 msgid "Enter key sends the message"
-msgstr ""
+msgstr "Enter-näppäin lähettää viestin"
 
 #: data/sm.puri.Chatty.gschema.xml:62
 msgid "Whether pressing Enter key sends the message"
-msgstr ""
+msgstr "Lähettääkö viesti, mikäli olet painanut enter-näppäintä (rivinvaihto)"
 
 #: src/chatty-application.c:54
 msgid "Show release version"
@@ -236,7 +232,8 @@ msgstr "Puhelinnumero:"
 #: src/chatty-dialogs.c:846
 msgid "An SMS and XMPP messaging client"
 msgstr ""
-"Tämä on ohjelma tekstiviesti (SMS) ja XMPP viestitysprotokollien käyttämiseen"
+"Tämä on ohjelma tekstiviesti (SMS) ja XMPP viestitysprotokollien "
+"käyttämiseen"
 
 #: src/chatty-dialogs.c:853
 msgid "translator-credits"
@@ -244,7 +241,7 @@ msgstr "Kääntäjän tiedot"
 
 #: src/chatty-dialogs.c:868 src/chatty-settings-dialog.c:390
 msgid "Set Avatar"
-msgstr ""
+msgstr "Aseta profiilikuva"
 
 #: src/chatty-dialogs.c:871 src/chatty-purple-request.c:189
 #: src/chatty-settings-dialog.c:393
@@ -253,19 +250,19 @@ msgstr "Avaa"
 
 #: src/chatty-folks.c:613
 msgid "Mobile"
-msgstr ""
+msgstr "Kännykkä"
 
 #: src/chatty-folks.c:615
 msgid "Work"
-msgstr ""
+msgstr "Työ"
 
 #: src/chatty-folks.c:617
 msgid "Home"
-msgstr ""
+msgstr "Koti"
 
 #: src/chatty-folks.c:619
 msgid "Other"
-msgstr ""
+msgstr "Muu"
 
 #: src/chatty-lurch.c:116
 msgid "Encryption not available"
@@ -372,9 +369,8 @@ msgid "Select Protocol"
 msgstr "Valitse yhteysprotokolla"
 
 #: src/chatty-settings-dialog.c:292
-#, fuzzy
 msgid "Add XMPP account"
-msgstr "Lisää tili"
+msgstr "Lisää XMPP-tili"
 
 #: src/chatty-settings-dialog.c:507 src/ui/chatty-settings-dialog.ui:462
 msgid "Delete Account"
@@ -497,8 +493,8 @@ msgstr "Aloita <b>tekstiviesti</b> keskustelu otsikkorivin \"+\" -napilla."
 
 #: src/chatty-window.c:50 src/chatty-window.c:53
 msgid ""
-"For <b>Instant Messaging</b> add or activate an account in <i>\"preferences"
-"\"</i>."
+"For <b>Instant Messaging</b> add or activate an account in "
+"<i>\"preferences\"</i>."
 msgstr ""
 "Lähettääksesi <b>pikaviestejä</b> lisää tai aktivoi tili <i>\"Asetukset\"</"
 "i> -valikossa."
@@ -641,16 +637,15 @@ msgstr "Asetukset"
 
 #: src/ui/chatty-settings-dialog.ui:21
 msgid "Back"
-msgstr ""
+msgstr "Takaisin"
 
 #: src/ui/chatty-settings-dialog.ui:41
 msgid "_Add"
-msgstr ""
+msgstr "_Lisää"
 
 #: src/ui/chatty-settings-dialog.ui:54
-#, fuzzy
 msgid "_Save"
-msgstr "Tallenna"
+msgstr "_Tallenna"
 
 #: src/ui/chatty-settings-dialog.ui:88
 msgid "Accounts"
@@ -674,11 +669,11 @@ msgstr "Kuittaa saadut viestit"
 
 #: src/ui/chatty-settings-dialog.ui:133
 msgid "Message Archive Management"
-msgstr ""
+msgstr "Viestien arkistoinnin hallinta"
 
 #: src/ui/chatty-settings-dialog.ui:134
 msgid "Sync conversations with chat server"
-msgstr ""
+msgstr "Synkronisoi keskustelut palvelimen kanssa"
 
 #: src/ui/chatty-settings-dialog.ui:147
 msgid "Message Carbon Copies"
@@ -774,7 +769,7 @@ msgstr "Telegram"
 
 #: src/ui/chatty-settings-dialog.ui:676
 msgid "Provider"
-msgstr ""
+msgstr "Toimittaja"
 
 #: src/ui/chatty-window.ui:32
 msgid "New Direct Chat"
@@ -795,44 +790,3 @@ msgstr "Poistu keskustelusta"
 #: src/ui/chatty-window.ui:176
 msgid "Delete Chat"
 msgstr "Poista keskustelu"
-
-#~ msgid ""
-#~ "<b>SMS</b> Chat is set up by default. Start a chat with the \"+\" button "
-#~ "in the titlebar."
-#~ msgstr ""
-#~ "<b>Tekstiviestitys</b> on käytössä ilman asetusten määrittelyä. Aloita "
-#~ "keskustelu otsikkorivin \"+\" napilla."
-
-#~ msgid ""
-#~ "Add <b>Instant Messaging</b> by selecting \n"
-#~ "<i>\"Add new account\"</i> in <i>\"preferences\"</i>."
-#~ msgstr ""
-#~ "Lisää <b>pikaviestitys</b> valitsemalla\n"
-#~ "<i>\"Lisää uusi tili\"</i> valikosta <i>\"Asetukset\"</i>."
-
-#~ msgid "Autojoin"
-#~ msgstr "Automaattinen liittyminen"
-
-#~ msgid "Join group chat at startup"
-#~ msgstr "Liity ryhmäkeskusteluun käynnistyksessä"
-
-#~ msgid "Auto-join"
-#~ msgstr "Automaattinen liittyminen"
-
-#~ msgid "Join chat at startup"
-#~ msgstr "Liity keskusteluun ohjelman käynnistyessä"
-
-#~ msgid "Edit Account"
-#~ msgstr "Muokkaa tiliä"
-
-#~ msgid "Add"
-#~ msgstr "Lisää"
-
-#~ msgid "Show Offline Contacts"
-#~ msgstr "Näytä offline-kontaktit"
-
-#~ msgid "Show contacts in the chats list"
-#~ msgstr "Näytä kontaktit keskusteluiden listassa"
-
-#~ msgid "Server"
-#~ msgstr "Palvelin"

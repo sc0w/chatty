@@ -7,13 +7,13 @@ msgstr ""
 "Project-Id-Version: purism-chatty\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-01-13 12:59+0100\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
 "PO-Revision-Date: 2019-09-25 08:27+0000\n"
 "Last-Translator: Scott Anecito <scott.anecito@linux.com>\n"
 "Language-Team: Japanese\n"
 "Language: ja\n"
-"MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Zanata 4.6.2\n"
 "Plural-Forms: nplurals=1; plural=0\n"
 
@@ -55,9 +55,8 @@ msgid "Whether the application is launching the first time"
 msgstr ""
 
 #: data/sm.puri.Chatty.gschema.xml:13
-#, fuzzy
 msgid "Send message read receipts"
-msgstr "メッセージ受け取り"
+msgstr ""
 
 #: data/sm.puri.Chatty.gschema.xml:14
 msgid "Whether to send the status of the message if read"
@@ -80,14 +79,12 @@ msgid "Enable MAM archive synchronization from the server"
 msgstr ""
 
 #: data/sm.puri.Chatty.gschema.xml:31
-#, fuzzy
 msgid "Send typing notifications"
-msgstr "入力中であることの通知"
+msgstr ""
 
 #: data/sm.puri.Chatty.gschema.xml:32
-#, fuzzy
 msgid "Whether to Send typing notifications"
-msgstr "入力中であることの通知"
+msgstr ""
 
 #: data/sm.puri.Chatty.gschema.xml:37 data/sm.puri.Chatty.gschema.xml:38
 msgid "Mark offline users differently"
@@ -98,14 +95,12 @@ msgid "Mark Idle users differently"
 msgstr ""
 
 #: data/sm.puri.Chatty.gschema.xml:49 data/sm.puri.Chatty.gschema.xml:50
-#, fuzzy
 msgid "Indicate unknown contacts"
-msgstr "しらない連絡先を示す"
+msgstr ""
 
 #: data/sm.puri.Chatty.gschema.xml:55
-#, fuzzy
 msgid "Convert text to emoticons"
-msgstr "ASCII絵文字の変換"
+msgstr ""
 
 #: data/sm.puri.Chatty.gschema.xml:56
 msgid "Convert text matching emoticons as real emoticons"
@@ -371,9 +366,8 @@ msgid "Select Protocol"
 msgstr "プロトコルの選択"
 
 #: src/chatty-settings-dialog.c:292
-#, fuzzy
 msgid "Add XMPP account"
-msgstr "アカウントの追加"
+msgstr ""
 
 #: src/chatty-settings-dialog.c:507 src/ui/chatty-settings-dialog.ui:462
 msgid "Delete Account"
@@ -494,8 +488,8 @@ msgstr ""
 
 #: src/chatty-window.c:50 src/chatty-window.c:53
 msgid ""
-"For <b>Instant Messaging</b> add or activate an account in <i>\"preferences"
-"\"</i>."
+"For <b>Instant Messaging</b> add or activate an account in "
+"<i>\"preferences\"</i>."
 msgstr ""
 
 #: src/chatty-window.c:52
@@ -643,9 +637,8 @@ msgid "_Add"
 msgstr ""
 
 #: src/ui/chatty-settings-dialog.ui:54
-#, fuzzy
 msgid "_Save"
-msgstr "保存"
+msgstr ""
 
 #: src/ui/chatty-settings-dialog.ui:88
 msgid "Accounts"
@@ -790,30 +783,3 @@ msgstr "チャットから退出"
 #: src/ui/chatty-window.ui:176
 msgid "Delete Chat"
 msgstr "チャットの削除"
-
-#~ msgid "Autojoin"
-#~ msgstr "自動で参加"
-
-#~ msgid "Join group chat at startup"
-#~ msgstr "起動時にグループチャットの参加"
-
-#~ msgid "Auto-join"
-#~ msgstr "自動加入"
-
-#~ msgid "Join chat at startup"
-#~ msgstr "起動時にチャットの参加"
-
-#~ msgid "Edit Account"
-#~ msgstr "アカウントの編集"
-
-#~ msgid "Add"
-#~ msgstr "追加"
-
-#~ msgid "Show Offline Contacts"
-#~ msgstr "オフラインの連絡先の表示"
-
-#~ msgid "Show contacts in the chats list"
-#~ msgstr "チャットリストに連絡先の表示"
-
-#~ msgid "Server"
-#~ msgstr " サーバ "

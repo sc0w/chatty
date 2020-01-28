@@ -13,7 +13,8 @@
 #include <glib-object.h>
 #include "chatty-window.h"
 #include "chatty-dialogs.h"
-#include "chatty-pp-account.h"
+#include "chatty-manager.h"
+#include "users/chatty-pp-account.h"
 #include "chatty-utils.h"
 #include "chatty-buddy-list.h"
 #include "chatty-conversation.h"
@@ -400,12 +401,12 @@ chatty_user_info_dialog_get_property (GObject      *object,
 static void
 chatty_user_info_dialog_constructed (GObject *object)
 {
+  ChattyManager  *manager;
   PurpleAccount  *account;
   PurplePresence *presence;
   PurpleStatus   *status;
   const char     *protocol_id;
 
-  chatty_purple_data_t *chatty_purple = chatty_get_purple_data ();
   ChattyUserInfoDialog *self = (ChattyUserInfoDialog *)object;
 
   G_OBJECT_CLASS (chatty_user_info_dialog_parent_class)->constructed (object);
@@ -413,7 +414,9 @@ chatty_user_info_dialog_constructed (GObject *object)
   account = purple_conversation_get_account (self->chatty_conv->conv);
   protocol_id = purple_account_get_protocol_id (account);
 
-  if (chatty_purple->plugin_lurch_loaded && (!g_strcmp0 (protocol_id, "prpl-jabber"))) {
+  manager = chatty_manager_get_default ();
+
+  if (chatty_manager_lurch_plugin_is_loaded (manager) && (!g_strcmp0 (protocol_id, "prpl-jabber"))) {
 
     gtk_widget_show (GTK_WIDGET(self->label_status_msg));
     gtk_widget_show (GTK_WIDGET(self->label_encrypt));

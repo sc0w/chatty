@@ -1,3 +1,71 @@
+chatty (0.1.7) amber-phone; urgency=high
+
+  [ Mohammed Sadiq ]
+  * user: Add ‘deleted’ signal
+  * manager: Emit signal when account is deleted
+  * avatar: Clear user variable if deleted
+
+ -- Andrea Schaefer <andrea.schaefer@puri.sm>  Wed, 22 Jan 2020 18:09:21 +0100
+
+chatty (0.1.6) amber-phone; urgency=medium
+
+  [ Mohammed Sadiq ]
+  * Add chatty-pp-account
+  * utils: Add API to search a GListModel
+  * Use chatty-pp-account
+  * tests: Add chatty-pp-account test
+  * account: Add 'status' property
+  * Add chatty-manager
+  * pp-account: Add ‘enabled’ property
+  * manager: Handle adding and removing accounts
+  * settings-dialog: Simplify handling account status
+  * account: Remove unused code
+  * pp-account: Add API to save account
+  * manager: Load SMS plugin
+  * connection: Don’t update account list on change
+
+  [ Andrea Schaefer ]
+  * Fix issue #267 'Chatty normalizes phone numbers'
+
+  [ Mohammed Sadiq ]
+  * manager: Enable SMS accounts when added
+  * manager: Handle disabling auto-login
+  * pp-account: Add API to activate/deactivate connection
+  * manager: Handle network changes
+  * Remove obsolete code
+
+  [ Andrea Schaefer ]
+  * Fix widget visibility in 'add contact' dialog
+
+  [ Mohammed Sadiq ]
+  * account: Remove unused code
+  * Add chatty-user class
+  * pp-account: Derive from chatty-user class
+  * pp-account: Check details only when connecting
+
+  [ Andrea Schaefer ]
+  * Handle non-numeric SMS identifiers
+  * Remove g_error statements
+  * Handle avatar null-pointer
+  * Don't unref referenced pixbuf
+  * Add avatar instance-check
+  * Fix issue 274
+  * Don't wait for timeout to update contacts list Refresh list directly after contacts have been pulled via libfolks
+
+  [ Mohammed Sadiq ]
+  * Add chatty-avatar
+  * user: Add API to get avatar
+  * pp-account: Implement get_avatar()
+  * settings-dialog: Use new chatty-avatar for avatar
+  * Move account store to manager
+  * folks: Fix a possible invalid free
+
+  [ Andrea Schaefer ]
+  * Update po-files
+  * Fix issue in pt_BR.po
+
+ -- Andrea Schaefer <andrea.schaefer@puri.sm>  Wed, 22 Jan 2020 12:46:56 +0100
+
 chatty (0.1.5) amber-phone; urgency=high
 
   [ Mohammed Sadiq ]

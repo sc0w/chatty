@@ -9,6 +9,7 @@
 #include <glib/gi18n.h>
 #include <glib-object.h>
 #include "chatty-window.h"
+#include "chatty-manager.h"
 #include "chatty-account.h"
 #include "chatty-buddy-list.h"
 #include "chatty-conversation.h"

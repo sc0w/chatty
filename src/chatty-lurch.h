@@ -8,6 +8,8 @@
 #ifndef __LURCH_H_INCLUDE__
 #define __LURCH_H_INCLUDE__
 
+#include <gtk/gtk.h>
+
 
 enum {
   LURCH_FP_OWN_DEVICE,

@@ -12,7 +12,7 @@
 #include <gio/gio.h>
 
 #include "chatty-window.h"
-#include "chatty-pp-account.h"
+#include "users/chatty-pp-account.h"
 
 #define MAX_GMT_ISO_SIZE 256
 

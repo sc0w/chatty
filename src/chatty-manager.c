@@ -15,11 +15,12 @@
 
 #include <purple.h>
 
+#include "xeps/xeps.h"
 #include "chatty-settings.h"
 #include "chatty-account.h"
 #include "chatty-utils.h"
 #include "chatty-window.h"
-#include "chatty-pp-account.h"
+#include "users/chatty-pp-account.h"
 #include "chatty-purple-init.h"
 #include "chatty-manager.h"
 
@@ -38,12 +39,81 @@ struct _ChattyManager
   GObject          parent_instance;
 
   GListStore      *account_list;
+
+  PurplePlugin    *sms_plugin;
+  PurplePlugin    *lurch_plugin;
+  PurplePlugin    *carbon_plugin;
+  PurplePlugin    *file_upload_plugin;
+
   gboolean         disable_auto_login;
   gboolean         network_available;
 };
 
 G_DEFINE_TYPE (ChattyManager, chatty_manager, G_TYPE_OBJECT)
 
+
+static gboolean
+chatty_manager_load_plugin (PurplePlugin *plugin)
+{
+  gboolean loaded;
+
+  if (!plugin || purple_plugin_is_loaded (plugin))
+    return TRUE;
+
+  loaded = purple_plugin_load (plugin);
+  purple_plugins_save_loaded (CHATTY_PREFS_ROOT "/plugins/loaded");
+  g_debug ("plugin %s%s Loaded",
+           purple_plugin_get_name (plugin),
+           loaded ? "" : " Not");
+
+  return loaded;
+}
+
+static void
+chatty_manager_unload_plugin (PurplePlugin *plugin)
+{
+  gboolean unloaded;
+
+  if (!plugin || !purple_plugin_is_loaded (plugin))
+    return;
+
+  unloaded = purple_plugin_unload (plugin);
+  purple_plugin_disable (plugin);
+  purple_plugins_save_loaded (CHATTY_PREFS_ROOT "/plugins/loaded");
+  /* Failing to unload may mean that the application require restart to do so. */
+  g_debug ("plugin %s%s Unloaded",
+           purple_plugin_get_name (plugin),
+           unloaded ? "" : " Not");
+}
+
+static void
+manager_message_carbons_changed (ChattyManager  *self,
+                                 GParamSpec     *pspec,
+                                 ChattySettings *settings)
+{
+  g_assert (CHATTY_IS_MANAGER (self));
+  g_assert (CHATTY_IS_SETTINGS (settings));
+
+  if (!self->carbon_plugin)
+    return;
+
+  if (chatty_settings_get_message_carbons (settings))
+    chatty_manager_load_plugin (self->carbon_plugin);
+  else
+    chatty_manager_unload_plugin (self->carbon_plugin);
+}
+
+static void
+chatty_manager_enable_sms_account (ChattyManager *self)
+{
+  g_autoptr(ChattyPpAccount) account = NULL;
+
+  if (purple_accounts_find ("SMS", "prpl-mm-sms"))
+    return;
+
+  account = chatty_pp_account_new_sms ("SMS");
+  chatty_pp_account_save (account);
+}
 
 static void
 manager_account_added_cb (PurpleAccount *pp_account,
@@ -78,6 +148,7 @@ manager_account_removed_cb (PurpleAccount *pp_account,
   g_return_if_fail (account);
 
   g_object_notify (G_OBJECT (account), "status");
+  g_signal_emit_by_name (account, "deleted");
   chatty_pp_account_remove (account);
 }
 
@@ -246,9 +317,7 @@ chatty_manager_class_init (ChattyManagerClass *klass)
 static void
 chatty_manager_init (ChattyManager *self)
 {
-  chatty_data_t *chatty = chatty_get_data ();
-
-  self->account_list = g_object_ref (chatty->account_list);
+  self->account_list = g_list_store_new (CHATTY_TYPE_PP_ACCOUNT);
 }
 
 ChattyManager *
@@ -275,24 +344,6 @@ chatty_manager_purple_init (ChattyManager *self)
     purple_savedstatus_activate (purple_savedstatus_new (NULL, PURPLE_STATUS_AVAILABLE));
 
   chatty_manager_intialize_libpurple (self);
-}
-
-void
-chatty_manager_enable_sms_account (ChattyManager *self)
-{
-  g_autoptr(ChattyPpAccount) account = NULL;
-  PurpleAccount *pp_account;
-
-  pp_account = purple_accounts_find ("SMS", "prpl-mm-sms");
-
-  /* SMS plugin already initialized */
-  if (pp_account)
-    return;
-
-  account = chatty_pp_account_new ("SMS", "prpl-mm-sms");
-  chatty_pp_account_set_password (account, NULL);
-  chatty_pp_account_set_remember_password (account, TRUE);
-  chatty_pp_account_save (account);
 }
 
 GListModel *
@@ -329,4 +380,65 @@ chatty_manager_get_disable_auto_login (ChattyManager *self)
   g_return_val_if_fail (CHATTY_IS_MANAGER (self), TRUE);
 
   return self->disable_auto_login;
+}
+
+void
+chatty_manager_load_plugins (ChattyManager *self)
+{
+  ChattySettings *settings;
+
+  g_return_if_fail (CHATTY_IS_MANAGER (self));
+
+  purple_plugins_load_saved (CHATTY_PREFS_ROOT "/plugins/loaded");
+  purple_plugins_probe (G_MODULE_SUFFIX);
+
+  self->sms_plugin = purple_plugins_find_with_id ("prpl-mm-sms");
+  self->lurch_plugin = purple_plugins_find_with_id ("core-riba-lurch");
+  self->carbon_plugin = purple_plugins_find_with_id ("core-riba-carbons");
+  self->file_upload_plugin = purple_plugins_find_with_id ("xep-http-file-upload");
+
+  chatty_manager_load_plugin (self->lurch_plugin);
+  chatty_manager_load_plugin (self->file_upload_plugin);
+
+  purple_plugins_init ();
+  purple_network_force_online();
+  purple_pounces_load ();
+
+  chatty_xeps_init ();
+
+  if (chatty_manager_load_plugin (self->sms_plugin))
+    chatty_manager_enable_sms_account (self);
+
+  settings = chatty_settings_get_default ();
+  g_signal_connect_object (settings, "notify::message-carbons",
+                           G_CALLBACK (manager_message_carbons_changed), self,
+                           G_CONNECT_SWAPPED);
+  manager_message_carbons_changed (self, NULL, settings);
+}
+
+gboolean
+chatty_manager_has_carbons_plugin (ChattyManager *self)
+{
+  g_return_val_if_fail (CHATTY_IS_MANAGER (self), FALSE);
+
+  return self->carbon_plugin != NULL;
+}
+
+gboolean
+chatty_manager_has_file_upload_plugin (ChattyManager *self)
+{
+  g_return_val_if_fail (CHATTY_IS_MANAGER (self), FALSE);
+
+  return self->file_upload_plugin != NULL;
+}
+
+gboolean
+chatty_manager_lurch_plugin_is_loaded (ChattyManager *self)
+{
+  g_return_val_if_fail (CHATTY_IS_MANAGER (self), FALSE);
+
+  if (!self->lurch_plugin)
+    return FALSE;
+
+  return purple_plugin_is_loaded (self->lurch_plugin);
 }
