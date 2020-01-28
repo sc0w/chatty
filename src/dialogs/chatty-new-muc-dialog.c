@@ -144,7 +144,7 @@ chatty_new_muc_add_account_to_list (ChattyNewMucDialog *self,
     return;
   }
 
-  if (chatty_pp_account_get_status (account) == CHATTY_DISCONNECTED) {
+  if (chatty_account_get_status (CHATTY_ACCOUNT (account)) == CHATTY_DISCONNECTED) {
     return;
   }
 

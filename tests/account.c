@@ -21,10 +21,10 @@
 #include "users/chatty-pp-account.h"
 
 static void
-test_account (ChattyPpAccount *ac,
-              const char      *protocol_id,
-              const char      *username,
-              gboolean         is_sms)
+test_account (ChattyAccount *ac,
+              const char    *protocol_id,
+              const char    *username,
+              gboolean       is_sms)
 {
   PurpleAccount *account;
   const gchar *str;
@@ -33,41 +33,41 @@ test_account (ChattyPpAccount *ac,
   g_assert_true (CHATTY_IS_PP_ACCOUNT (ac));
 
   if (is_sms)
-    g_assert_true (chatty_pp_account_is_sms (ac));
+    g_assert_true (chatty_pp_account_is_sms (CHATTY_PP_ACCOUNT (ac)));
   else
-    g_assert_false (chatty_pp_account_is_sms (ac));
+    g_assert_false (chatty_pp_account_is_sms (CHATTY_PP_ACCOUNT (ac)));
 
-  account = chatty_pp_account_get_account (ac);
+  account = chatty_pp_account_get_account (CHATTY_PP_ACCOUNT (ac));
   g_assert_nonnull (account);
 
-  str = chatty_pp_account_get_protocol_id (ac);
+  str = chatty_pp_account_get_protocol_id (CHATTY_PP_ACCOUNT (ac));
   g_assert_cmpstr (str, ==, protocol_id);
 
-  str = chatty_pp_account_get_username (ac);
+  str = chatty_pp_account_get_username (CHATTY_PP_ACCOUNT (ac));
   g_assert_cmpstr (str, ==, username);
 
-  chatty_pp_account_set_enabled (ac, TRUE);
-  value = chatty_pp_account_get_enabled (ac);
+  chatty_account_set_enabled (ac, TRUE);
+  value = chatty_account_get_enabled (ac);
   g_assert_true (value);
 
-  chatty_pp_account_set_enabled (ac, FALSE);
-  value = chatty_pp_account_get_enabled (ac);
+  chatty_account_set_enabled (ac, FALSE);
+  value = chatty_account_get_enabled (ac);
   g_assert_false (value);
 
-  chatty_pp_account_set_remember_password (ac, TRUE);
-  value = chatty_pp_account_get_remember_password (ac);
+  chatty_account_set_remember_password (ac, TRUE);
+  value = chatty_account_get_remember_password (ac);
   g_assert_true (value);
 
-  chatty_pp_account_set_remember_password (ac, FALSE);
-  value = chatty_pp_account_get_remember_password (ac);
+  chatty_account_set_remember_password (ac, FALSE);
+  value = chatty_account_get_remember_password (ac);
   g_assert_false (value);
 
-  chatty_pp_account_set_password (ac, "P@ssw0rd");
-  str = chatty_pp_account_get_password (ac);
+  chatty_account_set_password (ac, "P@ssw0rd");
+  str = chatty_account_get_password (ac);
   g_assert_cmpstr (str, ==, "P@ssw0rd");
 
-  chatty_pp_account_set_password (ac, "രഹസ്യം");
-  str = chatty_pp_account_get_password (ac);
+  chatty_account_set_password (ac, "രഹസ്യം");
+  str = chatty_account_get_password (ac);
   g_assert_cmpstr (str, ==, "രഹസ്യം");
 }
 
@@ -77,15 +77,15 @@ test_account_new_xmpp (void)
   ChattyPpAccount *account;
 
   account = chatty_pp_account_new_xmpp ("test", "example.com");
-  test_account (account, "prpl-jabber", "test@example.com", FALSE);
+  test_account (CHATTY_ACCOUNT (account), "prpl-jabber", "test@example.com", FALSE);
   g_object_unref (account);
 
   account = chatty_pp_account_new_xmpp ("test@example.com", NULL);
-  test_account (account, "prpl-jabber", "test@example.com", FALSE);
+  test_account (CHATTY_ACCOUNT (account), "prpl-jabber", "test@example.com", FALSE);
   g_object_unref (account);
 
   account = chatty_pp_account_new_xmpp ("test@example.org", "not-used.com");
-  test_account (account, "prpl-jabber", "test@example.org", FALSE);
+  test_account (CHATTY_ACCOUNT (account), "prpl-jabber", "test@example.org", FALSE);
   g_object_unref (account);
 }
 
