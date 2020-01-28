@@ -16,15 +16,15 @@
 #include <handy.h>
 #include "purple.h"
 #include "chatty-buddy-list.h"
-#include "chatty-dialogs.h"
-#include "chatty-settings-dialog.h"
+#include "dialogs/chatty-dialogs.h"
+#include "dialogs/chatty-settings-dialog.h"
+#include "dialogs/chatty-new-chat-dialog.h"
 #include "chatty-icons.h"
 #include "chatty-window.h"
 #include "chatty-utils.h"
 #include "chatty-account.h"
 #include "users/chatty-pp-account.h"
 #include "chatty-purple-init.h"
-#include "chatty-new-chat-dialog.h"
 
 struct auth_request
 {

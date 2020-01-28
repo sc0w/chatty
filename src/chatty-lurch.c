@@ -11,9 +11,8 @@
 #include <gtk/gtk.h>
 #include "purple.h"
 #include "chatty-utils.h"
-#include "chatty-dialogs.h"
+#include "dialogs/chatty-dialogs.h"
 #include "chatty-lurch.h"
-#include "chatty-user-info-dialog.h"
 #include "chatty-conversation.h"
 
 

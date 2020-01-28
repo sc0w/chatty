@@ -28,7 +28,7 @@
 #include "chatty-dbus.h"
 #define HANDY_USE_UNSTABLE_API
 #include <handy.h>
-#include "chatty-new-chat-dialog.h"
+#include "dialogs/chatty-new-chat-dialog.h"
 
 
 static void chatty_blist_new_node (PurpleBlistNode *node);

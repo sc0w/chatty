@@ -16,7 +16,7 @@
 #include "chatty-purple-init.h"
 #include "chatty-utils.h"
 #include "chatty-notify.h"
-#include "chatty-dialogs.h"
+#include "dialogs/chatty-dialogs.h"
 #include "chatty-folks.h"
 
 
