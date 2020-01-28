@@ -101,6 +101,79 @@ G_DEFINE_TYPE (ChattySettingsDialog, chatty_settings_dialog, HDY_TYPE_DIALOG)
 
 
 static void
+get_fp_list_own_cb (int         err,
+                    GHashTable *id_fp_table,
+                    gpointer    user_data)
+{
+  GList       *key_list = NULL;
+  GList       *filtered_list = NULL;
+  const GList *curr_p = NULL;
+  const char  *fp = NULL;
+  GtkWidget   *row;
+
+  ChattySettingsDialog *self = (ChattySettingsDialog *)user_data;
+
+  if (err || !id_fp_table) {
+    gtk_widget_hide (GTK_WIDGET(self->fingerprint_list));
+    gtk_widget_hide (GTK_WIDGET(self->fingerprint_device_list));
+
+    return;
+  }
+
+  if (self->fingerprint_list && self->fingerprint_device_list) {
+
+    key_list = g_hash_table_get_keys (id_fp_table);
+
+    for (curr_p = key_list; curr_p; curr_p = curr_p->next) {
+      fp = (char *) g_hash_table_lookup(id_fp_table, curr_p->data);
+
+      if (fp) {
+        filtered_list = g_list_append (filtered_list, curr_p->data);
+      }
+    }
+
+    for (curr_p = filtered_list; curr_p; curr_p = curr_p->next) {
+      fp = (char *) g_hash_table_lookup(id_fp_table, curr_p->data);
+
+      g_debug ("DeviceId: %i fingerprint:\n%s\n", *((guint32 *) curr_p->data),
+               fp ? fp : "(no session)");
+
+      row = chatty_utils_create_fingerprint_row (fp, *((guint32 *) curr_p->data));
+
+      if (row) {
+        if (curr_p == g_list_first (filtered_list)) {
+          gtk_container_add (GTK_CONTAINER(self->fingerprint_list), row);
+        } else {
+          gtk_container_add (GTK_CONTAINER(self->fingerprint_device_list), row);
+        }
+      }
+    }
+
+    if (g_list_length (filtered_list) == 1) {
+      gtk_widget_hide (GTK_WIDGET(self->fingerprint_device_list));
+    }
+  }
+
+  g_list_free (key_list);
+  g_list_free (filtered_list);
+}
+
+
+static void
+chatty_settings_dialog_get_fp_list_own (ChattySettingsDialog *self,
+                                        PurpleAccount        *account)
+{
+  void * plugins_handle = purple_plugins_get_handle();
+
+  purple_signal_emit (plugins_handle,
+                      "lurch-fp-list",
+                      account,
+                      get_fp_list_own_cb,
+                      self);
+}
+
+
+static void
 chatty_account_list_clear (ChattySettingsDialog *self,
                            GtkListBox           *list)
 {
@@ -273,7 +346,6 @@ account_list_row_activated_cb (ChattySettingsDialog *self,
                                GtkListBox           *box)
 {
   ChattyManager *manager;
-  chatty_dialog_data_t *chatty_dialog = chatty_get_dialog_data ();
 
   g_assert (CHATTY_IS_SETTINGS_DIALOG (self));
   g_assert (GTK_IS_LIST_BOX_ROW (row));
@@ -308,9 +380,9 @@ account_list_row_activated_cb (ChattySettingsDialog *self,
           PurpleAccount *account;
 
           account = chatty_pp_account_get_account (self->selected_account);
-          gtk_widget_show (GTK_WIDGET (chatty_dialog->omemo.listbox_fp_own));
-          gtk_widget_show (GTK_WIDGET (chatty_dialog->omemo.listbox_fp_own_dev));
-          chatty_lurch_get_fp_list_own (account);
+          gtk_widget_show (GTK_WIDGET (self->fingerprint_list));
+          gtk_widget_show (GTK_WIDGET (self->fingerprint_device_list));
+          chatty_settings_dialog_get_fp_list_own (self, account);
         }
 
       settings_update_account_details (self);
@@ -555,17 +627,11 @@ chatty_settings_dialog_constructed (GObject *object)
 {
   ChattySettingsDialog *self = (ChattySettingsDialog *)object;
   ChattySettings *settings;
-  chatty_dialog_data_t *chatty_dialog;
 
   G_OBJECT_CLASS (chatty_settings_dialog_parent_class)->constructed (object);
 
-  chatty_dialog = chatty_get_dialog_data ();
-
   settings = chatty_settings_get_default ();
   self->settings = g_object_ref (settings);
-
-  chatty_dialog->omemo.listbox_fp_own = GTK_LIST_BOX (self->fingerprint_list);
-  chatty_dialog->omemo.listbox_fp_own_dev = GTK_LIST_BOX (self->fingerprint_device_list);
 
   g_object_bind_property (settings, "message-carbons",
                           self->message_carbons_switch, "active",

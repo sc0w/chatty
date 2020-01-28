@@ -187,7 +187,7 @@ encrypt_fp_list_cb (int         err,
       g_debug ("DeviceId: %i fingerprint:\n%s\n", *((guint32 *) curr_p->data),
                fp ? fp : "(no session)");
 
-      row = chatty_lurch_create_fingerprint_row (fp, *((guint32 *) curr_p->data));
+      row = chatty_utils_create_fingerprint_row (fp, *((guint32 *) curr_p->data));
 
       if (row) {
         gtk_container_add (GTK_CONTAINER(self->listbox_fps), row);
