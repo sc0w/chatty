@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
   <requires lib="gtk+" version="3.16"/>
-  <object class="HdyDialog" id="dialog">
+  <template class="ChattyNewMucDialog" parent="HdyDialog">
     <property name="modal">True</property>
     <property name="can_focus">False</property>
     <property name="default_width">360</property>
@@ -28,6 +28,7 @@
             <property name="label" translatable="yes">Join Chat</property>
             <property name="sensitive">False</property>
             <property name="visible">True</property>
+            <signal name="clicked" handler="button_join_chat_clicked_cb" swapped="yes" />
             <style>
               <class name="suggested-action"/>
             </style>
@@ -92,11 +93,12 @@
                             <property name="can_focus">False</property>
                             <property name="expand">True</property>
                             <child>
-                              <object class="GtkListBox" id="list_select_muc_account">
+                              <object class="GtkListBox" id="list_select_account">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
                                 <property name="expand">True</property>
                                 <property name="selection-mode">none</property>
+                                <signal name="row-activated" handler="account_list_row_activated_cb" swapped="yes"/>
                               </object>
                             </child>
                           </object>
@@ -162,6 +164,7 @@
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="input_purpose">email</property>
+                                <signal name="changed" handler="chat_name_changed_cb" after="yes" swapped="yes"/>
                               </object>
                               <packing>
                                 <property name="left_attach">1</property>
@@ -222,5 +225,5 @@
       <action-widget response="cancel">cancel_button</action-widget>
       <action-widget response="ok">button_join_chat</action-widget>
     </action-widgets>
-  </object>
+  </template>
 </interface>

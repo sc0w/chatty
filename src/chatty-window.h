@@ -29,7 +29,6 @@ typedef struct {
   GtkWidget         *sub_header_icon;
   GtkWidget         *sub_header_label;
 
-  GtkWidget         *dialog_settings;
   GtkWidget         *dialog_new_chat;
   GtkWidget         *dialog_muc_info;
 

@@ -18,6 +18,9 @@
 #include "chatty-purple-init.h"
 #include "chatty-icons.h"
 #include "chatty-popover-actions.h"
+#include "chatty-new-chat-dialog.h"
+#include "chatty-new-muc-dialog.h"
+#include "chatty-user-info-dialog.h"
 
 static chatty_data_t chatty_data;
 
@@ -149,23 +152,6 @@ chatty_new_chat_action (GSimpleAction *action,
 
 
 static void
-chatty_window_show_chat_info (void)
-{
-  ChattyConversation *chatty_conv;
-
-  chatty_data_t *chatty = chatty_get_data ();
-
-  chatty_conv = chatty_conv_container_get_active_chatty_conv (GTK_NOTEBOOK(chatty->pane_view_message_list));
-
-  if (purple_conversation_get_type (chatty_conv->conv) == PURPLE_CONV_TYPE_IM) {
-    chatty_dialogs_show_dialog_user_info (chatty_conv);
-
-  } else if (purple_conversation_get_type (chatty_conv->conv) == PURPLE_CONV_TYPE_CHAT) {
-    gtk_widget_show (GTK_WIDGET(chatty->dialog_muc_info));
-  }
-}
-
-static void
 chatty_window_show_settings_dialog (void)
 {
   GtkWindow *window;
@@ -177,6 +163,68 @@ chatty_window_show_settings_dialog (void)
 
   gtk_widget_destroy (dialog);
 }
+
+
+static void
+chatty_window_show_new_muc_dialog (void)
+{
+  GtkWindow *window;
+  GtkWidget *dialog;
+
+  window = gtk_application_get_active_window (GTK_APPLICATION (g_application_get_default ()));
+  dialog = chatty_new_muc_dialog_new (window);
+  gtk_dialog_run (GTK_DIALOG (dialog));
+
+  gtk_widget_destroy (dialog);
+}
+
+
+static GtkWidget *
+chatty_window_create_new_chat_dialog (void)
+{
+  GtkWindow *window;
+  GtkWidget *dialog;
+
+  window = gtk_application_get_active_window (GTK_APPLICATION (g_application_get_default ()));
+  dialog = chatty_new_chat_dialog_new (window);
+
+  return dialog;
+}
+
+
+static void
+chatty_window_show_user_info_dialog (ChattyConversation *chatty_conv)
+{
+  GtkWindow *window;
+  GtkWidget *dialog;
+
+  g_return_if_fail (chatty_conv != NULL);
+
+  window = gtk_application_get_active_window (GTK_APPLICATION (g_application_get_default ()));
+  dialog = chatty_user_info_dialog_new (window, (gpointer)chatty_conv);
+  gtk_dialog_run (GTK_DIALOG (dialog));
+
+  gtk_widget_destroy (dialog);
+}
+
+
+static void
+chatty_window_show_chat_info (void)
+{
+  ChattyConversation *chatty_conv;
+
+  chatty_data_t *chatty = chatty_get_data ();
+
+  chatty_conv = chatty_conv_container_get_active_chatty_conv (GTK_NOTEBOOK(chatty->pane_view_message_list));
+
+  if (purple_conversation_get_type (chatty_conv->conv) == PURPLE_CONV_TYPE_IM) {
+    chatty_window_show_user_info_dialog (chatty_conv);
+
+  } else if (purple_conversation_get_type (chatty_conv->conv) == PURPLE_CONV_TYPE_CHAT) {
+    gtk_widget_show (GTK_WIDGET(chatty->dialog_muc_info));
+  }
+}
+
 
 void
 chatty_window_change_view (ChattyWindowState view)
@@ -191,7 +239,7 @@ chatty_window_change_view (ChattyWindowState view)
       chatty_dialogs_show_dialog_about_chatty ();
       break;
     case CHATTY_VIEW_JOIN_CHAT:
-      chatty_dialogs_show_dialog_join_muc ();
+      chatty_window_show_new_muc_dialog ();
       break;
     case CHATTY_VIEW_NEW_CHAT:
       gtk_widget_show (GTK_WIDGET(chatty->dialog_new_chat));
@@ -287,7 +335,7 @@ chatty_window_init_data (void)
   chatty->dummy_prefix_radio = gtk_radio_button_new_from_widget (GTK_RADIO_BUTTON (NULL));
 
   // These dialogs need to be created before purple_blist_show()
-  chatty->dialog_new_chat = chatty_dialogs_create_dialog_new_chat ();
+  chatty->dialog_new_chat = chatty_window_create_new_chat_dialog ();
   chatty->dialog_muc_info = chatty_dialogs_create_dialog_muc_info ();
 
   libpurple_init ();

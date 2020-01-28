@@ -37,6 +37,8 @@ src/chatty-purple-request.c
 src/chatty-purple-request.h
 src/chatty-settings-dialog.c
 src/chatty-settings-dialog.h
+src/chatty-new-chat-dialog.c
+src/chatty-new-chat-dialog.h
 src/chatty-settings.c
 src/chatty-settings.h
 src/chatty-utils.c

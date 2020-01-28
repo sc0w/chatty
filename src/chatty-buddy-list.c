@@ -28,6 +28,7 @@
 #include "chatty-dbus.h"
 #define HANDY_USE_UNSTABLE_API
 #include <handy.h>
+#include "chatty-new-chat-dialog.h"
 
 
 static void chatty_blist_new_node (PurpleBlistNode *node);
@@ -154,6 +155,7 @@ cb_search_entry_contacts_changed (GtkSearchEntry *entry,
                                   GtkListBox     *listbox)
 {
   PurpleAccount           *account;
+  GdkPixbuf               *avatar;
   static ChattyContactRow *new_row;
   GList                   *children, *l;
   const gchar             *number;
@@ -177,6 +179,12 @@ cb_search_entry_contacts_changed (GtkSearchEntry *entry,
 
   number = gtk_entry_get_text (GTK_ENTRY(entry));
 
+  avatar = chatty_icon_get_buddy_icon (NULL,
+                                       "+",
+                                       CHATTY_ICON_SIZE_MEDIUM,
+                                       CHATTY_COLOR_GREY,
+                                       FALSE);
+
   if ((num_rows == 0) && !new_row) {
     number_verif = chatty_utils_check_phonenumber (number);
 
@@ -187,7 +195,7 @@ cb_search_entry_contacts_changed (GtkSearchEntry *entry,
         listbox = chatty_get_contacts_list ();
 
         new_row = CHATTY_CONTACT_ROW (chatty_contact_row_new (NULL,
-                                                              NULL,
+                                                              avatar,
                                                               _("Send to"),
                                                               number_verif,
                                                               NULL,
@@ -216,6 +224,10 @@ cb_search_entry_contacts_changed (GtkSearchEntry *entry,
       gtk_widget_destroy (GTK_WIDGET(new_row));
       new_row = NULL;
     }
+  }
+
+  if (avatar) {
+    g_object_unref (avatar);
   }
 
   g_list_free (children);
@@ -1275,19 +1287,25 @@ chatty_blist_create_chat_list (void)
 static void
 chatty_blist_create_contact_list (void)
 {
+  GtkWidget     *container;
   GtkListBox    *listbox;
+  GtkWidget     *search_entry_contacts;
   chatty_data_t *chatty = chatty_get_data ();
 
   listbox = GTK_LIST_BOX (gtk_list_box_new ());
 
+  container = chatty_new_chat_get_list_container (CHATTY_NEW_CHAT_DIALOG(chatty->dialog_new_chat));
+
+  search_entry_contacts = chatty_new_chat_get_search_entry (CHATTY_NEW_CHAT_DIALOG(chatty->dialog_new_chat));
+
   chatty_get_data ()->listbox_contacts = listbox;
 
-  g_signal_connect (chatty->search_entry_contacts,
+  g_signal_connect (search_entry_contacts,
                     "search-changed",
                     G_CALLBACK (cb_search_entry_contacts_changed),
                     listbox);
 
-  gtk_list_box_set_filter_func (GTK_LIST_BOX (listbox), filter_contacts_list_cb, chatty->search_entry_contacts, NULL);
+  gtk_list_box_set_filter_func (GTK_LIST_BOX (listbox), filter_contacts_list_cb, search_entry_contacts, NULL);
   gtk_list_box_set_sort_func (GTK_LIST_BOX (listbox), cb_chatty_blist_sort_contacts, NULL, NULL);
 
   g_signal_connect (listbox,
@@ -1295,8 +1313,8 @@ chatty_blist_create_contact_list (void)
                     G_CALLBACK (row_selected_cb),
                     NULL);
 
-  gtk_box_pack_start (GTK_BOX (chatty->pane_view_new_chat), GTK_WIDGET (listbox), TRUE, TRUE, 0);
-  gtk_widget_show_all (GTK_WIDGET(chatty->pane_view_new_chat));
+  gtk_box_pack_start (GTK_BOX (container), GTK_WIDGET (listbox), TRUE, TRUE, 0);
+  gtk_widget_show_all (GTK_WIDGET(container));
 }
 
 
