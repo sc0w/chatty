@@ -23,13 +23,14 @@
 
 typedef struct
 {
-  gint dummy;
+  ChattyProtocol protocols;
 } ChattyUserPrivate;
 
 G_DEFINE_ABSTRACT_TYPE_WITH_PRIVATE (ChattyUser, chatty_user, G_TYPE_OBJECT)
 
 enum {
   PROP_0,
+  PROP_PROTOCOLS,
   PROP_NAME,
   N_PROPS
 };
@@ -42,6 +43,16 @@ enum {
 
 static GParamSpec *properties[N_PROPS];
 static guint signals[N_SIGNALS];
+
+static ChattyProtocol
+chatty_user_real_get_protocols (ChattyUser *self)
+{
+  ChattyUserPrivate *priv = chatty_user_get_instance_private (self);
+
+  g_assert (CHATTY_IS_USER (self));
+
+  return priv->protocols;
+}
 
 static const char *
 chatty_user_real_get_name (ChattyUser *self)
@@ -106,6 +117,10 @@ chatty_user_get_property (GObject    *object,
 
   switch (prop_id)
     {
+    case PROP_PROTOCOLS:
+      g_value_set_int (value, chatty_user_get_protocols (self));
+      break;
+
     case PROP_NAME:
       g_value_set_string (value, chatty_user_get_name (self));
       break;
@@ -122,9 +137,14 @@ chatty_user_set_property (GObject      *object,
                           GParamSpec   *pspec)
 {
   ChattyUser *self = (ChattyUser *)object;
+  ChattyUserPrivate *priv = chatty_user_get_instance_private (self);
 
   switch (prop_id)
     {
+    case PROP_PROTOCOLS:
+      priv->protocols = g_value_get_int (value);
+      break;
+
     case PROP_NAME:
       chatty_user_set_name (self, g_value_get_string (value));
       break;
@@ -142,6 +162,7 @@ chatty_user_class_init (ChattyUserClass *klass)
   object_class->get_property = chatty_user_get_property;
   object_class->set_property = chatty_user_set_property;
 
+  klass->get_protocols = chatty_user_real_get_protocols;
   klass->get_name = chatty_user_real_get_name;
   klass->set_name = chatty_user_real_set_name;
   klass->get_avatar = chatty_user_real_get_avatar;
@@ -159,6 +180,21 @@ chatty_user_class_init (ChattyUserClass *klass)
                          "The name of the User",
                          "",
                          G_PARAM_READWRITE | G_PARAM_EXPLICIT_NOTIFY | G_PARAM_STATIC_STRINGS);
+
+  /**
+   * ChattyUser:protocols:
+   *
+   * Protocols supported by the User.  A user may
+   * support more than one protocol.
+   */
+  properties[PROP_PROTOCOLS] =
+    g_param_spec_int ("protocols",
+                      "Protocols",
+                      "Protocols supported by user",
+                      CHATTY_PROTOCOL_NONE,
+                      CHATTY_PROTOCOL_TELEGRAM,
+                      CHATTY_PROTOCOL_NONE,
+                      G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY | G_PARAM_STATIC_STRINGS);
 
   g_object_class_install_properties (object_class, N_PROPS, properties);
 
@@ -194,6 +230,24 @@ chatty_user_class_init (ChattyUserClass *klass)
 static void
 chatty_user_init (ChattyUser *self)
 {
+}
+
+/**
+ * chatty_user_get_protocols:
+ * @self: a #ChattyUser
+ *
+ * Get the protocols supported/implemented by @self.
+ * There can be more than one protocol supported by
+ * @self.
+ *
+ * Returns: %ChattyProtocol flag
+ */
+ChattyProtocol
+chatty_user_get_protocols (ChattyUser *self)
+{
+  g_return_val_if_fail (CHATTY_IS_USER (self), CHATTY_PROTOCOL_NONE);
+
+  return CHATTY_USER_GET_CLASS (self)->get_protocols (self);
 }
 
 /**

@@ -111,7 +111,7 @@ chatty_manager_enable_sms_account (ChattyManager *self)
   if (purple_accounts_find ("SMS", "prpl-mm-sms"))
     return;
 
-  account = chatty_pp_account_new_sms ("SMS");
+  account = chatty_pp_account_new (CHATTY_PROTOCOL_SMS, "SMS", NULL);
   chatty_pp_account_save (account);
 }
 

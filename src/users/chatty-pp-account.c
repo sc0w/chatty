@@ -37,12 +37,13 @@ struct _ChattyPpAccount
   ChattyAccount   parent_instance;
 
   gchar          *username;
-  gchar          *protocol_id;
+  gchar          *server_url;
 
   PurpleAccount  *pp_account;
   PurpleStoredImage *pp_avatar;
   GdkPixbuf         *avatar;
   guint           connect_id;
+  ChattyProtocol  protocol;
 };
 
 G_DEFINE_TYPE (ChattyPpAccount, chatty_pp_account, CHATTY_TYPE_ACCOUNT)
@@ -50,7 +51,7 @@ G_DEFINE_TYPE (ChattyPpAccount, chatty_pp_account, CHATTY_TYPE_ACCOUNT)
 enum {
   PROP_0,
   PROP_USERNAME,
-  PROP_PROTOCOL_ID,
+  PROP_SERVER_URL,
   PROP_PURPLE_ACCOUNT,
   N_PROPS
 };
@@ -120,6 +121,81 @@ account_connect (ChattyPpAccount *self)
   return G_SOURCE_REMOVE;
 }
 
+static void
+chatty_pp_account_create (ChattyPpAccount *self)
+{
+  const char *protocol_id;
+  ChattyProtocol protocol;
+
+  g_assert (CHATTY_IS_PP_ACCOUNT (self));
+
+  protocol = chatty_user_get_protocols (CHATTY_USER (self));
+
+  if (protocol == CHATTY_PROTOCOL_XMPP)
+    protocol_id = "prpl-jabber";
+  else if (protocol == CHATTY_PROTOCOL_MATRIX)
+    protocol_id = "prpl-matrix";
+  else if (protocol == CHATTY_PROTOCOL_SMS)
+    protocol_id = "prpl-mm-sms";
+  else if (protocol == CHATTY_PROTOCOL_TELEGRAM)
+    protocol_id = "prpl-telegram";
+
+  if (protocol == CHATTY_PROTOCOL_XMPP)
+    {
+      g_autofree gchar *username = NULL;
+      const char *url_prefix = NULL;
+
+      if (!strchr (self->username, '@'))
+        url_prefix = "@";
+
+      if (url_prefix &&
+          !(self->server_url && *self->server_url))
+        g_return_if_reached ();
+
+      username = self->username;
+      self->username = g_strconcat (username, url_prefix, self->server_url, NULL);
+    }
+
+    self->pp_account = purple_account_new (self->username, protocol_id);
+
+    if (protocol == CHATTY_PROTOCOL_MATRIX)
+      {
+        purple_account_set_string (self->pp_account, "home_server", self->server_url);
+      }
+    else if (protocol == CHATTY_PROTOCOL_SMS)
+      {
+        purple_account_set_password (self->pp_account, NULL);
+        purple_account_set_remember_password (self->pp_account, TRUE);
+      }
+}
+
+static void
+chatty_pp_load_protocol (ChattyPpAccount *self)
+{
+  const char *protocol_id = NULL;
+  ChattyProtocol protocol = CHATTY_PROTOCOL_NONE;
+
+  g_assert (CHATTY_IS_PP_ACCOUNT (self));
+  g_assert (self->pp_account);
+
+  protocol_id = purple_account_get_protocol_id (self->pp_account);
+
+  if (g_strcmp0 (protocol_id, "prpl-jabber"))
+    protocol = CHATTY_PROTOCOL_XMPP;
+  else if (g_strcmp0 (protocol_id, "prpl-matrix"))
+    protocol = CHATTY_PROTOCOL_MATRIX;
+  else if (g_strcmp0 (protocol_id, "prpl-mm-sms"))
+    protocol = CHATTY_PROTOCOL_SMS;
+  else if (g_strcmp0 (protocol_id, "prpl-telegram"))
+    protocol = CHATTY_PROTOCOL_TELEGRAM;
+  else if (g_strcmp0 (protocol_id, "prpl-delta"))
+    protocol = CHATTY_PROTOCOL_DELTA;
+  else if (g_strcmp0 (protocol_id, "prpl-threepl"))
+    protocol = CHATTY_PROTOCOL_THREEPL;
+
+  self->protocol = protocol;
+}
+
 static ChattyStatus
 chatty_pp_account_get_status (ChattyAccount *account)
 {
@@ -171,13 +247,13 @@ chatty_pp_account_set_password (ChattyAccount *account,
                                 const char    *password)
 {
   ChattyPpAccount *self = (ChattyPpAccount *)account;
-  const char *id;
+  ChattyProtocol protocol;
 
   g_assert (CHATTY_IS_PP_ACCOUNT (self));
 
-  id = chatty_pp_account_get_protocol_id (self);
+  protocol = chatty_user_get_protocols (CHATTY_USER (account));
 
-  if (g_str_equal (id, "prpl-telegram"))
+  if (protocol == CHATTY_PROTOCOL_TELEGRAM)
     purple_account_set_string (self->pp_account, "password-two-factor", password);
   else
     purple_account_set_password (self->pp_account, password);
@@ -202,6 +278,19 @@ chatty_pp_account_get_remember_password (ChattyAccount *account)
   g_assert (CHATTY_IS_PP_ACCOUNT (self));
 
   return purple_account_get_remember_password (self->pp_account);
+}
+
+static ChattyProtocol
+chatty_pp_account_get_protocols (ChattyUser *user)
+{
+  ChattyPpAccount *self = (ChattyPpAccount *)user;
+
+  g_assert (CHATTY_IS_PP_ACCOUNT (self));
+
+  if (self->protocol != CHATTY_PROTOCOL_NONE)
+    return self->protocol;
+
+  return CHATTY_USER_CLASS (chatty_pp_account_parent_class)->get_protocols (user);
 }
 
 static const char *
@@ -304,7 +393,7 @@ chatty_pp_account_set_avatar_async (ChattyUser          *user,
   task = g_task_new (self, cancellable, callback, user_data);
   g_task_set_source_tag (task, chatty_user_set_avatar_async);
 
-  protocol_id = chatty_pp_account_get_protocol_id (self);
+  protocol_id = purple_account_get_protocol_id (self->pp_account);
   prpl_info = PURPLE_PLUGIN_PROTOCOL_INFO (purple_find_prpl (protocol_id));
   width  = prpl_info->icon_spec.max_width;
   height = prpl_info->icon_spec.max_height;
@@ -339,8 +428,8 @@ chatty_pp_account_set_property (GObject      *object,
       self->username = g_value_dup_string (value);
       break;
 
-    case PROP_PROTOCOL_ID:
-      self->protocol_id = g_value_dup_string (value);
+    case PROP_SERVER_URL:
+      self->server_url = g_value_dup_string (value);
       break;
 
     case PROP_PURPLE_ACCOUNT:
@@ -360,7 +449,9 @@ chatty_pp_account_constructed (GObject *object)
   G_OBJECT_CLASS (chatty_pp_account_parent_class)->constructed (object);
 
   if (!self->pp_account)
-    self->pp_account = purple_account_new (self->username, self->protocol_id);
+    chatty_pp_account_create (self);
+  else
+    chatty_pp_load_protocol (self);
 }
 
 static void
@@ -375,7 +466,7 @@ chatty_pp_account_finalize (GObject *object)
 
   g_clear_object (&self->avatar);
   g_free (self->username);
-  g_free (self->protocol_id);
+  g_free (self->server_url);
 
   G_OBJECT_CLASS (chatty_pp_account_parent_class)->finalize (object);
 }
@@ -391,6 +482,7 @@ chatty_pp_account_class_init (ChattyPpAccountClass *klass)
   object_class->constructed = chatty_pp_account_constructed;
   object_class->finalize = chatty_pp_account_finalize;
 
+  user_class->get_protocols = chatty_pp_account_get_protocols;
   user_class->get_name = chatty_pp_account_get_name;
   user_class->set_name = chatty_pp_account_set_name;
   user_class->get_avatar = chatty_pp_account_get_avatar;
@@ -411,10 +503,10 @@ chatty_pp_account_class_init (ChattyPpAccountClass *klass)
                          NULL,
                          G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY | G_PARAM_STATIC_STRINGS);
 
-  properties[PROP_PROTOCOL_ID] =
-    g_param_spec_string ("protocol-id",
-                         "Protocol ID",
-                         "the Protocol ID of the Purple account",
+  properties[PROP_SERVER_URL] =
+    g_param_spec_string ("server-url",
+                         "Server URL",
+                         "The Server URL of the Purple account",
                          NULL,
                          G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY | G_PARAM_STATIC_STRINGS);
 
@@ -434,15 +526,20 @@ chatty_pp_account_init (ChattyPpAccount *self)
 
 
 ChattyPpAccount *
-chatty_pp_account_new (const char *username,
-                       const char *protocol_id)
+chatty_pp_account_new (ChattyProtocol  protocol,
+                       const char     *username,
+                       const char     *server_url)
 {
-  g_return_val_if_fail (username || *username, NULL);
-  g_return_val_if_fail (protocol_id || *protocol_id, NULL);
+  g_return_val_if_fail (protocol & (CHATTY_PROTOCOL_SMS |
+                                    CHATTY_PROTOCOL_XMPP |
+                                    CHATTY_PROTOCOL_MATRIX |
+                                    CHATTY_PROTOCOL_TELEGRAM), NULL);
+  g_return_val_if_fail (username && *username, NULL);
 
   return g_object_new (CHATTY_TYPE_PP_ACCOUNT,
+                       "protocols", protocol,
                        "username", username,
-                       "protocol-id", protocol_id,
+                       "server-url", server_url,
                        NULL);
 }
 
@@ -454,66 +551,6 @@ chatty_pp_account_new_purple (PurpleAccount *account)
   return g_object_new (CHATTY_TYPE_PP_ACCOUNT,
                        "purple-account", account,
                        NULL);
-}
-
-ChattyPpAccount *
-chatty_pp_account_new_xmpp (const char *username,
-                            const char *server_url)
-{
-  g_autofree char *name = NULL;
-  const gchar *url_prefix = NULL;
-
-  g_return_val_if_fail (username && *username, NULL);
-
-  if (!strchr (username, '@'))
-    url_prefix = "@";
-
-  if (url_prefix &&
-      !(server_url && *server_url))
-      g_return_val_if_reached (NULL);
-
-  /* If username includes ‘@’ server_url is ignored */
-  name = g_strconcat (username, url_prefix, server_url, NULL);
-
-  return chatty_pp_account_new (name, "prpl-jabber");
-}
-
-ChattyPpAccount *
-chatty_pp_account_new_matrix (const char *username,
-                              const char *server_url)
-{
-  ChattyPpAccount *self;
-
-  g_return_val_if_fail (username && *username, NULL);
-  g_return_val_if_fail (server_url && *server_url, NULL);
-
-  self = chatty_pp_account_new (username, "prpl-matrix");
-  purple_account_set_string (self->pp_account, "home_server", server_url);
-
-  return self;
-}
-
-ChattyPpAccount *
-chatty_pp_account_new_telegram (const char *username)
-{
-  g_return_val_if_fail (username && *username, NULL);
-
-  return chatty_pp_account_new (username, "prpl-telegram");
-}
-
-ChattyPpAccount *
-chatty_pp_account_new_sms (const char *username)
-{
-  ChattyPpAccount *self;
-
-  g_return_val_if_fail (username && *username, NULL);
-
-  self = chatty_pp_account_new (username, "prpl-mm-sms");
-
-  chatty_account_set_password (CHATTY_ACCOUNT (self), NULL);
-  chatty_account_set_remember_password (CHATTY_ACCOUNT (self), TRUE);
-
-  return self;
 }
 
 /**
