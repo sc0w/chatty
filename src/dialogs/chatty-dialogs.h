@@ -22,11 +22,6 @@ typedef struct {
   GtkEntry   *entry_name;
   GtkEntry   *entry_invite_name;
   GtkEntry   *entry_invite_msg;
-
-  struct {
-    GtkListBox *listbox_fp_own;
-    GtkListBox *listbox_fp_own_dev;
-  } omemo;
 } chatty_dialog_data_t;
 
 chatty_dialog_data_t *chatty_get_dialog_data(void);

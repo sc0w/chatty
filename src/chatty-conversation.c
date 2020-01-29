@@ -11,7 +11,6 @@
 #include "chatty-window.h"
 #include "chatty-manager.h"
 #include "chatty-icons.h"
-#include "chatty-lurch.h"
 #include "chatty-buddy-list.h"
 #include "chatty-purple-init.h"
 #include "chatty-message-list.h"
@@ -1158,6 +1157,70 @@ cb_scroll_top(ChattyMsgList *sender,
               gpointer       data)
 {
   chatty_conv_add_message_history_to_conv(data);
+}
+
+
+static void
+cb_get_encrypt_status (int      err,
+                       int      status,
+                       gpointer user_data)
+{
+  PurpleConversation *conv = (PurpleConversation *) user_data;
+  ChattyConversation *chatty_conv;
+  GtkStyleContext    *sc;
+
+  if (err) {
+    g_debug ("Failed to get the OMEMO status.");
+    return;
+  }
+
+  chatty_conv = CHATTY_CONVERSATION(conv);
+
+  sc = gtk_widget_get_style_context (GTK_WIDGET(chatty_conv->omemo.symbol_encrypt));
+
+  switch (status) {
+    case LURCH_STATUS_NO_SESSION:
+      chatty_conv->omemo.enabled = FALSE;
+      break;
+    case LURCH_STATUS_OK:
+      chatty_conv->omemo.enabled = TRUE;
+      break;
+    default:
+      ;
+  }
+
+  gtk_image_set_from_icon_name (chatty_conv->omemo.symbol_encrypt,
+                                chatty_conv->omemo.enabled ? "changes-prevent-symbolic" :
+                                                             "changes-allow-symbolic",
+                                1);
+
+  gtk_style_context_remove_class (sc, chatty_conv->omemo.enabled ? "unencrypt" : "encrypt");
+  gtk_style_context_add_class (sc, chatty_conv->omemo.enabled ? "encrypt" : "unencrypt");
+
+  chatty_conv->omemo.status = status;
+}
+
+
+static void
+chatty_conv_get_encrypt_status (PurpleConversation *conv)
+{
+  PurpleAccount          *account;
+  PurpleConversationType  type;
+  const char             *name;
+
+  account = purple_conversation_get_account (conv);
+  type = purple_conversation_get_type (conv);
+  name = purple_conversation_get_name (conv);
+
+  if (type == PURPLE_CONV_TYPE_IM) {
+    g_autofree char *stripped = chatty_utils_jabber_id_strip (name);
+    purple_signal_emit (purple_plugins_get_handle(),
+                        "lurch-status-im",
+                        account,
+                        stripped,
+                        cb_get_encrypt_status,
+                        conv);
+  }
 }
 
 
@@ -2702,7 +2765,7 @@ chatty_conv_setup_pane (ChattyConversation *chatty_conv,
 
   if (type == PURPLE_CONV_TYPE_IM) {
     gtk_widget_show (GTK_WIDGET(chatty_conv->omemo.symbol_encrypt));
-    chatty_lurch_get_status (chatty_conv->conv);
+    chatty_conv_get_encrypt_status (chatty_conv->conv);
   }
 
   vadjust = gtk_scrolled_window_get_vadjustment (GTK_SCROLLED_WINDOW(scrolled));

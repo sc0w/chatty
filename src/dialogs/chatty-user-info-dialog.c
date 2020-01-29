@@ -19,7 +19,6 @@
 #include "chatty-buddy-list.h"
 #include "chatty-conversation.h"
 #include "chatty-icons.h"
-#include "chatty-lurch.h"
 #include "chatty-purple-init.h"
 #include "chatty-user-info-dialog.h"
 
@@ -187,7 +186,7 @@ encrypt_fp_list_cb (int         err,
       g_debug ("DeviceId: %i fingerprint:\n%s\n", *((guint32 *) curr_p->data),
                fp ? fp : "(no session)");
 
-      row = chatty_lurch_create_fingerprint_row (fp, *((guint32 *) curr_p->data));
+      row = chatty_utils_create_fingerprint_row (fp, *((guint32 *) curr_p->data));
 
       if (row) {
         gtk_container_add (GTK_CONTAINER(self->listbox_fps), row);
