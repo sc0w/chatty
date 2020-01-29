@@ -45,6 +45,14 @@ chatty_account_real_get_status (ChattyAccount *self)
   return CHATTY_DISCONNECTED;
 }
 
+static GListModel *
+chatty_account_real_get_buddies (ChattyAccount *self)
+{
+  g_assert (CHATTY_IS_ACCOUNT (self));
+
+  return NULL;
+}
+
 static gboolean
 chatty_account_real_get_enabled (ChattyAccount *self)
 {
@@ -147,6 +155,7 @@ chatty_account_class_init (ChattyAccountClass *klass)
   object_class->set_property = chatty_account_set_property;
 
   klass->get_status   = chatty_account_real_get_status;
+  klass->get_buddies  = chatty_account_real_get_buddies;
   klass->get_enabled  = chatty_account_real_get_enabled;
   klass->set_enabled  = chatty_account_real_set_enabled;
   klass->get_password = chatty_account_real_get_password;
@@ -192,6 +201,14 @@ chatty_account_get_status (ChattyAccount *self)
   g_return_val_if_fail (CHATTY_IS_ACCOUNT (self), CHATTY_DISCONNECTED);
 
   return CHATTY_ACCOUNT_GET_CLASS (self)->get_status (self);
+}
+
+GListModel *
+chatty_account_get_buddies (ChattyAccount *self)
+{
+  g_return_val_if_fail (CHATTY_IS_ACCOUNT (self), NULL);
+
+  return CHATTY_ACCOUNT_GET_CLASS (self)->get_buddies (self);
 }
 
 gboolean
