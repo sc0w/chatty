@@ -38,6 +38,7 @@ struct _ChattyPpAccount
 
   gchar          *username;
   gchar          *server_url;
+  GListStore     *buddy_list;
 
   PurpleAccount  *pp_account;
   PurpleStoredImage *pp_avatar;
@@ -464,6 +465,7 @@ chatty_pp_account_finalize (GObject *object)
   if (self->pp_avatar)
     purple_imgstore_unref (self->pp_avatar);
 
+  g_clear_object (&self->buddy_list);
   g_clear_object (&self->avatar);
   g_free (self->username);
   g_free (self->server_url);
@@ -522,6 +524,7 @@ chatty_pp_account_class_init (ChattyPpAccountClass *klass)
 static void
 chatty_pp_account_init (ChattyPpAccount *self)
 {
+  self->buddy_list = g_list_store_new (CHATTY_TYPE_PP_BUDDY);
 }
 
 
@@ -551,6 +554,45 @@ chatty_pp_account_new_purple (PurpleAccount *account)
   return g_object_new (CHATTY_TYPE_PP_ACCOUNT,
                        "purple-account", account,
                        NULL);
+}
+
+ChattyPpBuddy *
+chatty_pp_account_add_buddy (ChattyPpAccount *self,
+                             const char      *username,
+                             const char      *name)
+{
+  g_autoptr(ChattyPpBuddy) buddy = NULL;
+
+  g_return_val_if_fail (CHATTY_IS_PP_ACCOUNT (self), NULL);
+  g_return_val_if_fail (username && *username, NULL);
+
+  buddy = g_object_new (CHATTY_TYPE_PP_BUDDY,
+                        "purple-account", self->pp_account,
+                        "username", username,
+                        "name", name,
+                        NULL);
+
+  g_list_store_append (self->buddy_list, buddy);
+
+  return buddy;
+}
+
+ChattyPpBuddy *
+chatty_pp_account_add_purple_buddy (ChattyPpAccount *self,
+                                    PurpleBuddy     *pp_buddy)
+{
+  g_autoptr(ChattyPpBuddy) buddy = NULL;
+
+  g_return_val_if_fail (CHATTY_IS_PP_ACCOUNT (self), NULL);
+  g_return_val_if_fail (CHATTY_IS_PP_BUDDY (buddy), NULL);
+
+  buddy = g_object_new (CHATTY_TYPE_PP_BUDDY,
+                        "purple-buddy", pp_buddy,
+                        NULL);
+
+  g_list_store_append (self->buddy_list, buddy);
+
+  return buddy;
 }
 
 /**
