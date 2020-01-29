@@ -100,7 +100,7 @@ button_add_contact_clicked_cb (ChattyNewChatDialog *self)
   who = g_strdup (gtk_entry_get_text (GTK_ENTRY(self->entry_contact_name)));
   alias = gtk_entry_get_text (GTK_ENTRY(self->entry_contact_alias));
 
-  chatty_blist_add_buddy (account, who, alias);
+  chatty_pp_account_add_buddy (self->selected_account, who, alias);
   chatty_conv_im_with_buddy (account, g_strdup (who));
 
   gtk_widget_hide (GTK_WIDGET(self));
