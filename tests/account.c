@@ -109,7 +109,9 @@ test_new_account (void)
   g_assert_nonnull (pp_account);
 
   g_object_unref (account);
+  purple_account_destroy (pp_account);
 
+  pp_account = purple_account_new ("xmpp@example.com", "prpl-jabber");
   account = chatty_pp_account_new_purple (pp_account);
   g_assert (CHATTY_IS_PP_ACCOUNT (account));
 
@@ -117,6 +119,7 @@ test_new_account (void)
   g_assert_cmpstr (str, ==, "prpl-jabber");
 
   g_object_unref (account);
+  purple_account_destroy (pp_account);
 }
 
 int

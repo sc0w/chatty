@@ -122,9 +122,14 @@ manager_account_added_cb (PurpleAccount *pp_account,
   g_autoptr(ChattyPpAccount) account = NULL;
 
   g_assert (CHATTY_IS_MANAGER (self));
-  g_return_if_fail (!chatty_pp_account_find (pp_account));
 
-  account = chatty_pp_account_new_purple (pp_account);
+  account = chatty_pp_account_get_object (pp_account);
+
+  if (account)
+    g_object_ref (account);
+  else
+    account = chatty_pp_account_new_purple (pp_account);
+
   g_object_notify (G_OBJECT (account), "status");
   g_list_store_append (self->account_list, account);
 
@@ -144,7 +149,7 @@ manager_account_removed_cb (PurpleAccount *pp_account,
   g_assert (CHATTY_IS_MANAGER (self));
 
   /* account should exist in the store */
-  account = chatty_pp_account_find (pp_account);
+  account = chatty_pp_account_get_object (pp_account);
   g_return_if_fail (account);
 
   g_object_notify (G_OBJECT (account), "status");
@@ -158,7 +163,7 @@ manager_account_changed_cb (PurpleAccount *pp_account,
 {
   ChattyPpAccount *account;
 
-  account = chatty_pp_account_find (pp_account);
+  account = chatty_pp_account_get_object (pp_account);
   g_return_if_fail (account);
 
   g_object_notify (G_OBJECT (account), "enabled");
@@ -175,7 +180,7 @@ manager_account_connection_failed_cb (PurpleAccount         *pp_account,
   g_assert (CHATTY_IS_MANAGER (self));
 
   /* account should exist in the store */
-  account = chatty_pp_account_find (pp_account);
+  account = chatty_pp_account_get_object (pp_account);
   g_return_if_fail (account);
 
   if (error == PURPLE_CONNECTION_ERROR_NETWORK_ERROR &&
@@ -193,7 +198,7 @@ manager_connection_changed_cb (PurpleConnection *gc,
   g_assert (CHATTY_IS_MANAGER (self));
 
   pp_account = purple_connection_get_account (gc);
-  account = chatty_pp_account_find (pp_account);
+  account = chatty_pp_account_get_object (pp_account);
 
   if (account)
     g_object_notify (G_OBJECT (account), "status");
@@ -208,7 +213,7 @@ manager_sms_modem_added_cb (gint status)
   PurpleAccount   *pp_account;
 
   pp_account = purple_accounts_find ("SMS", "prpl-mm-sms");
-  account = chatty_pp_account_find (pp_account);
+  account = chatty_pp_account_get_object (pp_account);
   g_return_if_fail (CHATTY_IS_PP_ACCOUNT (account));
 
   chatty_pp_account_connect (account, TRUE);

@@ -210,7 +210,7 @@ static void
 chatty_settings_add_clicked_cb (ChattySettingsDialog *self)
 {
   ChattyManager *manager;
-  ChattyPpAccount *account;
+  g_autoptr (ChattyPpAccount) account = NULL;
   const char *user_id, *password, *server_url;
   gboolean is_matrix, is_telegram;
 

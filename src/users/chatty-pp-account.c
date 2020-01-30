@@ -452,6 +452,9 @@ chatty_pp_account_constructed (GObject *object)
     chatty_pp_account_create (self);
   else
     chatty_pp_load_protocol (self);
+
+  /* HACK: ‘ui_data’ is unused.  Let’s use it, but for a different purpose */
+  self->pp_account->ui_data = self;
 }
 
 static void
@@ -524,6 +527,22 @@ chatty_pp_account_init (ChattyPpAccount *self)
 {
 }
 
+/**
+ * chatty_pp_account_get_object:
+ * @account: A #PurpleAccount
+ *
+ * Get the #ChattyPpAccount associated with @account.
+ *
+ * Returns: (transfer none) (nullable): A #ChattyPpAccount.
+ */
+ChattyPpAccount *
+chatty_pp_account_get_object (PurpleAccount *account)
+{
+  g_return_val_if_fail (account, NULL);
+
+  /* HACK: ‘ui_data’ is used to store the associated GObject */
+  return account->ui_data;
+}
 
 ChattyPpAccount *
 chatty_pp_account_new (ChattyProtocol  protocol,
@@ -547,6 +566,7 @@ ChattyPpAccount *
 chatty_pp_account_new_purple (PurpleAccount *account)
 {
   g_return_val_if_fail (account, NULL);
+  g_return_val_if_fail (!account->ui_data, NULL);
 
   return g_object_new (CHATTY_TYPE_PP_ACCOUNT,
                        "purple-account", account,

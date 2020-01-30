@@ -316,33 +316,6 @@ chatty_utils_get_item_position (GListModel *list,
 }
 
 /* XXX: a helper API till the dust settles */
-ChattyPpAccount *
-chatty_pp_account_find (PurpleAccount *account)
-{
-  PurpleAccount *pp_account;
-  GListModel *model;
-  guint n_items;
-
-  g_return_val_if_fail (account, NULL);
-
-  model = chatty_manager_get_accounts (chatty_manager_get_default ());
-  n_items = g_list_model_get_n_items (model);
-
-  for (guint i = 0; i < n_items; i++)
-    {
-      g_autoptr(ChattyPpAccount) object = NULL;
-
-      object = g_list_model_get_item (model, i);
-      pp_account = chatty_pp_account_get_account (object);
-
-      if (pp_account == account)
-        return object;
-    }
-
-  return NULL;
-}
-
-/* XXX: a helper API till the dust settles */
 gboolean
 chatty_pp_account_remove (ChattyPpAccount *self)
 {
