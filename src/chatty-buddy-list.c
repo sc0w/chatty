@@ -1030,58 +1030,6 @@ chatty_blist_chat_list_remove_buddy (void)
 
 
 /**
- * chatty_blist_add_buddy:
- *
- * @account: a PurpleAccount
- *
- * Add a buddy to the chat list
- *
- */
-void
-chatty_blist_add_buddy (PurpleAccount *account,
-                        const char    *who,
-                        const char    *whoalias)
-{
-  PurpleBuddy        *buddy;
-  PurpleConversation *conv;
-  PurpleBuddyIcon    *icon;
-  const char         *folks_id;
-
-  if (*whoalias == '\0') {
-    whoalias = NULL;
-  }
-
-  buddy = purple_buddy_new (account, who, whoalias);
-
-  purple_blist_add_buddy (buddy, NULL, NULL, NULL);
-
-  g_debug ("chatty_blist_add_buddy: %s ", purple_buddy_get_name (buddy));
-
-  if (chatty_blist_protocol_is_sms (account)) {
-    folks_id = chatty_folks_has_individual_with_phonenumber (who);
-
-    if (folks_id) {
-      chatty_folks_set_purple_buddy_data (folks_id, account, who);
-    }
-  } else {
-    purple_account_add_buddy_with_invite (account, buddy, NULL);
-  }
-
-  conv = purple_find_conversation_with_account (PURPLE_CONV_TYPE_IM,
-                                                who,
-                                                account);
-
-  if (conv != NULL) {
-    icon = purple_conv_im_get_icon (PURPLE_CONV_IM(conv));
-
-    if (icon != NULL) {
-      purple_buddy_icon_update (icon);
-    }
-  }
-}
-
-
-/**
  * chatty_blist_returned_from_chat:
  *
  * Clears 'selected_node' which is evaluated to
