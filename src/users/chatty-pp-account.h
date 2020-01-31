@@ -25,6 +25,7 @@ G_BEGIN_DECLS
 
 G_DECLARE_FINAL_TYPE (ChattyPpAccount, chatty_pp_account, CHATTY, PP_ACCOUNT, ChattyAccount)
 
+ChattyPpAccount *chatty_pp_account_get_object         (PurpleAccount   *account);
 ChattyPpAccount *chatty_pp_account_new                (ChattyProtocol   protocol,
                                                        const char      *username,
                                                        const char      *server_url);

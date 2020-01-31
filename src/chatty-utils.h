@@ -31,7 +31,6 @@ char *chatty_utils_time_ago_in_words (time_t time_stamp, ChattyTimeAgoFlags flag
 gboolean chatty_utils_get_item_position (GListModel *list,
                                          gpointer    item,
                                          guint      *position);
-ChattyPpAccount *chatty_pp_account_find (PurpleAccount *account);
 gboolean       chatty_pp_account_remove (ChattyPpAccount *self);
 GtkWidget* chatty_utils_create_fingerprint_row (const char *fp, guint id);
 

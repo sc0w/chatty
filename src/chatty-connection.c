@@ -40,7 +40,7 @@ chatty_connection_update_ui (void)
   for (accounts = purple_accounts_get_all (); accounts != NULL; accounts = accounts->next) {
     ChattyPpAccount *account;
 
-    account = chatty_pp_account_find (accounts->data);
+    account = chatty_pp_account_get_object (accounts->data);
 
     /* The account should exist */
     if (!CHATTY_IS_PP_ACCOUNT (account))
@@ -103,7 +103,7 @@ chatty_connection_connected (PurpleConnection *gc)
   chatty_data_t *chatty = chatty_get_data ();
 
   account = purple_connection_get_account (gc);
-  pp_account = chatty_pp_account_find (account);
+  pp_account = chatty_pp_account_get_object (account);
   g_return_if_fail (CHATTY_IS_PP_ACCOUNT (pp_account));
 
   if (chatty_pp_account_is_sms (pp_account))
@@ -144,7 +144,7 @@ chatty_connection_report_disconnect_reason (PurpleConnection     *gc,
   const char       *protocol_id;
 
   account = purple_connection_get_account (gc);
-  pp_account = chatty_pp_account_find (account);
+  pp_account = chatty_pp_account_get_object (account);
   g_return_if_fail (CHATTY_IS_PP_ACCOUNT (pp_account));
 
   user_name = chatty_pp_account_get_username (pp_account);

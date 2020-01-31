@@ -277,7 +277,7 @@ chatty_new_chat_populate_account_list (ChattyNewChatDialog *self)
     ChattyPpAccount *pp_account;
     ret = TRUE;
 
-    pp_account = chatty_pp_account_find (l->data);
+    pp_account = chatty_pp_account_get_object (l->data);
 
     chatty_new_chat_add_account_to_list (self, pp_account);
   }
