@@ -2432,10 +2432,6 @@ chatty_conv_add_history_since_component (GHashTable *components,
 }
 
 
-
-
-
-
 /**
  * chatty_conv_join_chat:
  * @chat: a PurpleChat
