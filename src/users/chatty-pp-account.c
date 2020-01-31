@@ -454,7 +454,13 @@ chatty_pp_account_constructed (GObject *object)
   else
     chatty_pp_load_protocol (self);
 
-  /* HACK: ‘ui_data’ is unused.  Let’s use it, but for a different purpose */
+  /*
+   * ‘ui_data’ is a field provided by libpurple to be used by UI.
+   * It is never used by libpurple core.
+   * See: https://web.archive.org/web/20160104101051/https://pidgin.im/pipermail/devel/2011-October/021972.html
+   *
+   * As it’s used here, ‘ui_data’ shouldn’t be used elsewhere in UI.
+   */
   self->pp_account->ui_data = self;
 }
 
@@ -543,7 +549,13 @@ chatty_pp_account_get_object (PurpleAccount *account)
 {
   g_return_val_if_fail (account, NULL);
 
-  /* HACK: ‘ui_data’ is used to store the associated GObject */
+  /*
+   * ‘ui_data’ is a field provided by libpurple to be used by UI.
+   * It is never used by libpurple core.
+   * See: https://web.archive.org/web/20160104101051/https://pidgin.im/pipermail/devel/2011-October/021972.html
+   *
+   * As it’s used here, ‘ui_data’ shouldn’t be used elsewhere in UI.
+   */
   return account->ui_data;
 }
 
