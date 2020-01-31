@@ -12,21 +12,7 @@
 #include <purple.h>
 #include "chatty-conversation.h"
 
-typedef struct {
-  GtkStack   *stack_panes_muc_info;
-  GtkLabel   *label_libremone_hint;
-  GtkWidget  *box_topic_frame;
-  GtkWidget  *textview_muc_topic;
-  const char *current_topic;
-  const char *new_topic;
-  GtkEntry   *entry_name;
-  GtkEntry   *entry_invite_name;
-  GtkEntry   *entry_invite_msg;
-} chatty_dialog_data_t;
 
-chatty_dialog_data_t *chatty_get_dialog_data(void);
-
-GtkWidget *chatty_dialogs_create_dialog_muc_info (void);
 char *chatty_dialogs_show_dialog_load_avatar (void);
 void chatty_dialogs_show_dialog_about_chatty (void);
 

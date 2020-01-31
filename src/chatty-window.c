@@ -21,6 +21,7 @@
 #include "dialogs/chatty-new-chat-dialog.h"
 #include "dialogs/chatty-new-muc-dialog.h"
 #include "dialogs/chatty-user-info-dialog.h"
+#include "dialogs/chatty-muc-info-dialog.h"
 
 static chatty_data_t chatty_data;
 
@@ -209,6 +210,22 @@ chatty_window_show_user_info_dialog (ChattyConversation *chatty_conv)
 
 
 static void
+chatty_window_show_muc_info_dialog (ChattyConversation *chatty_conv)
+{
+  GtkWindow *window;
+  GtkWidget *dialog;
+
+  g_return_if_fail (chatty_conv != NULL);
+
+  window = gtk_application_get_active_window (GTK_APPLICATION (g_application_get_default ()));
+  dialog = chatty_muc_info_dialog_new (window, (gpointer)chatty_conv);
+  gtk_dialog_run (GTK_DIALOG (dialog));
+
+  gtk_widget_destroy (dialog);
+}
+
+
+static void
 chatty_window_show_chat_info (void)
 {
   ChattyConversation *chatty_conv;
@@ -221,7 +238,7 @@ chatty_window_show_chat_info (void)
     chatty_window_show_user_info_dialog (chatty_conv);
 
   } else if (purple_conversation_get_type (chatty_conv->conv) == PURPLE_CONV_TYPE_CHAT) {
-    gtk_widget_show (GTK_WIDGET(chatty->dialog_muc_info));
+    chatty_window_show_muc_info_dialog (chatty_conv);
   }
 }
 
@@ -334,9 +351,8 @@ chatty_window_init_data (void)
 
   chatty->dummy_prefix_radio = gtk_radio_button_new_from_widget (GTK_RADIO_BUTTON (NULL));
 
-  // These dialogs need to be created before purple_blist_show()
+  // This dialog needs to be created before purple_blist_show()
   chatty->dialog_new_chat = chatty_window_create_new_chat_dialog ();
-  chatty->dialog_muc_info = chatty_dialogs_create_dialog_muc_info ();
 
   libpurple_init ();
 
