@@ -23,6 +23,7 @@ struct _ChattyAccountClass
   ChattyUserClass parent_class;
 
   ChattyStatus (*get_status)            (ChattyAccount *self);
+  GListModel  *(*get_buddies)           (ChattyAccount *self);
   gboolean     (*get_enabled)           (ChattyAccount *self);
   void         (*set_enabled)           (ChattyAccount *self,
                                          gboolean       enable);
@@ -36,6 +37,7 @@ struct _ChattyAccountClass
 
 
 ChattyStatus  chatty_account_get_status            (ChattyAccount *self);
+GListModel   *chatty_account_get_buddies           (ChattyAccount *self);
 gboolean      chatty_account_get_enabled           (ChattyAccount *self);
 void          chatty_account_set_enabled           (ChattyAccount *self,
                                                     gboolean       enable);
