@@ -20,11 +20,6 @@
 #include "chatty-folks.h"
 
 
-#define INITIAL_RECON_DELAY_MIN  5
-#define INITIAL_RECON_DELAY_MAX  30
-#define MAX_RECON_DELAY          300
-
-
 static void
 chatty_connection_update_ui (void)
 {
