@@ -315,27 +315,37 @@ chatty_utils_get_item_position (GListModel *list,
   return FALSE;
 }
 
-/* XXX: a helper API till the dust settles */
+/**
+ * chatty_utils_remove_list_item:
+ * @store: a #GListStore
+ * @item: A #GObject derived object
+ *
+ * Remove first found @item from @store.
+ *
+ * Returns: %TRUE if found and removed. %FALSE otherwise.
+ */
 gboolean
-chatty_pp_account_remove (ChattyPpAccount *self)
+chatty_utils_remove_list_item (GListStore *store,
+                               gpointer    item)
 {
   GListModel *model;
   guint n_items;
 
-  g_return_val_if_fail (CHATTY_IS_PP_ACCOUNT (self), FALSE);
+  g_return_val_if_fail (G_IS_LIST_STORE (store), FALSE);
+  g_return_val_if_fail (item, FALSE);
 
-  model = chatty_manager_get_accounts (chatty_manager_get_default ());
+  model = G_LIST_MODEL (store);
   n_items = g_list_model_get_n_items (model);
 
   for (guint i = 0; i < n_items; i++)
     {
-      g_autoptr(ChattyPpAccount) object = NULL;
+      g_autoptr(GObject) object = NULL;
 
       object = g_list_model_get_item (model, i);
 
-      if (object == self)
+      if (object == item)
         {
-          g_list_store_remove (G_LIST_STORE (model), i);
+          g_list_store_remove (store, i);
 
           return TRUE;
         }
@@ -343,8 +353,6 @@ chatty_pp_account_remove (ChattyPpAccount *self)
 
   return FALSE;
 }
-
-
 
 GtkWidget*
 chatty_utils_create_fingerprint_row (const char *fp,
