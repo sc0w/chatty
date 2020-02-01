@@ -242,8 +242,6 @@ encrypt_status_cb (int      err,
   gtk_style_context_add_class (sc, self->chatty_conv->omemo.enabled ? "encrypt" : "unencrypt");
 
   gtk_label_set_text (GTK_LABEL(self->label_encrypt_status), status_msg);
-
-  self->chatty_conv->omemo.status = status;
 }
 
 
