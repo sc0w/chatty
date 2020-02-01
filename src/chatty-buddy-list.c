@@ -297,7 +297,6 @@ cb_buddy_signonoff_timeout (PurpleBuddy *buddy)
 {
   ChattyBlistNode *chatty_node = ((PurpleBlistNode*)buddy)->ui_data;
 
-  chatty_node->recent_signonoff = FALSE;
   chatty_node->recent_signonoff_timer = 0;
 
   chatty_blist_update (purple_get_blist(), (PurpleBlistNode*)buddy);
@@ -330,8 +329,6 @@ cb_buddy_signed_on_off (PurpleBuddy *buddy)
   }
 
   chatty_node = ((PurpleBlistNode*)buddy)->ui_data;
-
-  chatty_node->recent_signonoff = TRUE;
 
   if(chatty_node->recent_signonoff_timer > 0) {
     purple_timeout_remove (chatty_node->recent_signonoff_timer);
@@ -421,7 +418,6 @@ cb_conversation_deleted_update_ui (PurpleConversation        *conv,
   }
 
   ui->conv.conv = NULL;
-  ui->conv.flags = 0;
   ui->conv.pending_messages = 0;
 }
 
@@ -444,7 +440,6 @@ cb_written_msg_update_ui (PurpleAccount       *account,
       ui->row_chat != NULL) {
         
     if (!gtk_list_box_row_is_selected (GTK_LIST_BOX_ROW (ui->row_chat))) {
-      ui->conv.flags |= CHATTY_BLIST_NODE_HAS_PENDING_MESSAGE;
       ui->conv.pending_messages ++;
     }
   }
@@ -462,9 +457,6 @@ cb_displayed_msg_update_ui (ChattyConversation *chatty_conv,
   if (ui->conv.conv != chatty_conv->conv) {
     return;
   }
-
-  ui->conv.flags &= ~(CHATTY_BLIST_NODE_HAS_PENDING_MESSAGE |
-                      CHATTY_BLIST_CHAT_HAS_PENDING_MESSAGE_WITH_NICK);
 
   ui->conv.pending_messages = 0;
 
@@ -491,7 +483,6 @@ cb_conversation_created (PurpleConversation *conv,
       }
 
       ui->conv.conv = conv;
-      ui->conv.flags = 0;
 
       purple_signal_connect (purple_conversations_get_handle(),
                              "deleting-conversation",
@@ -535,7 +526,6 @@ cb_chat_joined (PurpleConversation *conv,
     }
 
     ui->conv.conv = conv;
-    ui->conv.flags = 0;
     ui->conv.last_message = 0;
 
     purple_signal_connect (purple_conversations_get_handle(),
