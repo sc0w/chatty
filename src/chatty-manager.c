@@ -154,7 +154,7 @@ manager_account_removed_cb (PurpleAccount *pp_account,
 
   g_object_notify (G_OBJECT (account), "status");
   g_signal_emit_by_name (account, "deleted");
-  chatty_pp_account_remove (account);
+  chatty_utils_remove_list_item (self->account_list, account);
 }
 
 static void
