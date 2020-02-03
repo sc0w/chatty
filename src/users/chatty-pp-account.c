@@ -628,6 +628,14 @@ chatty_pp_account_add_purple_buddy (ChattyPpAccount *self,
   return buddy;
 }
 
+GListModel *
+chatty_pp_account_get_buddy_list (ChattyPpAccount *self)
+{
+  g_return_val_if_fail (CHATTY_IS_PP_ACCOUNT (self), NULL);
+
+  return G_LIST_MODEL (self->buddy_list);
+}
+
 /**
  * chatty_pp_account_save:
  * @self: A #ChattyPpAccount
