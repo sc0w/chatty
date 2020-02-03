@@ -1428,14 +1428,6 @@ chatty_conv_create_muc_list (ChattyConversation *chatty_conv)
   chatty_conv_muc_list_add_columns (GTK_TREE_VIEW (treeview));
   gtk_tree_view_columns_autosize (GTK_TREE_VIEW (treeview));
   chatty_conv->muc.treeview = treeview;
-
-  chatty_conv->muc.list = gtk_box_new (GTK_ORIENTATION_VERTICAL, 12);
-
-  gtk_box_pack_start (GTK_BOX (chatty_conv->muc.list),
-                      GTK_WIDGET (treeview),
-                      TRUE, TRUE, 0);
-
-  gtk_widget_show_all (GTK_WIDGET(chatty_conv->muc.list));
 }
 
 
@@ -1794,180 +1786,6 @@ chatty_conv_muc_list_update_user (PurpleConversation *conv,
   if (cbuddy) {
     chatty_conv_muc_add_user (conv, cbuddy);
   }
-}
-
-
-/**
- * chatty_conv_set_muc_topic:
- * @topic_text: a const char
- *
- * Update the muc topic text
- *
- * called from cb_button_edit_topic_clicked
- * in chatty-dialogs.c
- *
- */
-void
-chatty_conv_set_muc_topic (const char *topic_text)
-{
-  PurplePluginProtocolInfo *prpl_info = NULL;
-  PurpleConnection         *gc;
-  PurpleConversation       *conv;
-  gint                      chat_id;
-
-  chatty_data_t *chatty = chatty_get_data ();
-
-  conv = chatty_conv_container_get_active_purple_conv (GTK_NOTEBOOK(chatty->pane_view_message_list));
-
-  gc = purple_conversation_get_gc (conv);
-
-  prpl_info = PURPLE_PLUGIN_PROTOCOL_INFO(gc->prpl);
-
-  if (!gc || !prpl_info || !topic_text) {
-    return;
-  }
-
-  if (prpl_info->set_chat_topic == NULL) {
-    return;
-  }
-
-  chat_id = purple_conv_chat_get_id (PURPLE_CONV_CHAT(conv));
-
-  prpl_info->set_chat_topic (gc, chat_id, topic_text);
-}
-
-
-/**
- * chatty_conv_set_muc_prefs:
- * @pref:  a gint
- * @value: a gboolean
- *
- * Set a muc preference
- *
- * called from cb_switch_prefs_state_changed
- * in chatty-dialogs.c
- *
- */
-void
-chatty_conv_set_muc_prefs (gint     pref,
-                           gboolean value)
-{
-  PurpleBlistNode    *node;
-  PurpleConnection   *gc;
-  PurpleConversation *conv;
-
-  chatty_data_t *chatty = chatty_get_data ();
-
-  conv = chatty_conv_container_get_active_purple_conv (GTK_NOTEBOOK(chatty->pane_view_message_list));
-
-  gc = purple_conversation_get_gc (conv);
-
-  if (!gc || !pref) {
-    return;
-  }
-
-  node = PURPLE_BLIST_NODE(purple_blist_find_chat (conv->account, conv->name));
-
-  switch (pref) {
-    case CHATTY_PREF_MUC_NOTIFICATIONS:
-      purple_blist_node_set_bool (node, "chatty-notifications", value);
-      break;
-    case CHATTY_PREF_MUC_STATUS_MSG:
-      purple_blist_node_set_bool (node, "chatty-status-msg", value);
-      break;
-    case CHATTY_PREF_MUC_PERSISTANT:
-      purple_blist_node_set_bool (node, "chatty-persistant", value);
-      break;
-    default:
-      break;
-  }
-}
-
-
-/**
- * chatty_conv_update_muc_info:
- * @conv: a PurpleConversation
- *
- * Update the data in the muc info dialog
- *
- * called from chatty_conv_join_chat
- *
- */
-static void
-chatty_conv_update_muc_info (PurpleConversation *conv)
-{
-  ChattyConversation       *chatty_conv;
-  PurpleConvChat           *chat;
-  PurpleConvChatBuddyFlags  flags;
-  PurpleBlistNode          *node;
-  GtkWidget                *child;
-  GList                    *children;
-  char                     *user_count_str;
-  const char               *chat_name;
-  const char               *text;
-  const char               *topic;
-
-  chatty_data_t *chatty = chatty_get_data ();
-
-  chatty_conv = CHATTY_CONVERSATION(conv);
-
-  chat = PURPLE_CONV_CHAT(conv);
-
-  node = PURPLE_BLIST_NODE(purple_blist_find_chat (conv->account, conv->name));
-
-  chat_name = purple_conversation_get_title (conv);
-
-  text = _("members");
-  user_count_str = g_strdup_printf ("%i %s", chatty_conv->muc.user_count, text);
-
-  gtk_label_set_text (GTK_LABEL(chatty->muc.label_chat_id), chat_name);
-  gtk_label_set_text (GTK_LABEL(chatty->muc.label_num_user), user_count_str);
-
-  topic = purple_conv_chat_get_topic (PURPLE_CONV_CHAT(conv));
-
-  flags = purple_conv_chat_user_get_flags (chat, chat->nick);
-
-  if (flags & PURPLE_CBFLAGS_FOUNDER) {
-    gtk_text_buffer_set_text (chatty->muc.msg_buffer_topic, topic, strlen (topic));
-
-    gtk_widget_show (GTK_WIDGET(chatty->muc.box_topic_editor));
-    gtk_widget_hide (GTK_WIDGET(chatty->muc.label_topic));
-    gtk_widget_show (GTK_WIDGET(chatty->muc.label_title));
-  } else {
-    gtk_label_set_text (GTK_LABEL(chatty->muc.label_topic), topic);
-
-    gtk_widget_show (GTK_WIDGET(chatty->muc.label_topic));
-    gtk_widget_hide (GTK_WIDGET(chatty->muc.box_topic_editor));
-    gtk_widget_hide (GTK_WIDGET(chatty->muc.label_title));
-  }
-
-  gtk_switch_set_state (chatty->muc.switch_prefs_notifications,
-                        purple_blist_node_get_bool (node, "chatty-notifications"));
-
-  gtk_switch_set_state (chatty->muc.switch_prefs_status_msg,
-                        purple_blist_node_get_bool (node, "chatty-status-msg"));
-
-  gtk_switch_set_state (chatty->muc.switch_prefs_persistant,
-                        purple_blist_node_get_bool (node, "chatty-persistant"));
-
-  children = gtk_container_get_children (GTK_CONTAINER(chatty->pane_view_muc_info));
-  children = g_list_first (children);
-
-  if (children != NULL) {
-    child = children->data;
-
-    g_object_ref (G_OBJECT(child));
-
-    gtk_container_remove (GTK_CONTAINER(chatty->pane_view_muc_info),
-                          GTK_WIDGET(child));
-  }
-
-  gtk_box_pack_start (GTK_BOX(chatty->pane_view_muc_info),
-                      GTK_WIDGET(chatty_conv->muc.list),
-                      TRUE, TRUE, 0);
-
-  g_list_free (children);
-  g_free (user_count_str);
 }
 
 
@@ -2656,8 +2474,6 @@ chatty_conv_join_chat (PurpleChat *chat)
                         CHATTY_CONVERSATION (conv));
 
     chatty_conv = CHATTY_CONVERSATION (conv);
-
-    chatty_conv_update_muc_info (conv);
 
     chatty_conv_set_unseen (chatty_conv, CHATTY_UNSEEN_NONE);
   }

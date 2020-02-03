@@ -32,7 +32,6 @@ typedef struct {
   GtkWidget         *dialog_muc_info;
 
   GtkBox            *pane_view_chat_list;
-  GtkBox            *pane_view_muc_info;
   GtkWidget         *pane_view_message_list;
 
   HdySearchBar      *search_bar_chats;
@@ -55,20 +54,6 @@ typedef struct {
   gboolean           sms_account_connected;
 
   char        *uri;
-
-  struct {
-    GtkWidget     *label_chat_id;
-    GtkWidget     *label_topic;
-    GtkWidget     *label_title;
-    GtkWidget     *label_num_user;
-    GtkWidget     *button_edit_topic;
-    GtkWidget     *box_topic_editor;
-    GtkTextBuffer *msg_buffer_topic;
-    GtkSwitch     *switch_prefs_notifications;
-    GtkSwitch     *switch_prefs_status_msg;
-    GtkSwitch     *switch_prefs_persistant;
-    GtkSwitch     *switch_prefs_autojoin;
-  } muc;
 } chatty_data_t;
 
 chatty_data_t *chatty_get_data(void);

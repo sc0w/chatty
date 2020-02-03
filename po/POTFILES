@@ -41,6 +41,8 @@ src/dialogs/chatty-new-chat-dialog.c
 src/dialogs/chatty-new-chat-dialog.h
 src/dialogs/chatty-new-muc-dialog.c
 src/dialogs/chatty-new-muc-dialog.h
+src/dialogs/chatty-muc-info-dialog.c
+src/dialogs/chatty-muc-info-dialog.h
 src/chatty-settings.c
 src/chatty-settings.h
 src/chatty-utils.c
