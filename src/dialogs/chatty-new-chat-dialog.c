@@ -12,6 +12,7 @@
 #include <glib/gi18n.h>
 #include <glib-object.h>
 #include "chatty-window.h"
+#include "chatty-manager.h"
 #include "chatty-dialogs.h"
 #include "users/chatty-pp-account.h"
 #include "chatty-buddy-list.h"
@@ -262,25 +263,27 @@ chatty_new_chat_account_list_clear (GtkWidget *list)
 }
 
 
-static gboolean
+static void
 chatty_new_chat_populate_account_list (ChattyNewChatDialog *self)
 {
-  GList         *l;
-  gboolean       ret = FALSE;
+  GListModel *model;
   HdyActionRow  *row;
+  guint n_items;
 
-  g_return_val_if_fail (CHATTY_IS_NEW_CHAT_DIALOG(self), FALSE);
+  g_return_if_fail (CHATTY_IS_NEW_CHAT_DIALOG (self));
 
   chatty_new_chat_account_list_clear (self->list_select_account);
 
-  for (l = purple_accounts_get_all (); l != NULL; l = l->next) {
-    ChattyPpAccount *pp_account;
-    ret = TRUE;
+  model = chatty_manager_get_accounts (chatty_manager_get_default ());
+  n_items = g_list_model_get_n_items (model);
 
-    pp_account = chatty_pp_account_get_object (l->data);
+  for (guint i = 0; i < n_items; i++)
+    {
+      g_autoptr(ChattyPpAccount) account = NULL;
 
-    chatty_new_chat_add_account_to_list (self, pp_account);
-  }
+      account = g_list_model_get_item (model, i);
+      chatty_new_chat_add_account_to_list (self, account);
+    }
 
   row = HDY_ACTION_ROW(gtk_list_box_get_row_at_index (GTK_LIST_BOX(self->list_select_account), 0));
 
@@ -289,8 +292,6 @@ chatty_new_chat_populate_account_list (ChattyNewChatDialog *self)
                                    GTK_LIST_BOX_ROW(row), 
                                    GTK_LIST_BOX(self->list_select_account));
   }
-
-  return ret;
 }
 
 
