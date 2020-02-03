@@ -17,14 +17,6 @@ typedef enum
    CHATTY_ICON_SIZE_LARGE  = 96
 } ChattyPurpleIconSize;
 
-typedef enum
-{
-   CHATTY_ICON_COLOR_GREY,
-   CHATTY_ICON_COLOR_GREEN,
-   CHATTY_ICON_COLOR_BLUE,
-   CHATTY_ICON_COLOR_PURPLE
-} ChattyPurpleIconColor;
-
 void chatty_icon_do_alphashift (GdkPixbuf *pixbuf, int shift);
 GdkPixbuf *chatty_icon_shape_pixbuf_circular (GdkPixbuf *pixbuf);
 GIcon *chatty_icon_get_gicon_from_pixbuf (GdkPixbuf *pixbuf);

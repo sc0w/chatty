@@ -210,7 +210,7 @@ static void
 chatty_settings_add_clicked_cb (ChattySettingsDialog *self)
 {
   ChattyManager *manager;
-  ChattyPpAccount *account;
+  g_autoptr (ChattyPpAccount) account = NULL;
   const char *user_id, *password, *server_url;
   gboolean is_matrix, is_telegram;
 
@@ -225,11 +225,11 @@ chatty_settings_add_clicked_cb (ChattySettingsDialog *self)
   is_telegram = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (self->telegram_radio_button));
 
   if (is_matrix)
-    account = chatty_pp_account_new_matrix (user_id, server_url);
+    account = chatty_pp_account_new (CHATTY_PROTOCOL_MATRIX, user_id, server_url);
   else if (is_telegram)
-    account = chatty_pp_account_new_telegram (user_id);
+    account = chatty_pp_account_new (CHATTY_PROTOCOL_TELEGRAM, user_id, NULL);
   else /* XMPP */
-    account = chatty_pp_account_new_xmpp (user_id, server_url);
+    account = chatty_pp_account_new (CHATTY_PROTOCOL_XMPP, user_id, server_url);
 
   if (password)
     {

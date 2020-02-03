@@ -15,6 +15,7 @@
 #include <purple.h>
 
 #include "chatty-user.h"
+#include "chatty-pp-buddy.h"
 #include "chatty-account.h"
 #include "chatty-enums.h"
 
@@ -24,15 +25,16 @@ G_BEGIN_DECLS
 
 G_DECLARE_FINAL_TYPE (ChattyPpAccount, chatty_pp_account, CHATTY, PP_ACCOUNT, ChattyAccount)
 
-ChattyPpAccount *chatty_pp_account_new                (const char      *username,
-                                                       const char      *protocol_id);
+ChattyPpAccount *chatty_pp_account_get_object         (PurpleAccount   *account);
+ChattyPpAccount *chatty_pp_account_new                (ChattyProtocol   protocol,
+                                                       const char      *username,
+                                                       const char      *server_url);
 ChattyPpAccount *chatty_pp_account_new_purple         (PurpleAccount   *account);
-ChattyPpAccount *chatty_pp_account_new_xmpp           (const char      *username,
-                                                       const char      *server_url);
-ChattyPpAccount *chatty_pp_account_new_matrix         (const char      *username,
-                                                       const char      *server_url);
-ChattyPpAccount *chatty_pp_account_new_telegram       (const char      *username);
-ChattyPpAccount *chatty_pp_account_new_sms            (const char      *username);
+ChattyPpBuddy   *chatty_pp_account_add_buddy          (ChattyPpAccount *self,
+                                                       const char      *username,
+                                                       const char      *name);
+ChattyPpBuddy   *chatty_pp_account_add_purple_buddy   (ChattyPpAccount *self,
+                                                       PurpleBuddy     *pp_buddy);
 
 void             chatty_pp_account_save               (ChattyPpAccount *self);
 PurpleAccount   *chatty_pp_account_get_account        (ChattyPpAccount *self);
@@ -45,11 +47,6 @@ const char      *chatty_pp_account_get_protocol_name  (ChattyPpAccount *self);
 void             chatty_pp_account_set_username       (ChattyPpAccount *self,
                                                        const char      *username);
 const char      *chatty_pp_account_get_username       (ChattyPpAccount *self);
-
-void             chatty_pp_account_add_buddy          (ChattyPpAccount *self,
-                                                       PurpleBuddy     *buddy);
-void             chatty_pp_account_add_buddy_and_invite (ChattyPpAccount *self,
-                                                         PurpleBuddy     *buddy);
 
 void             chatty_pp_account_connect              (ChattyPpAccount *self,
                                                          gboolean          delay);

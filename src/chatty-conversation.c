@@ -20,7 +20,6 @@
 #include "chatty-notify.h"
 #include "chatty-folks.h"
 
-#define MAX_MSGS 50
 #define LAZY_LOAD_MSGS_LIMIT 12
 #define LAZY_LOAD_INITIAL_MSGS_LIMIT 20
 #define MAX_TIMESTAMP_SIZE 256
@@ -394,14 +393,6 @@ cb_textview_key_released (GtkWidget   *widget,
   }
 
   return TRUE;
-}
-
-
-static void
-cb_conversation_switched (PurpleConversation *conv)
-{
-  // update conversation headerbar
-  // with avatar and status icon etc.
 }
 
 
@@ -1196,8 +1187,6 @@ cb_get_encrypt_status (int      err,
 
   gtk_style_context_remove_class (sc, chatty_conv->omemo.enabled ? "unencrypt" : "encrypt");
   gtk_style_context_add_class (sc, chatty_conv->omemo.enabled ? "encrypt" : "unencrypt");
-
-  chatty_conv->omemo.status = status;
 }
 
 
@@ -2704,10 +2693,6 @@ chatty_conv_new (PurpleConversation *conv)
   account = purple_conversation_get_account (conv);
   protocol_id = purple_account_get_protocol_id (account);
 
-  if (conv_type == PURPLE_CONV_TYPE_IM || conv_type == PURPLE_CONV_TYPE_CHAT) {
-    chatty_conv->conv_header = g_malloc0 (sizeof (ChattyConvViewHeader));
-  }
-
   if (conv_type == PURPLE_CONV_TYPE_CHAT) {
     chatty_conv_create_muc_list (chatty_conv);
 
@@ -2758,10 +2743,6 @@ chatty_conv_new (PurpleConversation *conv)
   gtk_widget_show (chatty_conv->tab_cont);
 
   if (chatty_conv->tab_cont == NULL) {
-    if (conv_type == PURPLE_CONV_TYPE_IM || conv_type == PURPLE_CONV_TYPE_CHAT) {
-      g_free (chatty_conv->conv_header);
-    }
-
     g_free (chatty_conv);
     conv->ui_data = NULL;
     return;
@@ -2916,19 +2897,6 @@ chatty_conversations_init (void)
   purple_prefs_add_none (CHATTY_PREFS_ROOT "/conversations");
   purple_prefs_add_bool (CHATTY_PREFS_ROOT "/conversations/show_tabs", FALSE);
 
-  purple_prefs_add_bool ("/purple/logging/log_system", FALSE);
-  purple_prefs_set_bool ("/purple/logging/log_system", FALSE);
-
-  purple_signal_register (handle, "conversation-switched",
-                          purple_marshal_VOID__POINTER, NULL, 1,
-                          purple_value_new (PURPLE_TYPE_SUBTYPE,
-                          PURPLE_SUBTYPE_CONVERSATION));
-
-  purple_signal_register (handle, "conversation-hiding",
-                          purple_marshal_VOID__POINTER, NULL, 1,
-                          purple_value_new (PURPLE_TYPE_BOXED,
-                          "ChattyConversation *"));
-
   purple_signal_register (handle, "conversation-displayed",
                           purple_marshal_VOID__POINTER, NULL, 1,
                           purple_value_new (PURPLE_TYPE_BOXED,
@@ -2975,10 +2943,6 @@ chatty_conversations_init (void)
   purple_signal_connect (purple_conversations_get_handle (),
                          "buddy-typing-stopped", &handle,
                          PURPLE_CALLBACK (cb_buddy_typing_stopped), NULL);
-
-  purple_signal_connect (chatty_conversations_get_handle(),
-                         "conversation-switched",
-                         handle, PURPLE_CALLBACK (cb_conversation_switched), NULL);
 
   purple_cmd_register ("chatty",
                        "ww",

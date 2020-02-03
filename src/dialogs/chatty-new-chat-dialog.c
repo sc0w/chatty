@@ -12,6 +12,7 @@
 #include <glib/gi18n.h>
 #include <glib-object.h>
 #include "chatty-window.h"
+#include "chatty-manager.h"
 #include "chatty-dialogs.h"
 #include "users/chatty-pp-account.h"
 #include "chatty-buddy-list.h"
@@ -100,7 +101,7 @@ button_add_contact_clicked_cb (ChattyNewChatDialog *self)
   who = g_strdup (gtk_entry_get_text (GTK_ENTRY(self->entry_contact_name)));
   alias = gtk_entry_get_text (GTK_ENTRY(self->entry_contact_alias));
 
-  chatty_blist_add_buddy (account, who, alias);
+  chatty_pp_account_add_buddy (self->selected_account, who, alias);
   chatty_conv_im_with_buddy (account, g_strdup (who));
 
   gtk_widget_hide (GTK_WIDGET(self));
@@ -201,8 +202,8 @@ chatty_new_chat_add_account_to_list (ChattyNewChatDialog *self,
                                      ChattyPpAccount     *account)
 {
   HdyActionRow *row;
-  const gchar  *protocol_id;
   GtkWidget    *prefix_radio_button;
+  ChattyProtocol protocol;
 
   g_return_if_fail (CHATTY_IS_NEW_CHAT_DIALOG(self));
 
@@ -211,17 +212,16 @@ chatty_new_chat_add_account_to_list (ChattyNewChatDialog *self,
                      "row-account",
                      (gpointer) account);
 
-  protocol_id = chatty_pp_account_get_protocol_id (account);
+  protocol = chatty_user_get_protocols (CHATTY_USER (account));
 
   // TODO list supported protocols here
-  if ((g_strcmp0 (protocol_id, "prpl-jabber")) != 0 &&
-      (g_strcmp0 (protocol_id, "prpl-matrix")) != 0 &&
-      (g_strcmp0 (protocol_id, "prpl-telegram")) != 0 &&
-      (g_strcmp0 (protocol_id, "prpl-delta")) != 0 &&
-      (g_strcmp0 (protocol_id, "prpl-threepl")) != 0 &&
-      (g_strcmp0 (protocol_id, "prpl-mm-sms")) != 0) {
+  if (protocol & ~(CHATTY_PROTOCOL_SMS |
+                   CHATTY_PROTOCOL_XMPP |
+                   CHATTY_PROTOCOL_MATRIX |
+                   CHATTY_PROTOCOL_TELEGRAM |
+                   CHATTY_PROTOCOL_DELTA |
+                   CHATTY_PROTOCOL_THREEPL))
     return;
-  }
 
   if (chatty_account_get_status (CHATTY_ACCOUNT (account)) == CHATTY_DISCONNECTED) {
     return;
@@ -263,25 +263,27 @@ chatty_new_chat_account_list_clear (GtkWidget *list)
 }
 
 
-static gboolean
+static void
 chatty_new_chat_populate_account_list (ChattyNewChatDialog *self)
 {
-  GList         *l;
-  gboolean       ret = FALSE;
+  GListModel *model;
   HdyActionRow  *row;
+  guint n_items;
 
-  g_return_val_if_fail (CHATTY_IS_NEW_CHAT_DIALOG(self), FALSE);
+  g_return_if_fail (CHATTY_IS_NEW_CHAT_DIALOG (self));
 
   chatty_new_chat_account_list_clear (self->list_select_account);
 
-  for (l = purple_accounts_get_all (); l != NULL; l = l->next) {
-    ChattyPpAccount *pp_account;
-    ret = TRUE;
+  model = chatty_manager_get_accounts (chatty_manager_get_default ());
+  n_items = g_list_model_get_n_items (model);
 
-    pp_account = chatty_pp_account_find (l->data);
+  for (guint i = 0; i < n_items; i++)
+    {
+      g_autoptr(ChattyPpAccount) account = NULL;
 
-    chatty_new_chat_add_account_to_list (self, pp_account);
-  }
+      account = g_list_model_get_item (model, i);
+      chatty_new_chat_add_account_to_list (self, account);
+    }
 
   row = HDY_ACTION_ROW(gtk_list_box_get_row_at_index (GTK_LIST_BOX(self->list_select_account), 0));
 
@@ -290,8 +292,6 @@ chatty_new_chat_populate_account_list (ChattyNewChatDialog *self)
                                    GTK_LIST_BOX_ROW(row), 
                                    GTK_LIST_BOX(self->list_select_account));
   }
-
-  return ret;
 }
 
 

@@ -15,7 +15,6 @@
 
 typedef struct chatty_log                ChattyLog;
 typedef struct chatty_conversation       ChattyConversation;
-typedef struct chatty_conv_view_header   ChattyConvViewHeader;
 
 
 #define CHATTY_CONVERSATION(conv) \
@@ -25,15 +24,8 @@ typedef struct chatty_conv_view_header   ChattyConvViewHeader;
     (purple_conversation_get_ui_ops (conv) == \
      chatty_conversations_get_conv_ui_ops())
 
-struct chatty_conv_view_header {
-  GtkWidget *icon;
-  gchar     *name;
-};
-
 struct chatty_log {
-  char    *time_stamp;
   time_t   epoch;  // TODO: @LELAND: Once log-parsing functions are cleaned, review this
-  char    *name;
   char    *msg;
   int      dir;
 };
@@ -44,11 +36,9 @@ struct chatty_conversation {
   ChattyMsgList *msg_list;
   GtkWidget     *msg_bubble_footer;
   GtkWidget     *tab_cont;
-  GtkWidget     *icon;
 
   guint     unseen_count;
   guint     unseen_state;
-  gboolean  notifications;
 
   char     *oldest_message_displayed;
 
@@ -64,7 +54,6 @@ struct chatty_conversation {
   struct {
     GtkImage   *symbol_encrypt;
     const char *fp_own_device;
-    guint       status;
     gboolean    enabled;
   } omemo;
 
@@ -72,14 +61,7 @@ struct chatty_conversation {
     GtkWidget   *list;
     GtkTreeView *treeview;
     guint        user_count;
-    gboolean     notifications;
   } muc;
-
-  struct {
-    GList *current;
-  } attach;
-
-  ChattyConvViewHeader *conv_header;
 };
 
 
@@ -123,8 +105,6 @@ void chatty_conversations_init (void);
 void chatty_conversations_uninit (void);
 PurpleConversation * chatty_conv_container_get_active_purple_conv (GtkNotebook *notebook);
 ChattyConversation * chatty_conv_container_get_active_chatty_conv (GtkNotebook *notebook);
-ChattyLog* chatty_conv_message_get_last_msg (PurpleBuddy *buddy);
-gboolean chatty_conv_delete_message_history (PurpleBuddy *buddy);
 GList *chatty_conv_find_unseen (ChattyUnseenState  state);
 void chatty_conv_set_unseen (ChattyConversation *chatty_conv,
                              ChattyUnseenState   state);
