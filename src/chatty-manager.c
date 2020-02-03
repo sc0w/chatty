@@ -116,6 +116,45 @@ chatty_manager_enable_sms_account (ChattyManager *self)
 }
 
 static void
+manager_buddy_added_cb (PurpleBuddy   *buddy,
+                        ChattyManager *self)
+{
+  ChattyPpAccount *account;
+  PurpleAccount *pp_account;
+
+  g_assert (CHATTY_IS_MANAGER (self));
+
+  pp_account = purple_buddy_get_account (buddy);
+  account = chatty_pp_account_get_object (pp_account);
+
+  if (account && !chatty_pp_buddy_get_object (buddy))
+    chatty_pp_account_add_purple_buddy (account, buddy);
+}
+
+static void
+manager_buddy_removed_cb (PurpleBuddy   *pp_buddy,
+                          ChattyManager *self)
+{
+  ChattyPpAccount *account;
+  PurpleAccount *pp_account;
+  ChattyPpBuddy *buddy;
+  GListModel *model;
+
+  g_assert (CHATTY_IS_MANAGER (self));
+
+  pp_account = purple_buddy_get_account (pp_buddy);
+  account = chatty_pp_account_get_object (pp_account);
+  buddy = chatty_pp_buddy_get_object (pp_buddy);
+
+  g_return_if_fail (account);
+  g_return_if_fail (buddy);
+
+  g_signal_emit_by_name (buddy, "deleted");
+  model = chatty_pp_account_get_buddy_list (account);
+  chatty_utils_remove_list_item (G_LIST_STORE (model), buddy);
+}
+
+static void
 manager_account_added_cb (PurpleAccount *pp_account,
                           ChattyManager *self)
 {
@@ -419,6 +458,39 @@ chatty_manager_load_plugins (ChattyManager *self)
                            G_CALLBACK (manager_message_carbons_changed), self,
                            G_CONNECT_SWAPPED);
   manager_message_carbons_changed (self, NULL, settings);
+}
+
+void
+chatty_manager_load_buddies (ChattyManager *self)
+{
+  ChattyPpAccount *account;
+  PurpleAccount *pp_account;
+  g_autoptr(GSList) buddies = NULL;
+
+  g_return_if_fail (CHATTY_IS_MANAGER (self));
+
+  purple_signal_connect (purple_blist_get_handle (),
+                         "buddy-added", self,
+                         PURPLE_CALLBACK (manager_buddy_added_cb), self);
+  purple_signal_connect (purple_blist_get_handle (),
+                         "buddy-removed", self,
+                         PURPLE_CALLBACK (manager_buddy_removed_cb), self);
+
+  buddies = purple_blist_get_buddies ();
+
+  for (GSList *node = buddies; node; node = node->next)
+    {
+      pp_account = purple_buddy_get_account (node->data);
+      account = chatty_pp_account_get_object (pp_account);
+
+      g_warn_if_fail (pp_account);
+
+      if (!pp_account)
+        continue;
+
+      if (!chatty_pp_buddy_get_object (node->data))
+        chatty_pp_account_add_purple_buddy (account, node->data);
+    }
 }
 
 gboolean
