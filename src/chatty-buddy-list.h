@@ -9,22 +9,8 @@
 #define __BUDDY_LIST_H_INCLUDE__
 
 #include "purple.h"
+#include "users/chatty-pp-buddy.h"
 #include "chatty-contact-row.h"
-
-typedef struct _chatty_blist_node {
-  ChattyContactRow *row_chat;
-  ChattyContactRow *row_contact;
-  gint              recent_signonoff_timer;
-
-  struct {
-    PurpleConversation   *conv;
-    guint                 pending_messages;
-    char                 *last_msg_timestamp;
-    time_t                last_msg_ts_raw;
-    char                  *last_message;
-    int                   last_message_dir;
-  } conv;
-} ChattyBlistNode;
 
 
 typedef struct {

@@ -14,6 +14,8 @@
 #include <glib-object.h>
 #include <purple.h>
 
+#include "chatty-contact-row.h"
+#include "chatty-user.h"
 #include "chatty-enums.h"
 
 G_BEGIN_DECLS
@@ -22,6 +24,24 @@ G_BEGIN_DECLS
 
 G_DECLARE_FINAL_TYPE (ChattyPpBuddy, chatty_pp_buddy, CHATTY, PP_BUDDY, ChattyUser)
 
+/* Moved from chatty-buddy-list.h to allow compilation as static library. */
+typedef struct _chatty_blist_node {
+  ChattyContactRow *row_chat;
+  ChattyContactRow *row_contact;
+  ChattyPpBuddy    *buddy_object; /* Set only if node is buddy */
+  gint              recent_signonoff_timer;
+
+  struct {
+    PurpleConversation   *conv;
+    guint                 pending_messages;
+    char                 *last_msg_timestamp;
+    time_t                last_msg_ts_raw;
+    char                  *last_message;
+    int                   last_message_dir;
+  } conv;
+} ChattyBlistNode;
+
+ChattyPpBuddy   *chatty_pp_buddy_get_object    (PurpleBuddy   *buddy);
 PurpleAccount   *chatty_pp_buddy_get_account   (ChattyPpBuddy *self);
 PurpleBuddy     *chatty_pp_buddy_get_buddy      (ChattyPpBuddy *self);
 
