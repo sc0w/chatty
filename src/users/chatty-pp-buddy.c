@@ -170,11 +170,19 @@ static void
 chatty_pp_buddy_constructed (GObject *object)
 {
   ChattyPpBuddy *self = (ChattyPpBuddy *)object;
+  ChattyBlistNode *chatty_node;
+  PurpleBlistNode *node;
 
   G_OBJECT_CLASS (chatty_pp_buddy_parent_class)->constructed (object);
 
   if (!self->pp_buddy)
     chatty_add_new_buddy (self);
+
+  node = PURPLE_BLIST_NODE (self->pp_buddy);
+  chatty_node = node->ui_data;
+
+  chatty_node->buddy_object = self;
+  g_object_add_weak_pointer (G_OBJECT (self), (gpointer *)&chatty_node->buddy_object);
 }
 
 static void
@@ -226,6 +234,22 @@ chatty_pp_buddy_class_init (ChattyPpBuddyClass *klass)
 static void
 chatty_pp_buddy_init (ChattyPpBuddy *self)
 {
+}
+
+ChattyPpBuddy *
+chatty_pp_buddy_get_object (PurpleBuddy *buddy)
+{
+  PurpleBlistNode *node = PURPLE_BLIST_NODE (buddy);
+  ChattyBlistNode *chatty_node;
+
+  g_return_val_if_fail (PURPLE_BLIST_NODE_IS_BUDDY (node), NULL);
+
+  chatty_node = node->ui_data;
+
+  if (!chatty_node)
+    return NULL;
+
+  return chatty_node->buddy_object;
 }
 
 PurpleAccount *
