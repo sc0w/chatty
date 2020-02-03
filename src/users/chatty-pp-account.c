@@ -462,6 +462,7 @@ chatty_pp_account_constructed (GObject *object)
    * As it’s used here, ‘ui_data’ shouldn’t be used elsewhere in UI.
    */
   self->pp_account->ui_data = self;
+  g_object_add_weak_pointer (G_OBJECT (self), (gpointer *)&self->pp_account->ui_data);
 }
 
 static void
