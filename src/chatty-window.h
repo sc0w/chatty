@@ -25,22 +25,18 @@ typedef struct {
   HdyLeaflet        *header_box;
   HdyHeaderGroup    *header_group;
 
-  GtkHeaderBar      *sub_header_bar;
   GtkWidget         *sub_header_icon;
   GtkWidget         *sub_header_label;
 
   GtkWidget         *dialog_new_chat;
   GtkWidget         *dialog_muc_info;
 
-  GtkStack          *stack_panes_main;
   GtkBox            *pane_view_chat_list;
   GtkBox            *pane_view_muc_info;
   GtkWidget         *pane_view_message_list;
-  GtkBox            *pane_view_new_chat;
 
   HdySearchBar      *search_bar_chats;
   GtkEntry          *search_entry_chats;
-  GtkEntry          *search_entry_contacts;
 
   GtkWidget         *button_menu_add_contact;
   GtkWidget         *button_menu_add_gnome_contact;
@@ -48,12 +44,6 @@ typedef struct {
   GtkWidget         *button_header_chat_info;
   GtkWidget         *button_header_add_chat;
   GtkWidget         *button_header_sub_menu;
-
-  PurpleAccount     *selected_account;
-  GtkListBox        *list_manage_account;
-
-  GSList            *radio_button_list;
-  GtkWidget         *dummy_prefix_radio;
 
   GtkBox            *box_overlay;
   GtkImage          *icon_overlay;
@@ -151,15 +141,8 @@ typedef enum {
 } ChattyWindowState;
 
 
-typedef enum {
-  CHATTY_MESSAGE_MODE_XMPP,
-  CHATTY_MESSAGE_MODE_SMS
-} ChattyWindowMessageMode;
-
-
 void chatty_window_change_view (guint state);
 void chatty_window_overlay_show (gboolean show);
-void chatty_window_overlay_show_delayed (void);
 void chatty_window_activate (GtkApplication* app, gpointer user_data);
 void chatty_window_update_sub_header_titlebar (GdkPixbuf  *icon, const char *title);
 

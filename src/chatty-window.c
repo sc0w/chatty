@@ -332,8 +332,6 @@ chatty_window_init_data (void)
 {
   chatty_data_t *chatty = chatty_get_data ();
 
-  chatty->dummy_prefix_radio = gtk_radio_button_new_from_widget (GTK_RADIO_BUTTON (NULL));
-
   // These dialogs need to be created before purple_blist_show()
   chatty->dialog_new_chat = chatty_window_create_new_chat_dialog ();
   chatty->dialog_muc_info = chatty_dialogs_create_dialog_muc_info ();
@@ -384,7 +382,6 @@ chatty_window_activate (GtkApplication *app,
 
   chatty_popover_actions_init (window);
 
-  chatty->sub_header_bar = GTK_HEADER_BAR (gtk_builder_get_object (builder, "sub_header_bar"));
   chatty->sub_header_label = GTK_WIDGET (gtk_builder_get_object (builder, "sub_header_label"));
   chatty->sub_header_icon = GTK_WIDGET (gtk_builder_get_object (builder, "sub_header_icon"));
   chatty->button_menu_add_contact = GTK_WIDGET (gtk_builder_get_object (builder, "button_menu_add_contact"));
