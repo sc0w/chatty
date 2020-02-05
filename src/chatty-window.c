@@ -407,7 +407,11 @@ chatty_window_constructed (GObject *object)
 static void
 chatty_window_dispose (GObject *object)
 {
-  chatty_purple_quit ();
+  ChattyWindow *self = (ChattyWindow *)object;
+
+  if (self->listbox_chats) {
+    chatty_blist_disconnect_listbox (self->listbox_chats);
+  }
 
   G_OBJECT_CLASS(chatty_window_parent_class)->dispose (object);
 }
@@ -417,6 +421,8 @@ static void
 chatty_window_finalize (GObject *object)
 {
   ChattyWindow *self = (ChattyWindow *)object;
+
+  chatty_purple_quit ();
 
   g_object_unref (self->settings);
 

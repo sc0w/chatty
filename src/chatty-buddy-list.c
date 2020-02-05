@@ -2093,6 +2093,17 @@ void chatty_blist_init (void)
 }
 
 
+void 
+chatty_blist_disconnect_listbox (GtkWidget *list)
+{
+  // TODO: chatlist related signals and callback-handlers 
+  // need to be moved to chatty-window
+  g_signal_handlers_disconnect_by_func (G_OBJECT(list), 
+                                        cb_num_rows_changed, 
+                                        NULL);
+}
+
+
 void
 chatty_blist_uninit (void) {
   purple_signals_unregister_by_instance (chatty_blist_get_handle());
