@@ -352,7 +352,7 @@ chatty_window_set_property (GObject      *object,
       break;
 
     case PROP_URI:
-      self->uri = chatty_window_get_uri (self);
+      self->uri = g_value_dup_string (value);
       break;
 
     default:
@@ -411,6 +411,8 @@ chatty_window_finalize (GObject *object)
 
   g_object_unref (self->settings);
 
+  g_free (self->uri);
+
   G_OBJECT_CLASS(chatty_window_parent_class)->finalize (object);
 }
 
@@ -441,7 +443,7 @@ chatty_window_class_init (ChattyWindowClass *klass)
 
   props[PROP_URI] =
     g_param_spec_string ("uri",
-                         _("URI"),
+                         "An URI",
                          "An URI string passed to the application",
                          "",
                          G_PARAM_WRITABLE | G_PARAM_STATIC_STRINGS);
@@ -489,7 +491,7 @@ GtkWidget *
 chatty_window_new (GtkApplication *application,
                    gboolean        daemon_mode,
                    ChattySettings *settings,
-                   char           *uri)
+                   const char     *uri)
 {
   g_assert (GTK_IS_APPLICATION(application));
   g_assert (CHATTY_IS_SETTINGS(settings));

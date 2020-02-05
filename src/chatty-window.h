@@ -56,7 +56,7 @@ struct _ChattyWindow
   GtkWidget *label_overlay_2;
   GtkWidget *label_overlay_3;
 
-  const char *uri;
+  char      *uri;
   
   gboolean daemon_mode;
   gboolean im_account_connected;
@@ -125,7 +125,7 @@ typedef enum {
 GtkWidget *chatty_window_new (GtkApplication *application, 
                               gboolean        daemon_mode, 
                               ChattySettings *settings, 
-                              char           *uri);
+                              const char     *uri);
 
 void chatty_window_change_view (ChattyWindow *self, guint state);
 void chatty_window_update_sub_header_titlebar (ChattyWindow *self, GdkPixbuf *icon, const char *title);
