@@ -400,7 +400,7 @@ chatty_pp_account_set_avatar_async (ChattyUser          *user,
   height = prpl_info->icon_spec.max_height;
   data   = chatty_icon_get_data_from_image (file_name, width, height, &len, &error);
 
-  if (error)
+  if (!data)
     {
       g_task_return_error (task, g_steal_pointer (&error));
       g_debug ("Error: %s", error->message);
