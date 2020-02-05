@@ -569,7 +569,7 @@ void
 chatty_window_set_button_header_add_chat_sensitive (ChattyWindow *self,
                                                     gboolean      sensitive)
 {
-  gtk_widget_set_sensitive (self->button_menu_new_group_chat, sensitive);
+  gtk_widget_set_sensitive (self->button_header_add_chat, sensitive);
 }
 
 
