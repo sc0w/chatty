@@ -22,6 +22,7 @@ typedef enum {
   CHATTY_UTILS_TIME_AGO_NO_MARKUP  =  1 << 2,
 } ChattyTimeAgoFlags;
 
+ChattyWindow *chatty_utils_get_window (void);
 char *chatty_utils_jabber_id_strip (const char *name);
 char *chatty_utils_strip_blanks (const char *string);
 char *chatty_utils_strip_cr_lf (const char *string);

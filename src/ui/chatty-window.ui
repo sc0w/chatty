@@ -186,7 +186,7 @@
       </packing>
     </child>
   </object>
-  <object class="GtkApplicationWindow" id="window">
+  <template class="ChattyWindow" parent="GtkApplicationWindow">
     <property name="can_focus">False</property>
     <property name="default_width">360</property>
     <property name="default_height">576</property>
@@ -200,8 +200,8 @@
             <property name="mode-transition-type">slide</property>
             <property name="child-transition-type">slide</property>
             <property name="visible-child-name" bind-source="content_box" bind-property="visible-child-name" bind-flags="sync-create"/>
-            <signal name="notify::visible-child" handler="cb_leaflet_visible_child" swapped="no"/>
-            <signal name="notify::fold" handler="cb_leaflet_notify_fold" after="yes" swapped="no"/>
+            <signal name="notify::visible-child" handler="header_visible_child_cb" swapped="no"/>
+            <signal name="notify::fold" handler="notify_fold_cb" after="yes" swapped="no"/>
             <child>
               <object class="GtkHeaderBar" id="header_bar">
                 <property name="visible">True</property>
@@ -395,7 +395,7 @@
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <child type="overlay">
-                  <object class="GtkBox" id="welcome_overlay">
+                  <object class="GtkBox" id="overlay">
                     <property name="visible">False</property>
                     <property name="can_focus">False</property>
                     <property name="halign">center</property>
@@ -403,7 +403,7 @@
                     <property name="expand">True</property>
                     <property name="orientation">vertical</property>
                     <child>
-                      <object class="GtkImage" id="icon">
+                      <object class="GtkImage" id="icon_overlay">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="valign">center</property>
@@ -428,7 +428,7 @@
                         <property name="margin_end">36</property>
                         <property name="expand">True</property>
                         <child>
-                          <object class="GtkLabel" id="label_1">
+                          <object class="GtkLabel" id="label_overlay_1">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <property name="opacity">0.5</property>
@@ -448,7 +448,7 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkLabel" id="label_2">
+                          <object class="GtkLabel" id="label_overlay_2">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <property name="opacity">0.5</property>
@@ -464,7 +464,7 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkLabel" id="label_3">
+                          <object class="GtkLabel" id="label_overlay_3">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <property name="opacity">0.5</property>
@@ -520,14 +520,15 @@
                       </object>
                     </child>
                     <child>
-                      <object class="GtkBox" id="pane_view_chat_list">
+                      <object class="GtkListBox" id="listbox_chats">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                      </object>
-                      <packing>
                         <property name="expand">True</property>
-                        <property name="fill">True</property>
-                      </packing>
+                        <property name="selection-mode">single</property>
+                        <style>
+                          <class name="frame"/>
+                        </style>
+                      </object>
                     </child>
                   </object>
                 </child>
@@ -549,7 +550,7 @@
           </object>
         </child>
         <child>
-          <object class="GtkNotebook" id="pane_view_message_list">
+          <object class="GtkNotebook" id="notebook_convs">
             <property name="visible">True</property>
             <property name="show-border">False</property>
             <property name="can_focus">False</property>
@@ -561,7 +562,7 @@
         </child>
       </object>
     </child>
-  </object>
+  </template>
   <object class="GtkSizeGroup" id="start_pane_size_group">
     <property name="mode">horizontal</property>
     <widgets>
@@ -573,7 +574,7 @@
     <property name="mode">horizontal</property>
     <widgets>
       <widget name="sub_header_bar"/>
-      <widget name="pane_view_message_list"/>
+      <widget name="notebook_convs"/>
     </widgets>
   </object>
   <object class="HdyHeaderGroup" id="header_group">

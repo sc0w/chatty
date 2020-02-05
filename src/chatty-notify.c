@@ -12,6 +12,7 @@
 #include "chatty-window.h"
 #include "chatty-notify.h"
 #include "chatty-icons.h"
+#include "chatty-utils.h"
 #include "chatty-conversation.h"
 
 static PurpleConversation *conv_notify = NULL;
@@ -32,7 +33,11 @@ cb_open_settings (GSimpleAction *action,
                   GVariant      *parameter,
                   gpointer       user_data)
 {
-  chatty_window_change_view (CHATTY_VIEW_SETTINGS);
+  ChattyWindow *window;
+
+  window = chatty_utils_get_window ();
+
+  chatty_window_change_view (window, CHATTY_VIEW_SETTINGS);
 }
 
 

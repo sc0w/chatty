@@ -5,67 +5,63 @@
  */
 
 
-#ifndef __WINDOW_H_INCLUDE__
-#define __WINDOW_H_INCLUDE__
+#pragma once
+
 
 #include <gtk/gtk.h>
-#include <purple.h>
-#include "chatty-message-list.h"
 #include "chatty-settings.h"
-#define HANDY_USE_UNSTABLE_API
-#include <handy.h>
+
+G_BEGIN_DECLS
+
+#define CHATTY_TYPE_WINDOW (chatty_window_get_type())
+
+G_DECLARE_FINAL_TYPE (ChattyWindow, chatty_window, CHATTY, WINDOW, GtkApplicationWindow)
 
 
-typedef struct {
-  /* Listboxes for sidebar and contact list */
-  GtkListBox        *listbox_chats;
-  GtkListBox        *listbox_contacts;
+struct _ChattyWindow
+{
+  GtkApplicationWindow parent_instance;
 
-  HdyLeaflet        *content_box;
-  HdyLeaflet        *header_box;
-  HdyHeaderGroup    *header_group;
+  ChattySettings *settings;
 
-  GtkWidget         *sub_header_icon;
-  GtkWidget         *sub_header_label;
+  GtkWidget *listbox_chats;
 
-  GtkWidget         *dialog_new_chat;
-  GtkWidget         *dialog_muc_info;
+  GtkWidget *content_box;
+  GtkWidget *header_box;
+  GtkWidget *header_group;
 
-  GtkBox            *pane_view_chat_list;
-  GtkWidget         *pane_view_message_list;
+  GtkWidget *sub_header_icon;
+  GtkWidget *sub_header_label;
 
-  HdySearchBar      *search_bar_chats;
-  GtkEntry          *search_entry_chats;
+  GtkWidget *dialog_new_chat;
+  GtkWidget *dialog_muc_info;
 
-  GtkWidget         *button_menu_add_contact;
-  GtkWidget         *button_menu_add_gnome_contact;
-  GtkWidget         *button_menu_new_group_chat;
-  GtkWidget         *button_header_chat_info;
-  GtkWidget         *button_header_add_chat;
-  GtkWidget         *button_header_sub_menu;
+  GtkWidget *search_bar_chats;
+  GtkWidget *search_entry_chats;
 
-  GtkBox            *box_overlay;
-  GtkImage          *icon_overlay;
-  GtkWidget         *label_overlay_1;
-  GtkWidget         *label_overlay_2;
-  GtkWidget         *label_overlay_3;
+  GtkWidget *button_menu_add_contact;
+  GtkWidget *button_menu_add_gnome_contact;
+  GtkWidget *button_menu_new_group_chat;
+  GtkWidget *button_header_chat_info;
+  GtkWidget *button_header_add_chat;
+  GtkWidget *button_header_sub_menu;
 
-  gboolean           im_account_connected;
-  gboolean           sms_account_connected;
+  GtkWidget *pane_view_chat_list;
 
-  char        *uri;
-} chatty_data_t;
+  GtkWidget *notebook_convs;
 
-chatty_data_t *chatty_get_data(void);
+  GtkWidget *overlay;
+  GtkWidget *icon_overlay;
+  GtkWidget *label_overlay_1;
+  GtkWidget *label_overlay_2;
+  GtkWidget *label_overlay_3;
 
-
-typedef struct {
-  const char  *title;
-  const char  *text_1;
-  const char  *text_2;
-  const char  *icon_name;
-  int          icon_size;
-} overlay_content_t;
+  const char *uri;
+  
+  gboolean daemon_mode;
+  gboolean im_account_connected;
+  gboolean sms_account_connected;
+};
 
 
 #define CHATTY_COLOR_GREEN     "6BBA3D"
@@ -126,9 +122,34 @@ typedef enum {
 } ChattyWindowState;
 
 
-void chatty_window_change_view (guint state);
-void chatty_window_overlay_show (gboolean show);
-void chatty_window_activate (GtkApplication* app, gpointer user_data);
-void chatty_window_update_sub_header_titlebar (GdkPixbuf  *icon, const char *title);
+GtkWidget *chatty_window_new (GtkApplication *application, 
+                              gboolean        daemon_mode, 
+                              ChattySettings *settings, 
+                              char           *uri);
 
-#endif
+void chatty_window_change_view (ChattyWindow *self, guint state);
+void chatty_window_update_sub_header_titlebar (ChattyWindow *self, GdkPixbuf *icon, const char *title);
+
+GtkWidget *chatty_window_get_search_entry (ChattyWindow *self);
+GtkWidget *chatty_window_get_listbox_chats (ChattyWindow *self);
+GtkWidget *chatty_window_get_notebook_convs (ChattyWindow *self);
+GtkWidget *chatty_window_get_new_chat_dialog (ChattyWindow *self);
+const char *chatty_window_get_uri (ChattyWindow *self);
+
+void chatty_window_set_overlay_visible (ChattyWindow *self, gboolean visible);
+void chatty_window_set_dialog_new_chat_visible (ChattyWindow *self, gboolean visible);
+
+void chatty_window_set_button_menu_add_contact_visible (ChattyWindow *self, gboolean visible);
+void chatty_window_set_button_menu_add_gnome_contact_visible (ChattyWindow *self, gboolean visible);
+void chatty_window_set_button_header_chat_info_visible (ChattyWindow *self, gboolean visible);
+void chatty_window_set_button_group_chat_sensitive (ChattyWindow *self, gboolean sensitive);
+void chatty_window_set_button_header_add_chat_sensitive (ChattyWindow *self, gboolean sensitive);
+void chatty_window_set_button_header_sub_menu_sensitive (ChattyWindow *self, gboolean sensitive);
+
+void chatty_window_set_im_account_connected (ChattyWindow *self, gboolean connected);
+gboolean chatty_window_get_im_account_connected (ChattyWindow *self);
+void chatty_window_set_sms_account_connected (ChattyWindow *self, gboolean connected);
+gboolean chatty_window_get_sms_account_connected (ChattyWindow *self);
+
+
+G_END_DECLS

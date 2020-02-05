@@ -1803,13 +1803,17 @@ chatty_conv_muc_list_update_user (PurpleConversation *conv,
 void
 chatty_conv_invite_muc_user (const char *user_name,
                              const char *invite_msg)
-{
+{  
+  ChattyWindow           *window;
   PurpleConversation     *conv;
   PurpleConversationType  conv_type;
+  GtkWidget              *notebook_convs;
 
-  chatty_data_t *chatty = chatty_get_data ();
+  window = chatty_utils_get_window ();
 
-  conv = chatty_conv_container_get_active_purple_conv (GTK_NOTEBOOK(chatty->pane_view_message_list));
+  notebook_convs = chatty_window_get_notebook_convs (window);
+
+  conv = chatty_conv_container_get_active_purple_conv (GTK_NOTEBOOK(notebook_convs));
   conv_type = purple_conversation_get_type (conv);
 
   if (conv && conv_type == PURPLE_CONV_TYPE_CHAT) {
@@ -1832,32 +1836,36 @@ chatty_conv_invite_muc_user (const char *user_name,
 static void
 chatty_conv_stack_add_conv (ChattyConversation *chatty_conv)
 {
+  ChattyWindow            *window;
   PurpleConversation      *conv = chatty_conv->conv;
+  GtkWidget               *notebook_convs;
   const gchar             *tab_txt;
   gchar                   *text;
   gchar                   **name_split;
 
-  chatty_data_t *chatty = chatty_get_data();
+  window = chatty_utils_get_window ();
+
+  notebook_convs = chatty_window_get_notebook_convs (window);
 
   tab_txt = purple_conversation_get_title (conv);
 
-  gtk_notebook_append_page (GTK_NOTEBOOK(chatty->pane_view_message_list),
+  gtk_notebook_append_page (GTK_NOTEBOOK(notebook_convs),
                             chatty_conv->tab_cont, NULL);
 
   name_split = g_strsplit (tab_txt, "@", -1);
   text = g_strdup_printf ("%s %s",name_split[0], " >");
 
-  gtk_notebook_set_tab_label_text (GTK_NOTEBOOK(chatty->pane_view_message_list),
+  gtk_notebook_set_tab_label_text (GTK_NOTEBOOK(notebook_convs),
                                    chatty_conv->tab_cont, text);
 
   gtk_widget_show (chatty_conv->tab_cont);
 
-  gtk_notebook_set_current_page (GTK_NOTEBOOK(chatty->pane_view_message_list), 0);
+  gtk_notebook_set_current_page (GTK_NOTEBOOK(notebook_convs), 0);
 
   if (purple_prefs_get_bool (CHATTY_PREFS_ROOT "/conversations/show_tabs")) {
-    gtk_notebook_set_show_tabs (GTK_NOTEBOOK(chatty->pane_view_message_list), TRUE);
+    gtk_notebook_set_show_tabs (GTK_NOTEBOOK(notebook_convs), TRUE);
   } else {
-    gtk_notebook_set_show_tabs (GTK_NOTEBOOK(chatty->pane_view_message_list), FALSE);
+    gtk_notebook_set_show_tabs (GTK_NOTEBOOK(notebook_convs), FALSE);
   }
 
   g_free (text);
@@ -2212,24 +2220,28 @@ chatty_get_conv_blist_node (PurpleConversation *conv)
 static void
 chatty_conv_switch_conv (ChattyConversation *chatty_conv)
 {
-  PurpleConversationType conv_type;
-  gint                   page_num;
+  ChattyWindow           *window;
+  PurpleConversationType  conv_type;
+  GtkWidget              *notebook_convs;
+  gint                    page_num;
 
-  chatty_data_t *chatty = chatty_get_data();
+  window = chatty_utils_get_window ();
+
+  notebook_convs = chatty_window_get_notebook_convs (window);
 
   conv_type = purple_conversation_get_type (chatty_conv->conv);
 
-  page_num = gtk_notebook_page_num (GTK_NOTEBOOK(chatty->pane_view_message_list),
+  page_num = gtk_notebook_page_num (GTK_NOTEBOOK(notebook_convs),
                                     chatty_conv->tab_cont);
 
-  gtk_notebook_set_current_page (GTK_NOTEBOOK(chatty->pane_view_message_list),
+  gtk_notebook_set_current_page (GTK_NOTEBOOK(notebook_convs),
                                  page_num);
 
   g_debug ("chatty_conv_switch_conv active_conv: %s   page_num %i",
            purple_conversation_get_name (chatty_conv->conv), page_num);
 
   if (conv_type == PURPLE_CONV_TYPE_CHAT) {
-    gtk_widget_show (chatty->button_header_chat_info);
+    chatty_window_set_button_header_chat_info_visible (window, TRUE);
   }
 
   gtk_widget_grab_focus (GTK_WIDGET(chatty_conv->input.entry));
@@ -2246,16 +2258,20 @@ chatty_conv_switch_conv (ChattyConversation *chatty_conv)
 static void
 chatty_conv_remove_conv (ChattyConversation *chatty_conv)
 {
-  guint index;
+  ChattyWindow  *window;
+  GtkWidget     *notebook_convs;
+  guint          index;
 
-  chatty_data_t *chatty = chatty_get_data();
+  window = chatty_utils_get_window ();
 
-  index = gtk_notebook_page_num (GTK_NOTEBOOK(chatty->pane_view_message_list),
+  notebook_convs = chatty_window_get_notebook_convs (window);
+
+  index = gtk_notebook_page_num (GTK_NOTEBOOK(notebook_convs),
                                  chatty_conv->tab_cont);
 
   gtk_widget_destroy (GTK_WIDGET(chatty_conv->tab_cont));
 
-  gtk_notebook_remove_page (GTK_NOTEBOOK(chatty->pane_view_message_list), index);
+  gtk_notebook_remove_page (GTK_NOTEBOOK(notebook_convs), index);
 
   g_debug ("chatty_conv_remove_conv conv");
 }
@@ -2331,17 +2347,20 @@ chatty_conv_im_with_buddy (PurpleAccount *account,
 static void
 chatty_conv_conversation_update (PurpleConversation *conv)
 {
-  PurpleAccount      *account;
-  PurpleBuddy        *buddy;
-  PurpleContact      *contact;
-  GdkPixbuf          *avatar;
-  g_autofree char    *name = NULL;
-  const char         *buddy_alias;
-  const char         *contact_alias;
+  ChattyWindow    *window;
+  PurpleAccount   *account;
+  PurpleBuddy     *buddy;
+  PurpleContact   *contact;
+  GdkPixbuf       *avatar;
+  g_autofree char *name = NULL;
+  const char      *buddy_alias;
+  const char      *contact_alias;
 
   if (!conv) {
     return;
   }
+
+  window = chatty_utils_get_window ();
 
   account = purple_conversation_get_account (conv);
   name = chatty_utils_jabber_id_strip (purple_conversation_get_name (conv));
@@ -2358,7 +2377,9 @@ chatty_conv_conversation_update (PurpleConversation *conv)
   contact = purple_buddy_get_contact (buddy);
   contact_alias = purple_contact_get_alias (contact);
 
-  chatty_window_update_sub_header_titlebar (avatar, contact_alias ? contact_alias : buddy_alias);
+  chatty_window_update_sub_header_titlebar (window,
+                                            avatar, 
+                                            contact_alias ? contact_alias : buddy_alias);
 
   g_object_unref (avatar);
 }
@@ -2377,12 +2398,14 @@ chatty_conv_conversation_update (PurpleConversation *conv)
 void
 chatty_conv_show_conversation (PurpleConversation *conv)
 {
+  ChattyWindow       *window;
   ChattyConversation *chatty_conv;
-  GtkWindow          *window;
 
   if (!conv) {
     return;
   }
+
+  window = chatty_utils_get_window ();
 
   chatty_conv = CHATTY_CONVERSATION (conv);
 
@@ -2391,11 +2414,9 @@ chatty_conv_show_conversation (PurpleConversation *conv)
 
   chatty_conv_conversation_update (conv);
 
-  chatty_window_change_view (CHATTY_VIEW_MESSAGE_LIST);
+  chatty_window_change_view (window, CHATTY_VIEW_MESSAGE_LIST);
 
-  window = gtk_application_get_active_window (GTK_APPLICATION (g_application_get_default ()));
-
-  gtk_window_present (window);
+  gtk_window_present (GTK_WINDOW(window));
 }
 
 
@@ -2865,17 +2886,22 @@ chatty_conversations_get_conv_ui_ops (void)
 void
 chatty_conv_container_init (void)
 {
-  chatty_data_t *chatty = chatty_get_data();
+  ChattyWindow *window;
+  GtkWidget    *notebook_convs;
 
-  g_signal_connect (G_OBJECT(chatty->pane_view_message_list),
+  window = chatty_utils_get_window ();
+
+  notebook_convs = chatty_window_get_notebook_convs (window);
+
+  g_signal_connect (G_OBJECT(notebook_convs),
                     "switch_page",
                     G_CALLBACK(cb_stack_cont_before_switch_conv), 0);
 
-  g_signal_connect_after (G_OBJECT(chatty->pane_view_message_list),
+  g_signal_connect_after (G_OBJECT(notebook_convs),
                           "switch_page",
                           G_CALLBACK(cb_stack_cont_switch_conv), 0);
 
-  gtk_notebook_set_show_tabs (GTK_NOTEBOOK(chatty->pane_view_message_list), FALSE);
+  gtk_notebook_set_show_tabs (GTK_NOTEBOOK(notebook_convs), FALSE);
 }
 
 

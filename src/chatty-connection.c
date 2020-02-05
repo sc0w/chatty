@@ -23,14 +23,16 @@
 static void
 chatty_connection_update_ui (void)
 {
-  GList *accounts;
+  ChattyWindow *window;
+  GList        *accounts;
+  gboolean      sensitive;
 
-  chatty_data_t *chatty = chatty_get_data ();
+  window = chatty_utils_get_window ();
 
-  chatty->im_account_connected = FALSE;
-  chatty->sms_account_connected = FALSE;
+  chatty_window_set_im_account_connected (window, FALSE);
+  chatty_window_set_sms_account_connected (window, FALSE);
 
-  gtk_widget_set_sensitive (chatty->button_menu_new_group_chat, FALSE);
+  chatty_window_set_button_group_chat_sensitive (window, FALSE);
 
   for (accounts = purple_accounts_get_all (); accounts != NULL; accounts = accounts->next) {
     ChattyPpAccount *account;
@@ -46,19 +48,21 @@ chatty_connection_update_ui (void)
 
     if (chatty_account_get_status (CHATTY_ACCOUNT (account)) == CHATTY_CONNECTED) {
       if (chatty_pp_account_is_sms (account)) {
-        chatty->sms_account_connected = TRUE;
+        chatty_window_set_sms_account_connected (window, TRUE);
       }  else {
-        chatty->im_account_connected = TRUE;
-        gtk_widget_set_sensitive (chatty->button_menu_new_group_chat, TRUE);
+        chatty_window_set_im_account_connected (window, TRUE);
+        chatty_window_set_button_group_chat_sensitive (window, TRUE);
       } 
     }
   }
 
-  gtk_widget_set_sensitive (chatty->button_header_add_chat, 
-                            chatty->im_account_connected |
-                            chatty->sms_account_connected);
+  sensitive = chatty_window_get_sms_account_connected (window) |
+              chatty_window_get_im_account_connected (window);
 
-  chatty_window_overlay_show (!chatty_blist_list_has_children (CHATTY_LIST_CHATS));
+  chatty_window_set_button_header_add_chat_sensitive (window, sensitive);
+
+  chatty_window_set_overlay_visible (window, 
+                                     !chatty_blist_list_has_children (CHATTY_LIST_CHATS));
 }
 
 
@@ -92,10 +96,10 @@ chatty_connection_error_dialog (ChattyPpAccount *account,
 static void
 chatty_connection_connected (PurpleConnection *gc)
 {
-  ChattyPpAccount  *pp_account;
-  PurpleAccount    *account;
-
-  chatty_data_t *chatty = chatty_get_data ();
+  ChattyWindow    *window;
+  ChattyPpAccount *pp_account;
+  PurpleAccount   *account;
+  const char      *uri = NULL;
 
   account = purple_connection_get_account (gc);
   pp_account = chatty_pp_account_get_object (account);
@@ -105,10 +109,13 @@ chatty_connection_connected (PurpleConnection *gc)
     {
       chatty_blist_enable_folks_contacts ();
 
+      window = chatty_utils_get_window ();
+      
+      uri = chatty_window_get_uri (window);
+
       // we are ready to open URI links now
-      if (chatty->uri) {
-        chatty_blist_add_buddy_from_uri (chatty->uri);
-        chatty->uri = NULL;
+      if (uri) {
+        chatty_blist_add_buddy_from_uri (uri);
       }
     }
 
