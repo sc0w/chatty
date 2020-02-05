@@ -405,6 +405,15 @@ chatty_window_constructed (GObject *object)
 
 
 static void
+chatty_window_dispose (GObject *object)
+{
+  chatty_purple_quit ();
+
+  G_OBJECT_CLASS(chatty_window_parent_class)->dispose (object);
+}
+
+
+static void
 chatty_window_finalize (GObject *object)
 {
   ChattyWindow *self = (ChattyWindow *)object;
@@ -425,6 +434,7 @@ chatty_window_class_init (ChattyWindowClass *klass)
 
   object_class->set_property = chatty_window_set_property;
   object_class->constructed  = chatty_window_constructed;
+  object_class->dispose      = chatty_window_dispose;
   object_class->finalize     = chatty_window_finalize;
 
   props[PROP_DAEMON] =

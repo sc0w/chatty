@@ -131,7 +131,7 @@ chatty_eventloop_get_ui_ops (void)
 }
 
 
-static void
+void
 chatty_purple_quit (void)
 {
   chatty_conversations_uninit ();
@@ -145,12 +145,9 @@ chatty_purple_quit (void)
   if (NULL != ui_info) {
     g_hash_table_destroy (ui_info);
   }
-
+  
   chatty_xeps_close ();
-
   chatty_folks_close ();
-
-  g_application_quit (g_application_get_default ());
 }
 
 

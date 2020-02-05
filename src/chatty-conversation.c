@@ -2992,7 +2992,6 @@ chatty_conversations_init (void)
 void
 chatty_conversations_uninit (void)
 {
-  g_hash_table_destroy (ht_emoticon);
   g_hash_table_destroy (ht_sms_id);
   purple_prefs_disconnect_by_handle (chatty_conversations_get_handle());
   purple_signals_disconnect_by_handle (chatty_conversations_get_handle());
