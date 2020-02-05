@@ -85,12 +85,14 @@ chatty_icon_get_data_from_image (const char  *file_name,
                                               MIN (height, icon_height),
                                               TRUE, error);
 
-  if (!error || !*error)
-    gdk_pixbuf_save_to_buffer (pixbuf, &buffer, &size, "png", error, NULL);
+  if (!pixbuf)
+    return NULL;
 
-  if (!error || !*error)
-    if (len)
-      *len = size;
+  if (!gdk_pixbuf_save_to_buffer (pixbuf, &buffer, &size, "png", error, NULL))
+    return NULL;
+
+  if (len)
+    *len = size;
 
   return buffer;
 }
