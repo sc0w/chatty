@@ -230,7 +230,8 @@ encrypt_status_cb (int      err,
       self->chatty_conv->omemo.enabled = TRUE;
       break;
     default:
-      g_debug ("Received unknown status code.");
+      g_warning ("Received unknown status code.");
+      return;
   }
 
   gtk_image_set_from_icon_name (self->chatty_conv->omemo.symbol_encrypt,
