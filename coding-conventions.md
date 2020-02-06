@@ -78,7 +78,7 @@ g_signal_connect (G_OBJECT (self),
 
  self = (ChattyDomain *)object;
 
- g_autoptr (GError)err = NULL;
+ g_autoptr(GError) err = NULL;
 
  gtk_widget_set_visible (GTK_WIDGET (sub_view_back_button), FALSE);
 ```
