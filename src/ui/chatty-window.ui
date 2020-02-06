@@ -11,7 +11,7 @@
         <property name="margin">12</property>
         <property name="orientation">vertical</property>
         <child>
-          <object class="GtkModelButton" id="button_menu_new_group_chat">
+          <object class="GtkModelButton" id="menu_new_group_chat_button">
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">False</property>
@@ -103,7 +103,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkModelButton" id="button_menu_add_contact">
+          <object class="GtkModelButton" id="menu_add_contact_button">
             <property name="visible">False</property>
             <property name="active">False</property>
             <property name="can_focus">False</property>
@@ -118,7 +118,7 @@
         </child>
         <child>
           <object class="GtkSeparator" id="separator_menu_msg_view1">
-            <property name="visible" bind-source="button_menu_add_gnome_contact" bind-property="visible" bind-flags="sync-create"/>
+            <property name="visible" bind-source="menu_add_gnome_contact_button" bind-property="visible" bind-flags="sync-create"/>
             <property name="can_focus">False</property>
             <property name="margin_top">6</property>
             <property name="margin_bottom">6</property>
@@ -129,7 +129,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkModelButton" id="button_menu_add_gnome_contact">
+          <object class="GtkModelButton" id="menu_add_gnome_contact_button">
             <property name="visible">False</property>
             <property name="active">False</property>
             <property name="can_focus">False</property>
@@ -209,7 +209,7 @@
                 <property name="show_close_button">True</property>
                 <property name="title" translatable="yes">Chats</property>
                 <child>
-                  <object class="GtkButton" id="button_header_add_chat">
+                  <object class="GtkButton" id="header_add_chat_button">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="receives_default">False</property>
@@ -247,7 +247,7 @@
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="receives_default">False</property>
-                    <property name="active" bind-source="search_bar_chats" bind-property="search-mode-enabled" bind-flags="sync-create|bidirectional"/>
+                    <property name="active" bind-source="chats_search_bar" bind-property="search-mode-enabled" bind-flags="sync-create|bidirectional"/>
                     <child>
                       <object class="GtkImage">
                         <property name="visible">True</property>
@@ -333,7 +333,7 @@
                   </object>
                 </child>
                 <child>
-                  <object class="GtkMenuButton" id="button_header_sub_menu">
+                  <object class="GtkMenuButton" id="header_sub_menu_button">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="receives_default">False</property>
@@ -351,7 +351,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkButton" id="button_header_chat_info">
+                  <object class="GtkButton" id="header_chat_info_button">
                     <property name="visible">False</property>
                     <property name="can_focus">False</property>
                     <property name="receives_default">False</property>
@@ -403,7 +403,7 @@
                     <property name="expand">True</property>
                     <property name="orientation">vertical</property>
                     <child>
-                      <object class="GtkImage" id="icon_overlay">
+                      <object class="GtkImage" id="overlay_icon">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="valign">center</property>
@@ -428,7 +428,7 @@
                         <property name="margin_end">36</property>
                         <property name="expand">True</property>
                         <child>
-                          <object class="GtkLabel" id="label_overlay_1">
+                          <object class="GtkLabel" id="overlay_label_1">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <property name="opacity">0.5</property>
@@ -448,7 +448,7 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkLabel" id="label_overlay_2">
+                          <object class="GtkLabel" id="overlay_label_2">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <property name="opacity">0.5</property>
@@ -464,7 +464,7 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkLabel" id="label_overlay_3">
+                          <object class="GtkLabel" id="overlay_label_3">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <property name="opacity">0.5</property>
@@ -496,7 +496,7 @@
                     <property name="can_focus">False</property>
                     <property name="expand">True</property>
                     <child>
-                      <object class="HdySearchBar" id="search_bar_chats">
+                      <object class="HdySearchBar" id="chats_search_bar">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="halign">fill</property>
@@ -510,7 +510,7 @@
                             <property name="hexpand">True</property>
                             <property name="maximum-width">600</property>
                             <child>
-                              <object class="GtkSearchEntry" id="search_entry_chats">
+                              <object class="GtkSearchEntry" id="chats_search_entry">
                                 <property name="visible">True</property>
                                 <property name="hexpand">True</property>
                               </object>
@@ -520,7 +520,7 @@
                       </object>
                     </child>
                     <child>
-                      <object class="GtkListBox" id="listbox_chats">
+                      <object class="GtkListBox" id="chats_listbox">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="expand">True</property>
@@ -550,7 +550,7 @@
           </object>
         </child>
         <child>
-          <object class="GtkNotebook" id="notebook_convs">
+          <object class="GtkNotebook" id="convs_notebook">
             <property name="visible">True</property>
             <property name="show-border">False</property>
             <property name="can_focus">False</property>
@@ -574,7 +574,7 @@
     <property name="mode">horizontal</property>
     <widgets>
       <widget name="sub_header_bar"/>
-      <widget name="notebook_convs"/>
+      <widget name="convs_notebook"/>
     </widgets>
   </object>
   <object class="HdyHeaderGroup" id="header_group">

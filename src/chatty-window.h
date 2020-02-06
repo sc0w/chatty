@@ -24,7 +24,7 @@ struct _ChattyWindow
 
   ChattySettings *settings;
 
-  GtkWidget *listbox_chats;
+  GtkWidget *chats_listbox;
 
   GtkWidget *content_box;
   GtkWidget *header_box;
@@ -33,28 +33,25 @@ struct _ChattyWindow
   GtkWidget *sub_header_icon;
   GtkWidget *sub_header_label;
 
-  GtkWidget *dialog_new_chat;
-  GtkWidget *dialog_muc_info;
+  GtkWidget *new_chat_dialog;
 
-  GtkWidget *search_bar_chats;
-  GtkWidget *search_entry_chats;
+  GtkWidget *chats_search_bar;
+  GtkWidget *chats_search_entry;
 
-  GtkWidget *button_menu_add_contact;
-  GtkWidget *button_menu_add_gnome_contact;
-  GtkWidget *button_menu_new_group_chat;
-  GtkWidget *button_header_chat_info;
-  GtkWidget *button_header_add_chat;
-  GtkWidget *button_header_sub_menu;
+  GtkWidget *menu_add_contact_button;
+  GtkWidget *menu_add_gnome_contact_button;
+  GtkWidget *menu_new_group_chat_button;
+  GtkWidget *header_chat_info_button;
+  GtkWidget *header_add_chat_button;
+  GtkWidget *header_sub_menu_button;
 
-  GtkWidget *pane_view_chat_list;
-
-  GtkWidget *notebook_convs;
+  GtkWidget *convs_notebook;
 
   GtkWidget *overlay;
-  GtkWidget *icon_overlay;
-  GtkWidget *label_overlay_1;
-  GtkWidget *label_overlay_2;
-  GtkWidget *label_overlay_3;
+  GtkWidget *overlay_icon;
+  GtkWidget *overlay_label_1;
+  GtkWidget *overlay_label_2;
+  GtkWidget *overlay_label_3;
 
   char      *uri;
   
@@ -131,20 +128,20 @@ void chatty_window_change_view (ChattyWindow *self, guint state);
 void chatty_window_update_sub_header_titlebar (ChattyWindow *self, GdkPixbuf *icon, const char *title);
 
 GtkWidget *chatty_window_get_search_entry (ChattyWindow *self);
-GtkWidget *chatty_window_get_listbox_chats (ChattyWindow *self);
-GtkWidget *chatty_window_get_notebook_convs (ChattyWindow *self);
+GtkWidget *chatty_window_get_chats_listbox (ChattyWindow *self);
+GtkWidget *chatty_window_get_convs_notebook (ChattyWindow *self);
 GtkWidget *chatty_window_get_new_chat_dialog (ChattyWindow *self);
 const char *chatty_window_get_uri (ChattyWindow *self);
 
 void chatty_window_set_overlay_visible (ChattyWindow *self, gboolean visible);
-void chatty_window_set_dialog_new_chat_visible (ChattyWindow *self, gboolean visible);
+void chatty_window_set_new_chat_dialog_visible (ChattyWindow *self, gboolean visible);
 
-void chatty_window_set_button_menu_add_contact_visible (ChattyWindow *self, gboolean visible);
-void chatty_window_set_button_menu_add_gnome_contact_visible (ChattyWindow *self, gboolean visible);
-void chatty_window_set_button_header_chat_info_visible (ChattyWindow *self, gboolean visible);
+void chatty_window_set_menu_add_contact_button_visible (ChattyWindow *self, gboolean visible);
+void chatty_window_set_menu_add_gnome_contact_button_visible (ChattyWindow *self, gboolean visible);
+void chatty_window_set_header_chat_info_button_visible (ChattyWindow *self, gboolean visible);
 void chatty_window_set_button_group_chat_sensitive (ChattyWindow *self, gboolean sensitive);
-void chatty_window_set_button_header_add_chat_sensitive (ChattyWindow *self, gboolean sensitive);
-void chatty_window_set_button_header_sub_menu_sensitive (ChattyWindow *self, gboolean sensitive);
+void chatty_window_set_header_add_chat_button_sensitive (ChattyWindow *self, gboolean sensitive);
+void chatty_window_set_header_sub_menu_button_sensitive (ChattyWindow *self, gboolean sensitive);
 
 void chatty_window_set_im_account_connected (ChattyWindow *self, gboolean connected);
 gboolean chatty_window_get_im_account_connected (ChattyWindow *self);
