@@ -148,7 +148,6 @@ chatty_xeps_close (void)
   chatty_0313_close ();
   // garbage collection
   purple_signals_disconnect_by_handle(chatty_xeps_get_handle());
-  purple_signals_unregister_by_instance(chatty_xeps_get_handle());
   purple_signal_unregister(jabber, "jabber-bare-items");
   purple_signal_unregister(jabber, "jabber-bare-info");
 }

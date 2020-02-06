@@ -20,5 +20,6 @@
 #define PURPLE_GLIB_WRITE_COND (G_IO_OUT | G_IO_HUP | G_IO_ERR | G_IO_NVAL)
 
 void libpurple_init (void);
+void chatty_purple_quit (void);
 
 #endif

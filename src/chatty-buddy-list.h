@@ -39,6 +39,7 @@ int chatty_blist_list_has_children (int list_type);
 gboolean chatty_blist_protocol_is_sms (PurpleAccount *account);
 void chatty_blist_add_buddy_from_uri (const char *uri);
 void chatty_blist_enable_folks_contacts (void);
+void chatty_blist_disconnect_listbox (GtkWidget *list);
 void chatty_blist_join_group_chat (PurpleAccount *account,
                                    const char    *group_chat_id,
                                    const char    *room_alias,

@@ -32,6 +32,7 @@
 #include "chatty-application.h"
 #include "chatty-purple-init.h"
 #include "chatty-buddy-list.h"
+#include "chatty-settings.h"
 
 /**
  * SECTION: chatty-application
@@ -43,9 +44,13 @@
 struct _ChattyApplication
 {
   GtkApplication  parent_instance;
-  gboolean        daemon;
+
+  ChattySettings *settings;
   GtkCssProvider *css_provider;
 
+  char *uri;
+
+  gboolean daemon;
   gboolean enable_debug;
   gboolean enable_verbose;
 };
@@ -148,16 +153,16 @@ chatty_application_startup (GApplication *application)
 {
   ChattyApplication *self = (ChattyApplication *)application;
 
-  chatty_data_t *chatty = chatty_get_data ();
-
   self->daemon = FALSE;
 
-  chatty->uri = NULL;
+  self->uri = NULL;
   chatty_manager_get_default ();
 
   G_APPLICATION_CLASS (chatty_application_parent_class)->startup (application);
 
   g_set_application_name (CHATTY_APP_NAME);
+
+  self->settings = chatty_settings_get_default ();
 
   self->css_provider = gtk_css_provider_new ();
   gtk_css_provider_load_from_resource (self->css_provider,
@@ -185,9 +190,14 @@ chatty_application_activate (GApplication *application)
   if (window) {
     show_win = TRUE;
   } else {
-    chatty_window_activate (app, GINT_TO_POINTER(self->daemon));
+    chatty_window_new (app, 
+                       self->daemon, 
+                       self->settings, 
+                       self->uri);
 
     show_win = !self->daemon;
+
+    libpurple_init ();
   }
 
   if (show_win) {
@@ -204,9 +214,9 @@ chatty_application_open (GApplication  *application,
                          gint           n_files,
                          const gchar   *hint)
 {
+  ChattyApplication *self = (ChattyApplication *)application;
+  
   gint i;
-
-  chatty_data_t *chatty = chatty_get_data ();
 
   for (i = 0; i < n_files; i++) {
     char *uri;
@@ -217,8 +227,8 @@ chatty_application_open (GApplication  *application,
       if (gtk_application_get_active_window (GTK_APPLICATION (application))) {
         chatty_blist_add_buddy_from_uri (uri);
       } else {
-        g_free (chatty->uri);
-        chatty->uri = g_strdup (uri);
+        g_free (self->uri);
+        self->uri = g_strdup (uri);
       }
 
       g_free (uri);

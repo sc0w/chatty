@@ -444,3 +444,25 @@ chatty_utils_create_fingerprint_row (const char *fp,
 
   return GTK_WIDGET(row);
 }
+
+
+// TODO: This is a temporary solution to access member-funtions
+// of the chatty-window class from code-modules that aren't
+// initialized/instantiated yet
+ChattyWindow *
+chatty_utils_get_window (void)
+{
+  GList        *list, *l;
+  ChattyWindow *win = NULL;
+
+  list = gtk_application_get_windows (GTK_APPLICATION(g_application_get_default ()));
+
+  for (l = list; l != NULL; l = g_list_next (l)) {
+    if ((CHATTY_IS_WINDOW(l->data))) {
+      win = CHATTY_WINDOW(l->data);
+      break;
+    };
+  }
+
+  return win;
+}

@@ -32,7 +32,7 @@ struct _ChattyNewChatDialog
 {
   HdyDialog  parent_instance;
 
-  GtkWidget *pane_view_new_chat;
+  GtkWidget *list_box_chats;
   GtkWidget *search_entry_contacts;
   GtkWidget *grid_edit_contact;
   GtkWidget *button_add_gnome_contact;
@@ -308,11 +308,11 @@ chatty_new_chat_dialog_update (ChattyNewChatDialog *self)
 
 
 GtkWidget *
-chatty_new_chat_get_list_container (ChattyNewChatDialog *self)
+chatty_new_chat_get_list_contacts (ChattyNewChatDialog *self)
 {
   g_return_val_if_fail (CHATTY_IS_NEW_CHAT_DIALOG(self), NULL);
   
-  return self->pane_view_new_chat;
+  return self->list_box_chats;
 }
 
 
@@ -334,7 +334,7 @@ chatty_new_chat_dialog_class_init (ChattyNewChatDialogClass *klass)
                                                "/sm/puri/chatty/"
                                                "ui/chatty-dialog-new-chat.ui");
 
-  gtk_widget_class_bind_template_child (widget_class, ChattyNewChatDialog, pane_view_new_chat);
+  gtk_widget_class_bind_template_child (widget_class, ChattyNewChatDialog, list_box_chats);
   gtk_widget_class_bind_template_child (widget_class, ChattyNewChatDialog, search_entry_contacts);
   gtk_widget_class_bind_template_child (widget_class, ChattyNewChatDialog, grid_edit_contact);
   gtk_widget_class_bind_template_child (widget_class, ChattyNewChatDialog, button_add_gnome_contact);

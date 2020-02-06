@@ -7,8 +7,10 @@
 
 #include <glib.h>
 #include <glib/gi18n.h>
+#include <glib-object.h>
 #include "chatty-config.h"
 #include "chatty-window.h"
+#include "chatty-settings.h"
 #include "chatty-message-list.h"
 #include "chatty-buddy-list.h"
 #include "chatty-conversation.h"
@@ -23,9 +25,11 @@
 #include "dialogs/chatty-user-info-dialog.h"
 #include "dialogs/chatty-muc-info-dialog.h"
 
-static chatty_data_t chatty_data;
 
-static void chatty_update_header (void);
+G_DEFINE_TYPE (ChattyWindow, chatty_window, GTK_TYPE_APPLICATION_WINDOW)
+
+
+static void chatty_update_header (ChattyWindow *self);
 
 static void chatty_back_action (GSimpleAction *action,
                                 GVariant      *parameter,
@@ -40,26 +44,6 @@ static void chatty_add_contact_action (GSimpleAction *action,
                                        gpointer       user_data);
 
 
-overlay_content_t OverlayContent[6] = {
-  {.title      = N_("Choose a contact"),
-   .text_1     = N_("Select an <b>SMS</b> or <b>Instant Message</b> contact with the <b>\"+\"</b> button in the titlebar."),
-   .text_2     = NULL,
-  },
-  {.title      = N_("Choose a contact"),
-   .text_1     = N_("Select an <b>Instant Message</b> contact with the \"+\" button in the titlebar."),
-   .text_2     = NULL,
-  },
-  {.title      = N_("Choose a contact"),
-   .text_1     = N_("Start a <b>SMS</b> chat with with the \"+\" button in the titlebar."),
-   .text_2     = N_("For <b>Instant Messaging</b> add or activate an account in <i>\"preferences\"</i>."),
-  },
-  {.title      = N_("Start chatting"),
-   .text_1     = N_("For <b>Instant Messaging</b> add or activate an account in <i>\"preferences\"</i>."),
-   .text_2     = NULL,
-  }
-};
-
-
 static const GActionEntry window_action_entries [] = {
   { "add", chatty_new_chat_action },
   { "add-contact", chatty_add_contact_action },
@@ -67,60 +51,86 @@ static const GActionEntry window_action_entries [] = {
 };
 
 
-chatty_data_t *chatty_get_data (void)
-{
-  return &chatty_data;
-}
+enum {
+  PROP_0,
+  PROP_DAEMON,
+  PROP_SETTINGS,
+  PROP_URI,
+  PROP_LAST
+};
+
+static GParamSpec *props[PROP_LAST];
 
 
-static void
-cb_leaflet_visible_child (GObject       *sender,
-                          GParamSpec    *pspec,
-                          gpointer      *data)
-{
-  chatty_update_header ();
-}
+typedef struct {
+  const char *title;
+  const char *text_1;
+  const char *text_2;
+  const char *icon_name;
+  int         icon_size;
+} overlay_content_t;
 
-
-static void
-cb_leaflet_notify_fold (GObject       *sender,
-                        GParamSpec    *pspec,
-                        gpointer      *data)
-{
-  chatty_data_t *chatty = chatty_get_data ();
-
-  HdyFold fold = hdy_leaflet_get_fold (chatty->header_box);
-
-  if (fold != HDY_FOLD_FOLDED) {
-    chatty_blist_chat_list_select_first ();
+overlay_content_t OverlayContent[6] = {
+  {.title  = N_("Choose a contact"),
+   .text_1 = N_("Select an <b>SMS</b> or <b>Instant Message</b> "
+                "contact with the <b>\"+\"</b> button in the titlebar."),
+   .text_2 = NULL,
+  },
+  {.title  = N_("Choose a contact"),
+   .text_1 = N_("Select an <b>Instant Message</b> contact with "
+                "the \"+\" button in the titlebar."),
+   .text_2 = NULL,
+  },
+  {.title  = N_("Choose a contact"),
+   .text_1 = N_("Start a <b>SMS</b> chat with with the \"+\" button in the titlebar."),
+   .text_2 = N_("For <b>Instant Messaging</b> add or activate "
+                "an account in <i>\"preferences\"</i>."),
+  },
+  {.title  = N_("Start chatting"),
+   .text_1 = N_("For <b>Instant Messaging</b> add or activate "
+                "an account in <i>\"preferences\"</i>."),
+   .text_2 = NULL,
   }
-
-  chatty_update_header ();
-}
+};
 
 
-static gboolean
-cb_window_delete (GtkWidget *widget,
-                  GdkEvent  *event,
-                  gpointer   user_data)
+static void
+header_visible_child_cb (GObject      *sender,
+                         GParamSpec   *pspec,
+                         ChattyWindow *self)
 {
-  gtk_widget_hide_on_delete (widget);
+  g_assert (CHATTY_IS_WINDOW (self));
 
-  return TRUE;
+  chatty_update_header (self);
 }
 
 
 static void
-chatty_update_header (void)
+notify_fold_cb (GObject      *sender,
+                GParamSpec   *pspec,
+                ChattyWindow *self)
 {
-  chatty_data_t *chatty = chatty_get_data ();
+  HdyFold fold = hdy_leaflet_get_fold (HDY_LEAFLET (self->header_box));
 
-  GtkWidget *header_child = hdy_leaflet_get_visible_child (chatty->header_box);
-  HdyFold fold = hdy_leaflet_get_fold (chatty->header_box);
+  if (fold != HDY_FOLD_FOLDED)
+    chatty_blist_chat_list_select_first ();
 
+  chatty_update_header (self);
+}
+
+
+static void
+chatty_update_header (ChattyWindow *self)
+{
+  GtkWidget *header_child = hdy_leaflet_get_visible_child (HDY_LEAFLET (self->header_box));
+  HdyFold fold = hdy_leaflet_get_fold (HDY_LEAFLET (self->header_box));
+
+  g_assert (CHATTY_IS_WINDOW (self));
   g_assert (header_child == NULL || GTK_IS_HEADER_BAR (header_child));
 
-  hdy_header_group_set_focus (chatty->header_group, fold == HDY_FOLD_FOLDED ? GTK_HEADER_BAR (header_child) : NULL);
+  hdy_header_group_set_focus (HDY_HEADER_GROUP (self->header_group), 
+                              fold == HDY_FOLD_FOLDED ? 
+                              GTK_HEADER_BAR (header_child) : NULL);
 }
 
 
@@ -129,7 +139,9 @@ chatty_add_contact_action (GSimpleAction *action,
                            GVariant      *parameter,
                            gpointer       user_data)
 {
-  chatty_window_change_view (CHATTY_VIEW_NEW_CHAT);
+  ChattyWindow *self = user_data;
+
+  chatty_window_change_view (self, CHATTY_VIEW_NEW_CHAT);
 }
 
 
@@ -138,8 +150,10 @@ chatty_back_action (GSimpleAction *action,
                     GVariant      *parameter,
                     gpointer       user_data)
 {
+  ChattyWindow *self = user_data;
+
   chatty_blist_returned_from_chat ();
-  chatty_window_change_view (CHATTY_VIEW_CHAT_LIST);
+  chatty_window_change_view (self, CHATTY_VIEW_CHAT_LIST);
 }
 
 
@@ -148,18 +162,20 @@ chatty_new_chat_action (GSimpleAction *action,
                         GVariant      *parameter,
                         gpointer       user_data)
 {
-  chatty_window_change_view (CHATTY_VIEW_NEW_CHAT);
+  ChattyWindow *self = user_data;
+
+  chatty_window_change_view (self, CHATTY_VIEW_NEW_CHAT);
 }
 
 
 static void
-chatty_window_show_settings_dialog (void)
+chatty_window_show_settings_dialog (ChattyWindow *self)
 {
-  GtkWindow *window;
   GtkWidget *dialog;
 
-  window = gtk_application_get_active_window (GTK_APPLICATION (g_application_get_default ()));
-  dialog = chatty_settings_dialog_new (window);
+  g_assert (CHATTY_IS_WINDOW (self));
+
+  dialog = chatty_settings_dialog_new (GTK_WINDOW (self));
   gtk_dialog_run (GTK_DIALOG (dialog));
 
   gtk_widget_destroy (dialog);
@@ -167,13 +183,13 @@ chatty_window_show_settings_dialog (void)
 
 
 static void
-chatty_window_show_new_muc_dialog (void)
+chatty_window_show_new_muc_dialog (ChattyWindow *self)
 {
-  GtkWindow *window;
   GtkWidget *dialog;
 
-  window = gtk_application_get_active_window (GTK_APPLICATION (g_application_get_default ()));
-  dialog = chatty_new_muc_dialog_new (window);
+  g_assert (CHATTY_IS_WINDOW (self));
+
+  dialog = chatty_new_muc_dialog_new (GTK_WINDOW (self));
   gtk_dialog_run (GTK_DIALOG (dialog));
 
   gtk_widget_destroy (dialog);
@@ -181,258 +197,455 @@ chatty_window_show_new_muc_dialog (void)
 
 
 static GtkWidget *
-chatty_window_create_new_chat_dialog (void)
+chatty_window_create_new_chat_dialog (ChattyWindow *self)
 {
-  GtkWindow *window;
   GtkWidget *dialog;
 
-  window = gtk_application_get_active_window (GTK_APPLICATION (g_application_get_default ()));
-  dialog = chatty_new_chat_dialog_new (window);
+  g_assert (CHATTY_IS_WINDOW (self));
+
+  dialog = chatty_new_chat_dialog_new (GTK_WINDOW (self));
 
   return dialog;
 }
 
 
 static void
-chatty_window_show_user_info_dialog (ChattyConversation *chatty_conv)
+chatty_window_show_chat_info (ChattyWindow *self)
 {
-  GtkWindow *window;
   GtkWidget *dialog;
 
-  g_return_if_fail (chatty_conv != NULL);
-
-  window = gtk_application_get_active_window (GTK_APPLICATION (g_application_get_default ()));
-  dialog = chatty_user_info_dialog_new (window, (gpointer)chatty_conv);
-  gtk_dialog_run (GTK_DIALOG (dialog));
-
-  gtk_widget_destroy (dialog);
-}
-
-
-static void
-chatty_window_show_muc_info_dialog (ChattyConversation *chatty_conv)
-{
-  GtkWindow *window;
-  GtkWidget *dialog;
-
-  g_return_if_fail (chatty_conv != NULL);
-
-  window = gtk_application_get_active_window (GTK_APPLICATION (g_application_get_default ()));
-  dialog = chatty_muc_info_dialog_new (window, (gpointer)chatty_conv);
-  gtk_dialog_run (GTK_DIALOG (dialog));
-
-  gtk_widget_destroy (dialog);
-}
-
-
-static void
-chatty_window_show_chat_info (void)
-{
   ChattyConversation *chatty_conv;
 
-  chatty_data_t *chatty = chatty_get_data ();
+  g_assert (CHATTY_IS_WINDOW (self));
 
-  chatty_conv = chatty_conv_container_get_active_chatty_conv (GTK_NOTEBOOK(chatty->pane_view_message_list));
+  chatty_conv = chatty_conv_container_get_active_chatty_conv (GTK_NOTEBOOK (self->convs_notebook));
 
-  if (purple_conversation_get_type (chatty_conv->conv) == PURPLE_CONV_TYPE_IM) {
-    chatty_window_show_user_info_dialog (chatty_conv);
+  if (purple_conversation_get_type (chatty_conv->conv) == PURPLE_CONV_TYPE_IM)
+    dialog = chatty_user_info_dialog_new (GTK_WINDOW (self), (gpointer)chatty_conv);
+  else if (purple_conversation_get_type (chatty_conv->conv) == PURPLE_CONV_TYPE_CHAT)
+    dialog = chatty_muc_info_dialog_new (GTK_WINDOW (self), (gpointer)chatty_conv);
 
-  } else if (purple_conversation_get_type (chatty_conv->conv) == PURPLE_CONV_TYPE_CHAT) {
-    chatty_window_show_muc_info_dialog (chatty_conv);
-  }
+  gtk_dialog_run (GTK_DIALOG (dialog));
+
+  gtk_widget_destroy (dialog);
 }
 
 
 void
-chatty_window_change_view (ChattyWindowState view)
+chatty_window_change_view (ChattyWindow      *self,
+                           ChattyWindowState  view)
 {
-  chatty_data_t *chatty = chatty_get_data ();
+  g_assert (CHATTY_IS_WINDOW (self));
 
   switch (view) {
     case CHATTY_VIEW_SETTINGS:
-      chatty_window_show_settings_dialog ();
+      chatty_window_show_settings_dialog (self);
       break;
     case CHATTY_VIEW_ABOUT_CHATTY:
       chatty_dialogs_show_dialog_about_chatty ();
       break;
     case CHATTY_VIEW_JOIN_CHAT:
-      chatty_window_show_new_muc_dialog ();
+      chatty_window_show_new_muc_dialog (self);
       break;
     case CHATTY_VIEW_NEW_CHAT:
-      gtk_widget_show (GTK_WIDGET(chatty->dialog_new_chat));
+      gtk_widget_show (GTK_WIDGET (self->new_chat_dialog));
       break;
     case CHATTY_VIEW_CHAT_INFO:
-      chatty_window_show_chat_info ();
+      chatty_window_show_chat_info (self);
       break;
     case CHATTY_VIEW_MESSAGE_LIST:
-      hdy_leaflet_set_visible_child_name (chatty->content_box, "content");
+      hdy_leaflet_set_visible_child_name (HDY_LEAFLET (self->content_box), "content");
       break;
     case CHATTY_VIEW_CHAT_LIST:
-      hdy_leaflet_set_visible_child_name (chatty->content_box, "sidebar");
+      hdy_leaflet_set_visible_child_name (HDY_LEAFLET (self->content_box), "sidebar");
       break;
     default:
-      break;
+      ;
   }
 }
 
 
 void
-chatty_window_update_sub_header_titlebar (GdkPixbuf  *icon,
-                                          const char *title)
+chatty_window_update_sub_header_titlebar (ChattyWindow *self,
+                                          GdkPixbuf    *icon,
+                                          const char   *title)
 {
-  chatty_data_t *chatty = chatty_get_data ();
+  g_assert (CHATTY_IS_WINDOW (self));
 
-  if (icon != NULL) {
-    gtk_image_set_from_pixbuf (GTK_IMAGE(chatty->sub_header_icon), icon);
-  } else {
-    gtk_image_clear (GTK_IMAGE(chatty->sub_header_icon));
-  }
+  if (icon != NULL)
+    gtk_image_set_from_pixbuf (GTK_IMAGE (self->sub_header_icon), icon);
+  else
+    gtk_image_clear (GTK_IMAGE (self->sub_header_icon));
 
-  gtk_label_set_label (GTK_LABEL(chatty->sub_header_label), title);
+  gtk_label_set_label (GTK_LABEL (self->sub_header_label), title);
 }
 
 
 void
-chatty_window_overlay_show (gboolean show)
+chatty_window_set_overlay_visible (ChattyWindow *self,
+                                   gboolean      visible)
 {
   gint   mode;
   guint8 accounts = 0;
 
-  chatty_data_t *chatty = chatty_get_data ();
+  g_assert (CHATTY_IS_WINDOW (self));
 
-  if (show) {
-    gtk_widget_show (GTK_WIDGET(chatty->box_overlay));
+  if (visible) {
+    gtk_widget_show (GTK_WIDGET (self->overlay));
   } else {
-    gtk_widget_hide (GTK_WIDGET(chatty->box_overlay));
+    gtk_widget_hide (GTK_WIDGET (self->overlay));
     return;
   }
 
-  if (chatty->sms_account_connected) {
+  if (self->sms_account_connected)
     accounts |= CHATTY_ACCOUNTS_SMS;
-  }
 
-  if (chatty->im_account_connected ) {
+  if (self->im_account_connected )
     accounts |= CHATTY_ACCOUNTS_IM;
-  }
 
-  if (accounts == CHATTY_ACCOUNTS_IM_SMS) {
+  if (accounts == CHATTY_ACCOUNTS_IM_SMS)
     mode = CHATTY_OVERLAY_EMPTY_CHAT;
-  } else if (accounts == CHATTY_ACCOUNTS_SMS) {
+  else if (accounts == CHATTY_ACCOUNTS_SMS)
     mode = CHATTY_OVERLAY_EMPTY_CHAT_NO_IM;
-  } else if (accounts == CHATTY_ACCOUNTS_IM) {
+  else if (accounts == CHATTY_ACCOUNTS_IM)
     mode = CHATTY_OVERLAY_EMPTY_CHAT_NO_SMS;
-  } else {
+  else
     mode = CHATTY_OVERLAY_EMPTY_CHAT_NO_SMS_IM;
-  }
 
-  gtk_image_set_from_icon_name (chatty->icon_overlay,
+  gtk_image_set_from_icon_name (GTK_IMAGE (self->overlay_icon),
                                 "sm.puri.Chatty-symbolic",
                                 0);
 
-  gtk_image_set_pixel_size (chatty->icon_overlay, 96);
+  gtk_image_set_pixel_size (GTK_IMAGE (self->overlay_icon), 96);
 
-  gtk_label_set_text (GTK_LABEL(chatty->label_overlay_1),
+  gtk_label_set_text (GTK_LABEL (self->overlay_label_1),
                       gettext (OverlayContent[mode].title));
-  gtk_label_set_text (GTK_LABEL(chatty->label_overlay_2),
+  gtk_label_set_text (GTK_LABEL (self->overlay_label_2),
                       gettext (OverlayContent[mode].text_1));
-  gtk_label_set_text (GTK_LABEL(chatty->label_overlay_3),
+  gtk_label_set_text (GTK_LABEL (self->overlay_label_3),
                       gettext (OverlayContent[mode].text_2));
 
-  gtk_label_set_use_markup (GTK_LABEL(chatty->label_overlay_1), TRUE);
-  gtk_label_set_use_markup (GTK_LABEL(chatty->label_overlay_2), TRUE);
-  gtk_label_set_use_markup (GTK_LABEL(chatty->label_overlay_3), TRUE);
+  gtk_label_set_use_markup (GTK_LABEL (self->overlay_label_1), TRUE);
+  gtk_label_set_use_markup (GTK_LABEL (self->overlay_label_2), TRUE);
+  gtk_label_set_use_markup (GTK_LABEL (self->overlay_label_3), TRUE);
 }
 
 
-static void 
-chatty_window_init_data (void)
+static void
+chatty_window_set_property (GObject      *object,
+                            guint         prop_id,
+                            const GValue *value,
+                            GParamSpec   *pspec)
 {
-  chatty_data_t *chatty = chatty_get_data ();
+  ChattyWindow *self = (ChattyWindow *)object;
 
-  // These dialogs need to be created before purple_blist_show()
-  chatty->dialog_new_chat = chatty_window_create_new_chat_dialog ();
+  switch (prop_id) {
+    case PROP_DAEMON:
+      self->daemon_mode = g_value_get_boolean (value);
+      break;
 
-  libpurple_init ();
+    case PROP_SETTINGS:
+      self->settings = g_value_dup_object (value);
+      break;
 
-  hdy_leaflet_set_visible_child_name (chatty->content_box, "sidebar");
+    case PROP_URI:
+      self->uri = g_value_dup_string (value);
+      break;
 
-  hdy_search_bar_connect_entry (chatty->search_bar_chats,
-                                chatty->search_entry_chats);
-
-  gtk_widget_set_sensitive (GTK_WIDGET(chatty->button_header_sub_menu), FALSE);
-
-  chatty_window_change_view (CHATTY_VIEW_CHAT_LIST);
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+  }
 }
 
 
-void
-chatty_window_activate (GtkApplication *app,
-                        gpointer        user_data)
+static void
+chatty_window_constructed (GObject *object)
 {
-  GtkBuilder         *builder;
-  GtkWindow          *window;
+  ChattyWindow *self = (ChattyWindow *)object;
+  GtkWindow    *window = (GtkWindow *)object;
+
   GSimpleActionGroup *simple_action_group;
 
-  chatty_data_t *chatty = chatty_get_data ();
+  self->new_chat_dialog = chatty_window_create_new_chat_dialog (self);
 
-  builder = gtk_builder_new_from_resource ("/sm/puri/chatty/ui/chatty-window.ui");
-
-  window = GTK_WINDOW (gtk_builder_get_object (builder, "window"));
-  g_object_set (window, "application", app, NULL);
-
-  if (GPOINTER_TO_INT(user_data)) {
-    g_signal_connect (G_OBJECT(window),
+  if (self->daemon_mode)
+    g_signal_connect (G_OBJECT (self),
                       "delete-event",
-                      G_CALLBACK(cb_window_delete),
+                      G_CALLBACK (gtk_widget_hide_on_delete),
                       NULL);
-  }
+
+  hdy_leaflet_set_visible_child_name (HDY_LEAFLET (self->content_box), "sidebar");
+
+  hdy_search_bar_connect_entry (HDY_SEARCH_BAR(self->chats_search_bar),
+                                GTK_ENTRY (self->chats_search_entry));
+
+  gtk_widget_set_sensitive (GTK_WIDGET (self->header_sub_menu_button), FALSE);
 
   simple_action_group = g_simple_action_group_new ();
+
   g_action_map_add_action_entries (G_ACTION_MAP (simple_action_group),
                                    window_action_entries,
                                    G_N_ELEMENTS (window_action_entries),
                                    window);
+
   gtk_widget_insert_action_group (GTK_WIDGET (window),
                                   "win",
                                   G_ACTION_GROUP (simple_action_group));
 
   chatty_popover_actions_init (window);
 
-  chatty->sub_header_label = GTK_WIDGET (gtk_builder_get_object (builder, "sub_header_label"));
-  chatty->sub_header_icon = GTK_WIDGET (gtk_builder_get_object (builder, "sub_header_icon"));
-  chatty->button_menu_add_contact = GTK_WIDGET (gtk_builder_get_object (builder, "button_menu_add_contact"));
-  chatty->button_menu_add_gnome_contact = GTK_WIDGET (gtk_builder_get_object (builder, "button_menu_add_gnome_contact"));
-  chatty->button_menu_new_group_chat = GTK_WIDGET (gtk_builder_get_object (builder, "button_menu_new_group_chat"));
-  chatty->button_header_chat_info = GTK_WIDGET (gtk_builder_get_object (builder, "button_header_chat_info"));
-  chatty->button_header_add_chat = GTK_WIDGET (gtk_builder_get_object (builder, "button_header_add_chat"));
-  chatty->button_header_sub_menu = GTK_WIDGET (gtk_builder_get_object (builder, "button_header_sub_menu"));
+  chatty_window_change_view (self, CHATTY_VIEW_CHAT_LIST);
 
-  chatty->search_bar_chats = HDY_SEARCH_BAR (gtk_builder_get_object (builder, "search_bar_chats"));
-  chatty->search_entry_chats = GTK_ENTRY (gtk_builder_get_object (builder, "search_entry_chats"));
+  G_OBJECT_CLASS (chatty_window_parent_class)->constructed (object);
+}
 
-  chatty->content_box = HDY_LEAFLET (gtk_builder_get_object (builder, "content_box"));
-  chatty->header_box = HDY_LEAFLET (gtk_builder_get_object (builder, "header_box"));
-  chatty->header_group = HDY_HEADER_GROUP (gtk_builder_get_object (builder, "header_group"));
 
-  chatty->box_overlay = GTK_BOX (gtk_builder_get_object (builder, "welcome_overlay"));
-  chatty->icon_overlay = GTK_IMAGE (gtk_builder_get_object (builder, "icon"));
-  chatty->label_overlay_1 = GTK_WIDGET (gtk_builder_get_object (builder, "label_1"));
-  chatty->label_overlay_2 = GTK_WIDGET (gtk_builder_get_object (builder, "label_2"));
-  chatty->label_overlay_3 = GTK_WIDGET (gtk_builder_get_object (builder, "label_3"));
+static void
+chatty_window_dispose (GObject *object)
+{
+  ChattyWindow *self = (ChattyWindow *)object;
 
-  chatty->pane_view_message_list = GTK_WIDGET (gtk_builder_get_object (builder, "pane_view_message_list"));
-  chatty->pane_view_chat_list = GTK_BOX (gtk_builder_get_object (builder, "pane_view_chat_list"));
+  if (self->chats_listbox)
+    chatty_blist_disconnect_listbox (self->chats_listbox);
 
-  gtk_builder_add_callback_symbol (builder,
-                                   "cb_leaflet_notify_fold",
-                                   G_CALLBACK(cb_leaflet_notify_fold));
-  gtk_builder_add_callback_symbol (builder,
-                                   "cb_leaflet_visible_child",
-                                   G_CALLBACK(cb_leaflet_visible_child));
+  G_OBJECT_CLASS (chatty_window_parent_class)->dispose (object);
+}
 
-  gtk_builder_connect_signals (builder, NULL);
 
-  g_object_unref (builder);
+static void
+chatty_window_finalize (GObject *object)
+{
+  ChattyWindow *self = (ChattyWindow *)object;
 
-  chatty_window_init_data ();
+  chatty_purple_quit ();
+
+  g_object_unref (self->settings);
+
+  g_free (self->uri);
+
+  G_OBJECT_CLASS (chatty_window_parent_class)->finalize (object);
+}
+
+
+static void
+chatty_window_class_init (ChattyWindowClass *klass)
+{
+  GObjectClass   *object_class = G_OBJECT_CLASS (klass);
+  GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
+
+  object_class->set_property = chatty_window_set_property;
+  object_class->constructed  = chatty_window_constructed;
+  object_class->dispose      = chatty_window_dispose;
+  object_class->finalize     = chatty_window_finalize;
+
+  props[PROP_DAEMON] =
+    g_param_spec_boolean ("daemon-mode",
+                          "Daemon Mode",
+                          "Application started in daemon mode",
+                          FALSE,
+                          G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY);
+
+  props[PROP_SETTINGS] =
+    g_param_spec_object ("settings",
+                         "Settings",
+                         "Application settings",
+                         CHATTY_TYPE_SETTINGS,
+                         G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY | G_PARAM_STATIC_STRINGS);
+
+  props[PROP_URI] =
+    g_param_spec_string ("uri",
+                         "An URI",
+                         "An URI string passed to the application",
+                         "",
+                         G_PARAM_WRITABLE | G_PARAM_STATIC_STRINGS);
+
+  g_object_class_install_properties (object_class, PROP_LAST, props);
+
+  gtk_widget_class_set_template_from_resource (widget_class,
+                                               "/sm/puri/chatty/"
+                                               "ui/chatty-window.ui");
+
+  gtk_widget_class_bind_template_child (widget_class, ChattyWindow, sub_header_label);
+  gtk_widget_class_bind_template_child (widget_class, ChattyWindow, sub_header_icon);
+  gtk_widget_class_bind_template_child (widget_class, ChattyWindow, menu_add_contact_button);
+  gtk_widget_class_bind_template_child (widget_class, ChattyWindow, menu_add_gnome_contact_button);
+  gtk_widget_class_bind_template_child (widget_class, ChattyWindow, menu_new_group_chat_button);
+  gtk_widget_class_bind_template_child (widget_class, ChattyWindow, header_chat_info_button);
+  gtk_widget_class_bind_template_child (widget_class, ChattyWindow, header_add_chat_button);
+  gtk_widget_class_bind_template_child (widget_class, ChattyWindow, header_sub_menu_button);
+  gtk_widget_class_bind_template_child (widget_class, ChattyWindow, chats_search_bar);
+  gtk_widget_class_bind_template_child (widget_class, ChattyWindow, chats_search_entry);
+  gtk_widget_class_bind_template_child (widget_class, ChattyWindow, content_box);
+  gtk_widget_class_bind_template_child (widget_class, ChattyWindow, header_box);
+  gtk_widget_class_bind_template_child (widget_class, ChattyWindow, header_group);
+  gtk_widget_class_bind_template_child (widget_class, ChattyWindow, chats_listbox);
+  gtk_widget_class_bind_template_child (widget_class, ChattyWindow, convs_notebook);
+  gtk_widget_class_bind_template_child (widget_class, ChattyWindow, overlay);
+  gtk_widget_class_bind_template_child (widget_class, ChattyWindow, overlay_icon);
+  gtk_widget_class_bind_template_child (widget_class, ChattyWindow, overlay_label_1);
+  gtk_widget_class_bind_template_child (widget_class, ChattyWindow, overlay_label_2);
+  gtk_widget_class_bind_template_child (widget_class, ChattyWindow, overlay_label_3);
+
+  gtk_widget_class_bind_template_callback (widget_class, notify_fold_cb);
+  gtk_widget_class_bind_template_callback (widget_class, header_visible_child_cb);
+}
+
+
+static void
+chatty_window_init (ChattyWindow *self)
+{
+  gtk_widget_init_template (GTK_WIDGET (self));
+}
+
+
+GtkWidget *
+chatty_window_new (GtkApplication *application,
+                   gboolean        daemon_mode,
+                   ChattySettings *settings,
+                   const char     *uri)
+{
+  g_assert (GTK_IS_APPLICATION (application));
+  g_assert (CHATTY_IS_SETTINGS (settings));
+
+  return g_object_new (CHATTY_TYPE_WINDOW,
+                       "application", application,
+                       "daemon-mode", daemon_mode,
+                       "settings", settings,
+                       "uri", uri,
+                       NULL);
+}
+
+
+void 
+chatty_window_set_new_chat_dialog_visible (ChattyWindow *self,
+                                           gboolean      visible)
+{
+  gtk_widget_set_visible (self->new_chat_dialog, visible);
+}
+
+
+void 
+chatty_window_set_menu_add_contact_button_visible (ChattyWindow *self,
+                                                   gboolean      visible)
+{
+  gtk_widget_set_visible (self->menu_add_contact_button, visible);
+}
+
+
+void 
+chatty_window_set_menu_add_gnome_contact_button_visible (ChattyWindow *self,
+                                                         gboolean      visible)
+{
+  gtk_widget_set_visible (self->menu_add_gnome_contact_button, visible);
+}
+
+
+void 
+chatty_window_set_header_chat_info_button_visible (ChattyWindow *self,
+                                                   gboolean      visible)
+{
+  gtk_widget_set_visible (self->header_chat_info_button, visible);
+}
+
+
+void
+chatty_window_set_button_group_chat_sensitive (ChattyWindow *self,
+                                               gboolean      sensitive)
+{
+  gtk_widget_set_sensitive (self->menu_new_group_chat_button, sensitive);
+}
+
+
+void
+chatty_window_set_header_add_chat_button_sensitive (ChattyWindow *self,
+                                                    gboolean      sensitive)
+{
+  gtk_widget_set_sensitive (self->header_add_chat_button, sensitive);
+}
+
+
+void
+chatty_window_set_header_sub_menu_button_sensitive (ChattyWindow *self,
+                                                    gboolean      sensitive)
+{
+  gtk_widget_set_sensitive (self->header_sub_menu_button, sensitive);
+}
+
+
+const char *
+chatty_window_get_uri (ChattyWindow *self)
+{
+  g_return_val_if_fail (CHATTY_IS_WINDOW (self), NULL);
+
+  return self->uri;
+}
+
+
+// TODO: Needs to be moved to accounts-manager
+void
+chatty_window_set_im_account_connected (ChattyWindow *self,
+                                        gboolean      connected)
+{
+  self->im_account_connected = connected;
+}
+
+
+// TODO: Needs to be moved to accounts-manager
+gboolean
+chatty_window_get_im_account_connected (ChattyWindow *self)
+{
+  return self->im_account_connected;
+}
+
+
+// TODO: Needs to be moved to accounts-manager
+void
+chatty_window_set_sms_account_connected (ChattyWindow *self,
+                                         gboolean      connected)
+{
+  self->sms_account_connected = connected;
+}
+
+
+// TODO: Needs to be moved to accounts-manager
+gboolean
+chatty_window_get_sms_account_connected (ChattyWindow *self)
+{
+  return self->sms_account_connected;
+}
+
+
+GtkWidget *
+chatty_window_get_search_entry (ChattyWindow *self)
+{
+  g_return_val_if_fail (CHATTY_IS_WINDOW (self), NULL);
+
+  return self->chats_search_entry;
+}
+
+
+GtkWidget *
+chatty_window_get_chats_listbox (ChattyWindow *self)
+{
+  g_return_val_if_fail (CHATTY_IS_WINDOW (self), NULL);
+
+  return self->chats_listbox;
+}
+
+
+GtkWidget *
+chatty_window_get_convs_notebook (ChattyWindow *self)
+{
+  g_return_val_if_fail (CHATTY_IS_WINDOW (self), NULL);
+
+  return self->convs_notebook;
+}
+
+
+GtkWidget *
+chatty_window_get_new_chat_dialog (ChattyWindow *self)
+{
+  g_return_val_if_fail (CHATTY_IS_WINDOW (self), NULL);
+
+  return self->new_chat_dialog;
 }

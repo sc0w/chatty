@@ -9,6 +9,7 @@
 #include <glib/gi18n.h>
 #include "chatty-popover-actions.h"
 #include "chatty-window.h"
+#include "chatty-utils.h"
 #include "chatty-buddy-list.h"
 
 static void
@@ -16,7 +17,11 @@ view_chat_list_cmd_group_chat (GSimpleAction *action,
                                GVariant      *parameter,
                                gpointer       user_data)
 {
-  chatty_window_change_view (CHATTY_VIEW_JOIN_CHAT);
+  ChattyWindow *window;
+
+  window = chatty_utils_get_window ();
+
+  chatty_window_change_view (window, CHATTY_VIEW_JOIN_CHAT);
 }
 
 
@@ -25,7 +30,11 @@ view_chat_list_cmd_direct_chat (GSimpleAction *action,
                                 GVariant      *parameter,
                                 gpointer       user_data)
 {
-  chatty_window_change_view (CHATTY_VIEW_NEW_CHAT);
+  ChattyWindow *window;
+
+  window = chatty_utils_get_window ();
+
+  chatty_window_change_view (window, CHATTY_VIEW_NEW_CHAT);
 }
 
 
@@ -34,7 +43,11 @@ view_chat_list_cmd_settings (GSimpleAction *action,
                              GVariant      *parameter,
                              gpointer       user_data)
 {
-  chatty_window_change_view (CHATTY_VIEW_SETTINGS);
+  ChattyWindow *window;
+
+  window = chatty_utils_get_window ();
+
+  chatty_window_change_view (window, CHATTY_VIEW_SETTINGS);
 }
 
 
@@ -43,7 +56,11 @@ view_chat_list_cmd_about (GSimpleAction *action,
                           GVariant      *parameter,
                           gpointer       user_data)
 {
-  chatty_window_change_view (CHATTY_VIEW_ABOUT_CHATTY);
+  ChattyWindow *window;
+
+  window = chatty_utils_get_window ();
+
+  chatty_window_change_view (window, CHATTY_VIEW_ABOUT_CHATTY);
 }
 
 
@@ -85,7 +102,11 @@ view_msg_list_cmd_chat_info (GSimpleAction *action,
                              GVariant      *parameter,
                              gpointer       user_data)
 {
-  chatty_window_change_view (CHATTY_VIEW_CHAT_INFO);
+  ChattyWindow *window;
+
+  window = chatty_utils_get_window ();
+
+  chatty_window_change_view (window, CHATTY_VIEW_CHAT_INFO);
 }
 
 
