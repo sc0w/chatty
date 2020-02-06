@@ -17,50 +17,6 @@ G_BEGIN_DECLS
 
 G_DECLARE_FINAL_TYPE (ChattyWindow, chatty_window, CHATTY, WINDOW, GtkApplicationWindow)
 
-
-struct _ChattyWindow
-{
-  GtkApplicationWindow parent_instance;
-
-  ChattySettings *settings;
-
-  GtkWidget *chats_listbox;
-
-  GtkWidget *content_box;
-  GtkWidget *header_box;
-  GtkWidget *header_group;
-
-  GtkWidget *sub_header_icon;
-  GtkWidget *sub_header_label;
-
-  GtkWidget *new_chat_dialog;
-
-  GtkWidget *chats_search_bar;
-  GtkWidget *chats_search_entry;
-
-  GtkWidget *menu_add_contact_button;
-  GtkWidget *menu_add_in_contacts_button;
-  GtkWidget *menu_new_group_chat_button;
-  GtkWidget *header_chat_info_button;
-  GtkWidget *header_add_chat_button;
-  GtkWidget *header_sub_menu_button;
-
-  GtkWidget *convs_notebook;
-
-  GtkWidget *overlay;
-  GtkWidget *overlay_icon;
-  GtkWidget *overlay_label_1;
-  GtkWidget *overlay_label_2;
-  GtkWidget *overlay_label_3;
-
-  char      *uri;
-  
-  gboolean daemon_mode;
-  gboolean im_account_connected;
-  gboolean sms_account_connected;
-};
-
-
 #define CHATTY_COLOR_GREEN     "6BBA3D"
 #define CHATTY_COLOR_BLUE      "4A8FD9"
 #define CHATTY_COLOR_PURPLE    "842B84"

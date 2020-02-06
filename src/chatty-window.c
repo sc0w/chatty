@@ -26,29 +26,53 @@
 #include "dialogs/chatty-muc-info-dialog.h"
 
 
+struct _ChattyWindow
+{
+  GtkApplicationWindow parent_instance;
+
+  ChattySettings *settings;
+
+  GtkWidget *chats_listbox;
+
+  GtkWidget *content_box;
+  GtkWidget *header_box;
+  GtkWidget *header_group;
+
+  GtkWidget *sub_header_icon;
+  GtkWidget *sub_header_label;
+
+  GtkWidget *new_chat_dialog;
+
+  GtkWidget *chats_search_bar;
+  GtkWidget *chats_search_entry;
+
+  GtkWidget *menu_add_contact_button;
+  GtkWidget *menu_add_in_contacts_button;
+  GtkWidget *menu_new_group_chat_button;
+  GtkWidget *header_chat_info_button;
+  GtkWidget *header_add_chat_button;
+  GtkWidget *header_sub_menu_button;
+
+  GtkWidget *convs_notebook;
+
+  GtkWidget *overlay;
+  GtkWidget *overlay_icon;
+  GtkWidget *overlay_label_1;
+  GtkWidget *overlay_label_2;
+  GtkWidget *overlay_label_3;
+
+  char      *uri;
+  
+  gboolean daemon_mode;
+  gboolean im_account_connected;
+  gboolean sms_account_connected;
+};
+
+
 G_DEFINE_TYPE (ChattyWindow, chatty_window, GTK_TYPE_APPLICATION_WINDOW)
 
 
 static void chatty_update_header (ChattyWindow *self);
-
-static void chatty_back_action (GSimpleAction *action,
-                                GVariant      *parameter,
-                                gpointer       user_data);
-
-static void chatty_new_chat_action (GSimpleAction *action,
-                                    GVariant      *parameter,
-                                    gpointer       user_data);
-
-static void chatty_add_contact_action (GSimpleAction *action,
-                                       GVariant      *parameter,
-                                       gpointer       user_data);
-
-
-static const GActionEntry window_action_entries [] = {
-  { "add", chatty_new_chat_action },
-  { "add-contact", chatty_add_contact_action },
-  { "back", chatty_back_action },
-};
 
 
 enum {
@@ -131,6 +155,50 @@ chatty_update_header (ChattyWindow *self)
   hdy_header_group_set_focus (HDY_HEADER_GROUP (self->header_group), 
                               fold == HDY_FOLD_FOLDED ? 
                               GTK_HEADER_BAR (header_child) : NULL);
+}
+
+
+static void
+msg_view_delete_action (GSimpleAction *action,
+                        GVariant      *parameter,
+                        gpointer       user_data)
+{
+  chatty_blist_chat_list_remove_buddy ();
+}
+
+
+static void
+msg_view_leave_action (GSimpleAction *action,
+                       GVariant      *parameter,
+                       gpointer       user_data)
+{
+  chatty_blist_chat_list_leave_chat ();
+}
+
+static void
+msg_view_add_contact_action (GSimpleAction *action,
+                             GVariant      *parameter,
+                             gpointer       user_data)
+{
+  chatty_blist_contact_list_add_buddy ();
+}
+
+static void
+msg_view_add_in_contacts_action (GSimpleAction *action,
+                                 GVariant      *parameter,
+                                 gpointer       user_data)
+{
+  chatty_blist_gnome_contacts_add_buddy ();
+}
+
+static void
+msg_view_chat_info_action (GSimpleAction *action,
+                           GVariant      *parameter,
+                           gpointer       user_data)
+{
+  ChattyWindow *self = user_data;
+
+  chatty_window_change_view (self, CHATTY_VIEW_CHAT_INFO);
 }
 
 
@@ -366,6 +434,23 @@ chatty_window_constructed (GObject *object)
 
   GSimpleActionGroup *simple_action_group;
 
+  const GActionEntry window_action_entries [] = {
+    { "add", chatty_new_chat_action },
+    { "add-contact", chatty_add_contact_action },
+    { "back", chatty_back_action },
+  };
+
+
+  const GActionEntry msg_view_entries [] =
+  {
+    { "add-contact", msg_view_add_contact_action },
+    { "add-gnome-contact", msg_view_add_in_contacts_action },
+    { "leave-chat", msg_view_leave_action },
+    { "delete-chat", msg_view_delete_action },
+    { "chat-info", msg_view_chat_info_action }
+  };
+
+
   self->new_chat_dialog = chatty_window_create_new_chat_dialog (self);
 
   if (self->daemon_mode)
@@ -390,6 +475,17 @@ chatty_window_constructed (GObject *object)
 
   gtk_widget_insert_action_group (GTK_WIDGET (window),
                                   "win",
+                                  G_ACTION_GROUP (simple_action_group));
+
+  simple_action_group = g_simple_action_group_new ();
+
+  g_action_map_add_action_entries (G_ACTION_MAP (simple_action_group),
+                                   msg_view_entries,
+                                   G_N_ELEMENTS (msg_view_entries),
+                                   window);
+
+  gtk_widget_insert_action_group (GTK_WIDGET (window),
+                                  "msg_view",
                                   G_ACTION_GROUP (simple_action_group));
 
   chatty_popover_actions_init (window);
