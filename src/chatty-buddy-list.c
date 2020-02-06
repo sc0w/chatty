@@ -109,7 +109,7 @@ row_selected_cb (GtkListBox    *box,
   g_object_get (row, "data", &node, NULL);
 
   chatty_window_set_menu_add_contact_button_visible (window, FALSE);
-  chatty_window_set_menu_add_gnome_contact_button_visible (window, FALSE);
+  chatty_window_set_menu_add_in_contacts_button_visible (window, FALSE);
 
   if (PURPLE_BLIST_NODE_IS_BUDDY(node)) {
     PurpleBuddy *buddy;
@@ -124,7 +124,7 @@ row_selected_cb (GtkListBox    *box,
       folks_id = chatty_folks_has_individual_with_phonenumber (number);
 
       if (!folks_id) {
-        chatty_window_set_menu_add_gnome_contact_button_visible (window, TRUE);
+        chatty_window_set_menu_add_in_contacts_button_visible (window, TRUE);
       }
     }
 

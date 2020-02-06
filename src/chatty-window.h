@@ -39,7 +39,7 @@ struct _ChattyWindow
   GtkWidget *chats_search_entry;
 
   GtkWidget *menu_add_contact_button;
-  GtkWidget *menu_add_gnome_contact_button;
+  GtkWidget *menu_add_in_contacts_button;
   GtkWidget *menu_new_group_chat_button;
   GtkWidget *header_chat_info_button;
   GtkWidget *header_add_chat_button;
@@ -137,7 +137,7 @@ void chatty_window_set_overlay_visible (ChattyWindow *self, gboolean visible);
 void chatty_window_set_new_chat_dialog_visible (ChattyWindow *self, gboolean visible);
 
 void chatty_window_set_menu_add_contact_button_visible (ChattyWindow *self, gboolean visible);
-void chatty_window_set_menu_add_gnome_contact_button_visible (ChattyWindow *self, gboolean visible);
+void chatty_window_set_menu_add_in_contacts_button_visible (ChattyWindow *self, gboolean visible);
 void chatty_window_set_header_chat_info_button_visible (ChattyWindow *self, gboolean visible);
 void chatty_window_set_button_group_chat_sensitive (ChattyWindow *self, gboolean sensitive);
 void chatty_window_set_header_add_chat_button_sensitive (ChattyWindow *self, gboolean sensitive);

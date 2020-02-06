@@ -29,7 +29,7 @@ struct _ChattyNewMucDialog
 {
   HdyDialog  parent_instance;
 
-  GtkWidget *list_select_account;
+  GtkWidget *accounts_list;
   GtkWidget *button_join_chat;
   GtkWidget *entry_group_chat_id;
   GtkWidget *entry_group_chat_room_alias;
@@ -159,7 +159,7 @@ chatty_new_muc_add_account_to_list (ChattyNewMucDialog *self,
   hdy_action_row_add_prefix (row, GTK_WIDGET(prefix_radio_button ));
   hdy_action_row_set_title (row, chatty_pp_account_get_username (account));
 
-  gtk_container_add (GTK_CONTAINER(self->list_select_account), GTK_WIDGET(row));
+  gtk_container_add (GTK_CONTAINER(self->accounts_list), GTK_WIDGET(row));
 
   gtk_widget_show (GTK_WIDGET(row));
 }
@@ -185,12 +185,12 @@ chatty_new_muc_populate_account_list (ChattyNewMucDialog *self)
     }
   }
 
-  row = HDY_ACTION_ROW(gtk_list_box_get_row_at_index (GTK_LIST_BOX(self->list_select_account), 0));
+  row = HDY_ACTION_ROW(gtk_list_box_get_row_at_index (GTK_LIST_BOX(self->accounts_list), 0));
 
   if (row) {
     account_list_row_activated_cb (self,
                                    GTK_LIST_BOX_ROW(row), 
-                                   GTK_LIST_BOX(self->list_select_account));
+                                   GTK_LIST_BOX(self->accounts_list));
   }
 
   return ret;
@@ -206,7 +206,7 @@ chatty_new_muc_dialog_class_init (ChattyNewMucDialogClass *klass)
                                                "/sm/puri/chatty/"
                                                "ui/chatty-dialog-join-muc.ui");
 
-  gtk_widget_class_bind_template_child (widget_class, ChattyNewMucDialog, list_select_account);
+  gtk_widget_class_bind_template_child (widget_class, ChattyNewMucDialog, accounts_list);
   gtk_widget_class_bind_template_child (widget_class, ChattyNewMucDialog, button_join_chat);
   gtk_widget_class_bind_template_child (widget_class, ChattyNewMucDialog, entry_group_chat_id);
   gtk_widget_class_bind_template_child (widget_class, ChattyNewMucDialog, entry_group_chat_room_alias);
@@ -224,7 +224,7 @@ chatty_new_muc_dialog_init (ChattyNewMucDialog *self)
 {
   gtk_widget_init_template (GTK_WIDGET(self));
 
-  gtk_list_box_set_header_func (GTK_LIST_BOX(self->list_select_account),
+  gtk_list_box_set_header_func (GTK_LIST_BOX(self->accounts_list),
                                 hdy_list_box_separator_header,
                                 NULL, NULL);
 

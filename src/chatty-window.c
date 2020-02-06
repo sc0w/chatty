@@ -468,7 +468,7 @@ chatty_window_class_init (ChattyWindowClass *klass)
   gtk_widget_class_bind_template_child (widget_class, ChattyWindow, sub_header_label);
   gtk_widget_class_bind_template_child (widget_class, ChattyWindow, sub_header_icon);
   gtk_widget_class_bind_template_child (widget_class, ChattyWindow, menu_add_contact_button);
-  gtk_widget_class_bind_template_child (widget_class, ChattyWindow, menu_add_gnome_contact_button);
+  gtk_widget_class_bind_template_child (widget_class, ChattyWindow, menu_add_in_contacts_button);
   gtk_widget_class_bind_template_child (widget_class, ChattyWindow, menu_new_group_chat_button);
   gtk_widget_class_bind_template_child (widget_class, ChattyWindow, header_chat_info_button);
   gtk_widget_class_bind_template_child (widget_class, ChattyWindow, header_add_chat_button);
@@ -533,10 +533,10 @@ chatty_window_set_menu_add_contact_button_visible (ChattyWindow *self,
 
 
 void 
-chatty_window_set_menu_add_gnome_contact_button_visible (ChattyWindow *self,
+chatty_window_set_menu_add_in_contacts_button_visible (ChattyWindow *self,
                                                          gboolean      visible)
 {
-  gtk_widget_set_visible (self->menu_add_gnome_contact_button, visible);
+  gtk_widget_set_visible (self->menu_add_in_contacts_button, visible);
 }
 
 

@@ -17,7 +17,7 @@
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="transition_type">slide-left-right</property>
-            <property name="visible-child-name" bind-source="stack_panes_new_chat" bind-property="visible-child-name" bind-flags="bidirectional|sync-create"/>
+            <property name="visible-child-name" bind-source="new_chat_stack" bind-property="visible-child-name" bind-flags="bidirectional|sync-create"/>
             <child>
               <object class="GtkHeaderBar" id="header_view_new_chat">
                 <property name="visible">True</property>
@@ -25,11 +25,11 @@
                 <property name="show_close_button">True</property>
                 <property name="title" translatable="yes">Start Chat</property>
                 <child>
-                  <object class="GtkButton" id="button_show_add_contact">
+                  <object class="GtkButton" id="edit_contact_button">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="receives_default">False</property>
-                    <signal name="clicked" handler="button_show_add_contact_clicked_cb" swapped="yes" />
+                    <signal name="clicked" handler="edit_contact_button_clicked_cb" swapped="yes" />
                     <style>
                       <class name="image-button"/>
                     </style>
@@ -55,11 +55,11 @@
                 <property name="title" translatable="yes">New Contact</property>
                 <property name="visible">True</property>
                 <child>
-                  <object class="GtkButton" id="button_back">
+                  <object class="GtkButton" id="back_button">
                     <property name="can_focus">False</property>
                     <property name="receives_default">False</property>
                     <property name="visible">True</property>
-                    <signal name="clicked" handler="button_new_chat_back_clicked_cb" swapped="yes" />
+                    <signal name="clicked" handler="back_button_clicked_cb" swapped="yes" />
                     <style>
                       <class name="image-button"/>
                     </style>
@@ -77,13 +77,13 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkButton" id="button_add_contact">
+                  <object class="GtkButton" id="add_contact_button">
                     <property name="has_default">True</property>
                     <property name="can_default">True</property>
                     <property name="label" translatable="yes">Add Contact</property>
                     <property name="sensitive">False</property>
                     <property name="visible">True</property>
-                    <signal name="clicked" handler="button_add_contact_clicked_cb" swapped="yes" />
+                    <signal name="clicked" handler="add_contact_button_clicked_cb" swapped="yes" />
                     <style>
                       <class name="suggested-action"/>
                     </style>
@@ -113,7 +113,7 @@
             <property name="expand">True</property>
             <property name="visible">True</property>
             <child>
-              <object class="GtkStack" id="stack_panes_new_chat">
+              <object class="GtkStack" id="new_chat_stack">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="vhomogeneous">False</property>
@@ -126,7 +126,7 @@
                     <property name="orientation">vertical</property>
                     <property name="valign">start</property>
                     <child>
-                      <object class="HdySearchBar" id="search_bar_contacts">
+                      <object class="HdySearchBar" id="contacts_search_bar">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="halign">fill</property>
@@ -140,7 +140,7 @@
                             <property name="hexpand">True</property>
                             <property name="maximum-width">600</property>
                             <child>
-                              <object class="GtkSearchEntry" id="search_entry_contacts">
+                              <object class="GtkSearchEntry" id="contacts_search_entry">
                                 <property name="visible">True</property>
                                 <property name="hexpand">True</property>
                                 <property name="receives_default">False</property>
@@ -156,7 +156,7 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkListBox" id="list_box_chats">
+                      <object class="GtkListBox" id="chats_listbox">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="expand">True</property>
@@ -230,7 +230,7 @@
                                 <property name="expand">True</property>
                                 <property name="margin-bottom">32</property>
                                 <child>
-                                  <object class="GtkListBox" id="list_select_account">
+                                  <object class="GtkListBox" id="accounts_list">
                                     <property name="visible">True</property>
                                     <property name="can_focus">False</property>
                                     <property name="expand">True</property>
@@ -241,7 +241,7 @@
                               </object>
                             </child>
                             <child>
-                              <object class="GtkGrid" id="grid_edit_contact">
+                              <object class="GtkGrid" id="contact_edit_grid">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
                                 <property name="halign">center</property>
@@ -273,7 +273,7 @@
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkEntry" id="entry_contact_name">
+                                  <object class="GtkEntry" id="contact_name_entry">
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
                                     <signal name="changed" handler="contact_name_text_changed_cb" after="yes" swapped="yes" />
@@ -284,7 +284,7 @@
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkEntry" id="entry_contact_alias">
+                                  <object class="GtkEntry" id="contact_alias_entry">
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
                                   </object>
@@ -300,12 +300,12 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkButton" id="button_add_gnome_contact">
+                              <object class="GtkButton" id="add_in_contacts_button">
                                 <property name="has_default">True</property>
                                 <property name="can_default">True</property>
                                 <property name="label" translatable="yes">Add to Contacts</property>
                                 <property name="visible">True</property>
-                                <signal name="clicked" handler="button_add_gnome_contact_clicked_cb" swapped="yes" />
+                                <signal name="clicked" handler="add_in_contacts_button_clicked_cb" swapped="yes" />
                                 <style>
                                   <class name="suggested-action"/>
                                 </style>
