@@ -25,8 +25,6 @@ src/chatty-message-list.c
 src/chatty-message-list.h
 src/chatty-notify.c
 src/chatty-notify.h
-src/chatty-popover-actions.c
-src/chatty-popover-actions.h
 src/chatty-purple-init.c
 src/chatty-purple-init.h
 src/chatty-purple-notify.c

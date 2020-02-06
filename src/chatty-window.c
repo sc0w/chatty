@@ -17,7 +17,6 @@
 #include "chatty-account.h"
 #include "chatty-purple-init.h"
 #include "chatty-icons.h"
-#include "chatty-popover-actions.h"
 #include "dialogs/chatty-dialogs.h"
 #include "dialogs/chatty-settings-dialog.h"
 #include "dialogs/chatty-new-chat-dialog.h"
@@ -487,8 +486,6 @@ chatty_window_constructed (GObject *object)
   gtk_widget_insert_action_group (GTK_WIDGET (window),
                                   "msg_view",
                                   G_ACTION_GROUP (simple_action_group));
-
-  chatty_popover_actions_init (window);
 
   chatty_window_change_view (self, CHATTY_VIEW_CHAT_LIST);
 
