@@ -22,7 +22,7 @@ for good examples.
 
 Coding Style
 ============
-We're mostly using [libhandy's Coding Style][1].
+Have a look at coding-conventions.md
 
 API documentation
 =================
