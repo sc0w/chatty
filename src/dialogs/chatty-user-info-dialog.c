@@ -319,7 +319,7 @@ static void
 chatty_user_info_dialog_update_avatar (ChattyUserInfoDialog *self,
                                        const char           *color)
 {
-  ChattyWindow  *window;
+  GtkWindow     *window;
   PurpleContact *contact;
   GdkPixbuf     *icon;
   GtkWidget     *avatar;
@@ -350,9 +350,9 @@ chatty_user_info_dialog_update_avatar (ChattyUserInfoDialog *self,
                                      color,
                                      FALSE);
 
-  window = chatty_utils_get_window ();
+  window = gtk_window_get_transient_for (GTK_WINDOW (self));
 
-  chatty_window_update_sub_header_titlebar (window,
+  chatty_window_update_sub_header_titlebar ((ChattyWindow *)window,
                                             icon, 
                                             contact_alias ? contact_alias : buddy_alias);
 
