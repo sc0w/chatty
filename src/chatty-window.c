@@ -520,8 +520,7 @@ void
 chatty_window_set_new_chat_dialog_visible (ChattyWindow *self,
                                            gboolean      visible)
 {
-  visible ? gtk_widget_show (self->new_chat_dialog) :
-            gtk_widget_hide (self->new_chat_dialog);
+  gtk_widget_set_visible (self->new_chat_dialog, visible);
 }
 
 
@@ -529,8 +528,7 @@ void
 chatty_window_set_menu_add_contact_button_visible (ChattyWindow *self,
                                                    gboolean      visible)
 {
-  visible ? gtk_widget_show (self->menu_add_contact_button) :
-            gtk_widget_hide (self->menu_add_contact_button);
+  gtk_widget_set_visible (self->menu_add_contact_button, visible);
 }
 
 
@@ -538,8 +536,7 @@ void
 chatty_window_set_menu_add_gnome_contact_button_visible (ChattyWindow *self,
                                                          gboolean      visible)
 {
-  visible ? gtk_widget_show (self->menu_add_gnome_contact_button) :
-            gtk_widget_hide (self->menu_add_gnome_contact_button);
+  gtk_widget_set_visible (self->menu_add_gnome_contact_button, visible);
 }
 
 
@@ -547,8 +544,7 @@ void
 chatty_window_set_header_chat_info_button_visible (ChattyWindow *self,
                                                    gboolean      visible)
 {
-  visible ? gtk_widget_show (self->header_chat_info_button) :
-            gtk_widget_hide (self->header_chat_info_button);
+  gtk_widget_set_visible (self->header_chat_info_button, visible);
 }
 
 
