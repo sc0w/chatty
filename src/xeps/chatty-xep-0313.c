@@ -808,7 +808,7 @@ cb_chatty_mam_xmlnode_send (PurpleConnection  *pc,
       node_id = xmlnode_new_child (*packet, "origin-id");
       xmlnode_set_namespace (node_id, NS_SIDv0);
       g_free(mamc->cur_oid);
-      chatty_utils_generate_uuid(&(mamc->cur_oid));
+      mamc->cur_oid = g_uuid_string_random ();
       xmlnode_set_attrib(node_id, "id", mamc->cur_oid);
 
       g_debug ("Set origin-id %s for outgoing message", mamc->cur_oid);

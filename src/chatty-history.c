@@ -616,7 +616,7 @@ chatty_history_add_message (PurpleAccount *pa, PurpleConvMessage *pcm,
               *sid, pa->username, pcm->who, pcm->alias, pcm->flags, dir, type, pcm->when, pcm->what);
 
   if(sid != NULL && *sid == NULL)
-    chatty_utils_generate_uuid(sid);
+    *sid = g_uuid_string_random ();
 
   if (type == PURPLE_CONV_TYPE_CHAT) {
     chatty_history_add_chat_message(pcm->what, dir, pa->username, pcm->who,
