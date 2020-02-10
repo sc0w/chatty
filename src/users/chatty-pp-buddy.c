@@ -125,6 +125,22 @@ chatty_pp_buddy_get_protocols (ChattyUser *user)
   return CHATTY_USER_CLASS (chatty_pp_buddy_parent_class)->get_protocols (user);
 }
 
+static gboolean
+chatty_pp_buddy_matches (ChattyUser     *user,
+                         const char     *needle,
+                         ChattyProtocol  protocols,
+                         gboolean        match_name)
+{
+  ChattyPpBuddy *self = (ChattyPpBuddy *)user;
+  const char *user_id;
+
+  if (!self->pp_buddy)
+    return FALSE;
+
+  user_id = purple_buddy_get_name (self->pp_buddy);
+  return strcasestr (user_id, needle) != NULL;
+}
+
 static const char *
 chatty_pp_buddy_get_name (ChattyUser *user)
 {
@@ -241,6 +257,7 @@ chatty_pp_buddy_class_init (ChattyPpBuddyClass *klass)
   object_class->finalize = chatty_pp_buddy_finalize;
 
   user_class->get_protocols = chatty_pp_buddy_get_protocols;
+  user_class->matches  = chatty_pp_buddy_matches;
   user_class->get_name = chatty_pp_buddy_get_name;
   user_class->set_name = chatty_pp_buddy_set_name;
 
