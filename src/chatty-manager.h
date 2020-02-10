@@ -14,6 +14,7 @@
 #include <glib-object.h>
 
 #include "users/chatty-pp-account.h"
+#include "chatty-contact-provider.h"
 
 G_BEGIN_DECLS
 
@@ -37,5 +38,6 @@ gboolean        chatty_manager_has_carbons_plugin     (ChattyManager   *self);
 gboolean        chatty_manager_has_file_upload_plugin (ChattyManager   *self);
 gboolean        chatty_manager_lurch_plugin_is_loaded (ChattyManager   *self);
 ChattyProtocol  chatty_manager_get_active_protocols   (ChattyManager   *self);
+ChattyFolks    *chatty_manager_get_folks              (ChattyManager   *self);
 
 G_END_DECLS

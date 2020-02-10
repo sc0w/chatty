@@ -724,3 +724,11 @@ chatty_manager_get_active_protocols (ChattyManager *self)
 
   return self->active_protocols;
 }
+
+ChattyFolks *
+chatty_manager_get_folks (ChattyManager *self)
+{
+  g_return_val_if_fail (CHATTY_IS_MANAGER (self), NULL);
+
+  return self->chatty_folks;
+}
