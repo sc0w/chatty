@@ -163,6 +163,26 @@ manager_buddy_added_cb (PurpleBuddy   *buddy,
     chatty_pp_account_add_purple_buddy (account, buddy);
 }
 
+static ChattyPpBuddy *
+manager_find_buddy (GListModel  *model,
+                    PurpleBuddy *pp_buddy)
+{
+  guint n_items;
+
+  n_items = g_list_model_get_n_items (model);
+
+  for (guint i = 0; i < n_items; i++) {
+    g_autoptr(ChattyPpBuddy) buddy = NULL;
+
+    buddy = g_list_model_get_item (model, i);
+
+    if (chatty_pp_buddy_get_buddy (buddy) == pp_buddy)
+      return buddy;
+  }
+
+  return NULL;
+}
+
 static void
 manager_buddy_removed_cb (PurpleBuddy   *pp_buddy,
                           ChattyManager *self)
@@ -179,10 +199,14 @@ manager_buddy_removed_cb (PurpleBuddy   *pp_buddy,
   buddy = chatty_pp_buddy_get_object (pp_buddy);
 
   g_return_if_fail (account);
+  model = chatty_pp_account_get_buddy_list (account);
+
+  if (!buddy)
+    buddy = manager_find_buddy (model, pp_buddy);
+
   g_return_if_fail (buddy);
 
   g_signal_emit_by_name (buddy, "deleted");
-  model = chatty_pp_account_get_buddy_list (account);
   chatty_utils_remove_list_item (G_LIST_STORE (model), buddy);
 }
 
