@@ -17,7 +17,9 @@
 
 #include "xeps/xeps.h"
 #include "chatty-settings.h"
+#include "contrib/gtk.h"
 #include "chatty-account.h"
+#include "chatty-contact-provider.h"
 #include "chatty-utils.h"
 #include "chatty-window.h"
 #include "users/chatty-pp-account.h"
@@ -39,6 +41,7 @@ struct _ChattyManager
   GObject          parent_instance;
 
   GListStore      *account_list;
+  GListStore      *list_of_user_list;
 
   PurplePlugin    *sms_plugin;
   PurplePlugin    *lurch_plugin;
@@ -198,6 +201,8 @@ manager_account_added_cb (PurpleAccount *pp_account,
 
   g_object_notify (G_OBJECT (account), "status");
   g_list_store_append (self->account_list, account);
+  g_list_store_append (self->list_of_user_list,
+                       chatty_pp_account_get_buddy_list (account));
 
   if (self->disable_auto_login)
     chatty_account_set_enabled (CHATTY_ACCOUNT (account), FALSE);
@@ -218,6 +223,8 @@ manager_account_removed_cb (PurpleAccount *pp_account,
   account = chatty_pp_account_get_object (pp_account);
   g_return_if_fail (account);
 
+  chatty_utils_remove_list_item (self->list_of_user_list,
+                                 chatty_pp_account_get_buddy_list (account));
   g_object_notify (G_OBJECT (account), "status");
   g_signal_emit_by_name (account, "deleted");
   chatty_utils_remove_list_item (self->account_list, account);
@@ -488,6 +495,7 @@ chatty_manager_dispose (GObject *object)
   ChattyManager *self = (ChattyManager *)object;
 
   purple_signals_disconnect_by_handle (self);
+  g_clear_object (&self->list_of_user_list);
   g_clear_object (&self->account_list);
 
   G_OBJECT_CLASS (chatty_manager_parent_class)->dispose (object);
@@ -522,6 +530,7 @@ static void
 chatty_manager_init (ChattyManager *self)
 {
   self->account_list = g_list_store_new (CHATTY_TYPE_PP_ACCOUNT);
+  self->list_of_user_list = g_list_store_new (G_TYPE_LIST_MODEL);
 }
 
 ChattyManager *
