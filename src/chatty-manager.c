@@ -40,8 +40,10 @@ struct _ChattyManager
 {
   GObject          parent_instance;
 
+  ChattyFolks     *chatty_folks;
   GListStore      *account_list;
   GListStore      *list_of_user_list;
+  GtkFlattenListModel *contact_list;
 
   PurplePlugin    *sms_plugin;
   PurplePlugin    *lurch_plugin;
@@ -495,6 +497,7 @@ chatty_manager_dispose (GObject *object)
   ChattyManager *self = (ChattyManager *)object;
 
   purple_signals_disconnect_by_handle (self);
+  g_clear_object (&self->contact_list);
   g_clear_object (&self->list_of_user_list);
   g_clear_object (&self->account_list);
 
@@ -529,8 +532,14 @@ chatty_manager_class_init (ChattyManagerClass *klass)
 static void
 chatty_manager_init (ChattyManager *self)
 {
+  self->chatty_folks = chatty_folks_new ();
+
   self->account_list = g_list_store_new (CHATTY_TYPE_PP_ACCOUNT);
   self->list_of_user_list = g_list_store_new (G_TYPE_LIST_MODEL);
+  self->contact_list = gtk_flatten_list_model_new (CHATTY_TYPE_USER,
+                                                   G_LIST_MODEL (self->list_of_user_list));
+  g_list_store_append (self->list_of_user_list,
+                       chatty_folks_get_model (self->chatty_folks));
 }
 
 ChattyManager *
@@ -565,6 +574,14 @@ chatty_manager_get_accounts (ChattyManager *self)
   g_return_val_if_fail (CHATTY_IS_MANAGER (self), NULL);
 
   return G_LIST_MODEL (self->account_list);
+}
+
+GListModel *
+chatty_manager_get_contact_list (ChattyManager *self)
+{
+  g_return_val_if_fail (CHATTY_IS_MANAGER (self), NULL);
+
+  return G_LIST_MODEL (self->contact_list);
 }
 
 /**

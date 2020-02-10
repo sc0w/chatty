@@ -24,6 +24,7 @@ G_DECLARE_FINAL_TYPE (ChattyManager, chatty_manager, CHATTY, MANAGER, GObject)
 ChattyManager  *chatty_manager_get_default        (void);
 void            chatty_manager_purple_init        (ChattyManager *self);
 GListModel     *chatty_manager_get_accounts       (ChattyManager *self);
+GListModel     *chatty_manager_get_contact_list      (ChattyManager *self);
 void            chatty_manager_disable_auto_login    (ChattyManager *self,
                                                       gboolean       disable);
 gboolean        chatty_manager_get_disable_auto_login (ChattyManager *self);
