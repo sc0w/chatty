@@ -47,9 +47,36 @@ struct _ChattyManager
 
   gboolean         disable_auto_login;
   gboolean         network_available;
+
+  /* Number of accounts currently connected */
+  guint            xmpp_count;
+  guint            telegram_count;
+  guint            matrix_count;
+  gboolean         has_modem;
+  ChattyProtocol   active_protocols;
 };
 
 G_DEFINE_TYPE (ChattyManager, chatty_manager, G_TYPE_OBJECT)
+
+/* XXX: A copy from purple-mm-sms */
+enum {
+  PUR_MM_STATE_NO_MANAGER,
+  PUR_MM_STATE_MANAGER_FOUND,
+  PUR_MM_STATE_NO_MODEM,
+  PUR_MM_STATE_MODEM_FOUND,
+  PUR_MM_STATE_NO_MESSAGING_MODEM,
+  PUR_MM_STATE_MODEM_DISABLED,
+  PUR_MM_STATE_MODEM_UNLOCK_ERROR,
+  PUR_MM_STATE_READY
+} e_purple_connection;
+
+enum {
+  PROP_0,
+  PROP_ACTIVE_PROTOCOLS,
+  N_PROPS
+};
+
+static GParamSpec *properties[N_PROPS];
 
 
 static gboolean
@@ -246,6 +273,94 @@ manager_connection_changed_cb (PurpleConnection *gc,
 }
 
 static void
+manager_connection_signed_on_cb (PurpleConnection *gc,
+                                 ChattyManager    *self)
+{
+  PurpleAccount *pp_account;
+  ChattyPpAccount *account;
+  ChattyProtocol protocol, old_protocols;
+
+  g_assert (CHATTY_IS_MANAGER (self));
+
+  pp_account = purple_connection_get_account (gc);
+  account = chatty_pp_account_get_object (pp_account);
+  g_return_if_fail (account);
+
+  /*
+   * SMS plugin emits “signed-on” regardless of the true state
+   * So it’s handled in “mm-sms-state” callback.
+   */
+  if (chatty_pp_account_is_sms (account))
+    return;
+
+  protocol = chatty_user_get_protocols (CHATTY_USER (account));
+  old_protocols = self->active_protocols;
+  self->active_protocols |= protocol;
+
+  if (protocol & CHATTY_PROTOCOL_XMPP)
+    self->xmpp_count++;
+  if (protocol & CHATTY_PROTOCOL_MATRIX)
+    self->matrix_count++;
+  if (protocol & CHATTY_PROTOCOL_TELEGRAM)
+    self->telegram_count++;
+
+  if (old_protocols != self->active_protocols)
+    g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_ACTIVE_PROTOCOLS]);
+
+  g_object_notify (G_OBJECT (account), "status");
+}
+
+static void
+manager_connection_signed_off_cb (PurpleConnection *gc,
+                                  ChattyManager    *self)
+{
+  PurpleAccount *pp_account;
+  ChattyPpAccount *account;
+  ChattyProtocol protocol, old_protocols;
+
+  g_assert (CHATTY_IS_MANAGER (self));
+
+  pp_account = purple_connection_get_account (gc);
+  account = chatty_pp_account_get_object (pp_account);
+  g_return_if_fail (account);
+
+  /*
+   * SMS plugin emits “signed-off” regardless of the true state
+   * So it’s handled in “mm-sms-state” callback.
+   */
+  if (chatty_pp_account_is_sms (account))
+    return;
+
+  protocol = chatty_user_get_protocols (CHATTY_USER (account));
+  old_protocols = self->active_protocols;
+  self->active_protocols = CHATTY_PROTOCOL_NONE;
+
+  if (protocol & CHATTY_PROTOCOL_XMPP)
+    if (self->xmpp_count > 0)
+      self->xmpp_count--;
+  if (protocol & CHATTY_PROTOCOL_MATRIX)
+    if (self->matrix_count > 0)
+      self->matrix_count--;
+  if (protocol & CHATTY_PROTOCOL_TELEGRAM)
+    if (self->telegram_count > 0)
+      self->telegram_count--;
+
+  if (self->xmpp_count)
+    self->active_protocols |= CHATTY_PROTOCOL_XMPP;
+  if (self->matrix_count)
+    self->active_protocols |= CHATTY_PROTOCOL_MATRIX;
+  if (self->telegram_count)
+    self->active_protocols |= CHATTY_PROTOCOL_TELEGRAM;
+  if (self->has_modem)
+    self->active_protocols |= CHATTY_PROTOCOL_SMS;
+
+  if (old_protocols != self->active_protocols)
+    g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_ACTIVE_PROTOCOLS]);
+
+  g_object_notify (G_OBJECT (account), "status");
+}
+
+static void
 manager_sms_modem_added_cb (gint status)
 {
   ChattyPpAccount *account;
@@ -256,6 +371,30 @@ manager_sms_modem_added_cb (gint status)
   g_return_if_fail (CHATTY_IS_PP_ACCOUNT (account));
 
   chatty_pp_account_connect (account, TRUE);
+}
+
+
+/* XXX: works only with one modem */
+static void
+manager_sms_state_changed_cb (int            state,
+                              ChattyManager *self)
+{
+  ChattyProtocol old_protocols;
+
+  g_assert (CHATTY_IS_MANAGER (self));
+
+  old_protocols = self->active_protocols;
+
+  if (state == PUR_MM_STATE_READY) {
+    self->has_modem = TRUE;
+    self->active_protocols |= CHATTY_PROTOCOL_SMS;
+  } else if (state != PUR_MM_STATE_MANAGER_FOUND && state != PUR_MM_STATE_MODEM_FOUND) {
+    self->has_modem = FALSE;
+    self->active_protocols &= ~CHATTY_PROTOCOL_SMS;
+  }
+
+  if (old_protocols != self->active_protocols)
+    g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_ACTIVE_PROTOCOLS]);
 }
 
 static void
@@ -325,14 +464,18 @@ chatty_manager_intialize_libpurple (ChattyManager *self)
                          PURPLE_CALLBACK (manager_connection_changed_cb), self);
   purple_signal_connect (purple_connections_get_handle(),
                          "signed-on", self,
-                         PURPLE_CALLBACK (manager_connection_changed_cb), self);
+                         PURPLE_CALLBACK (manager_connection_signed_on_cb), self);
   purple_signal_connect (purple_connections_get_handle(),
                          "signed-off", self,
-                         PURPLE_CALLBACK (manager_connection_changed_cb), self);
+                         PURPLE_CALLBACK (manager_connection_signed_off_cb), self);
 
   purple_signal_connect (purple_plugins_get_handle (),
                          "mm-sms-modem-added", self,
                          PURPLE_CALLBACK (manager_sms_modem_added_cb), NULL);
+
+  purple_signal_connect (purple_plugins_get_handle (),
+                         "mm-sms-state", self,
+                         PURPLE_CALLBACK (manager_sms_state_changed_cb), self);
 
   g_signal_connect_object (network_monitor, "network-changed",
                            G_CALLBACK (manager_network_changed_cb), self,
@@ -356,6 +499,23 @@ chatty_manager_class_init (ChattyManagerClass *klass)
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
 
   object_class->dispose = chatty_manager_dispose;
+
+  /**
+   * ChattyUser:active-protocols:
+   *
+   * Protocols currently available for use.  This is a
+   * flag of protocols currently connected and available
+   * for use.
+   */
+  properties[PROP_ACTIVE_PROTOCOLS] =
+    g_param_spec_int ("active-protocols",
+                      "Active protocols",
+                      "Protocols currently active and connected",
+                      CHATTY_PROTOCOL_NONE,
+                      CHATTY_PROTOCOL_TELEGRAM,
+                      CHATTY_PROTOCOL_NONE,
+                      G_PARAM_READABLE | G_PARAM_STATIC_STRINGS);
+
 }
 
 static void
@@ -505,4 +665,12 @@ chatty_manager_lurch_plugin_is_loaded (ChattyManager *self)
     return FALSE;
 
   return purple_plugin_is_loaded (self->lurch_plugin);
+}
+
+ChattyProtocol
+chatty_manager_get_active_protocols (ChattyManager *self)
+{
+  g_return_val_if_fail (CHATTY_IS_MANAGER (self), CHATTY_PROTOCOL_NONE);
+
+  return self->active_protocols;
 }
