@@ -463,8 +463,6 @@ chatty_manager_load_plugins (ChattyManager *self)
 void
 chatty_manager_load_buddies (ChattyManager *self)
 {
-  ChattyPpAccount *account;
-  PurpleAccount *pp_account;
   g_autoptr(GSList) buddies = NULL;
 
   g_return_if_fail (CHATTY_IS_MANAGER (self));
@@ -479,18 +477,7 @@ chatty_manager_load_buddies (ChattyManager *self)
   buddies = purple_blist_get_buddies ();
 
   for (GSList *node = buddies; node; node = node->next)
-    {
-      pp_account = purple_buddy_get_account (node->data);
-      account = chatty_pp_account_get_object (pp_account);
-
-      g_warn_if_fail (pp_account);
-
-      if (!pp_account)
-        continue;
-
-      if (!chatty_pp_buddy_get_object (node->data))
-        chatty_pp_account_add_purple_buddy (account, node->data);
-    }
+    manager_buddy_added_cb (node->data, self);
 }
 
 gboolean
