@@ -253,6 +253,7 @@ libpurple_init (void)
   purple_plugins_load_saved (CHATTY_PREFS_ROOT "/plugins/loaded");
 
   chatty_manager_load_plugins (chatty_manager_get_default ());
+  chatty_manager_load_buddies (chatty_manager_get_default ());
 
   purple_savedstatus_activate (purple_savedstatus_get_startup());
   purple_accounts_restore_current_statuses ();
