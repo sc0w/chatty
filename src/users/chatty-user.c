@@ -13,6 +13,9 @@
 # include "config.h"
 #endif
 
+#define _GNU_SOURCE
+#include <string.h>
+
 #include "chatty-user.h"
 
 /**
@@ -52,6 +55,21 @@ chatty_user_real_get_protocols (ChattyUser *self)
   g_assert (CHATTY_IS_USER (self));
 
   return priv->protocols;
+}
+
+static gboolean
+chatty_user_real_matches (ChattyUser     *self,
+                          const char     *needle,
+                          ChattyProtocol  protocols,
+                          gboolean        match_name)
+{
+  const char *name;
+
+  g_assert (CHATTY_IS_USER (self));
+
+  name = chatty_user_get_name (self);
+
+  return strcasestr (name, needle) != NULL;
 }
 
 static const char *
@@ -163,6 +181,7 @@ chatty_user_class_init (ChattyUserClass *klass)
   object_class->set_property = chatty_user_set_property;
 
   klass->get_protocols = chatty_user_real_get_protocols;
+  klass->matches  = chatty_user_real_matches;
   klass->get_name = chatty_user_real_get_name;
   klass->set_name = chatty_user_real_set_name;
   klass->get_avatar = chatty_user_real_get_avatar;
@@ -248,6 +267,37 @@ chatty_user_get_protocols (ChattyUser *self)
   g_return_val_if_fail (CHATTY_IS_USER (self), CHATTY_PROTOCOL_NONE);
 
   return CHATTY_USER_GET_CLASS (self)->get_protocols (self);
+}
+
+gboolean
+chatty_user_matches (ChattyUser     *self,
+                     const char     *needle,
+                     ChattyProtocol  protocols,
+                     gboolean        match_name)
+{
+  g_return_val_if_fail (CHATTY_IS_USER (self), FALSE);
+
+  if (!(protocols & chatty_user_get_protocols (self)))
+    return FALSE;
+
+  if (!needle || !*needle)
+    return TRUE;
+
+  if (match_name)
+    {
+      gboolean match;
+
+      match = chatty_user_real_matches (self, needle, protocols, match_name);
+
+      if (match)
+        return match;
+    }
+
+  /* We have done this already, and if we reached here, we have no match */
+  if (CHATTY_USER_GET_CLASS (self)->matches == chatty_user_real_matches)
+    return FALSE;
+
+  return CHATTY_USER_GET_CLASS (self)->matches (self, needle, protocols, match_name);
 }
 
 /**
