@@ -11,6 +11,8 @@
 
 #define G_LOG_DOMAIN "chatty-pp-buddy"
 
+#define _GNU_SOURCE
+#include <string.h>
 #include <purple.h>
 
 #include "chatty-config.h"
@@ -38,6 +40,7 @@ struct _ChattyPpBuddy
 
   PurpleStoredImage *pp_avatar;
   GdkPixbuf         *avatar;
+  ChattyProtocol     protocol;
 };
 
 G_DEFINE_TYPE (ChattyPpBuddy, chatty_pp_buddy, CHATTY_TYPE_USER)
@@ -51,6 +54,22 @@ enum {
 };
 
 static GParamSpec *properties[N_PROPS];
+
+static void
+chatty_pp_buddy_update_protocol (ChattyPpBuddy *self)
+{
+  PurpleAccount *pp_account;
+  ChattyUser *user;
+
+  g_assert (CHATTY_IS_PP_BUDDY (self));
+  g_assert (self->pp_buddy);
+
+  pp_account = purple_buddy_get_account (self->pp_buddy);
+  user = pp_account->ui_data;
+  g_return_if_fail (user);
+
+  self->protocol = chatty_user_get_protocols (user);
+}
 
 /* copied and modified from chatty_blist_add_buddy */
 static void
@@ -91,6 +110,19 @@ chatty_add_new_buddy (ChattyPpBuddy *self)
       if (icon != NULL)
         purple_buddy_icon_update (icon);
     }
+}
+
+static ChattyProtocol
+chatty_pp_buddy_get_protocols (ChattyUser *user)
+{
+  ChattyPpBuddy *self = (ChattyPpBuddy *)user;
+
+  g_assert (CHATTY_IS_PP_BUDDY (self));
+
+  if (self->protocol != CHATTY_PROTOCOL_NONE)
+    return self->protocol;
+
+  return CHATTY_USER_CLASS (chatty_pp_buddy_parent_class)->get_protocols (user);
 }
 
 static const char *
@@ -178,6 +210,8 @@ chatty_pp_buddy_constructed (GObject *object)
   if (!self->pp_buddy)
     chatty_add_new_buddy (self);
 
+  chatty_pp_buddy_update_protocol (self);
+
   node = PURPLE_BLIST_NODE (self->pp_buddy);
   chatty_node = node->ui_data;
 
@@ -206,6 +240,7 @@ chatty_pp_buddy_class_init (ChattyPpBuddyClass *klass)
   object_class->constructed  = chatty_pp_buddy_constructed;
   object_class->finalize = chatty_pp_buddy_finalize;
 
+  user_class->get_protocols = chatty_pp_buddy_get_protocols;
   user_class->get_name = chatty_pp_buddy_get_name;
   user_class->set_name = chatty_pp_buddy_set_name;
 
