@@ -331,15 +331,13 @@ chatty_folks_get_individual_name_by_id (const char *id)
  *
  */
 void
-chatty_folks_set_purple_buddy_data (const char    *folks_id,
+chatty_folks_set_purple_buddy_data (ChattyContact *chatty_contact,
                                     PurpleAccount *account,
                                     const char    *user_name)
 { 
   FolksIndividual *individual;
 
-  chatty_folks_data_t *chatty_folks = chatty_get_folks_data ();
-
-  individual = FOLKS_INDIVIDUAL(gee_map_get (chatty_folks->individuals, folks_id));
+  individual = chatty_contact_get_individual (chatty_contact);
 
   if (individual != NULL) {
     PurpleBuddy *buddy = purple_find_buddy (account, user_name);

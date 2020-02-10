@@ -383,7 +383,6 @@ contact_row_activated_cb (ChattyNewChatDialog *self,
   GdkPixbuf       *avatar;
   const char      *chat_name;
   const char      *number;
-  const char      *folks_id;
 
   g_assert (CHATTY_IS_NEW_CHAT_DIALOG (self));
   g_assert (CHATTY_IS_CONTACT_ROW (row));
@@ -412,10 +411,14 @@ contact_row_activated_cb (ChattyNewChatDialog *self,
     chatty_window_set_header_chat_info_button_visible (window, FALSE);
 
     if (chatty_blist_protocol_is_sms (account)) {
-      number = purple_buddy_get_name (buddy);
-      folks_id = chatty_folks_has_individual_with_phonenumber (number);
+      ChattyFolks *chatty_folks;
+      ChattyContact *contact;
 
-      if (!folks_id) {
+      chatty_folks = chatty_manager_get_folks (chatty_manager_get_default ());
+      number = purple_buddy_get_name (buddy);
+      contact = chatty_folks_find_by_number (chatty_folks, number);
+
+      if (!contact) {
         chatty_window_set_menu_add_in_contacts_button_visible (window, TRUE);
       }
     }

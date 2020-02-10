@@ -18,6 +18,8 @@
 #include "purple.h"
 #include "chatty-icons.h"
 #include "chatty-window.h"
+#include "chatty-manager.h"
+#include "chatty-contact-provider.h"
 #include "chatty-purple-init.h"
 #include "chatty-contact-row.h"
 #include "chatty-buddy-list.h"
@@ -72,8 +74,6 @@ row_selected_cb (GtkListBox    *box,
   GdkPixbuf       *avatar;
   const char      *chat_name;
   const char      *number;
-  const char      *folks_id;  
-
 
   if (row == NULL) {
     return;
@@ -103,10 +103,14 @@ row_selected_cb (GtkListBox    *box,
     chatty_window_set_header_chat_info_button_visible (window, FALSE);
 
     if (chatty_blist_protocol_is_sms (account)) {
-      number = purple_buddy_get_name (buddy);
-      folks_id = chatty_folks_has_individual_with_phonenumber (number);
+      ChattyFolks *chatty_folks;
+      ChattyContact *contact;
 
-      if (!folks_id) {
+      chatty_folks = chatty_manager_get_folks (chatty_manager_get_default ());
+      number = purple_buddy_get_name (buddy);
+      contact = chatty_folks_find_by_number (chatty_folks, number);
+
+      if (!contact) {
         chatty_window_set_menu_add_in_contacts_button_visible (window, TRUE);
       }
     }
@@ -637,11 +641,12 @@ chatty_blist_chat_list_select_first (void)
 void
 chatty_blist_add_buddy_from_uri (const char *uri)
 {
+  ChattyFolks   *chatty_folks;
+  ChattyContact *contact;
   ChattyWindow  *window;
   PurpleAccount *account;
   PurpleBuddy   *buddy;
   char          *who = NULL;
-  const char    *folks_id;
   const char    *alias;
 
   account = purple_accounts_find ("SMS", "prpl-mm-sms");
@@ -654,8 +659,9 @@ chatty_blist_add_buddy_from_uri (const char *uri)
 
   who = chatty_utils_check_phonenumber (uri);
 
-  folks_id = chatty_folks_has_individual_with_phonenumber (uri);
-  alias = chatty_folks_get_individual_name_by_id (folks_id);
+  chatty_folks = chatty_manager_get_folks (chatty_manager_get_default ());
+  contact = chatty_folks_find_by_number (chatty_folks, who);
+  alias = chatty_user_get_name (CHATTY_USER (contact));
 
   g_return_if_fail (who != NULL);
 
@@ -668,7 +674,7 @@ chatty_blist_add_buddy_from_uri (const char *uri)
   }
 
   if (!purple_buddy_icons_node_has_custom_icon (PURPLE_BLIST_NODE(buddy))) {
-    chatty_folks_set_purple_buddy_data (folks_id, account, g_strdup (who));
+    chatty_folks_set_purple_buddy_data (contact, account, g_strdup (who));
   }
 
   purple_blist_node_set_bool (PURPLE_BLIST_NODE(buddy), "chatty-autojoin", TRUE);
@@ -701,7 +707,6 @@ chatty_blist_contact_list_add_buddy (void)
   PurpleBuddy        *buddy;
   GtkWidget          *convs_notebook;
   const char         *who;
-  const char         *folks_id;             
   g_autofree gchar   *number;
   
   buddy = PURPLE_BUDDY (chatty_get_selected_node ());
@@ -719,13 +724,19 @@ chatty_blist_contact_list_add_buddy (void)
   purple_blist_node_set_bool (PURPLE_BLIST_NODE (buddy), "chatty-notifications", TRUE);
 
   if (chatty_blist_protocol_is_sms (account)) {
+    ChattyFolks *chatty_folks;
+    ChattyContact *contact = NULL;
+
+    chatty_folks = chatty_manager_get_folks (chatty_manager_get_default ());
+
     who = purple_buddy_get_name (buddy);
 
     number = chatty_utils_check_phonenumber (who);
 
-    folks_id = chatty_folks_has_individual_with_phonenumber (number);
+    if (number)
+      contact = chatty_folks_find_by_number (chatty_folks, number);
 
-    if (folks_id) {
+    if (contact) {
       chatty_dbus_gc_write_contact (who, number);
     }
   }
