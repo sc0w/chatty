@@ -107,7 +107,7 @@ chatty_connection_connected (PurpleConnection *gc)
 
   if (chatty_pp_account_is_sms (pp_account))
     {
-      chatty_blist_enable_folks_contacts ();
+      /* chatty_blist_enable_folks_contacts (); */
 
       window = chatty_utils_get_window ();
       

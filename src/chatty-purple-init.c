@@ -147,7 +147,7 @@ chatty_purple_quit (void)
   }
   
   chatty_xeps_close ();
-  chatty_folks_close ();
+  /* chatty_folks_close (); */
 }
 
 

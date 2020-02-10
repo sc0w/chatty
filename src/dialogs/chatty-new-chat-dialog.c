@@ -676,24 +676,6 @@ chatty_new_chat_dialog_update (ChattyNewChatDialog *self)
 }
 
 
-GtkWidget *
-chatty_new_chat_get_list_contacts (ChattyNewChatDialog *self)
-{
-  g_return_val_if_fail (CHATTY_IS_NEW_CHAT_DIALOG (self), NULL);
-  
-  return self->chats_listbox;
-}
-
-
-GtkWidget *
-chatty_new_chat_get_search_entry (ChattyNewChatDialog *self)
-{
-  g_return_val_if_fail (CHATTY_IS_NEW_CHAT_DIALOG (self), NULL);
-
-  return self->contacts_search_entry;
-}
-
-
 static void
 chatty_new_chat_dialog_constructed (GObject *object)
 {
