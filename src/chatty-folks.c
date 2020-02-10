@@ -355,7 +355,7 @@ cb_icon_load_async_ready (GObject      *source_object,
  * created.
  * 
  */
-static void
+void
 chatty_folks_load_avatar (FolksIndividual  *individual,
                           ChattyContactRow *row,
                           PurpleAccount    *account,

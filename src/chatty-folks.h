@@ -35,5 +35,11 @@ const char *chatty_folks_get_individual_name_by_id (const char *id);
 void chatty_folks_set_purple_buddy_data (const char    *folks_id, 
                                          PurpleAccount *account,
                                          const char    *user_name);
+void chatty_folks_load_avatar (FolksIndividual  *individual,
+                               ChattyContactRow *row,
+                               PurpleAccount    *account,
+                               const char       *user_name,
+                               int               mode,
+                               int               size);
 
 #endif
