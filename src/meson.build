@@ -13,6 +13,7 @@ libsrc = [
   'contrib/gtksortlistmodel.c',
   'contrib/gtkslicelistmodel.c',
   'users/chatty-user.c',
+  'users/chatty-contact.c',
   'users/chatty-pp-buddy.c',
   'users/chatty-account.c',
   'users/chatty-pp-account.c',
