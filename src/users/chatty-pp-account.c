@@ -623,7 +623,7 @@ chatty_pp_account_add_purple_buddy (ChattyPpAccount *self,
   g_autoptr(ChattyPpBuddy) buddy = NULL;
 
   g_return_val_if_fail (CHATTY_IS_PP_ACCOUNT (self), NULL);
-  g_return_val_if_fail (CHATTY_IS_PP_BUDDY (buddy), NULL);
+  g_return_val_if_fail (pp_buddy, NULL);
 
   buddy = g_object_new (CHATTY_TYPE_PP_BUDDY,
                         "purple-buddy", pp_buddy,
