@@ -301,6 +301,28 @@ chatty_user_matches (ChattyUser     *self,
 }
 
 /**
+ * chatty_user_compare:
+ * @a: a #ChattyUser
+ * @b: a #ChattyUser
+ *
+ * Compare to users and find the order they
+ * should be sorted.
+ *
+ * Returns: < 0 if @a before @b, 0 if they
+ * compare equal, > 0 if @a compares after @b.
+ */
+int
+chatty_user_compare (ChattyUser *a,
+                     ChattyUser *b)
+{
+  g_return_val_if_fail (CHATTY_IS_USER (a), 0);
+  g_return_val_if_fail (CHATTY_IS_USER (b), 0);
+
+  return g_utf8_collate (chatty_user_get_name (a),
+                         chatty_user_get_name (b));
+}
+
+/**
  * chatty_user_get_name:
  * @self: a #ChattyUser
  *

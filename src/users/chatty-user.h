@@ -48,6 +48,8 @@ gboolean         chatty_user_matches             (ChattyUser           *self,
                                                   const char           *needle,
                                                   ChattyProtocol        protocols,
                                                   gboolean              match_name);
+int              chatty_user_compare              (ChattyUser          *a,
+                                                   ChattyUser          *b);
 const char      *chatty_user_get_name            (ChattyUser           *self);
 void             chatty_user_set_name            (ChattyUser           *self,
                                                   const char           *name);
