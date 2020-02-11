@@ -198,7 +198,7 @@ chatty_new_chat_name_check (ChattyNewChatDialog *self,
                             GtkWidget           *button)
 {
   PurpleAccount *account;
-  PurpleBuddy   *buddy;
+  PurpleBuddy   *buddy = NULL;
   const char    *name;
 
   g_return_if_fail (CHATTY_IS_NEW_CHAT_DIALOG (self));

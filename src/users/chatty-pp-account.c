@@ -73,21 +73,26 @@ chatty_icon_get_data_from_image (const char  *file_name,
   int icon_width, icon_height;
 
   format = gdk_pixbuf_get_file_info (file_name, &icon_width, &icon_height);
-
-  if (!format)
+  if (!format) {
+    if (error)
+      *error = g_error_new (G_IO_ERROR, G_IO_ERROR_NOT_SUPPORTED,
+                            "File format of %s not supported", file_name);
     return NULL;
+  }
 
   pixbuf = gdk_pixbuf_new_from_file_at_scale (file_name,
                                               MIN (width, icon_width),
                                               MIN (height, icon_height),
                                               TRUE, error);
 
-  if (!error || !*error)
-    gdk_pixbuf_save_to_buffer (pixbuf, &buffer, &size, "png", error, NULL);
+  if (!pixbuf)
+    return NULL;
 
-  if (!error || !*error)
-    if (len)
-      *len = size;
+  if (!gdk_pixbuf_save_to_buffer (pixbuf, &buffer, &size, "png", error, NULL))
+    return NULL;
+
+  if (len)
+    *len = size;
 
   return buffer;
 }
@@ -400,7 +405,7 @@ chatty_pp_account_set_avatar_async (ChattyUser          *user,
   height = prpl_info->icon_spec.max_height;
   data   = chatty_icon_get_data_from_image (file_name, width, height, &len, &error);
 
-  if (error)
+  if (!data)
     {
       g_task_return_error (task, g_steal_pointer (&error));
       g_debug ("Error: %s", error->message);
