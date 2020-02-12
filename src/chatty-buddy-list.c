@@ -1140,6 +1140,7 @@ chatty_blist_remove (PurpleBuddyList *list,
   purple_request_close_with_handle (node);
 
   chatty_blist_chats_remove_node (node);
+  chatty_manager_remove_node (chatty_manager_get_default (), node);
 
   if (chatty_node) {
     if (chatty_node->recent_signonoff_timer > 0) {
@@ -1486,6 +1487,7 @@ chatty_blist_update (PurpleBuddyList *list,
       chatty_blist_update_buddy (list, node);
       break;
     case PURPLE_BLIST_CHAT_NODE:
+      chatty_manager_update_node (chatty_manager_get_default (), node);
 
       if (purple_blist_node_get_bool(node, "chatty-autojoin")) {
         chatty_blist_chats_update_group_chat (node);
