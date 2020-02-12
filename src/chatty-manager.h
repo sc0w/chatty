@@ -43,5 +43,7 @@ void            chatty_manager_update_node            (ChattyManager   *self,
                                                        PurpleBlistNode *node);
 void            chatty_manager_remove_node            (ChattyManager   *self,
                                                        PurpleBlistNode *node);
+void            chatty_manager_emit_changed           (ChattyManager   *self,
+                                                       PurpleBlistNode *node);
 
 G_END_DECLS

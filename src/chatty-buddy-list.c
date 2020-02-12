@@ -1485,6 +1485,8 @@ chatty_blist_update (PurpleBuddyList *list,
   switch (node->type) {
     case PURPLE_BLIST_BUDDY_NODE:
       chatty_blist_update_buddy (list, node);
+      chatty_manager_emit_changed (chatty_manager_get_default (), node);
+
       break;
     case PURPLE_BLIST_CHAT_NODE:
       chatty_manager_update_node (chatty_manager_get_default (), node);

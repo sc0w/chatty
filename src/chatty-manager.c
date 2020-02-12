@@ -808,3 +808,63 @@ chatty_manager_remove_node (ChattyManager   *self,
 
   chatty_utils_remove_list_item (self->chat_list, chat);
 }
+
+
+static ChattyPpBuddy *
+manager_find_buddy_from_contact (GListModel  *model,
+                                 PurpleBuddy *pp_buddy)
+{
+  guint n_items;
+
+  n_items = g_list_model_get_n_items (model);
+
+  for (guint i = 0; i < n_items; i++) {
+    g_autoptr(GObject) buddy = NULL;
+
+    buddy = g_list_model_get_item (model, i);
+
+    if (CHATTY_IS_PP_BUDDY (buddy))
+      if (chatty_pp_buddy_get_buddy (CHATTY_PP_BUDDY (buddy)) == pp_buddy)
+        return CHATTY_PP_BUDDY (buddy);
+  }
+
+  return NULL;
+}
+
+
+void
+chatty_manager_emit_changed (ChattyManager   *self,
+                             PurpleBlistNode *node)
+{
+  ChattyPpAccount *account;
+  ChattyPpBuddy *buddy;
+  PurpleAccount *pp_account;
+  PurpleBuddy *pp_buddy;
+  guint index;
+
+  g_return_if_fail (CHATTY_IS_MANAGER (self));
+
+  if (!PURPLE_BLIST_NODE_IS_BUDDY (node))
+    return;
+
+  pp_buddy = (PurpleBuddy *)node;
+  buddy = manager_find_buddy_from_contact (G_LIST_MODEL (self->contact_list), pp_buddy);
+
+  if (!buddy)
+    return;
+
+  pp_account = chatty_pp_buddy_get_account (buddy);
+  account = chatty_pp_account_get_object (pp_account);
+
+  /*
+   * HACK: remove and add the item so that the related widget is recreated with updated values
+   * This is required until we use ChattyAvatar widget for avatar.
+   */
+  if (chatty_utils_get_item_position (chatty_pp_account_get_buddy_list (account), buddy, &index))
+    {
+      g_object_ref (buddy);
+      g_list_store_remove (G_LIST_STORE (chatty_pp_account_get_buddy_list (account)), index);
+      g_list_store_append (G_LIST_STORE (chatty_pp_account_get_buddy_list (account)), buddy);
+      g_object_unref (buddy);
+    }
+}
