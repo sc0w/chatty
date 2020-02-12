@@ -39,5 +39,9 @@ gboolean        chatty_manager_has_file_upload_plugin (ChattyManager   *self);
 gboolean        chatty_manager_lurch_plugin_is_loaded (ChattyManager   *self);
 ChattyProtocol  chatty_manager_get_active_protocols   (ChattyManager   *self);
 ChattyFolks    *chatty_manager_get_folks              (ChattyManager   *self);
+void            chatty_manager_update_node            (ChattyManager   *self,
+                                                       PurpleBlistNode *node);
+void            chatty_manager_remove_node            (ChattyManager   *self,
+                                                       PurpleBlistNode *node);
 
 G_END_DECLS

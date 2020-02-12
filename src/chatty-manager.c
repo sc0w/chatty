@@ -23,6 +23,7 @@
 #include "chatty-utils.h"
 #include "chatty-window.h"
 #include "users/chatty-pp-account.h"
+#include "chatty-chat.h"
 #include "chatty-purple-init.h"
 #include "chatty-manager.h"
 
@@ -42,6 +43,7 @@ struct _ChattyManager
 
   ChattyFolks     *chatty_folks;
   GListStore      *account_list;
+  GListStore      *chat_list;
   GListStore      *list_of_user_list;
   GtkFlattenListModel *contact_list;
 
@@ -393,6 +395,26 @@ manager_connection_signed_off_cb (PurpleConnection *gc,
   g_object_notify (G_OBJECT (account), "status");
 }
 
+static ChattyChat *
+manager_find_chat (GListModel *model,
+                   PurpleChat *pp_chat)
+{
+  guint n_items;
+
+  n_items = g_list_model_get_n_items (model);
+
+  for (guint i = 0; i < n_items; i++) {
+    g_autoptr(ChattyChat) chat = NULL;
+
+    chat = g_list_model_get_item (model, i);
+
+    if (chatty_chat_get_purple_chat (chat) == pp_chat)
+      return chat;
+  }
+
+  return NULL;
+}
+
 static void
 manager_sms_modem_added_cb (gint status)
 {
@@ -559,9 +581,11 @@ chatty_manager_init (ChattyManager *self)
   self->chatty_folks = chatty_folks_new ();
 
   self->account_list = g_list_store_new (CHATTY_TYPE_PP_ACCOUNT);
+  self->chat_list = g_list_store_new (CHATTY_TYPE_CHAT);
   self->list_of_user_list = g_list_store_new (G_TYPE_LIST_MODEL);
-  self->contact_list = gtk_flatten_list_model_new (CHATTY_TYPE_USER,
+  self->contact_list = gtk_flatten_list_model_new (G_TYPE_OBJECT,
                                                    G_LIST_MODEL (self->list_of_user_list));
+  g_list_store_append (self->list_of_user_list, G_LIST_MODEL (self->chat_list));
   g_list_store_append (self->list_of_user_list,
                        chatty_folks_get_model (self->chatty_folks));
 }
@@ -731,4 +755,56 @@ chatty_manager_get_folks (ChattyManager *self)
   g_return_val_if_fail (CHATTY_IS_MANAGER (self), NULL);
 
   return self->chatty_folks;
+}
+
+
+void
+chatty_manager_update_node (ChattyManager   *self,
+                            PurpleBlistNode *node)
+{
+  g_autoptr(ChattyChat) chat = NULL;
+  PurpleChat *pp_chat;
+
+  g_assert (CHATTY_IS_MANAGER (self));
+
+  if (!PURPLE_BLIST_NODE_IS_CHAT (node))
+    return;
+
+  pp_chat = (PurpleChat*)node;
+
+  if(!purple_account_is_connected (pp_chat->account))
+    return;
+
+  chat = manager_find_chat (G_LIST_MODEL (self->chat_list), pp_chat);
+
+  if (chat) {
+    g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_ACTIVE_PROTOCOLS]);
+    chat = NULL;
+
+    return;
+  }
+
+  chat = chatty_chat_new_purple_chat (pp_chat);
+  g_list_store_append (self->chat_list, chat);
+}
+
+
+void
+chatty_manager_remove_node (ChattyManager   *self,
+                            PurpleBlistNode *node)
+{
+  g_autoptr(ChattyChat) chat = NULL;
+  PurpleChat *pp_chat;
+
+  g_assert (CHATTY_IS_MANAGER (self));
+
+  if (!PURPLE_BLIST_NODE_IS_CHAT (node))
+    return;
+
+  pp_chat = (PurpleChat*)node;
+
+  chat = manager_find_chat (G_LIST_MODEL (self->chat_list), pp_chat);
+  g_return_if_fail (chat);
+
+  chatty_utils_remove_list_item (self->chat_list, chat);
 }
