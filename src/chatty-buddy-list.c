@@ -223,7 +223,8 @@ cb_search_entry_contacts_changed (GtkSearchEntry *entry,
                                                               NULL,
                                                               NULL,
                                                               NULL,
-                                                              number_verif));
+                                                              number_verif,
+                                                              FALSE));
 
         gtk_list_box_row_set_selectable (GTK_LIST_BOX_ROW (new_row), FALSE);
 
@@ -1453,7 +1454,8 @@ chatty_blist_contacts_update_node (PurpleBuddy     *buddy,
                                                     NULL,
                                                     NULL,
                                                     NULL,
-                                                    NULL));
+                                                    NULL,
+                                                    FALSE));
 
     gtk_list_box_row_set_selectable (GTK_LIST_BOX_ROW (chatty_node->row_contact), FALSE);
     gtk_widget_show (GTK_WIDGET (chatty_node->row_contact));
@@ -1526,7 +1528,8 @@ chatty_blist_contacts_update_group_chat (PurpleBlistNode *node)
                                                     NULL,
                                                     NULL,
                                                     NULL,
-                                                    NULL));
+                                                    NULL,
+                                                    FALSE));
     gtk_widget_show (GTK_WIDGET (chatty_node->row_contact));
     gtk_container_add (GTK_CONTAINER (listbox), GTK_WIDGET (chatty_node->row_contact));
   } else {
@@ -1571,8 +1574,8 @@ chatty_blist_chats_update_node (PurpleBuddy     *buddy,
   g_autofree gchar *last_message_striped = NULL;
   g_autofree gchar *alias = NULL;
   const gchar      *tag;
-  gboolean          notify;
   gboolean          blur;
+  gboolean          muted;
 
   PurplePresence *presence = purple_buddy_get_presence (buddy);
 
@@ -1636,8 +1639,9 @@ chatty_blist_chats_update_node (PurpleBuddy     *buddy,
     name = g_markup_printf_escaped ("%s", alias);
   }
 
-  notify = purple_blist_node_get_bool (node, "chatty-notifications");
-  if (chatty_node->conv.pending_messages && notify) {
+  muted = !purple_blist_node_get_bool (PURPLE_BLIST_NODE(buddy), "chatty-notifications");
+
+  if (chatty_node->conv.pending_messages) {
     unread_messages = g_strdup_printf ("%d", chatty_node->conv.pending_messages);
   }
 
@@ -1652,7 +1656,8 @@ chatty_blist_chats_update_node (PurpleBuddy     *buddy,
                                                     last_msg_ts,
                                                     unread_messages,
                                                     NULL,
-                                                    NULL));
+                                                    NULL,
+                                                    muted));
                                                     
     gtk_widget_show (GTK_WIDGET (chatty_node->row_chat));
     gtk_container_add (GTK_CONTAINER (listbox), GTK_WIDGET (chatty_node->row_chat));
@@ -1695,7 +1700,7 @@ chatty_blist_chats_update_group_chat (PurpleBlistNode *node)
   g_autofree gchar *unread_messages = NULL;
   g_autofree gchar *last_message_striped = NULL;
   const gchar      *chat_name;
-  gboolean notify;
+  gboolean          muted;
 
   ChattyBlistNode *chatty_node = node->ui_data;
 
@@ -1726,11 +1731,11 @@ chatty_blist_chats_update_group_chat (PurpleBlistNode *node)
   last_msg_text = g_markup_printf_escaped ("<span color='#3584e4'>Group Chat: </span>%s",
                                            last_message_striped);
 
+  muted = !purple_blist_node_get_bool (node, "chatty-notifications");
+
   g_strdup (chatty_node->conv.last_msg_timestamp);
 
-  notify = purple_blist_node_get_bool (node, "chatty-notifications");
-
-  if (chatty_node->conv.pending_messages && notify) {
+  if (chatty_node->conv.pending_messages) {
     unread_messages = g_strdup_printf ("%d", chatty_node->conv.pending_messages);
   }
 
@@ -1745,7 +1750,8 @@ chatty_blist_chats_update_group_chat (PurpleBlistNode *node)
                                                     last_msg_ts,
                                                     unread_messages,
                                                     NULL,
-                                                    NULL));
+                                                    NULL,
+                                                    muted));
 
     gtk_widget_show (GTK_WIDGET (chatty_node->row_chat));
     gtk_container_add (GTK_CONTAINER (listbox), GTK_WIDGET (chatty_node->row_chat));

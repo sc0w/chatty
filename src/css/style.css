@@ -123,6 +123,11 @@
   padding: 2px 5px;
 }
 
+.muted-badge {
+  background-color: #bfbfbf;
+  color: white;
+}
+
 row:selected .unread-badge {
   background-color: white;
   color: @theme_selected_bg_color;
