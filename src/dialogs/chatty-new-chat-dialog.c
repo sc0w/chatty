@@ -8,12 +8,15 @@
 
 #define G_LOG_DOMAIN "chatty-new-chat-dialog"
 
+#define _GNU_SOURCE
+#include <string.h>
 #include <glib.h>
 #include <glib/gi18n.h>
 #include <glib-object.h>
 #include "chatty-window.h"
 #include "chatty-manager.h"
 #include "chatty-dialogs.h"
+#include "chatty-chat.h"
 #include "users/chatty-contact.h"
 #include "contrib/gtk.h"
 #include "users/chatty-pp-account.h"
@@ -77,15 +80,40 @@ dialog_active_protocols_changed_cb (ChattyNewChatDialog *self)
 
 
 static gboolean
-dialog_filter_user_cb (ChattyUser          *user,
+dialog_filter_user_cb (GObject             *object,
                        ChattyNewChatDialog *self)
 {
-  g_assert (CHATTY_IS_NEW_CHAT_DIALOG (self));
-  g_assert (CHATTY_IS_USER (user));
+  const char *needle;
 
-  return chatty_user_matches (user, self->search_str, self->active_protocols, TRUE);
+  g_return_val_if_fail (CHATTY_IS_NEW_CHAT_DIALOG (self), FALSE);
+
+  needle = self->search_str ? self->search_str : "";
+
+  if (CHATTY_IS_USER (object))
+    return chatty_user_matches (CHATTY_USER (object), needle, self->active_protocols, TRUE);
+
+  return strcasestr (chatty_chat_get_name (CHATTY_CHAT (object)), needle) != NULL;
 }
 
+
+static gboolean
+dialog_list_row_compare (GObject *a,
+                         GObject *b)
+{
+  const char *a_name, *b_name;
+
+  if (CHATTY_IS_USER (a))
+    a_name = chatty_user_get_name (CHATTY_USER (a));
+  else
+    a_name = chatty_chat_get_name (CHATTY_CHAT (a));
+
+  if (CHATTY_IS_USER (b))
+    b_name = chatty_user_get_name (CHATTY_USER (b));
+  else
+    b_name = chatty_chat_get_name (CHATTY_CHAT (b));
+
+  return g_utf8_collate (a_name, b_name);
+}
 
 static void
 chatty_new_chat_dialog_update_new_contact_row (ChattyNewChatDialog *self)
@@ -256,14 +284,44 @@ dialog_create_buddy_row (ChattyPpBuddy *buddy)
 }
 
 static GtkWidget *
-dialog_contact_row_new (ChattyUser *user)
+dialog_create_chat_row (ChattyChat *chat)
 {
-  g_assert (CHATTY_IS_USER (user));
+  GdkPixbuf     *avatar;
+  PurpleChat    *pp_chat;
+  const gchar   *chat_name;
+  const gchar   *account_name;
 
-  if (CHATTY_IS_CONTACT (user))
-    return dialog_create_contact_row (CHATTY_CONTACT (user));
+  g_assert (CHATTY_IS_CHAT (chat));
+
+  pp_chat = chatty_chat_get_purple_chat (chat);
+
+  avatar = chatty_icon_get_buddy_icon ((PurpleBlistNode *)pp_chat,
+                                       NULL,
+                                       CHATTY_ICON_SIZE_MEDIUM,
+                                       CHATTY_COLOR_BLUE,
+                                       FALSE);
+  account_name = purple_account_get_username (pp_chat->account);
+  chat_name = purple_chat_get_name (pp_chat);
+  return chatty_contact_row_new ((gpointer) pp_chat,
+                                 avatar,
+                                 chat_name,
+                                 account_name,
+                                 NULL,
+                                 NULL,
+                                 NULL,
+                                 NULL,
+                                 FALSE);
+}
+
+static GtkWidget *
+dialog_contact_row_new (GObject *object)
+{
+  if (CHATTY_IS_CONTACT (object))
+    return dialog_create_contact_row (CHATTY_CONTACT (object));
+  else if (CHATTY_IS_PP_BUDDY (object))
+    return dialog_create_buddy_row (CHATTY_PP_BUDDY (object));
   else
-    return dialog_create_buddy_row (CHATTY_PP_BUDDY (user));
+    return dialog_create_chat_row (CHATTY_CHAT (object));
 }
 
 
@@ -778,7 +836,7 @@ chatty_new_chat_dialog_init (ChattyNewChatDialog *self)
                            G_CALLBACK (dialog_active_protocols_changed_cb), self, G_CONNECT_SWAPPED);
   dialog_active_protocols_changed_cb (self);
 
-  sorter = gtk_custom_sorter_new ((GCompareDataFunc)chatty_user_compare, NULL, NULL);
+  sorter = gtk_custom_sorter_new ((GCompareDataFunc)dialog_list_row_compare, NULL, NULL);
   sort_model = gtk_sort_list_model_new (chatty_manager_get_contact_list (self->manager), sorter);
   self->filter_model = gtk_filter_list_model_new (G_LIST_MODEL (sort_model), self->filter);
   self->slice_model = gtk_slice_list_model_new (G_LIST_MODEL (self->filter_model), 0, ITEMS_COUNT);
