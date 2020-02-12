@@ -137,7 +137,6 @@ chatty_contact_row_set_property (GObject      *object,
       str = g_value_get_string (value);
       gtk_label_set_markup (GTK_LABEL (self->message_count), str);
       gtk_widget_set_visible (self->message_count, !(str == NULL || *str == '\0'));
-      printf ("we count now%s\n", str);
       break;
 
     case PROP_DATA:
