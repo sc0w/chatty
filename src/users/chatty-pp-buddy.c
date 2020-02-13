@@ -213,8 +213,6 @@ static void
 chatty_pp_buddy_constructed (GObject *object)
 {
   ChattyPpBuddy *self = (ChattyPpBuddy *)object;
-  ChattyBlistNode *chatty_node;
-  PurpleBlistNode *node;
   gboolean has_pp_buddy;
 
   G_OBJECT_CLASS (chatty_pp_buddy_parent_class)->constructed (object);
@@ -227,12 +225,6 @@ chatty_pp_buddy_constructed (GObject *object)
                                        self->name);
 
   chatty_pp_buddy_update_protocol (self);
-
-  node = PURPLE_BLIST_NODE (self->pp_buddy);
-  chatty_node = node->ui_data;
-
-  chatty_node->buddy_object = self;
-  g_object_add_weak_pointer (G_OBJECT (self), (gpointer *)&chatty_node->buddy_object);
 
   if (!has_pp_buddy)
     chatty_add_new_buddy (self);

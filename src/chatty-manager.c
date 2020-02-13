@@ -182,13 +182,10 @@ manager_buddy_added_cb (PurpleBuddy   *pp_buddy,
 
   pp_account = purple_buddy_get_account (pp_buddy);
   account = chatty_pp_account_get_object (pp_account);
-  buddy = chatty_pp_buddy_get_object (pp_buddy);
   g_return_if_fail (account);
 
   model = chatty_pp_account_get_buddy_list (account);
-
-  if (!buddy)
-    buddy = manager_find_buddy (model, pp_buddy);
+  buddy = manager_find_buddy (model, pp_buddy);
 
   if (!buddy)
     chatty_pp_account_add_purple_buddy (account, pp_buddy);
@@ -207,13 +204,10 @@ manager_buddy_removed_cb (PurpleBuddy   *pp_buddy,
 
   pp_account = purple_buddy_get_account (pp_buddy);
   account = chatty_pp_account_get_object (pp_account);
-  buddy = chatty_pp_buddy_get_object (pp_buddy);
 
   g_return_if_fail (account);
   model = chatty_pp_account_get_buddy_list (account);
-
-  if (!buddy)
-    buddy = manager_find_buddy (model, pp_buddy);
+  buddy = manager_find_buddy (model, pp_buddy);
 
   g_return_if_fail (buddy);
 
