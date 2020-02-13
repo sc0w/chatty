@@ -94,6 +94,8 @@ struct _ChattySettingsDialog
 
   ChattySettings *settings;
   ChattyPpAccount *selected_account;
+
+  gboolean visible;
 };
 
 G_DEFINE_TYPE (ChattySettingsDialog, chatty_settings_dialog, HDY_TYPE_DIALOG)
@@ -267,6 +269,30 @@ chatty_settings_save_clicked_cb (ChattySettingsDialog *self)
 
   gtk_widget_hide (self->save_button);
   gtk_stack_set_visible_child_name (GTK_STACK (self->main_stack), "main-settings");
+}
+
+static void
+settings_pw_entry_icon_clicked_cb (ChattySettingsDialog *self,
+                                   GtkEntryIconPosition  icon_pos,
+                                   GdkEvent             *event,
+                                   GtkEntry             *entry)
+{
+  const char *icon_name = "eye-not-looking-symbolic";
+
+  g_return_if_fail (CHATTY_IS_SETTINGS_DIALOG (self));
+  g_return_if_fail (GTK_IS_ENTRY (entry));
+  g_return_if_fail (icon_pos == GTK_ENTRY_ICON_SECONDARY);
+
+  self->visible = !self->visible;
+
+  gtk_entry_set_visibility (entry, self->visible);
+
+  if (self->visible)
+    icon_name = "eye-open-negative-filled-symbolic";
+
+  gtk_entry_set_icon_from_icon_name (entry, 
+                                     GTK_ENTRY_ICON_SECONDARY,
+                                     icon_name);
 }
 
 static void
@@ -744,6 +770,7 @@ chatty_settings_dialog_class_init (ChattySettingsDialogClass *klass)
   gtk_widget_class_bind_template_callback (widget_class, settings_edit_password_clicked_cb);
   gtk_widget_class_bind_template_callback (widget_class, settings_delete_account_clicked_cb);
   gtk_widget_class_bind_template_callback (widget_class, settings_protocol_changed_cb);
+  gtk_widget_class_bind_template_callback (widget_class, settings_pw_entry_icon_clicked_cb);
 }
 
 static void

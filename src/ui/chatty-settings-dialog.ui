@@ -40,6 +40,9 @@
             <property name="use-underline">1</property>
             <property name="label" translatable="yes">_Add</property>
             <signal name="clicked" handler="chatty_settings_add_clicked_cb" swapped="yes" />
+            <style>
+              <class name="default" />
+            </style>
           </object>
           <packing>
             <property name="pack-type">end</property>
@@ -425,6 +428,11 @@
                                 <property name="sensitive">False</property>
                                 <property name="visible">True</property>
                                 <property name="visibility">False</property>
+                                <property name="primary_icon_sensitive">False</property>
+                                <property name="secondary_icon_activatable">True</property>
+                                <property name="secondary_icon_name">eye-not-looking-symbolic</property>
+                                <property name="secondary_icon_sensitive">True</property>
+                                <signal name="icon-press" handler="settings_pw_entry_icon_clicked_cb" swapped="yes"/>
                               </object>
                               <packing>
                                 <property name="left_attach">1</property>
@@ -712,6 +720,11 @@
                                     <property name="activates_default">True</property>
                                     <property name="hexpand">False</property>
                                     <property name="visibility">False</property>
+                                    <property name="primary_icon_sensitive">False</property>
+                                    <property name="secondary_icon_activatable">True</property>
+                                    <property name="secondary_icon_name">eye-not-looking-symbolic</property>
+                                    <property name="secondary_icon_sensitive">True</property>
+                                    <signal name="icon-press" handler="settings_pw_entry_icon_clicked_cb" swapped="yes"/>
                                   </object>
                                 </child>
                               </object>
@@ -732,7 +745,7 @@
         </child>
 
       </object>
-    </child> <!-- ./internal-child -->
+    </child>    <!-- ./internal-child -->
 
   </template>
 </interface>
