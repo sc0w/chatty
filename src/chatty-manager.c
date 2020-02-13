@@ -149,22 +149,6 @@ chatty_manager_enable_sms_account (ChattyManager *self)
   chatty_pp_account_save (account);
 }
 
-static void
-manager_buddy_added_cb (PurpleBuddy   *buddy,
-                        ChattyManager *self)
-{
-  ChattyPpAccount *account;
-  PurpleAccount *pp_account;
-
-  g_assert (CHATTY_IS_MANAGER (self));
-
-  pp_account = purple_buddy_get_account (buddy);
-  account = chatty_pp_account_get_object (pp_account);
-
-  if (account && !chatty_pp_buddy_get_object (buddy))
-    chatty_pp_account_add_purple_buddy (account, buddy);
-}
-
 static ChattyPpBuddy *
 manager_find_buddy (GListModel  *model,
                     PurpleBuddy *pp_buddy)
@@ -183,6 +167,31 @@ manager_find_buddy (GListModel  *model,
   }
 
   return NULL;
+}
+
+static void
+manager_buddy_added_cb (PurpleBuddy   *pp_buddy,
+                        ChattyManager *self)
+{
+  ChattyPpAccount *account;
+  ChattyPpBuddy *buddy;
+  PurpleAccount *pp_account;
+  GListModel *model;
+
+  g_assert (CHATTY_IS_MANAGER (self));
+
+  pp_account = purple_buddy_get_account (pp_buddy);
+  account = chatty_pp_account_get_object (pp_account);
+  buddy = chatty_pp_buddy_get_object (pp_buddy);
+  g_return_if_fail (account);
+
+  model = chatty_pp_account_get_buddy_list (account);
+
+  if (!buddy)
+    buddy = manager_find_buddy (model, pp_buddy);
+
+  if (!buddy)
+    chatty_pp_account_add_purple_buddy (account, pp_buddy);
 }
 
 static void
