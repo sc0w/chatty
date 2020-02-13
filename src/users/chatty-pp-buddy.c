@@ -18,6 +18,7 @@
 #include "chatty-config.h"
 #include "chatty-settings.h"
 #include "chatty-account.h"
+#include "chatty-pp-account.h"
 #include "chatty-window.h"
 #include "chatty-purple-init.h"
 #include "chatty-pp-buddy.h"
@@ -213,6 +214,8 @@ static void
 chatty_pp_buddy_constructed (GObject *object)
 {
   ChattyPpBuddy *self = (ChattyPpBuddy *)object;
+  ChattyPpAccount *account;
+  GListModel *model;
   gboolean has_pp_buddy;
 
   G_OBJECT_CLASS (chatty_pp_buddy_parent_class)->constructed (object);
@@ -224,6 +227,9 @@ chatty_pp_buddy_constructed (GObject *object)
                                        self->username,
                                        self->name);
 
+  account = self->pp_buddy->account->ui_data;
+  model = chatty_pp_account_get_buddy_list (account);
+  g_list_store_append (G_LIST_STORE (model), self);
   chatty_pp_buddy_update_protocol (self);
 
   if (!has_pp_buddy)

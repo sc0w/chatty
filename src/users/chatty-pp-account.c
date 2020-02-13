@@ -611,8 +611,6 @@ chatty_pp_account_add_buddy (ChattyPpAccount *self,
                         "name", name,
                         NULL);
 
-  g_list_store_append (self->buddy_list, buddy);
-
   return buddy;
 }
 
@@ -628,8 +626,6 @@ chatty_pp_account_add_purple_buddy (ChattyPpAccount *self,
   buddy = g_object_new (CHATTY_TYPE_PP_BUDDY,
                         "purple-buddy", pp_buddy,
                         NULL);
-
-  g_list_store_append (self->buddy_list, buddy);
 
   return buddy;
 }
