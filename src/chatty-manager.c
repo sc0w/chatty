@@ -796,7 +796,7 @@ void
 chatty_manager_remove_node (ChattyManager   *self,
                             PurpleBlistNode *node)
 {
-  g_autoptr(ChattyChat) chat = NULL;
+  ChattyChat *chat;
   PurpleChat *pp_chat;
 
   g_assert (CHATTY_IS_MANAGER (self));
