@@ -21,5 +21,6 @@ G_DECLARE_FINAL_TYPE (ChattyContactRow, chatty_contact_row, CHATTY, CONTACT_ROW,
                                        const gchar *timestamp,
                                        const gchar *message_count,
                                        const gchar *id,
-                                       const gchar *phone_number);
+                                       const gchar *phone_number,
+                                       gboolean     muted);
 #endif

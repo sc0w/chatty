@@ -18,6 +18,7 @@ enum {
   PROP_ID,
   PROP_NUMBER,
   PROP_DATA,
+  PROP_MUTED,
   PROP_LAST_PROP,
 };
 
@@ -36,6 +37,8 @@ typedef struct _ChattyContactRow
   gpointer   data;
   gchar     *id;
   gchar     *number;
+
+  gboolean   muted;
 } ChattyContactRow;
 
 G_DEFINE_TYPE (ChattyContactRow, chatty_contact_row, GTK_TYPE_LIST_BOX_ROW)
@@ -82,6 +85,10 @@ chatty_contact_row_get_property (GObject      *object,
       g_value_set_string (value, self->number);
       break;
 
+    case PROP_MUTED:
+      g_value_set_boolean (value, self->muted);
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
       break;
@@ -98,6 +105,7 @@ chatty_contact_row_set_property (GObject      *object,
   ChattyContactRow *self = CHATTY_CONTACT_ROW (object);
   const gchar *str;
   GObject *obj;
+  GtkStyleContext *sc;
 
   switch (property_id) {
     case PROP_AVATR:
@@ -143,6 +151,18 @@ chatty_contact_row_set_property (GObject      *object,
     case PROP_NUMBER:
       g_free (self->number);
       self->number = g_value_dup_string (value);
+      break;
+
+    case PROP_MUTED:
+      self->muted = g_value_get_boolean (value);
+        
+      sc = gtk_widget_get_style_context (GTK_WIDGET(self->message_count));
+
+      if (self->muted)
+        gtk_style_context_add_class (sc, "muted-badge");
+      else
+        gtk_style_context_remove_class (sc, "muted-badge");
+
       break;
 
     default:
@@ -218,6 +238,14 @@ chatty_contact_row_class_init (ChattyContactRowClass *klass)
                         G_PARAM_READWRITE | G_PARAM_EXPLICIT_NOTIFY);
 
 
+  props[PROP_MUTED] =
+   g_param_spec_boolean ("muted",
+                         "Notifications muted",
+                         "If set, the notification badge will be displayed with grey bg-color instead of blue",
+                         FALSE,
+                         G_PARAM_READWRITE | G_PARAM_EXPLICIT_NOTIFY);
+
+
   g_object_class_install_properties (object_class, PROP_LAST_PROP, props);
 
   gtk_widget_class_set_template_from_resource (widget_class,
@@ -242,7 +270,8 @@ chatty_contact_row_new (gpointer data,
                         const gchar *timestamp,
                         const gchar *message_count,
                         const gchar *id,
-                        const gchar *phone_number) {
+                        const gchar *phone_number,
+                        gboolean     muted) {
   return g_object_new (CHATTY_TYPE_CONTACT_ROW,
                        "data", data,
                        "avatar", avatar,
@@ -252,5 +281,6 @@ chatty_contact_row_new (gpointer data,
                        "message_count", message_count,
                        "id", id,
                        "phone_number", phone_number,
+                       "muted", muted,
                        NULL);
 }

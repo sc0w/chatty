@@ -699,7 +699,8 @@ chatty_folks_individual_add_contact_rows (FolksIndividual *individual)
                                                       NULL,
                                                       NULL,
                                                       folks_id,
-                                                      number_e164));
+                                                      number_e164,
+                                                      FALSE));
 
     gtk_list_box_row_set_selectable (GTK_LIST_BOX_ROW (row), FALSE);
 
