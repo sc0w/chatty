@@ -807,9 +807,9 @@ chatty_manager_remove_node (ChattyManager   *self,
   pp_chat = (PurpleChat*)node;
 
   chat = manager_find_chat (G_LIST_MODEL (self->chat_list), pp_chat);
-  g_return_if_fail (chat);
 
-  chatty_utils_remove_list_item (self->chat_list, chat);
+  if (chat)
+    chatty_utils_remove_list_item (self->chat_list, chat);
 }
 
 
