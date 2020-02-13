@@ -1733,8 +1733,6 @@ chatty_blist_chats_update_group_chat (PurpleBlistNode *node)
 
   muted = !purple_blist_node_get_bool (node, "chatty-notifications");
 
-  g_strdup (chatty_node->conv.last_msg_timestamp);
-
   if (chatty_node->conv.pending_messages) {
     unread_messages = g_strdup_printf ("%d", chatty_node->conv.pending_messages);
   }
