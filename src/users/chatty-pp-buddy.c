@@ -81,12 +81,7 @@ chatty_add_new_buddy (ChattyPpBuddy *self)
   g_assert (CHATTY_IS_PP_BUDDY (self));
 
   /* buddy should be NULL and account should be non-NULL */
-  g_return_if_fail (!self->pp_buddy);
   g_return_if_fail (self->pp_account);
-
-  self->pp_buddy = purple_buddy_new (self->pp_account,
-                                     self->username,
-                                     self->name);
 
   purple_blist_add_buddy (self->pp_buddy, NULL, NULL, NULL);
 
@@ -220,11 +215,16 @@ chatty_pp_buddy_constructed (GObject *object)
   ChattyPpBuddy *self = (ChattyPpBuddy *)object;
   ChattyBlistNode *chatty_node;
   PurpleBlistNode *node;
+  gboolean has_pp_buddy;
 
   G_OBJECT_CLASS (chatty_pp_buddy_parent_class)->constructed (object);
 
-  if (!self->pp_buddy)
-    chatty_add_new_buddy (self);
+  has_pp_buddy = self->pp_buddy != NULL;
+
+  if (!has_pp_buddy)
+    self->pp_buddy = purple_buddy_new (self->pp_account,
+                                       self->username,
+                                       self->name);
 
   chatty_pp_buddy_update_protocol (self);
 
@@ -233,6 +233,9 @@ chatty_pp_buddy_constructed (GObject *object)
 
   chatty_node->buddy_object = self;
   g_object_add_weak_pointer (G_OBJECT (self), (gpointer *)&chatty_node->buddy_object);
+
+  if (!has_pp_buddy)
+    chatty_add_new_buddy (self);
 }
 
 static void
