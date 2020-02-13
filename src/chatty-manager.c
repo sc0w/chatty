@@ -864,10 +864,5 @@ chatty_manager_emit_changed (ChattyManager   *self,
    * This is required until we use ChattyAvatar widget for avatar.
    */
   if (chatty_utils_get_item_position (chatty_pp_account_get_buddy_list (account), buddy, &index))
-    {
-      g_object_ref (buddy);
-      g_list_store_remove (G_LIST_STORE (chatty_pp_account_get_buddy_list (account)), index);
-      g_list_store_append (G_LIST_STORE (chatty_pp_account_get_buddy_list (account)), buddy);
-      g_object_unref (buddy);
-    }
+    g_list_model_items_changed (chatty_pp_account_get_buddy_list (account), index, 1, 1);
 }
