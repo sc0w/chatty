@@ -248,18 +248,20 @@ dialog_create_contact_row (ChattyContact *contact)
   return row;
 }
 
-static GtkWidget *
-dialog_create_buddy_row (ChattyPpBuddy *buddy)
+
+static void
+dialog_buddy_row_changed_cb (ChattyPpBuddy    *buddy,
+                             ChattyContactRow *row)
 {
   GdkPixbuf *avatar;
   PurpleBuddy *pp_buddy;
   PurpleAccount *account;
-  GtkWidget *row;
   const char *name, *account_name;
   g_autofree char *alias = NULL;
   gboolean blur;
 
   g_assert (CHATTY_IS_PP_BUDDY (buddy));
+  g_assert (CHATTY_IS_CONTACT_ROW (row));
 
   pp_buddy = chatty_pp_buddy_get_buddy (buddy);
   account = purple_buddy_get_account (pp_buddy);
@@ -274,11 +276,31 @@ dialog_create_buddy_row (ChattyPpBuddy *buddy)
                                        chatty_blist_protocol_is_sms (account) ?
                                        CHATTY_COLOR_GREEN : CHATTY_COLOR_BLUE,
                                        blur);
-  row = chatty_contact_row_new (pp_buddy, avatar, name,
-                                account_name, NULL, NULL,
-                                NULL,
-                                NULL,
-                                FALSE);
+
+  g_object_set (row,
+                "data", pp_buddy,
+                "avatar", avatar,
+                "name", name,
+                "description", account_name,
+                "message-count", NULL,
+                NULL);
+}
+
+static GtkWidget *
+dialog_create_buddy_row (ChattyPpBuddy *buddy)
+{
+  GtkWidget *row;
+
+  g_assert (CHATTY_IS_PP_BUDDY (buddy));
+
+  row = chatty_contact_row_new (NULL, NULL, NULL,
+                                NULL, NULL, NULL,
+                                NULL, NULL, FALSE);
+
+  g_signal_connect_object (buddy, "changed",
+                           G_CALLBACK (dialog_buddy_row_changed_cb),
+                           row, G_CONNECT_AFTER);
+  dialog_buddy_row_changed_cb (buddy, CHATTY_CONTACT_ROW (row));
 
   return row;
 }
