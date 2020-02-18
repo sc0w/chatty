@@ -843,7 +843,6 @@ chatty_manager_emit_changed (ChattyManager   *self,
   ChattyPpBuddy *buddy;
   PurpleAccount *pp_account;
   PurpleBuddy *pp_buddy;
-  guint index;
 
   g_return_if_fail (CHATTY_IS_MANAGER (self));
 
@@ -863,6 +862,6 @@ chatty_manager_emit_changed (ChattyManager   *self,
    * HACK: remove and add the item so that the related widget is recreated with updated values
    * This is required until we use ChattyAvatar widget for avatar.
    */
-  if (chatty_utils_get_item_position (chatty_pp_account_get_buddy_list (account), buddy, &index))
-    g_list_model_items_changed (chatty_pp_account_get_buddy_list (account), index, 1, 1);
+  if (chatty_utils_get_item_position (chatty_pp_account_get_buddy_list (account), buddy, NULL))
+    g_signal_emit_by_name (buddy, "changed");
 }
