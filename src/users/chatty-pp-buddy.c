@@ -54,7 +54,13 @@ enum {
   N_PROPS
 };
 
+enum {
+  CHANGED,
+  N_SIGNALS
+};
+
 static GParamSpec *properties[N_PROPS];
+static guint signals[N_SIGNALS];
 
 static void
 chatty_pp_buddy_update_protocol (ChattyPpBuddy *self)
@@ -282,6 +288,20 @@ chatty_pp_buddy_class_init (ChattyPpBuddyClass *klass)
                          G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY | G_PARAM_STATIC_STRINGS);
 
   g_object_class_install_properties (object_class, N_PROPS, properties);
+
+  /**
+   * ChattyPpBuddy::changed:
+   * @self: a #ChattyPpBuddy
+   *
+   * changed signal is emitted when any detail
+   * of the buddy changes.
+   */
+  signals [CHANGED] =
+    g_signal_new ("changed",
+                  G_TYPE_FROM_CLASS (klass),
+                  G_SIGNAL_RUN_LAST,
+                  0, NULL, NULL, NULL,
+                  G_TYPE_NONE, 0);
 }
 
 static void
