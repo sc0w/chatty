@@ -11,11 +11,14 @@
 
 #define G_LOG_DOMAIN "chatty-pp-buddy"
 
+#define _GNU_SOURCE
+#include <string.h>
 #include <purple.h>
 
 #include "chatty-config.h"
 #include "chatty-settings.h"
 #include "chatty-account.h"
+#include "chatty-pp-account.h"
 #include "chatty-window.h"
 #include "chatty-purple-init.h"
 #include "chatty-pp-buddy.h"
@@ -38,6 +41,7 @@ struct _ChattyPpBuddy
 
   PurpleStoredImage *pp_avatar;
   GdkPixbuf         *avatar;
+  ChattyProtocol     protocol;
 };
 
 G_DEFINE_TYPE (ChattyPpBuddy, chatty_pp_buddy, CHATTY_TYPE_USER)
@@ -50,7 +54,29 @@ enum {
   N_PROPS
 };
 
+enum {
+  CHANGED,
+  N_SIGNALS
+};
+
 static GParamSpec *properties[N_PROPS];
+static guint signals[N_SIGNALS];
+
+static void
+chatty_pp_buddy_update_protocol (ChattyPpBuddy *self)
+{
+  PurpleAccount *pp_account;
+  ChattyUser *user;
+
+  g_assert (CHATTY_IS_PP_BUDDY (self));
+  g_assert (self->pp_buddy);
+
+  pp_account = purple_buddy_get_account (self->pp_buddy);
+  user = pp_account->ui_data;
+  g_return_if_fail (user);
+
+  self->protocol = chatty_user_get_protocols (user);
+}
 
 /* copied and modified from chatty_blist_add_buddy */
 static void
@@ -62,12 +88,7 @@ chatty_add_new_buddy (ChattyPpBuddy *self)
   g_assert (CHATTY_IS_PP_BUDDY (self));
 
   /* buddy should be NULL and account should be non-NULL */
-  g_return_if_fail (!self->pp_buddy);
   g_return_if_fail (self->pp_account);
-
-  self->pp_buddy = purple_buddy_new (self->pp_account,
-                                     self->username,
-                                     self->name);
 
   purple_blist_add_buddy (self->pp_buddy, NULL, NULL, NULL);
 
@@ -91,6 +112,35 @@ chatty_add_new_buddy (ChattyPpBuddy *self)
       if (icon != NULL)
         purple_buddy_icon_update (icon);
     }
+}
+
+static ChattyProtocol
+chatty_pp_buddy_get_protocols (ChattyUser *user)
+{
+  ChattyPpBuddy *self = (ChattyPpBuddy *)user;
+
+  g_assert (CHATTY_IS_PP_BUDDY (self));
+
+  if (self->protocol != CHATTY_PROTOCOL_NONE)
+    return self->protocol;
+
+  return CHATTY_USER_CLASS (chatty_pp_buddy_parent_class)->get_protocols (user);
+}
+
+static gboolean
+chatty_pp_buddy_matches (ChattyUser     *user,
+                         const char     *needle,
+                         ChattyProtocol  protocols,
+                         gboolean        match_name)
+{
+  ChattyPpBuddy *self = (ChattyPpBuddy *)user;
+  const char *user_id;
+
+  if (!self->pp_buddy)
+    return FALSE;
+
+  user_id = purple_buddy_get_name (self->pp_buddy);
+  return strcasestr (user_id, needle) != NULL;
 }
 
 static const char *
@@ -170,19 +220,26 @@ static void
 chatty_pp_buddy_constructed (GObject *object)
 {
   ChattyPpBuddy *self = (ChattyPpBuddy *)object;
-  ChattyBlistNode *chatty_node;
-  PurpleBlistNode *node;
+  ChattyPpAccount *account;
+  GListModel *model;
+  gboolean has_pp_buddy;
 
   G_OBJECT_CLASS (chatty_pp_buddy_parent_class)->constructed (object);
 
-  if (!self->pp_buddy)
+  has_pp_buddy = self->pp_buddy != NULL;
+
+  if (!has_pp_buddy)
+    self->pp_buddy = purple_buddy_new (self->pp_account,
+                                       self->username,
+                                       self->name);
+
+  account = self->pp_buddy->account->ui_data;
+  model = chatty_pp_account_get_buddy_list (account);
+  g_list_store_append (G_LIST_STORE (model), self);
+  chatty_pp_buddy_update_protocol (self);
+
+  if (!has_pp_buddy)
     chatty_add_new_buddy (self);
-
-  node = PURPLE_BLIST_NODE (self->pp_buddy);
-  chatty_node = node->ui_data;
-
-  chatty_node->buddy_object = self;
-  g_object_add_weak_pointer (G_OBJECT (self), (gpointer *)&chatty_node->buddy_object);
 }
 
 static void
@@ -206,6 +263,8 @@ chatty_pp_buddy_class_init (ChattyPpBuddyClass *klass)
   object_class->constructed  = chatty_pp_buddy_constructed;
   object_class->finalize = chatty_pp_buddy_finalize;
 
+  user_class->get_protocols = chatty_pp_buddy_get_protocols;
+  user_class->matches  = chatty_pp_buddy_matches;
   user_class->get_name = chatty_pp_buddy_get_name;
   user_class->set_name = chatty_pp_buddy_set_name;
 
@@ -229,6 +288,20 @@ chatty_pp_buddy_class_init (ChattyPpBuddyClass *klass)
                          G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY | G_PARAM_STATIC_STRINGS);
 
   g_object_class_install_properties (object_class, N_PROPS, properties);
+
+  /**
+   * ChattyPpBuddy::changed:
+   * @self: a #ChattyPpBuddy
+   *
+   * changed signal is emitted when any detail
+   * of the buddy changes.
+   */
+  signals [CHANGED] =
+    g_signal_new ("changed",
+                  G_TYPE_FROM_CLASS (klass),
+                  G_SIGNAL_RUN_LAST,
+                  0, NULL, NULL, NULL,
+                  G_TYPE_NONE, 0);
 }
 
 static void

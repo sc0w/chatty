@@ -17,10 +17,13 @@
 
 #include "xeps/xeps.h"
 #include "chatty-settings.h"
+#include "contrib/gtk.h"
 #include "chatty-account.h"
+#include "chatty-contact-provider.h"
 #include "chatty-utils.h"
 #include "chatty-window.h"
 #include "users/chatty-pp-account.h"
+#include "chatty-chat.h"
 #include "chatty-purple-init.h"
 #include "chatty-manager.h"
 
@@ -38,7 +41,11 @@ struct _ChattyManager
 {
   GObject          parent_instance;
 
+  ChattyFolks     *chatty_folks;
   GListStore      *account_list;
+  GListStore      *chat_list;
+  GListStore      *list_of_user_list;
+  GtkFlattenListModel *contact_list;
 
   PurplePlugin    *sms_plugin;
   PurplePlugin    *lurch_plugin;
@@ -47,9 +54,36 @@ struct _ChattyManager
 
   gboolean         disable_auto_login;
   gboolean         network_available;
+
+  /* Number of accounts currently connected */
+  guint            xmpp_count;
+  guint            telegram_count;
+  guint            matrix_count;
+  gboolean         has_modem;
+  ChattyProtocol   active_protocols;
 };
 
 G_DEFINE_TYPE (ChattyManager, chatty_manager, G_TYPE_OBJECT)
+
+/* XXX: A copy from purple-mm-sms */
+enum {
+  PUR_MM_STATE_NO_MANAGER,
+  PUR_MM_STATE_MANAGER_FOUND,
+  PUR_MM_STATE_NO_MODEM,
+  PUR_MM_STATE_MODEM_FOUND,
+  PUR_MM_STATE_NO_MESSAGING_MODEM,
+  PUR_MM_STATE_MODEM_DISABLED,
+  PUR_MM_STATE_MODEM_UNLOCK_ERROR,
+  PUR_MM_STATE_READY
+} e_purple_connection;
+
+enum {
+  PROP_0,
+  PROP_ACTIVE_PROTOCOLS,
+  N_PROPS
+};
+
+static GParamSpec *properties[N_PROPS];
 
 
 static gboolean
@@ -115,20 +149,46 @@ chatty_manager_enable_sms_account (ChattyManager *self)
   chatty_pp_account_save (account);
 }
 
+static ChattyPpBuddy *
+manager_find_buddy (GListModel  *model,
+                    PurpleBuddy *pp_buddy)
+{
+  guint n_items;
+
+  n_items = g_list_model_get_n_items (model);
+
+  for (guint i = 0; i < n_items; i++) {
+    g_autoptr(ChattyPpBuddy) buddy = NULL;
+
+    buddy = g_list_model_get_item (model, i);
+
+    if (chatty_pp_buddy_get_buddy (buddy) == pp_buddy)
+      return buddy;
+  }
+
+  return NULL;
+}
+
 static void
-manager_buddy_added_cb (PurpleBuddy   *buddy,
+manager_buddy_added_cb (PurpleBuddy   *pp_buddy,
                         ChattyManager *self)
 {
   ChattyPpAccount *account;
+  ChattyPpBuddy *buddy;
   PurpleAccount *pp_account;
+  GListModel *model;
 
   g_assert (CHATTY_IS_MANAGER (self));
 
-  pp_account = purple_buddy_get_account (buddy);
+  pp_account = purple_buddy_get_account (pp_buddy);
   account = chatty_pp_account_get_object (pp_account);
+  g_return_if_fail (account);
 
-  if (account && !chatty_pp_buddy_get_object (buddy))
-    chatty_pp_account_add_purple_buddy (account, buddy);
+  model = chatty_pp_account_get_buddy_list (account);
+  buddy = manager_find_buddy (model, pp_buddy);
+
+  if (!buddy)
+    chatty_pp_account_add_purple_buddy (account, pp_buddy);
 }
 
 static void
@@ -144,13 +204,14 @@ manager_buddy_removed_cb (PurpleBuddy   *pp_buddy,
 
   pp_account = purple_buddy_get_account (pp_buddy);
   account = chatty_pp_account_get_object (pp_account);
-  buddy = chatty_pp_buddy_get_object (pp_buddy);
 
   g_return_if_fail (account);
+  model = chatty_pp_account_get_buddy_list (account);
+  buddy = manager_find_buddy (model, pp_buddy);
+
   g_return_if_fail (buddy);
 
   g_signal_emit_by_name (buddy, "deleted");
-  model = chatty_pp_account_get_buddy_list (account);
   chatty_utils_remove_list_item (G_LIST_STORE (model), buddy);
 }
 
@@ -171,6 +232,8 @@ manager_account_added_cb (PurpleAccount *pp_account,
 
   g_object_notify (G_OBJECT (account), "status");
   g_list_store_append (self->account_list, account);
+  g_list_store_append (self->list_of_user_list,
+                       chatty_pp_account_get_buddy_list (account));
 
   if (self->disable_auto_login)
     chatty_account_set_enabled (CHATTY_ACCOUNT (account), FALSE);
@@ -191,6 +254,8 @@ manager_account_removed_cb (PurpleAccount *pp_account,
   account = chatty_pp_account_get_object (pp_account);
   g_return_if_fail (account);
 
+  chatty_utils_remove_list_item (self->list_of_user_list,
+                                 chatty_pp_account_get_buddy_list (account));
   g_object_notify (G_OBJECT (account), "status");
   g_signal_emit_by_name (account, "deleted");
   chatty_utils_remove_list_item (self->account_list, account);
@@ -246,6 +311,114 @@ manager_connection_changed_cb (PurpleConnection *gc,
 }
 
 static void
+manager_connection_signed_on_cb (PurpleConnection *gc,
+                                 ChattyManager    *self)
+{
+  PurpleAccount *pp_account;
+  ChattyPpAccount *account;
+  ChattyProtocol protocol, old_protocols;
+
+  g_assert (CHATTY_IS_MANAGER (self));
+
+  pp_account = purple_connection_get_account (gc);
+  account = chatty_pp_account_get_object (pp_account);
+  g_return_if_fail (account);
+
+  /*
+   * SMS plugin emits “signed-on” regardless of the true state
+   * So it’s handled in “mm-sms-state” callback.
+   */
+  if (chatty_pp_account_is_sms (account))
+    return;
+
+  protocol = chatty_user_get_protocols (CHATTY_USER (account));
+  old_protocols = self->active_protocols;
+  self->active_protocols |= protocol;
+
+  if (protocol & CHATTY_PROTOCOL_XMPP)
+    self->xmpp_count++;
+  if (protocol & CHATTY_PROTOCOL_MATRIX)
+    self->matrix_count++;
+  if (protocol & CHATTY_PROTOCOL_TELEGRAM)
+    self->telegram_count++;
+
+  if (old_protocols != self->active_protocols)
+    g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_ACTIVE_PROTOCOLS]);
+
+  g_object_notify (G_OBJECT (account), "status");
+}
+
+static void
+manager_connection_signed_off_cb (PurpleConnection *gc,
+                                  ChattyManager    *self)
+{
+  PurpleAccount *pp_account;
+  ChattyPpAccount *account;
+  ChattyProtocol protocol, old_protocols;
+
+  g_assert (CHATTY_IS_MANAGER (self));
+
+  pp_account = purple_connection_get_account (gc);
+  account = chatty_pp_account_get_object (pp_account);
+  g_return_if_fail (account);
+
+  /*
+   * SMS plugin emits “signed-off” regardless of the true state
+   * So it’s handled in “mm-sms-state” callback.
+   */
+  if (chatty_pp_account_is_sms (account))
+    return;
+
+  protocol = chatty_user_get_protocols (CHATTY_USER (account));
+  old_protocols = self->active_protocols;
+  self->active_protocols = CHATTY_PROTOCOL_NONE;
+
+  if (protocol & CHATTY_PROTOCOL_XMPP)
+    if (self->xmpp_count > 0)
+      self->xmpp_count--;
+  if (protocol & CHATTY_PROTOCOL_MATRIX)
+    if (self->matrix_count > 0)
+      self->matrix_count--;
+  if (protocol & CHATTY_PROTOCOL_TELEGRAM)
+    if (self->telegram_count > 0)
+      self->telegram_count--;
+
+  if (self->xmpp_count)
+    self->active_protocols |= CHATTY_PROTOCOL_XMPP;
+  if (self->matrix_count)
+    self->active_protocols |= CHATTY_PROTOCOL_MATRIX;
+  if (self->telegram_count)
+    self->active_protocols |= CHATTY_PROTOCOL_TELEGRAM;
+  if (self->has_modem)
+    self->active_protocols |= CHATTY_PROTOCOL_SMS;
+
+  if (old_protocols != self->active_protocols)
+    g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_ACTIVE_PROTOCOLS]);
+
+  g_object_notify (G_OBJECT (account), "status");
+}
+
+static ChattyChat *
+manager_find_chat (GListModel *model,
+                   PurpleChat *pp_chat)
+{
+  guint n_items;
+
+  n_items = g_list_model_get_n_items (model);
+
+  for (guint i = 0; i < n_items; i++) {
+    g_autoptr(ChattyChat) chat = NULL;
+
+    chat = g_list_model_get_item (model, i);
+
+    if (chatty_chat_get_purple_chat (chat) == pp_chat)
+      return chat;
+  }
+
+  return NULL;
+}
+
+static void
 manager_sms_modem_added_cb (gint status)
 {
   ChattyPpAccount *account;
@@ -256,6 +429,30 @@ manager_sms_modem_added_cb (gint status)
   g_return_if_fail (CHATTY_IS_PP_ACCOUNT (account));
 
   chatty_pp_account_connect (account, TRUE);
+}
+
+
+/* XXX: works only with one modem */
+static void
+manager_sms_state_changed_cb (int            state,
+                              ChattyManager *self)
+{
+  ChattyProtocol old_protocols;
+
+  g_assert (CHATTY_IS_MANAGER (self));
+
+  old_protocols = self->active_protocols;
+
+  if (state == PUR_MM_STATE_READY) {
+    self->has_modem = TRUE;
+    self->active_protocols |= CHATTY_PROTOCOL_SMS;
+  } else if (state != PUR_MM_STATE_MANAGER_FOUND && state != PUR_MM_STATE_MODEM_FOUND) {
+    self->has_modem = FALSE;
+    self->active_protocols &= ~CHATTY_PROTOCOL_SMS;
+  }
+
+  if (old_protocols != self->active_protocols)
+    g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_ACTIVE_PROTOCOLS]);
 }
 
 static void
@@ -325,14 +522,18 @@ chatty_manager_intialize_libpurple (ChattyManager *self)
                          PURPLE_CALLBACK (manager_connection_changed_cb), self);
   purple_signal_connect (purple_connections_get_handle(),
                          "signed-on", self,
-                         PURPLE_CALLBACK (manager_connection_changed_cb), self);
+                         PURPLE_CALLBACK (manager_connection_signed_on_cb), self);
   purple_signal_connect (purple_connections_get_handle(),
                          "signed-off", self,
-                         PURPLE_CALLBACK (manager_connection_changed_cb), self);
+                         PURPLE_CALLBACK (manager_connection_signed_off_cb), self);
 
   purple_signal_connect (purple_plugins_get_handle (),
                          "mm-sms-modem-added", self,
                          PURPLE_CALLBACK (manager_sms_modem_added_cb), NULL);
+
+  purple_signal_connect (purple_plugins_get_handle (),
+                         "mm-sms-state", self,
+                         PURPLE_CALLBACK (manager_sms_state_changed_cb), self);
 
   g_signal_connect_object (network_monitor, "network-changed",
                            G_CALLBACK (manager_network_changed_cb), self,
@@ -345,6 +546,8 @@ chatty_manager_dispose (GObject *object)
   ChattyManager *self = (ChattyManager *)object;
 
   purple_signals_disconnect_by_handle (self);
+  g_clear_object (&self->contact_list);
+  g_clear_object (&self->list_of_user_list);
   g_clear_object (&self->account_list);
 
   G_OBJECT_CLASS (chatty_manager_parent_class)->dispose (object);
@@ -356,12 +559,38 @@ chatty_manager_class_init (ChattyManagerClass *klass)
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
 
   object_class->dispose = chatty_manager_dispose;
+
+  /**
+   * ChattyUser:active-protocols:
+   *
+   * Protocols currently available for use.  This is a
+   * flag of protocols currently connected and available
+   * for use.
+   */
+  properties[PROP_ACTIVE_PROTOCOLS] =
+    g_param_spec_int ("active-protocols",
+                      "Active protocols",
+                      "Protocols currently active and connected",
+                      CHATTY_PROTOCOL_NONE,
+                      CHATTY_PROTOCOL_TELEGRAM,
+                      CHATTY_PROTOCOL_NONE,
+                      G_PARAM_READABLE | G_PARAM_STATIC_STRINGS);
+
 }
 
 static void
 chatty_manager_init (ChattyManager *self)
 {
+  self->chatty_folks = chatty_folks_new ();
+
   self->account_list = g_list_store_new (CHATTY_TYPE_PP_ACCOUNT);
+  self->chat_list = g_list_store_new (CHATTY_TYPE_CHAT);
+  self->list_of_user_list = g_list_store_new (G_TYPE_LIST_MODEL);
+  self->contact_list = gtk_flatten_list_model_new (G_TYPE_OBJECT,
+                                                   G_LIST_MODEL (self->list_of_user_list));
+  g_list_store_append (self->list_of_user_list, G_LIST_MODEL (self->chat_list));
+  g_list_store_append (self->list_of_user_list,
+                       chatty_folks_get_model (self->chatty_folks));
 }
 
 ChattyManager *
@@ -396,6 +625,14 @@ chatty_manager_get_accounts (ChattyManager *self)
   g_return_val_if_fail (CHATTY_IS_MANAGER (self), NULL);
 
   return G_LIST_MODEL (self->account_list);
+}
+
+GListModel *
+chatty_manager_get_contact_list (ChattyManager *self)
+{
+  g_return_val_if_fail (CHATTY_IS_MANAGER (self), NULL);
+
+  return G_LIST_MODEL (self->contact_list);
 }
 
 /**
@@ -463,8 +700,6 @@ chatty_manager_load_plugins (ChattyManager *self)
 void
 chatty_manager_load_buddies (ChattyManager *self)
 {
-  ChattyPpAccount *account;
-  PurpleAccount *pp_account;
   g_autoptr(GSList) buddies = NULL;
 
   g_return_if_fail (CHATTY_IS_MANAGER (self));
@@ -479,18 +714,7 @@ chatty_manager_load_buddies (ChattyManager *self)
   buddies = purple_blist_get_buddies ();
 
   for (GSList *node = buddies; node; node = node->next)
-    {
-      pp_account = purple_buddy_get_account (node->data);
-      account = chatty_pp_account_get_object (pp_account);
-
-      g_warn_if_fail (pp_account);
-
-      if (!pp_account)
-        continue;
-
-      if (!chatty_pp_buddy_get_object (node->data))
-        chatty_pp_account_add_purple_buddy (account, node->data);
-    }
+    manager_buddy_added_cb (node->data, self);
 }
 
 gboolean
@@ -518,4 +742,126 @@ chatty_manager_lurch_plugin_is_loaded (ChattyManager *self)
     return FALSE;
 
   return purple_plugin_is_loaded (self->lurch_plugin);
+}
+
+ChattyProtocol
+chatty_manager_get_active_protocols (ChattyManager *self)
+{
+  g_return_val_if_fail (CHATTY_IS_MANAGER (self), CHATTY_PROTOCOL_NONE);
+
+  return self->active_protocols;
+}
+
+ChattyFolks *
+chatty_manager_get_folks (ChattyManager *self)
+{
+  g_return_val_if_fail (CHATTY_IS_MANAGER (self), NULL);
+
+  return self->chatty_folks;
+}
+
+
+void
+chatty_manager_update_node (ChattyManager   *self,
+                            PurpleBlistNode *node)
+{
+  g_autoptr(ChattyChat) chat = NULL;
+  PurpleChat *pp_chat;
+
+  g_assert (CHATTY_IS_MANAGER (self));
+
+  if (!PURPLE_BLIST_NODE_IS_CHAT (node))
+    return;
+
+  pp_chat = (PurpleChat*)node;
+
+  if(!purple_account_is_connected (pp_chat->account))
+    return;
+
+  chat = manager_find_chat (G_LIST_MODEL (self->chat_list), pp_chat);
+
+  if (chat) {
+    g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_ACTIVE_PROTOCOLS]);
+    chat = NULL;
+
+    return;
+  }
+
+  chat = chatty_chat_new_purple_chat (pp_chat);
+  g_list_store_append (self->chat_list, chat);
+}
+
+
+void
+chatty_manager_remove_node (ChattyManager   *self,
+                            PurpleBlistNode *node)
+{
+  ChattyChat *chat;
+  PurpleChat *pp_chat;
+
+  g_assert (CHATTY_IS_MANAGER (self));
+
+  if (!PURPLE_BLIST_NODE_IS_CHAT (node))
+    return;
+
+  pp_chat = (PurpleChat*)node;
+
+  chat = manager_find_chat (G_LIST_MODEL (self->chat_list), pp_chat);
+
+  if (chat)
+    chatty_utils_remove_list_item (self->chat_list, chat);
+}
+
+
+static ChattyPpBuddy *
+manager_find_buddy_from_contact (GListModel  *model,
+                                 PurpleBuddy *pp_buddy)
+{
+  guint n_items;
+
+  n_items = g_list_model_get_n_items (model);
+
+  for (guint i = 0; i < n_items; i++) {
+    g_autoptr(GObject) buddy = NULL;
+
+    buddy = g_list_model_get_item (model, i);
+
+    if (CHATTY_IS_PP_BUDDY (buddy))
+      if (chatty_pp_buddy_get_buddy (CHATTY_PP_BUDDY (buddy)) == pp_buddy)
+        return CHATTY_PP_BUDDY (buddy);
+  }
+
+  return NULL;
+}
+
+
+void
+chatty_manager_emit_changed (ChattyManager   *self,
+                             PurpleBlistNode *node)
+{
+  ChattyPpAccount *account;
+  ChattyPpBuddy *buddy;
+  PurpleAccount *pp_account;
+  PurpleBuddy *pp_buddy;
+
+  g_return_if_fail (CHATTY_IS_MANAGER (self));
+
+  if (!PURPLE_BLIST_NODE_IS_BUDDY (node))
+    return;
+
+  pp_buddy = (PurpleBuddy *)node;
+  buddy = manager_find_buddy_from_contact (G_LIST_MODEL (self->contact_list), pp_buddy);
+
+  if (!buddy)
+    return;
+
+  pp_account = chatty_pp_buddy_get_account (buddy);
+  account = chatty_pp_account_get_object (pp_account);
+
+  /*
+   * HACK: remove and add the item so that the related widget is recreated with updated values
+   * This is required until we use ChattyAvatar widget for avatar.
+   */
+  if (chatty_utils_get_item_position (chatty_pp_account_get_buddy_list (account), buddy, NULL))
+    g_signal_emit_by_name (buddy, "changed");
 }

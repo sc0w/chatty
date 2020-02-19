@@ -17,8 +17,6 @@ G_DECLARE_FINAL_TYPE (ChattyNewChatDialog, chatty_new_chat_dialog, CHATTY, NEW_C
 
 
 GtkWidget *chatty_new_chat_dialog_new (GtkWindow *parent_window);
-GtkWidget *chatty_new_chat_get_list_contacts (ChattyNewChatDialog *self);
-GtkWidget *chatty_new_chat_get_search_entry (ChattyNewChatDialog *self);
 void chatty_new_chat_set_edit_mode (ChattyNewChatDialog *self, gboolean edit);
 
 

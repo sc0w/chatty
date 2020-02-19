@@ -2697,7 +2697,6 @@ chatty_conv_new (PurpleConversation *conv)
   const gchar        *protocol_id;
   const gchar        *conv_name;
   const gchar        *folks_name;
-  const gchar        *folks_id;
   guint               msg_type;
 
   PurpleConversationType conv_type = purple_conversation_get_type (conv);
@@ -2727,16 +2726,20 @@ chatty_conv_new (PurpleConversation *conv)
 
     if (g_strcmp0 (protocol_id, "prpl-mm-sms") == 0) {
       if (buddy == NULL) {
-        folks_id = chatty_folks_has_individual_with_phonenumber (conv_name);
+        ChattyFolks *chatty_folks;
+        ChattyContact *contact;
 
-        if (folks_id) {
-          folks_name = chatty_folks_get_individual_name_by_id (folks_id);
-          
+        chatty_folks = chatty_manager_get_folks (chatty_manager_get_default ());
+        contact = chatty_folks_find_by_number (chatty_folks, conv_name);
+
+        if (contact) {
+          folks_name = chatty_user_get_name (CHATTY_USER (contact));
+
           buddy = purple_buddy_new (account, conv_name, folks_name);
 
           purple_blist_add_buddy (buddy, NULL, NULL, NULL);
 
-          chatty_folks_set_purple_buddy_data (folks_id, account, conv_name);
+          chatty_folks_set_purple_buddy_data (contact, account, conv_name);
         }
       }
 

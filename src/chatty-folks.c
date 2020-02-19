@@ -24,7 +24,6 @@
 
 
 static chatty_folks_data_t chatty_folks_data;
-static void chatty_folks_individual_add_contact_rows (FolksIndividual *individual);
 
 chatty_folks_data_t *chatty_get_folks_data (void)
 {
@@ -40,207 +39,6 @@ typedef struct {
   int               mode;
   int               size;
 } AvatarData;
-
-
-static void
-cb_aggregator_prepare_finish (FolksIndividualAggregator *aggregator,
-                              GAsyncResult              *res,
-                              gpointer                   user_data)
-{
-  folks_individual_aggregator_prepare_finish (aggregator, res, NULL);
-}
-
-
-static void
-cb_update_row (FolksIndividual *individual,
-               GParamSpec      *pspec,
-               gpointer         user_data)
-{
-  GList      *rows, *l;
-  const char *id;
-  char       *row_id;
-  char       *number;
-
-  chatty_folks_data_t *chatty_folks = chatty_get_folks_data ();
-
-  // since a contact-row is created for each phone-number of 
-  // an individual, and there may well be another approach UI wise,
-  // we just recreate the related rows for the time being instead 
-  // of updating them
-
-  id = folks_individual_get_id (individual);    
-
-  rows = gtk_container_get_children (GTK_CONTAINER(chatty_folks->listbox));
-   
-  if (gee_map_get (chatty_folks->individuals, id)) {
-    for (l = rows; l; l = l->next) {
-      if (l->data != NULL) {
-        g_object_get (l->data, "id", &row_id, NULL);
-        g_object_get (l->data, "phone_number", &number, NULL);
-
-        if (!g_strcmp0 (pspec->name, "avatar")) {
-          PurpleAccount *account = purple_accounts_find ("SMS", "prpl-mm-sms");
-
-          if (account != NULL && number != NULL) {
-            if (purple_find_buddy (account, number)) {
-              chatty_folks_set_purple_buddy_data (id, account, number);
-            }
-          }
-        }
-
-        if (!g_strcmp0 (pspec->name, "display-name")) {
-          PurpleAccount *account = purple_accounts_find ("SMS", "prpl-mm-sms");
-
-          if (account != NULL && number != NULL) {
-            PurpleBuddy *buddy = purple_find_buddy (account, number);
-
-            if (buddy) {
-              PurpleContact *contact = purple_buddy_get_contact (buddy);
-              purple_contact_set_alias (contact, folks_individual_get_display_name (individual));
-            }
-          }
-        }
-
-        if (!g_strcmp0 (id, row_id )) {
-          gtk_widget_destroy (GTK_WIDGET(l->data));
-        }
-      }
-    }
-
-    chatty_folks_individual_add_contact_rows (individual);
-
-    gtk_list_box_invalidate_sort (chatty_folks->listbox);
-
-    g_debug ("%s pspec: %s", __func__, pspec->name);
-
-    g_list_free (l);
-    g_list_free (rows);
-    g_free (row_id);
-    g_free (number);
-  }
-}
-
-
-
-static void
-connect_notify_signals (FolksIndividual *individual)
-{
-  g_signal_connect (G_OBJECT(individual), 
-                    "notify::avatar",
-                    G_CALLBACK (cb_update_row),
-                    NULL);
-
-  g_signal_connect (G_OBJECT(individual), 
-                    "notify::display-name",
-                    G_CALLBACK (cb_update_row),
-                    NULL);
-
-  g_signal_connect (G_OBJECT(individual), 
-                    "notify::phone-numbers",
-                    G_CALLBACK (cb_update_row),
-                    NULL);
-}
-
-
-static void
-cb_aggregator_notify (FolksIndividualAggregator *aggregator,
-                      GParamSpec                *pspec,
-                      gpointer                   user_data)
-{
-  GeeMapIterator  *iter;
-  FolksIndividual *individual;
-
-  chatty_folks_data_t *chatty_folks = chatty_get_folks_data ();
-
-  chatty_folks->individuals = folks_individual_aggregator_get_individuals (aggregator);
-  iter = gee_map_map_iterator (chatty_folks->individuals);
-
-  while (gee_map_iterator_next (iter)) {
-    individual = gee_map_iterator_get_value (iter);
-
-    connect_notify_signals (individual);
-  }
-
-  g_debug ("%s pspec: %s", __func__, pspec->name);
-
-  g_clear_object (&iter);
-}
-
-
-static void
-cb_aggregator_individuals_changed (FolksIndividualAggregator *aggregator,
-                                   GeeMultiMap               *changes,
-                                   gpointer                   user_data)
-{
-  GeeIterator   *iter;
-  GeeSet        *removed;
-  GeeCollection *added;
-  GList         *rows, *l;
-  const char    *id;
-
-  chatty_folks_data_t *chatty_folks = chatty_get_folks_data ();
-
-  removed = gee_multi_map_get_keys (changes);
-  added = gee_multi_map_get_values (changes);
-
-  chatty_folks->individuals = folks_individual_aggregator_get_individuals (aggregator);
-
-  iter = gee_iterable_iterator (GEE_ITERABLE (removed));
-
-  rows = gtk_container_get_children (GTK_CONTAINER(chatty_folks->listbox));
-
-  while (gee_iterator_next (iter)) {
-    FolksIndividual *individual = gee_iterator_get (iter);
-
-    if (individual == NULL) {
-      continue;
-    }
-
-    id = folks_individual_get_id (individual);      
-
-    for (l = rows; l; l = l->next) {
-      g_autofree gchar *row_id = NULL;
-
-      g_object_get (l->data, "id", &row_id, NULL);
-
-      if (!g_strcmp0 (id, row_id ) && l->data != NULL) {
-        gtk_widget_destroy (GTK_WIDGET(l->data));
-      }
-    } 
-  
-    g_list_free (l);
-    g_clear_object (&individual);
-  } 
-
-  g_list_free (rows);
-  g_clear_object (&iter);
-
-  iter = gee_iterable_iterator (GEE_ITERABLE (added));
-
-  while (gee_iterator_next (iter)) {
-    FolksIndividual *individual = gee_iterator_get (iter);
-
-    if (individual == NULL) {
-      continue;
-    }
-
-    chatty_folks_individual_add_contact_rows (individual);
-
-    connect_notify_signals (individual);
-  
-    g_clear_object (&individual);
-  }
-
-  g_debug ("%s", __func__);
-
-  gtk_list_box_invalidate_sort (chatty_folks->listbox);
-
-  g_clear_object (&iter);
-  g_object_unref (added);
-  g_object_unref (removed);
-
-  chatty_blist_refresh ();
-}
 
 
 static void
@@ -355,7 +153,7 @@ cb_icon_load_async_ready (GObject      *source_object,
  * created.
  * 
  */
-static void
+void
 chatty_folks_load_avatar (FolksIndividual  *individual,
                           ChattyContactRow *row,
                           PurpleAccount    *account,
@@ -496,45 +294,6 @@ chatty_folks_has_individual_with_phonenumber (const char *number)
   return NULL;
 }
 
-
-/**
- * chatty_folks_has_individual_with_name:
- * 
- * @name: a const char with the name of an individual
- * 
- * Check if an individual with a given name is available
- *
- * Returns: the id of the individual or NULL
- */
-const char *
-chatty_folks_has_individual_with_name (const char *name) 
-{ 
-  FolksIndividual *individual;
-  GeeMapIterator  *iter;
-  const char      *folks_name;
-
-  chatty_folks_data_t *chatty_folks = chatty_get_folks_data ();
-
-  if (chatty_folks->individuals == NULL) {
-    return NULL;
-  }
-
-  iter = gee_map_map_iterator (chatty_folks->individuals);
-
-  while (gee_map_iterator_next (iter)) {
-    individual = gee_map_iterator_get_value (iter);
-
-    folks_name = folks_individual_get_display_name (individual);
-
-    if (!g_strcmp0 (folks_name, name)) {
-      return gee_map_iterator_get_key (iter);
-    }
-  }
-
-  return NULL;
-}
-
-
 /**
  * chatty_folks_get_individual_name_by_id:
  * 
@@ -572,15 +331,13 @@ chatty_folks_get_individual_name_by_id (const char *id)
  *
  */
 void
-chatty_folks_set_purple_buddy_data (const char    *folks_id,
+chatty_folks_set_purple_buddy_data (ChattyContact *chatty_contact,
                                     PurpleAccount *account,
                                     const char    *user_name)
 { 
   FolksIndividual *individual;
 
-  chatty_folks_data_t *chatty_folks = chatty_get_folks_data ();
-
-  individual = FOLKS_INDIVIDUAL(gee_map_get (chatty_folks->individuals, folks_id));
+  individual = chatty_contact_get_individual (chatty_contact);
 
   if (individual != NULL) {
     PurpleBuddy *buddy = purple_find_buddy (account, user_name);
@@ -594,172 +351,4 @@ chatty_folks_set_purple_buddy_data (const char    *folks_id,
                               CHATTY_FOLKS_SET_PURPLE_BUDDY_ICON, 
                               CHATTY_ICON_SIZE_LARGE);
   }
-}
-
-
-static const gchar *
-chatty_folks_get_phone_type (FolksPhoneFieldDetails *details)
-{
-  GeeCollection *types;
-  GeeIterator   *iter;
-  const gchar   *val;
-
-  types = folks_abstract_field_details_get_parameter_values (
-    FOLKS_ABSTRACT_FIELD_DETAILS (details), "type");
-
-  if (types == NULL) {
-    return NULL;
-  }
-
-  iter = gee_iterable_iterator (GEE_ITERABLE (types));
-
-  while (gee_iterator_next (iter)) {
-    gchar *type = gee_iterator_get (iter);
-
-    g_debug ("%s type: %s", __func__, type);
-
-    if (!g_strcmp0 (type, "cell")) {
-      val = _("Mobile");
-    } else if (!g_strcmp0  (type, "work")) {
-      val = _("Work");
-    } else if (!g_strcmp0  (type, "home")) {
-      val = _("Home");
-    } else if (!g_strcmp0  (type, "other")) {
-      val = _("Other");
-    } else {
-      val = NULL;
-    }
-
-    g_free (type);
-  }
-
-  g_object_unref (iter);
-
-  return val;
-}
-
-
-/**
- * chatty_folks_individual_add_contact_rows:
- * 
- * @individual: a FolksIndividual
- * 
- * Creates a ChattyContactRow with the name 
- * and phone number of an folks individual 
- * and adds it to the list that has been 
- * passed to #chatty_folks_init.
- * The EDS contacts will be available only
- * in the contacts list, without adding them
- * to blist.xml
- * 
- * Called from: #chatty_folks_populate_contact_list
- *
- */
-static void
-chatty_folks_individual_add_contact_rows (FolksIndividual *individual)
-{
-  ChattyContactRow  *row;
-  GeeSet            *phone_numbers;
-  GeeIterator       *iter;
-  FolksPhoneDetails *phone_details;
-  const char        *folks_id;
-  const char        *name;
-
-  chatty_folks_data_t *chatty_folks = chatty_get_folks_data ();
-
-  g_return_if_fail (FOLKS_IS_INDIVIDUAL (individual));
-
-  phone_details = FOLKS_PHONE_DETAILS (individual);
-  phone_numbers = folks_phone_details_get_phone_numbers (phone_details);
-  iter = gee_iterable_iterator (GEE_ITERABLE(phone_numbers));
-
-  folks_id = folks_individual_get_id (individual);
-  name = folks_individual_get_display_name (individual);
-
-  while (gee_iterator_next (iter)) {
-    FolksPhoneFieldDetails *field_details;
-    g_autofree char        *number;
-    g_autofree char        *number_e164 = NULL;
-    g_autofree char        *type_number = NULL;
-
-    field_details = gee_iterator_get (iter);
-    number = folks_phone_field_details_get_normalised (field_details);
-
-    number_e164 = chatty_utils_check_phonenumber (number);
-
-    type_number = g_strconcat (chatty_folks_get_phone_type (field_details),
-                               ": ",
-                               number, 
-                               NULL);
-
-    row = CHATTY_CONTACT_ROW (chatty_contact_row_new (NULL,
-                                                      NULL,
-                                                      name,
-                                                      type_number,
-                                                      NULL,
-                                                      NULL,
-                                                      folks_id,
-                                                      number_e164,
-                                                      FALSE));
-
-    gtk_list_box_row_set_selectable (GTK_LIST_BOX_ROW (row), FALSE);
-
-    gtk_container_add (GTK_CONTAINER (chatty_folks->listbox), GTK_WIDGET (row));
-
-    gtk_widget_show (GTK_WIDGET (row));
-
-    chatty_folks_load_avatar (individual, 
-                              row, 
-                              NULL,
-                              NULL,
-                              CHATTY_FOLKS_SET_CONTACT_ROW_ICON, 
-                              CHATTY_ICON_SIZE_MEDIUM);
-
-    g_object_unref (field_details);
-  }
-
-  g_object_unref (iter);
-}
-
-
-/**
- * chatty_folks_init:
- * 
- * @listbox: a GtkListBox contacts will be added to
- * 
- * Prepare the folks aggregator
- */
-void
-chatty_folks_init (GtkListBox *listbox)
-{
-  chatty_folks_data_t *chatty_folks = chatty_get_folks_data ();
-
-  chatty_folks->listbox = listbox;
-
-  chatty_folks->aggregator = folks_individual_aggregator_dup ();
-
-  g_signal_connect_object (G_OBJECT(chatty_folks->aggregator),
-                           "notify::is-quiescent",
-                           G_CALLBACK(cb_aggregator_notify),
-                           NULL,
-                           0);
-
-  g_signal_connect_object (G_OBJECT(chatty_folks->aggregator),
-                           "individuals-changed-detailed",
-                           G_CALLBACK (cb_aggregator_individuals_changed), 
-                           NULL, 
-                           0);
-
-  folks_individual_aggregator_prepare (chatty_folks->aggregator,  
-                                       (GAsyncReadyCallback)cb_aggregator_prepare_finish,
-                                       NULL);
-}
-
-
-void
-chatty_folks_close (void)
-{
-  chatty_folks_data_t *chatty_folks = chatty_get_folks_data ();
-
-  g_clear_object (&chatty_folks->aggregator);
 }

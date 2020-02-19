@@ -10,6 +10,7 @@
 
 #include <folks/folks.h>
 
+#include "users/chatty-contact.h"
 
 typedef struct {
   FolksIndividualAggregator *aggregator;
@@ -27,13 +28,16 @@ enum {
 } e_folks_modes;
 
 
-void chatty_folks_init (GtkListBox *list);
-void chatty_folks_close (void);
-const char *chatty_folks_has_individual_with_name (const char *name);
 const char *chatty_folks_has_individual_with_phonenumber (const char *number);
 const char *chatty_folks_get_individual_name_by_id (const char *id);
-void chatty_folks_set_purple_buddy_data (const char    *folks_id, 
+void chatty_folks_set_purple_buddy_data (ChattyContact *contact,
                                          PurpleAccount *account,
                                          const char    *user_name);
+void chatty_folks_load_avatar (FolksIndividual  *individual,
+                               ChattyContactRow *row,
+                               PurpleAccount    *account,
+                               const char       *user_name,
+                               int               mode,
+                               int               size);
 
 #endif

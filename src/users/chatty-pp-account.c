@@ -185,18 +185,19 @@ chatty_pp_load_protocol (ChattyPpAccount *self)
   g_assert (self->pp_account);
 
   protocol_id = purple_account_get_protocol_id (self->pp_account);
+  g_return_if_fail (protocol_id);
 
-  if (g_strcmp0 (protocol_id, "prpl-jabber"))
+  if (g_str_equal (protocol_id, "prpl-jabber"))
     protocol = CHATTY_PROTOCOL_XMPP;
-  else if (g_strcmp0 (protocol_id, "prpl-matrix"))
+  else if (g_str_equal (protocol_id, "prpl-matrix"))
     protocol = CHATTY_PROTOCOL_MATRIX;
-  else if (g_strcmp0 (protocol_id, "prpl-mm-sms"))
+  else if (g_str_equal (protocol_id, "prpl-mm-sms"))
     protocol = CHATTY_PROTOCOL_SMS;
-  else if (g_strcmp0 (protocol_id, "prpl-telegram"))
+  else if (g_str_equal (protocol_id, "prpl-telegram"))
     protocol = CHATTY_PROTOCOL_TELEGRAM;
-  else if (g_strcmp0 (protocol_id, "prpl-delta"))
+  else if (g_str_equal (protocol_id, "prpl-delta"))
     protocol = CHATTY_PROTOCOL_DELTA;
-  else if (g_strcmp0 (protocol_id, "prpl-threepl"))
+  else if (g_str_equal (protocol_id, "prpl-threepl"))
     protocol = CHATTY_PROTOCOL_THREEPL;
 
   self->protocol = protocol;
@@ -610,8 +611,6 @@ chatty_pp_account_add_buddy (ChattyPpAccount *self,
                         "name", name,
                         NULL);
 
-  g_list_store_append (self->buddy_list, buddy);
-
   return buddy;
 }
 
@@ -622,13 +621,11 @@ chatty_pp_account_add_purple_buddy (ChattyPpAccount *self,
   g_autoptr(ChattyPpBuddy) buddy = NULL;
 
   g_return_val_if_fail (CHATTY_IS_PP_ACCOUNT (self), NULL);
-  g_return_val_if_fail (CHATTY_IS_PP_BUDDY (buddy), NULL);
+  g_return_val_if_fail (pp_buddy, NULL);
 
   buddy = g_object_new (CHATTY_TYPE_PP_BUDDY,
                         "purple-buddy", pp_buddy,
                         NULL);
-
-  g_list_store_append (self->buddy_list, buddy);
 
   return buddy;
 }

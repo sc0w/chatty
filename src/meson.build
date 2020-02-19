@@ -2,10 +2,23 @@ version_h = vcs_tag(input: 'version.h.in',
 		    output: 'version.h')
 
 libsrc = [
+  'contrib/gtktypebuiltins.c',
+  'contrib/gtkflattenlistmodel.c',
+  'contrib/gtkrbtree.c',
+  'contrib/gtkfilter.c',
+  'contrib/gtkcustomfilter.c',
+  'contrib/gtkfilterlistmodel.c',
+  'contrib/gtksorter.c',
+  'contrib/gtkcustomsorter.c',
+  'contrib/gtksortlistmodel.c',
+  'contrib/gtkslicelistmodel.c',
   'users/chatty-user.c',
+  'users/chatty-contact.c',
   'users/chatty-pp-buddy.c',
   'users/chatty-account.c',
   'users/chatty-pp-account.c',
+  'chatty-chat.c',
+  'chatty-contact-provider.c',
   'chatty-settings.c',
 ]
 
