@@ -64,6 +64,17 @@ chatty_chat_get_name (ChattyItem *item)
 }
 
 
+static ChattyProtocol
+chatty_chat_get_protocols (ChattyItem *item)
+{
+  ChattyChat *self = (ChattyChat *)item;
+
+  g_assert (CHATTY_IS_CHAT (self));
+
+  return CHATTY_PROTOCOL_ANY;
+}
+
+
 static void
 chatty_chat_set_property (GObject      *object,
                           guint         prop_id,
@@ -91,6 +102,7 @@ chatty_chat_class_init (ChattyChatClass *klass)
   object_class->set_property = chatty_chat_set_property;
 
   item_class->get_name = chatty_chat_get_name;
+  item_class->get_protocols = chatty_chat_get_protocols;
 
   properties[PROP_PURPLE_CHAT] =
     g_param_spec_pointer ("purple-chat",
