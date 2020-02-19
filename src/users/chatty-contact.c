@@ -30,30 +30,30 @@
 
 struct _ChattyContact
 {
-  ChattyUser       parent_instance;
+  ChattyItem       parent_instance;
 
   FolksIndividual *individual;
   FolksPhoneFieldDetails *phone_number;
 };
 
-G_DEFINE_TYPE (ChattyContact, chatty_contact, CHATTY_TYPE_USER)
+G_DEFINE_TYPE (ChattyContact, chatty_contact, CHATTY_TYPE_ITEM)
 
 
 /* Always assume it’s a phone number, we create only such contacts */
 static ChattyProtocol
-chatty_contact_get_protocols (ChattyUser *user)
+chatty_contact_get_protocols (ChattyItem *item)
 {
   return CHATTY_PROTOCOL_SMS;
 }
 
 
 static gboolean
-chatty_contact_matches (ChattyUser     *user,
+chatty_contact_matches (ChattyItem     *item,
                         const char     *needle,
                         ChattyProtocol  protocols,
                         gboolean        match_name)
 {
-  ChattyContact *self = (ChattyContact *)user;
+  ChattyContact *self = (ChattyContact *)item;
   char *number;
   EPhoneNumberMatch number_match;
 
@@ -71,9 +71,9 @@ chatty_contact_matches (ChattyUser     *user,
 
 
 static const char *
-chatty_contact_get_name (ChattyUser *user)
+chatty_contact_get_name (ChattyItem *item)
 {
-  ChattyContact *self = (ChattyContact *)user;
+  ChattyContact *self = (ChattyContact *)item;
 
   g_assert (CHATTY_IS_CONTACT (self));
 
@@ -96,13 +96,13 @@ static void
 chatty_contact_class_init (ChattyContactClass *klass)
 {
   GObjectClass *object_class  = G_OBJECT_CLASS (klass);
-  ChattyUserClass *user_class = CHATTY_USER_CLASS (klass);
+  ChattyItemClass *item_class = CHATTY_ITEM_CLASS (klass);
 
   object_class->finalize = chatty_contact_finalize;
 
-  user_class->get_protocols = chatty_contact_get_protocols;
-  user_class->matches  = chatty_contact_matches;
-  user_class->get_name = chatty_contact_get_name;
+  item_class->get_protocols = chatty_contact_get_protocols;
+  item_class->matches  = chatty_contact_matches;
+  item_class->get_name = chatty_contact_get_name;
 }
 
 

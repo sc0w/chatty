@@ -619,7 +619,7 @@ chatty_blist_add_buddy_from_uri (const char *uri)
 
   chatty_folks = chatty_manager_get_folks (chatty_manager_get_default ());
   contact = chatty_folks_find_by_number (chatty_folks, who);
-  alias = chatty_user_get_name (CHATTY_USER (contact));
+  alias = chatty_item_get_name (CHATTY_ITEM (contact));
 
   g_return_if_fail (who != NULL);
 

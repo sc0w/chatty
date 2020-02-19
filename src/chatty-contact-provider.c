@@ -55,13 +55,13 @@ chatty_contact_provider_matches (ChattyFolks    *self,
 
   for (guint i = 0; i < n_items; i++)
     {
-      g_autoptr(ChattyUser) user = NULL;
+      g_autoptr(ChattyItem) item = NULL;
 
-      user = g_list_model_get_item (model, i);
-      match = chatty_user_matches (user, needle, protocols, match_name);
+      item = g_list_model_get_item (model, i);
+      match = chatty_item_matches (item, needle, protocols, match_name);
 
       if (match)
-        return CHATTY_CONTACT (user);
+        return CHATTY_CONTACT (item);
     }
 
   return NULL;

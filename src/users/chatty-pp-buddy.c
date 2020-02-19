@@ -32,7 +32,7 @@
 
 struct _ChattyPpBuddy
 {
-  ChattyUser         parent_instance;
+  ChattyItem         parent_instance;
 
   char              *username;
   char              *name;
@@ -44,7 +44,7 @@ struct _ChattyPpBuddy
   ChattyProtocol     protocol;
 };
 
-G_DEFINE_TYPE (ChattyPpBuddy, chatty_pp_buddy, CHATTY_TYPE_USER)
+G_DEFINE_TYPE (ChattyPpBuddy, chatty_pp_buddy, CHATTY_TYPE_ITEM)
 
 enum {
   PROP_0,
@@ -66,16 +66,16 @@ static void
 chatty_pp_buddy_update_protocol (ChattyPpBuddy *self)
 {
   PurpleAccount *pp_account;
-  ChattyUser *user;
+  ChattyItem *item;
 
   g_assert (CHATTY_IS_PP_BUDDY (self));
   g_assert (self->pp_buddy);
 
   pp_account = purple_buddy_get_account (self->pp_buddy);
-  user = pp_account->ui_data;
-  g_return_if_fail (user);
+  item = pp_account->ui_data;
+  g_return_if_fail (item);
 
-  self->protocol = chatty_user_get_protocols (user);
+  self->protocol = chatty_item_get_protocols (item);
 }
 
 /* copied and modified from chatty_blist_add_buddy */
@@ -115,38 +115,38 @@ chatty_add_new_buddy (ChattyPpBuddy *self)
 }
 
 static ChattyProtocol
-chatty_pp_buddy_get_protocols (ChattyUser *user)
+chatty_pp_buddy_get_protocols (ChattyItem *item)
 {
-  ChattyPpBuddy *self = (ChattyPpBuddy *)user;
+  ChattyPpBuddy *self = (ChattyPpBuddy *)item;
 
   g_assert (CHATTY_IS_PP_BUDDY (self));
 
   if (self->protocol != CHATTY_PROTOCOL_NONE)
     return self->protocol;
 
-  return CHATTY_USER_CLASS (chatty_pp_buddy_parent_class)->get_protocols (user);
+  return CHATTY_ITEM_CLASS (chatty_pp_buddy_parent_class)->get_protocols (item);
 }
 
 static gboolean
-chatty_pp_buddy_matches (ChattyUser     *user,
+chatty_pp_buddy_matches (ChattyItem     *item,
                          const char     *needle,
                          ChattyProtocol  protocols,
                          gboolean        match_name)
 {
-  ChattyPpBuddy *self = (ChattyPpBuddy *)user;
-  const char *user_id;
+  ChattyPpBuddy *self = (ChattyPpBuddy *)item;
+  const char *item_id;
 
   if (!self->pp_buddy)
     return FALSE;
 
-  user_id = purple_buddy_get_name (self->pp_buddy);
-  return strcasestr (user_id, needle) != NULL;
+  item_id = purple_buddy_get_name (self->pp_buddy);
+  return strcasestr (item_id, needle) != NULL;
 }
 
 static const char *
-chatty_pp_buddy_get_name (ChattyUser *user)
+chatty_pp_buddy_get_name (ChattyItem *item)
 {
-  ChattyPpBuddy *self = (ChattyPpBuddy *)user;
+  ChattyPpBuddy *self = (ChattyPpBuddy *)item;
   PurpleContact *contact;
   const char *name;
 
@@ -167,10 +167,10 @@ chatty_pp_buddy_get_name (ChattyUser *user)
 }
 
 static void
-chatty_pp_buddy_set_name (ChattyUser *user,
+chatty_pp_buddy_set_name (ChattyItem *item,
                           const char *name)
 {
-  ChattyPpBuddy *self = (ChattyPpBuddy *)user;
+  ChattyPpBuddy *self = (ChattyPpBuddy *)item;
   PurpleContact *contact;
 
   g_assert (CHATTY_IS_PP_BUDDY (self));
@@ -257,16 +257,16 @@ static void
 chatty_pp_buddy_class_init (ChattyPpBuddyClass *klass)
 {
   GObjectClass *object_class  = G_OBJECT_CLASS (klass);
-  ChattyUserClass *user_class = CHATTY_USER_CLASS (klass);
+  ChattyItemClass *item_class = CHATTY_ITEM_CLASS (klass);
 
   object_class->set_property = chatty_pp_buddy_set_property;
   object_class->constructed  = chatty_pp_buddy_constructed;
   object_class->finalize = chatty_pp_buddy_finalize;
 
-  user_class->get_protocols = chatty_pp_buddy_get_protocols;
-  user_class->matches  = chatty_pp_buddy_matches;
-  user_class->get_name = chatty_pp_buddy_get_name;
-  user_class->set_name = chatty_pp_buddy_set_name;
+  item_class->get_protocols = chatty_pp_buddy_get_protocols;
+  item_class->matches  = chatty_pp_buddy_matches;
+  item_class->get_name = chatty_pp_buddy_get_name;
+  item_class->set_name = chatty_pp_buddy_set_name;
 
   properties[PROP_PURPLE_ACCOUNT] =
     g_param_spec_pointer ("purple-account",

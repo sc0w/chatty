@@ -2733,7 +2733,7 @@ chatty_conv_new (PurpleConversation *conv)
         contact = chatty_folks_find_by_number (chatty_folks, conv_name);
 
         if (contact) {
-          folks_name = chatty_user_get_name (CHATTY_USER (contact));
+          folks_name = chatty_item_get_name (CHATTY_ITEM (contact));
 
           buddy = purple_buddy_new (account, conv_name, folks_name);
 

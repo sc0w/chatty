@@ -20,7 +20,7 @@
 /**
  * SECTION: chatty-avatar
  * @title: ChattyAvatar
- * @short_description: Avatar Image widget for a User
+ * @short_description: Avatar Image widget for an Item
  * @include: "chatty-avatar.h"
  */
 
@@ -28,14 +28,14 @@ struct _ChattyAvatar
 {
   GtkImage    parent_instance;
 
-  ChattyUser *user;
+  ChattyItem *item;
 };
 
 G_DEFINE_TYPE (ChattyAvatar, chatty_avatar, GTK_TYPE_IMAGE)
 
 enum {
   PROP_0,
-  PROP_USER,
+  PROP_ITEM,
   N_PROPS
 };
 
@@ -189,12 +189,12 @@ chatty_avatar_draw (GtkWidget *widget,
   height = gtk_widget_get_allocated_width (GTK_WIDGET (self));
   size = MIN (width, height);
 
-  if (self->user)
+  if (self->item)
     {
-      avatar = chatty_user_get_avatar (self->user);
+      avatar = chatty_item_get_avatar (self->item);
 
       if (!avatar)
-        name = chatty_user_get_name (self->user);
+        name = chatty_item_get_name (self->item);
     }
 
   if (avatar)
@@ -215,8 +215,8 @@ chatty_avatar_set_property (GObject      *object,
 
   switch (prop_id)
     {
-    case PROP_USER:
-      chatty_avatar_set_user (self, g_value_get_object (value));
+    case PROP_ITEM:
+      chatty_avatar_set_item (self, g_value_get_object (value));
       break;
 
     default:
@@ -229,7 +229,7 @@ chatty_avatar_dispose (GObject *object)
 {
   ChattyAvatar *self = (ChattyAvatar *)object;
 
-  g_clear_object (&self->user);
+  g_clear_object (&self->item);
 
   G_OBJECT_CLASS (chatty_avatar_parent_class)->dispose (object);
 }
@@ -245,11 +245,11 @@ chatty_avatar_class_init (ChattyAvatarClass *klass)
 
   widget_class->draw = chatty_avatar_draw;
 
-  properties[PROP_USER] =
-    g_param_spec_object ("user",
-                         "User",
-                         "An Account, Buddy, or a Contact",
-                         CHATTY_TYPE_USER,
+  properties[PROP_ITEM] =
+    g_param_spec_object ("item",
+                         "Item",
+                         "An Account, Buddy, Contact or Chat",
+                         CHATTY_TYPE_ITEM,
                          G_PARAM_WRITABLE | G_PARAM_EXPLICIT_NOTIFY | G_PARAM_STATIC_STRINGS);
 
   g_object_class_install_properties (object_class, N_PROPS, properties);
@@ -261,31 +261,31 @@ chatty_avatar_init (ChattyAvatar *self)
 }
 
 GtkWidget *
-chatty_avatar_new (ChattyUser *user)
+chatty_avatar_new (ChattyItem *item)
 {
-  g_return_val_if_fail (CHATTY_IS_USER (user), NULL);
+  g_return_val_if_fail (CHATTY_IS_ITEM (item), NULL);
 
   return g_object_new (CHATTY_TYPE_AVATAR,
-                       "user", user,
+                       "item", item,
                        NULL);
 }
 
 void
-chatty_avatar_set_user (ChattyAvatar *self,
-                        ChattyUser   *user)
+chatty_avatar_set_item (ChattyAvatar *self,
+                        ChattyItem   *item)
 {
   g_return_if_fail (CHATTY_IS_AVATAR (self));
-  g_return_if_fail (!user || CHATTY_IS_USER (user));
+  g_return_if_fail (!item || CHATTY_IS_ITEM (item));
 
-  if (!g_set_object (&self->user, user))
+  if (!g_set_object (&self->item, item))
     return;
 
   /* We don’t emit notify signals as we don’t need it */
-  if (self->user)
+  if (self->item)
     {
-      g_signal_connect_swapped (self->user, "deleted",
-                                G_CALLBACK (g_clear_object), &self->user);
-      g_signal_connect_object (self->user, "avatar-changed",
+      g_signal_connect_swapped (self->item, "deleted",
+                                G_CALLBACK (g_clear_object), &self->item);
+      g_signal_connect_object (self->item, "avatar-changed",
                                G_CALLBACK (gtk_widget_queue_draw), self,
                                G_CONNECT_SWAPPED);
     }
