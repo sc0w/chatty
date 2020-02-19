@@ -14,14 +14,14 @@
 #include <glib-object.h>
 #include <folks/folks.h>
 
-#include "users/chatty-user.h"
+#include "users/chatty-item.h"
 #include "chatty-enums.h"
 
 G_BEGIN_DECLS
 
 #define CHATTY_TYPE_CONTACT (chatty_contact_get_type ())
 
-G_DECLARE_FINAL_TYPE (ChattyContact, chatty_contact, CHATTY, CONTACT, ChattyUser)
+G_DECLARE_FINAL_TYPE (ChattyContact, chatty_contact, CHATTY, CONTACT, ChattyItem)
 
 ChattyContact     *chatty_contact_new                   (FolksIndividual   *individual,
                                                          FolksPhoneFieldDetails *detail);

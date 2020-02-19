@@ -26,7 +26,7 @@ typedef struct
   gint dummy;
 } ChattyAccountPrivate;
 
-G_DEFINE_ABSTRACT_TYPE_WITH_PRIVATE (ChattyAccount, chatty_account, CHATTY_TYPE_USER)
+G_DEFINE_ABSTRACT_TYPE_WITH_PRIVATE (ChattyAccount, chatty_account, CHATTY_TYPE_ITEM)
 
 enum {
   PROP_0,

@@ -15,14 +15,14 @@
 #include <purple.h>
 
 #include "chatty-contact-row.h"
-#include "chatty-user.h"
+#include "chatty-item.h"
 #include "chatty-enums.h"
 
 G_BEGIN_DECLS
 
 #define CHATTY_TYPE_PP_BUDDY (chatty_pp_buddy_get_type ())
 
-G_DECLARE_FINAL_TYPE (ChattyPpBuddy, chatty_pp_buddy, CHATTY, PP_BUDDY, ChattyUser)
+G_DECLARE_FINAL_TYPE (ChattyPpBuddy, chatty_pp_buddy, CHATTY, PP_BUDDY, ChattyItem)
 
 /* Moved from chatty-buddy-list.h to allow compilation as static library. */
 typedef struct _chatty_blist_node {

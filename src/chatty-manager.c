@@ -414,7 +414,7 @@ manager_connection_signed_on_cb (PurpleConnection *gc,
   if (chatty_pp_account_is_sms (account))
     return;
 
-  protocol = chatty_user_get_protocols (CHATTY_USER (account));
+  protocol = chatty_item_get_protocols (CHATTY_ITEM (account));
   old_protocols = self->active_protocols;
   self->active_protocols |= protocol;
 
@@ -452,7 +452,7 @@ manager_connection_signed_off_cb (PurpleConnection *gc,
   if (chatty_pp_account_is_sms (account))
     return;
 
-  protocol = chatty_user_get_protocols (CHATTY_USER (account));
+  protocol = chatty_item_get_protocols (CHATTY_ITEM (account));
   old_protocols = self->active_protocols;
   self->active_protocols = CHATTY_PROTOCOL_NONE;
 

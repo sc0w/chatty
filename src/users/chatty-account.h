@@ -9,18 +9,18 @@
 
 #pragma once
 
-#include "chatty-user.h"
+#include "chatty-item.h"
 #include "chatty-enums.h"
 
 G_BEGIN_DECLS
 
 #define CHATTY_TYPE_ACCOUNT (chatty_account_get_type ())
 
-G_DECLARE_DERIVABLE_TYPE (ChattyAccount, chatty_account, CHATTY, ACCOUNT, ChattyUser)
+G_DECLARE_DERIVABLE_TYPE (ChattyAccount, chatty_account, CHATTY, ACCOUNT, ChattyItem)
 
 struct _ChattyAccountClass
 {
-  ChattyUserClass parent_class;
+  ChattyItemClass parent_class;
 
   ChattyStatus (*get_status)            (ChattyAccount *self);
   GListModel  *(*get_buddies)           (ChattyAccount *self);
