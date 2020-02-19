@@ -540,6 +540,27 @@ chatty_manager_intialize_libpurple (ChattyManager *self)
                            G_CONNECT_AFTER);
 }
 
+
+static void
+chatty_manager_get_property (GObject    *object,
+                             guint       prop_id,
+                             GValue     *value,
+                             GParamSpec *pspec)
+{
+  ChattyManager *self = (ChattyManager *)object;
+
+  switch (prop_id)
+    {
+    case PROP_ACTIVE_PROTOCOLS:
+      g_value_set_int (value, chatty_manager_get_active_protocols (self));
+      break;
+
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+    }
+}
+
+
 static void
 chatty_manager_dispose (GObject *object)
 {
@@ -558,6 +579,7 @@ chatty_manager_class_init (ChattyManagerClass *klass)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
 
+  object_class->get_property = chatty_manager_get_property;
   object_class->dispose = chatty_manager_dispose;
 
   /**
@@ -575,6 +597,8 @@ chatty_manager_class_init (ChattyManagerClass *klass)
                       CHATTY_PROTOCOL_TELEGRAM,
                       CHATTY_PROTOCOL_NONE,
                       G_PARAM_READABLE | G_PARAM_STATIC_STRINGS);
+
+  g_object_class_install_properties (object_class, N_PROPS, properties);
 
 }
 
