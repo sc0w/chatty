@@ -20,7 +20,7 @@
 #include "chatty-message-list.h"
 #include "chatty-buddy-list.h"
 #include "chatty-conversation.h"
-#include "chatty-account.h"
+#include "chatty-manager.h"
 #include "chatty-purple-init.h"
 #include "chatty-icons.h"
 #include "dialogs/chatty-dialogs.h"
@@ -550,6 +550,79 @@ chatty_window_set_overlay_visible (ChattyWindow *self,
 }
 
 
+static int
+window_authorize_buddy_cb (ChattyWindow    *self,
+                           ChattyPpAccount *account,
+                           const char      *remote_user,
+                           const char      *name)
+{
+  GtkWidget *dialog;
+  GtkWindow *window;
+  int response;
+
+  g_assert (CHATTY_IS_WINDOW (self));
+  g_assert (CHATTY_IS_PP_ACCOUNT (account));
+
+  window = gtk_application_get_active_window (GTK_APPLICATION (g_application_get_default ()));
+  dialog = gtk_message_dialog_new (window,
+                                   GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+                                   GTK_MESSAGE_QUESTION,
+                                   GTK_BUTTONS_NONE,
+                                   _("Authorize %s?"),
+                                   name);
+
+  gtk_dialog_add_buttons (GTK_DIALOG(dialog),
+                          _("Reject"),
+                          GTK_RESPONSE_REJECT,
+                          _("Accept"),
+                          GTK_RESPONSE_ACCEPT,
+                          NULL);
+
+  gtk_message_dialog_format_secondary_text (GTK_MESSAGE_DIALOG (dialog),
+                                            _("Add %s to contact list"),
+                                            remote_user);
+
+  gtk_dialog_set_default_response (GTK_DIALOG (dialog), GTK_RESPONSE_CANCEL);
+  gtk_window_set_position (GTK_WINDOW (dialog), GTK_WIN_POS_CENTER_ON_PARENT);
+
+  response = gtk_dialog_run (GTK_DIALOG(dialog));
+
+  gtk_widget_destroy (dialog);
+
+  return response;
+}
+
+static void
+window_buddy_added_cb (ChattyWindow    *self,
+                       ChattyPpAccount *account,
+                       const char      *remote_user,
+                       const char      *id)
+{
+  GtkWindow *window;
+  GtkWidget *dialog;
+
+  g_assert (CHATTY_IS_WINDOW (self));
+  g_assert (CHATTY_IS_ACCOUNT (account));
+
+  window = gtk_application_get_active_window (GTK_APPLICATION (g_application_get_default ()));
+  dialog = gtk_message_dialog_new (window,
+                                   GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+                                   GTK_MESSAGE_INFO,
+                                   GTK_BUTTONS_OK,
+                                   _("Contact added"));
+
+  gtk_message_dialog_format_secondary_text (GTK_MESSAGE_DIALOG (dialog),
+                                            _("User %s has added %s to the contacts"),
+                                            remote_user, id);
+
+  gtk_dialog_set_default_response (GTK_DIALOG (dialog), GTK_RESPONSE_CANCEL);
+  gtk_window_set_position (GTK_WINDOW (dialog), GTK_WIN_POS_CENTER_ON_PARENT);
+
+  gtk_dialog_run (GTK_DIALOG (dialog));
+
+  gtk_widget_destroy (dialog);
+}
+
 static void
 chatty_window_set_property (GObject      *object,
                             guint         prop_id,
@@ -728,11 +801,21 @@ chatty_window_class_init (ChattyWindowClass *klass)
 static void
 chatty_window_init (ChattyWindow *self)
 {
+  ChattyManager *manager;
+
   gtk_widget_init_template (GTK_WIDGET (self));
 
   gtk_list_box_set_sort_func (GTK_LIST_BOX (self->chats_listbox), chatty_blist_sort, NULL, NULL);
   gtk_list_box_set_filter_func (GTK_LIST_BOX (self->chats_listbox),
                                 (GtkListBoxFilterFunc)filter_chat_list_cb, self, NULL);
+
+  manager = chatty_manager_get_default ();
+  g_signal_connect_object (manager, "authorize-buddy",
+                           G_CALLBACK (window_authorize_buddy_cb), self,
+                           G_CONNECT_SWAPPED);
+  g_signal_connect_object (manager, "notify-added",
+                           G_CALLBACK (window_buddy_added_cb), self,
+                           G_CONNECT_SWAPPED);
 }
 
 

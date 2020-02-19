@@ -18,7 +18,6 @@
 #endif
 
 #include "chatty-settings.h"
-#include "chatty-account.h"
 #include "chatty-chat.h"
 
 /**

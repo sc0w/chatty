@@ -10,7 +10,6 @@
 #include <glib-object.h>
 #include "chatty-window.h"
 #include "chatty-manager.h"
-#include "chatty-account.h"
 #include "chatty-buddy-list.h"
 #include "chatty-conversation.h"
 #include "chatty-purple-init.h"
