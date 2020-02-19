@@ -158,7 +158,6 @@ chatty_purple_ui_init (void)
   chatty_conversations_init ();
   chatty_manager_purple_init (chatty_manager_get_default ());
 
-  purple_accounts_set_ui_ops (chatty_accounts_get_ui_ops ());
   purple_request_set_ui_ops (chatty_request_get_ui_ops ());
   purple_notify_set_ui_ops (chatty_notify_get_ui_ops ());
   purple_connections_set_ui_ops (chatty_connection_get_ui_ops ());

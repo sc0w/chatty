@@ -19,6 +19,7 @@ configure_file(
 )
 add_project_arguments([
   '-I' + meson.build_root(),
+  '-DGLIB_DISABLE_DEPRECATION_WARNINGS',
 ], language: 'c')
 
 cc = meson.get_compiler('c')

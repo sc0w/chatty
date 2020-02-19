@@ -18,7 +18,6 @@
 #include "xeps/xeps.h"
 #include "chatty-settings.h"
 #include "contrib/gtk.h"
-#include "chatty-account.h"
 #include "chatty-contact-provider.h"
 #include "chatty-utils.h"
 #include "chatty-window.h"
@@ -83,7 +82,91 @@ enum {
   N_PROPS
 };
 
+enum {
+  AUTHORIZE_BUDDY,
+  NOTIFY_ADDED,
+  N_SIGNALS
+};
+
 static GParamSpec *properties[N_PROPS];
+static guint signals[N_SIGNALS];
+
+
+static void
+chatty_manager_account_notify_added (PurpleAccount *pp_account,
+                                     const char    *remote_user,
+                                     const char    *id,
+                                     const char    *alias,
+                                     const char    *msg)
+{
+  ChattyManager *self;
+  ChattyPpAccount *account;
+
+  self = chatty_manager_get_default ();
+  account = chatty_pp_account_get_object (pp_account);
+  g_signal_emit (self,  signals[NOTIFY_ADDED], 0, account, remote_user, id);
+}
+
+
+static void *
+chatty_manager_account_request_authorization (PurpleAccount *pp_account,
+                                              const char    *remote_user,
+                                              const char    *id,
+                                              const char    *alias,
+                                              const char    *message,
+                                              gboolean       on_list,
+                                              PurpleAccountRequestAuthorizationCb auth_cb,
+                                              PurpleAccountRequestAuthorizationCb deny_cb,
+                                              void          *user_data)
+{
+  ChattyManager *self;
+  ChattyPpAccount *account;
+  GtkResponseType  response = GTK_RESPONSE_CANCEL;
+
+  self = chatty_manager_get_default ();
+  account = chatty_pp_account_get_object (pp_account);
+  g_signal_emit (self,  signals[AUTHORIZE_BUDDY], 0, account, remote_user,
+                 alias ? alias : remote_user, message, &response);
+
+  if (response == GTK_RESPONSE_ACCEPT) {
+    if (!on_list)
+      purple_blist_request_add_buddy (pp_account, remote_user, NULL, alias);
+    auth_cb (user_data);
+  } else {
+    deny_cb (user_data);
+  }
+
+  g_debug ("Request authorization user: %s alias: %s", remote_user, alias);
+
+  return NULL;
+}
+
+
+static void
+chatty_manager_account_request_add (PurpleAccount *account,
+                                    const char    *remote_user,
+                                    const char    *id,
+                                    const char    *alias,
+                                    const char    *msg)
+{
+  PurpleConnection *gc;
+
+  gc = purple_account_get_connection (account);
+
+  if (g_list_find (purple_connections_get_all (), gc))
+    purple_blist_request_add_buddy (account, remote_user, NULL, alias);
+
+  g_debug ("chatty_manager_account_request_add");
+}
+
+
+static PurpleAccountUiOps ui_ops =
+{
+  chatty_manager_account_notify_added,
+  NULL,
+  chatty_manager_account_request_add,
+  chatty_manager_account_request_authorization,
+};
 
 
 static gboolean
@@ -600,6 +683,47 @@ chatty_manager_class_init (ChattyManagerClass *klass)
 
   g_object_class_install_properties (object_class, N_PROPS, properties);
 
+
+  /**
+   * ChattyManager::authorize-buddy:
+   * @self: a #ChattyManager
+   * @account: A #ChattyPpAccount
+   * @remote_user: username of the remote user
+   * @name: The Alias of @remote_user
+   * @message: The message sent by @remote_user
+   *
+   * Emitted when some one requests to add them to the
+   * @account’s buddy list.
+   *
+   * Returns: %GTK_RESPONSE_ACCEPT if authorized to be
+   * added to buddy list, any other value means unauthorized.
+   */
+  signals [AUTHORIZE_BUDDY] =
+    g_signal_new ("authorize-buddy",
+                  G_TYPE_FROM_CLASS (klass),
+                  G_SIGNAL_RUN_LAST,
+                  0, NULL, NULL, NULL,
+                  G_TYPE_INT,
+                  4, CHATTY_TYPE_PP_ACCOUNT, G_TYPE_STRING,
+                  G_TYPE_STRING, G_TYPE_STRING);
+
+  /**
+   * ChattyManager::notify-added:
+   * @self: a #ChattyManager
+   * @account: A #ChattyPpAccount
+   * @remote_user: username of the remote user
+   * @id: The ID for @remote_user
+   *
+   * Emitted when some buddy added @account username to their
+   * buddy list.
+   */
+  signals [NOTIFY_ADDED] =
+    g_signal_new ("notify-added",
+                  G_TYPE_FROM_CLASS (klass),
+                  G_SIGNAL_RUN_LAST,
+                  0, NULL, NULL, NULL,
+                  G_TYPE_NONE,
+                  3, CHATTY_TYPE_PP_ACCOUNT, G_TYPE_STRING, G_TYPE_STRING);
 }
 
 static void
@@ -641,6 +765,7 @@ chatty_manager_purple_init (ChattyManager *self)
     purple_savedstatus_activate (purple_savedstatus_new (NULL, PURPLE_STATUS_AVAILABLE));
 
   chatty_manager_intialize_libpurple (self);
+  purple_accounts_set_ui_ops (&ui_ops);
 }
 
 GListModel *
