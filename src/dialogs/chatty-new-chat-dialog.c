@@ -80,19 +80,12 @@ dialog_active_protocols_changed_cb (ChattyNewChatDialog *self)
 
 
 static gboolean
-dialog_filter_item_cb (GObject             *object,
+dialog_filter_item_cb (ChattyItem          *item,
                        ChattyNewChatDialog *self)
 {
-  const char *needle;
-
   g_return_val_if_fail (CHATTY_IS_NEW_CHAT_DIALOG (self), FALSE);
 
-  needle = self->search_str ? self->search_str : "";
-
-  if (CHATTY_IS_CHAT (object))
-    return strcasestr (chatty_item_get_name (CHATTY_ITEM (object)), needle) != NULL;
-
-  return chatty_item_matches (CHATTY_ITEM (object), needle, self->active_protocols, TRUE);
+  return chatty_item_matches (item, self->search_str, self->active_protocols, TRUE);
 }
 
 
