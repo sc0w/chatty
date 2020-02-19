@@ -30,7 +30,6 @@
 #include "chatty-config.h"
 #include "chatty-purple-init.h"
 #include "chatty-dialogs.h"
-#include "chatty-account.h"
 #include "chatty-utils.h"
 #include "users/chatty-pp-account.h"
 #include "chatty-manager.h"

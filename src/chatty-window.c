@@ -20,7 +20,6 @@
 #include "chatty-message-list.h"
 #include "chatty-buddy-list.h"
 #include "chatty-conversation.h"
-#include "chatty-account.h"
 #include "chatty-manager.h"
 #include "chatty-purple-init.h"
 #include "chatty-icons.h"
