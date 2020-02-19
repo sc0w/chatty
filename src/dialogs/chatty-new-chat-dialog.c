@@ -90,30 +90,11 @@ dialog_filter_item_cb (GObject             *object,
   needle = self->search_str ? self->search_str : "";
 
   if (CHATTY_IS_CHAT (object))
-    return strcasestr (chatty_chat_get_name (CHATTY_CHAT (object)), needle) != NULL;
+    return strcasestr (chatty_item_get_name (CHATTY_ITEM (object)), needle) != NULL;
 
   return chatty_item_matches (CHATTY_ITEM (object), needle, self->active_protocols, TRUE);
 }
 
-
-static gboolean
-dialog_list_row_compare (GObject *a,
-                         GObject *b)
-{
-  const char *a_name, *b_name;
-
-  if (CHATTY_IS_CHAT (a))
-    a_name = chatty_chat_get_name (CHATTY_CHAT (a));
-  else
-    a_name = chatty_item_get_name (CHATTY_ITEM (a));
-
-  if (CHATTY_IS_CHAT (b))
-    b_name = chatty_chat_get_name (CHATTY_CHAT (b));
-  else
-    b_name = chatty_item_get_name (CHATTY_ITEM (b));
-
-  return g_utf8_collate (a_name, b_name);
-}
 
 static void
 chatty_new_chat_dialog_update_new_contact_row (ChattyNewChatDialog *self)
@@ -858,7 +839,7 @@ chatty_new_chat_dialog_init (ChattyNewChatDialog *self)
                            G_CALLBACK (dialog_active_protocols_changed_cb), self, G_CONNECT_SWAPPED);
   dialog_active_protocols_changed_cb (self);
 
-  sorter = gtk_custom_sorter_new ((GCompareDataFunc)dialog_list_row_compare, NULL, NULL);
+  sorter = gtk_custom_sorter_new ((GCompareDataFunc)chatty_item_compare, NULL, NULL);
   sort_model = gtk_sort_list_model_new (chatty_manager_get_contact_list (self->manager), sorter);
   self->filter_model = gtk_filter_list_model_new (G_LIST_MODEL (sort_model), self->filter);
   self->slice_model = gtk_slice_list_model_new (G_LIST_MODEL (self->filter_model), 0, ITEMS_COUNT);
