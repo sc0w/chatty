@@ -32,12 +32,12 @@
 
 struct _ChattyChat
 {
-  GObject             parent_instance;
+  ChattyItem          parent_instance;
 
   PurpleChat         *pp_chat;
 };
 
-G_DEFINE_TYPE (ChattyChat, chatty_chat, G_TYPE_OBJECT)
+G_DEFINE_TYPE (ChattyChat, chatty_chat, CHATTY_TYPE_ITEM)
 
 enum {
   PROP_0,
