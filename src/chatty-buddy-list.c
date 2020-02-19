@@ -43,8 +43,6 @@ static void chatty_blist_chats_remove_node (PurpleBlistNode *node);
 static void chatty_blist_update_buddy (PurpleBuddyList *list,
                                        PurpleBlistNode *node);
 
-static gint chatty_blist_sort (GtkListBoxRow *row1, GtkListBoxRow *row2, gpointer user_data);
-
 
 static GtkListBox *
 chatty_get_chats_list (void) 
@@ -148,27 +146,6 @@ row_selected_cb (GtkListBox    *box,
  
     g_object_unref (avatar);
    }
-}
-
-
-static void
-cb_chats_search_entry_changed (GtkSearchEntry *entry,
-                               GtkListBox     *listbox)
-{
-  gtk_list_box_invalidate_filter (GTK_LIST_BOX (listbox));
-}
-
-
-static gboolean
-filter_chat_list_cb (GtkListBoxRow *row, gpointer entry) {
-  const gchar *query;
-  g_autofree gchar *name = NULL;
-
-  query = gtk_entry_get_text (GTK_ENTRY (entry));
-
-  g_object_get (row, "name", &name, NULL);
-
-  return ((*query == '\0') || (name && strcasestr (name, query)));
 }
 
 
@@ -511,25 +488,6 @@ cb_do_autojoin (PurpleConnection *gc, gpointer null)
 
   return TRUE;
 }
-
-
-static void
-cb_num_rows_changed (GtkContainer *container,
-                     GtkWidget    *widget,
-                     gpointer      user_data)
-{
-  ChattyWindow *window;
-
-  window = chatty_utils_get_window ();
-
-  if (chatty_blist_list_has_children (CHATTY_LIST_CHATS)) {
-    chatty_window_set_overlay_visible (window, FALSE);
-  } else {
-    chatty_window_set_overlay_visible (window, TRUE);
-  }
-}
-
-
 // *** end callbacks
 
 
@@ -1052,50 +1010,6 @@ chatty_blist_join_group_chat (PurpleAccount *account,
 
 
 /**
- * chatty_blist_create_chat_list:
- * @list:  a PurpleBuddyList
- *
- * Sets up view with chat list treeview
- * Function is called from chatty_blist_show.
- *
- */
-static void
-chatty_blist_create_chat_list (void)
-{
-  ChattyWindow   *window;
-  GtkSearchEntry *search_entry;
-  GtkWidget      *listbox;
-
-  window = chatty_utils_get_window ();
-  search_entry = GTK_SEARCH_ENTRY(chatty_window_get_search_entry (window));
-  listbox = chatty_window_get_chats_listbox (window);
-
-  g_signal_connect (search_entry,
-                    "search-changed",
-                    G_CALLBACK (cb_chats_search_entry_changed),
-                    listbox);
-
-  gtk_list_box_set_filter_func (GTK_LIST_BOX(listbox), filter_chat_list_cb, search_entry, NULL);
-  gtk_list_box_set_sort_func (GTK_LIST_BOX(listbox), chatty_blist_sort, NULL, NULL);
-
-  g_signal_connect (listbox,
-                    "row-activated",
-                    G_CALLBACK (row_selected_cb),
-                    NULL);
-
-  g_signal_connect (listbox,
-                    "add",
-                    G_CALLBACK (cb_num_rows_changed),
-                    NULL);
-
-  g_signal_connect (listbox,
-                    "remove",
-                    G_CALLBACK (cb_num_rows_changed),
-                    NULL);
-}
-
-
-/**
  * chatty_blist_show:
  * @list:  a PurpleBuddyList
  *
@@ -1152,29 +1066,6 @@ chatty_blist_remove (PurpleBuddyList *list,
     g_free (node->ui_data);
     node->ui_data = NULL;
   }
-}
-
-
-static gint
-chatty_blist_sort (GtkListBoxRow *row1,
-                   GtkListBoxRow *row2,
-                   gpointer user_data)
-{
-  PurpleBlistNode *node1;
-  ChattyBlistNode *chatty_node1;
-  PurpleBlistNode *node2;
-  ChattyBlistNode *chatty_node2;
-
-  g_object_get (row1, "data", &node1, NULL);
-  chatty_node1 = node1->ui_data;
-
-  g_object_get (row2, "data", &node2, NULL);
-  chatty_node2 = node2->ui_data;
-
-  if (chatty_node1 != NULL && chatty_node2 != NULL) {
-    return difftime (chatty_node2->conv.last_msg_ts_raw, chatty_node1->conv.last_msg_ts_raw);
-  }
-  return 0;
 }
 
 
@@ -1634,8 +1525,6 @@ void chatty_blist_init (void)
   ChattySettings *settings;
   void *chatty_blist_handle = chatty_blist_get_handle();
 
-  chatty_blist_create_chat_list ();
-
   settings = chatty_settings_get_default ();
   g_object_connect (settings,
                     "signal::notify::indicate-unkown-contacts", G_CALLBACK (cb_chatty_prefs_changed), NULL,
@@ -1712,17 +1601,6 @@ void chatty_blist_init (void)
                          &handle,
                          PURPLE_CALLBACK(cb_chat_joined),
                          NULL);
-}
-
-
-void 
-chatty_blist_disconnect_listbox (GtkWidget *list)
-{
-  // TODO: chatlist related signals and callback-handlers 
-  // need to be moved to chatty-window
-  g_signal_handlers_disconnect_by_func (G_OBJECT(list), 
-                                        cb_num_rows_changed, 
-                                        NULL);
 }
 
 
