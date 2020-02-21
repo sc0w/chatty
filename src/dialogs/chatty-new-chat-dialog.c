@@ -80,40 +80,14 @@ dialog_active_protocols_changed_cb (ChattyNewChatDialog *self)
 
 
 static gboolean
-dialog_filter_user_cb (GObject             *object,
+dialog_filter_item_cb (ChattyItem          *item,
                        ChattyNewChatDialog *self)
 {
-  const char *needle;
-
   g_return_val_if_fail (CHATTY_IS_NEW_CHAT_DIALOG (self), FALSE);
 
-  needle = self->search_str ? self->search_str : "";
-
-  if (CHATTY_IS_USER (object))
-    return chatty_user_matches (CHATTY_USER (object), needle, self->active_protocols, TRUE);
-
-  return strcasestr (chatty_chat_get_name (CHATTY_CHAT (object)), needle) != NULL;
+  return chatty_item_matches (item, self->search_str, self->active_protocols, TRUE);
 }
 
-
-static gboolean
-dialog_list_row_compare (GObject *a,
-                         GObject *b)
-{
-  const char *a_name, *b_name;
-
-  if (CHATTY_IS_USER (a))
-    a_name = chatty_user_get_name (CHATTY_USER (a));
-  else
-    a_name = chatty_chat_get_name (CHATTY_CHAT (a));
-
-  if (CHATTY_IS_USER (b))
-    b_name = chatty_user_get_name (CHATTY_USER (b));
-  else
-    b_name = chatty_chat_get_name (CHATTY_CHAT (b));
-
-  return g_utf8_collate (a_name, b_name);
-}
 
 static void
 chatty_new_chat_dialog_update_new_contact_row (ChattyNewChatDialog *self)
@@ -232,7 +206,7 @@ dialog_create_contact_row (ChattyContact *contact)
   number_e164 = chatty_utils_check_phonenumber (number);
   type_number = g_strconcat (chatty_folks_get_phone_type (detail),
                              ": ", number, NULL);
-  name = chatty_user_get_name (CHATTY_USER (contact));
+  name = chatty_item_get_name (CHATTY_ITEM (contact));
   number = folks_phone_field_details_get_normalised (detail);
   row = chatty_contact_row_new (NULL, NULL, name,
                                 type_number, NULL, NULL,
@@ -267,7 +241,7 @@ dialog_buddy_row_changed_cb (ChattyPpBuddy    *buddy,
   account = purple_buddy_get_account (pp_buddy);
   account_name = purple_account_get_username (account);
   alias = chatty_utils_jabber_id_strip (purple_buddy_get_alias (pp_buddy));
-  name = chatty_user_get_name (CHATTY_USER (buddy));
+  name = chatty_item_get_name (CHATTY_ITEM (buddy));
   blur = !PURPLE_BUDDY_IS_ONLINE(pp_buddy);
 
   avatar = chatty_icon_get_buddy_icon ((PurpleBlistNode *)pp_buddy,
@@ -663,7 +637,7 @@ chatty_new_chat_add_account_to_list (ChattyNewChatDialog *self,
                      "row-account",
                      (gpointer)account);
 
-  protocol = chatty_user_get_protocols (CHATTY_USER (account));
+  protocol = chatty_item_get_protocols (CHATTY_ITEM (account));
 
   // TODO list supported protocols here
   if (protocol & ~(CHATTY_PROTOCOL_SMS |
@@ -852,13 +826,13 @@ chatty_new_chat_dialog_init (ChattyNewChatDialog *self)
   self->dummy_prefix_radio = gtk_radio_button_new_from_widget (GTK_RADIO_BUTTON (NULL));
 
   self->manager = g_object_ref (chatty_manager_get_default ());
-  self->filter = gtk_custom_filter_new ((GtkCustomFilterFunc)dialog_filter_user_cb,
+  self->filter = gtk_custom_filter_new ((GtkCustomFilterFunc)dialog_filter_item_cb,
                                         self, NULL);
   g_signal_connect_object (self->manager, "notify::active-protocols",
                            G_CALLBACK (dialog_active_protocols_changed_cb), self, G_CONNECT_SWAPPED);
   dialog_active_protocols_changed_cb (self);
 
-  sorter = gtk_custom_sorter_new ((GCompareDataFunc)dialog_list_row_compare, NULL, NULL);
+  sorter = gtk_custom_sorter_new ((GCompareDataFunc)chatty_item_compare, NULL, NULL);
   sort_model = gtk_sort_list_model_new (chatty_manager_get_contact_list (self->manager), sorter);
   self->filter_model = gtk_filter_list_model_new (G_LIST_MODEL (sort_model), self->filter);
   self->slice_model = gtk_slice_list_model_new (G_LIST_MODEL (self->filter_model), 0, ITEMS_COUNT);

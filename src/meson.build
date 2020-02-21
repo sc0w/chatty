@@ -12,7 +12,7 @@ libsrc = [
   'contrib/gtkcustomsorter.c',
   'contrib/gtksortlistmodel.c',
   'contrib/gtkslicelistmodel.c',
-  'users/chatty-user.c',
+  'users/chatty-item.c',
   'users/chatty-contact.c',
   'users/chatty-pp-buddy.c',
   'users/chatty-account.c',
@@ -68,6 +68,7 @@ chatty_deps = [
   dependency('gee-0.8'),
   dependency('folks'),
   libebook_dep,
+  libfeedback_dep,
   libm_dep,
 ]
 

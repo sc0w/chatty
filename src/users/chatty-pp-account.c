@@ -135,7 +135,7 @@ chatty_pp_account_create (ChattyPpAccount *self)
 
   g_assert (CHATTY_IS_PP_ACCOUNT (self));
 
-  protocol = chatty_user_get_protocols (CHATTY_USER (self));
+  protocol = chatty_item_get_protocols (CHATTY_ITEM (self));
 
   if (protocol == CHATTY_PROTOCOL_XMPP)
     protocol_id = "prpl-jabber";
@@ -258,7 +258,7 @@ chatty_pp_account_set_password (ChattyAccount *account,
 
   g_assert (CHATTY_IS_PP_ACCOUNT (self));
 
-  protocol = chatty_user_get_protocols (CHATTY_USER (account));
+  protocol = chatty_item_get_protocols (CHATTY_ITEM (account));
 
   if (protocol == CHATTY_PROTOCOL_TELEGRAM)
     purple_account_set_string (self->pp_account, "password-two-factor", password);
@@ -288,22 +288,22 @@ chatty_pp_account_get_remember_password (ChattyAccount *account)
 }
 
 static ChattyProtocol
-chatty_pp_account_get_protocols (ChattyUser *user)
+chatty_pp_account_get_protocols (ChattyItem *item)
 {
-  ChattyPpAccount *self = (ChattyPpAccount *)user;
+  ChattyPpAccount *self = (ChattyPpAccount *)item;
 
   g_assert (CHATTY_IS_PP_ACCOUNT (self));
 
   if (self->protocol != CHATTY_PROTOCOL_NONE)
     return self->protocol;
 
-  return CHATTY_USER_CLASS (chatty_pp_account_parent_class)->get_protocols (user);
+  return CHATTY_ITEM_CLASS (chatty_pp_account_parent_class)->get_protocols (item);
 }
 
 static const char *
-chatty_pp_account_get_name (ChattyUser *user)
+chatty_pp_account_get_name (ChattyItem *item)
 {
-  ChattyPpAccount *self = (ChattyPpAccount *)user;
+  ChattyPpAccount *self = (ChattyPpAccount *)item;
   const char *name;
 
   g_assert (CHATTY_IS_PP_ACCOUNT (self));
@@ -317,10 +317,10 @@ chatty_pp_account_get_name (ChattyUser *user)
 }
 
 static void
-chatty_pp_account_set_name (ChattyUser *user,
+chatty_pp_account_set_name (ChattyItem *item,
                             const char *name)
 {
-  ChattyPpAccount *self = (ChattyPpAccount *)user;
+  ChattyPpAccount *self = (ChattyPpAccount *)item;
 
   g_assert (CHATTY_IS_PP_ACCOUNT (self));
 
@@ -353,9 +353,9 @@ chatty_icon_from_data (const guchar *buf,
 }
 
 static GdkPixbuf *
-chatty_pp_account_get_avatar (ChattyUser *user)
+chatty_pp_account_get_avatar (ChattyItem *item)
 {
-  ChattyPpAccount *self = (ChattyPpAccount *)user;
+  ChattyPpAccount *self = (ChattyPpAccount *)item;
   PurpleStoredImage *img;
 
   g_assert (CHATTY_IS_PP_ACCOUNT (self));
@@ -379,13 +379,13 @@ chatty_pp_account_get_avatar (ChattyUser *user)
 }
 
 static void
-chatty_pp_account_set_avatar_async (ChattyUser          *user,
+chatty_pp_account_set_avatar_async (ChattyItem          *item,
                                     const char          *file_name,
                                     GCancellable        *cancellable,
                                     GAsyncReadyCallback  callback,
                                     gpointer             user_data)
 {
-  ChattyPpAccount *self = (ChattyPpAccount *)user;
+  ChattyPpAccount *self = (ChattyPpAccount *)item;
   PurplePluginProtocolInfo *prpl_info;
   g_autoptr(GTask) task = NULL;
   g_autoptr(GError) error = NULL;
@@ -398,7 +398,7 @@ chatty_pp_account_set_avatar_async (ChattyUser          *user,
   g_assert (!cancellable || G_IS_CANCELLABLE (cancellable));
 
   task = g_task_new (self, cancellable, callback, user_data);
-  g_task_set_source_tag (task, chatty_user_set_avatar_async);
+  g_task_set_source_tag (task, chatty_item_set_avatar_async);
 
   protocol_id = purple_account_get_protocol_id (self->pp_account);
   prpl_info = PURPLE_PLUGIN_PROTOCOL_INFO (purple_find_prpl (protocol_id));
@@ -493,18 +493,18 @@ static void
 chatty_pp_account_class_init (ChattyPpAccountClass *klass)
 {
   GObjectClass *object_class  = G_OBJECT_CLASS (klass);
-  ChattyUserClass *user_class = CHATTY_USER_CLASS (klass);
+  ChattyItemClass *item_class = CHATTY_ITEM_CLASS (klass);
   ChattyAccountClass *account_class = CHATTY_ACCOUNT_CLASS (klass);
 
   object_class->set_property = chatty_pp_account_set_property;
   object_class->constructed = chatty_pp_account_constructed;
   object_class->finalize = chatty_pp_account_finalize;
 
-  user_class->get_protocols = chatty_pp_account_get_protocols;
-  user_class->get_name = chatty_pp_account_get_name;
-  user_class->set_name = chatty_pp_account_set_name;
-  user_class->get_avatar = chatty_pp_account_get_avatar;
-  user_class->set_avatar_async = chatty_pp_account_set_avatar_async;
+  item_class->get_protocols = chatty_pp_account_get_protocols;
+  item_class->get_name = chatty_pp_account_get_name;
+  item_class->set_name = chatty_pp_account_set_name;
+  item_class->get_avatar = chatty_pp_account_get_avatar;
+  item_class->set_avatar_async = chatty_pp_account_set_avatar_async;
 
   account_class->get_status   = chatty_pp_account_get_status;
   account_class->get_enabled  = chatty_pp_account_get_enabled;

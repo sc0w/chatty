@@ -7,9 +7,16 @@ A libpurple messaging client
 
 ### Install dependencies
 
+On a Debian based system run
+
 ``` bash
-sudo apt install git meson libgtk-3-dev libpurple-dev modemmanager libmxml-dev libxml2-dev libsqlite3-dev libgcrypt20-dev libhandy-0.0-dev libebook-contacts1.2-dev
+    sudo apt-get -y install build-essential
+    sudo apt-get -y build-dep .
 ```
+
+For an explicit list of dependencies check the Build-Depends entry in the
+[debian/control](https://source.puri.sm/Librem5/chatty/blob/master/debian/control#5)
+file.
 
 Libhandy (libhandy-0.0-dev) is available in [PureOS][0] and  Debian's
 [experimental distribution][1].  If you don't want to fetch it from there you
@@ -54,6 +61,11 @@ Please go to the git page where you'll find information on how to build and inst
 [Telegram messenger plugin](https://github.com/majn/telegram-purple)
 
 This can be skipped if Telegram messaging is not needed.
+
+
+### Build and install 'libfeedback'
+Please go to the git page where you'll find information on how to build and use
+[Feedbackd and libfeedback](https://source.puri.sm/Librem5/feedbackd)
 
 
 ### Build Chatty

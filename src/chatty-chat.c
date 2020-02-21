@@ -32,12 +32,12 @@
 
 struct _ChattyChat
 {
-  GObject             parent_instance;
+  ChattyItem          parent_instance;
 
   PurpleChat         *pp_chat;
 };
 
-G_DEFINE_TYPE (ChattyChat, chatty_chat, G_TYPE_OBJECT)
+G_DEFINE_TYPE (ChattyChat, chatty_chat, CHATTY_TYPE_ITEM)
 
 enum {
   PROP_0,
@@ -46,6 +46,33 @@ enum {
 };
 
 static GParamSpec *properties[N_PROPS];
+
+static const char *
+chatty_chat_get_name (ChattyItem *item)
+{
+  ChattyChat *self = (ChattyChat *)item;
+  const char *name;
+
+  g_assert (CHATTY_IS_CHAT (self));
+
+  name = purple_chat_get_name (self->pp_chat);
+
+  if (!name)
+    name = "";
+
+  return name;
+}
+
+
+static ChattyProtocol
+chatty_chat_get_protocols (ChattyItem *item)
+{
+  ChattyChat *self = (ChattyChat *)item;
+
+  g_assert (CHATTY_IS_CHAT (self));
+
+  return CHATTY_PROTOCOL_ANY;
+}
 
 
 static void
@@ -70,8 +97,12 @@ static void
 chatty_chat_class_init (ChattyChatClass *klass)
 {
   GObjectClass *object_class  = G_OBJECT_CLASS (klass);
+  ChattyItemClass *item_class = CHATTY_ITEM_CLASS (klass);
 
   object_class->set_property = chatty_chat_set_property;
+
+  item_class->get_name = chatty_chat_get_name;
+  item_class->get_protocols = chatty_chat_get_protocols;
 
   properties[PROP_PURPLE_CHAT] =
     g_param_spec_pointer ("purple-chat",
@@ -105,20 +136,3 @@ chatty_chat_get_purple_chat (ChattyChat *self)
 
   return self->pp_chat;
 }
-
-
-const char *
-chatty_chat_get_name (ChattyChat *self)
-{
-  const char *name;
-
-  g_return_val_if_fail (CHATTY_IS_CHAT (self), "");
-
-  name = purple_chat_get_name (self->pp_chat);
-
-  if (!name)
-    name = "";
-
-  return name;
-}
-

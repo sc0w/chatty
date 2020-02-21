@@ -11,7 +11,7 @@
 
 #include <gtk/gtk.h>
 
-#include "users/chatty-user.h"
+#include "users/chatty-item.h"
 
 G_BEGIN_DECLS
 
@@ -19,8 +19,8 @@ G_BEGIN_DECLS
 
 G_DECLARE_FINAL_TYPE (ChattyAvatar, chatty_avatar, CHATTY, AVATAR, GtkImage)
 
-GtkWidget *chatty_avatar_new      (ChattyUser   *user);
-void       chatty_avatar_set_user (ChattyAvatar *self,
-                                   ChattyUser   *user);
+GtkWidget *chatty_avatar_new      (ChattyItem   *item);
+void       chatty_avatar_set_item (ChattyAvatar *self,
+                                   ChattyItem   *item);
 
 G_END_DECLS

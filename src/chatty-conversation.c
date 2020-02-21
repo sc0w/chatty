@@ -20,6 +20,9 @@
 #include "chatty-notify.h"
 #include "chatty-folks.h"
 
+#define LIBFEEDBACK_USE_UNSTABLE_API
+#include <libfeedback.h>
+
 #define LAZY_LOAD_MSGS_LIMIT 12
 #define LAZY_LOAD_INITIAL_MSGS_LIMIT 20
 #define MAX_TIMESTAMP_SIZE 256
@@ -1976,6 +1979,22 @@ chatty_conv_write_im (PurpleConversation *conv,
 }
 
 
+static void
+on_feedback_triggered (LfbEvent      *event,
+		       GAsyncResult  *res,
+		       LfbEvent     **cmp)
+{
+  g_autoptr (GError) err = NULL;
+
+  g_return_if_fail (LFB_IS_EVENT (event));
+
+  if (!lfb_event_trigger_feedback_finish (event, res, &err)) {
+    g_warning ("Failed to trigger feedback for %s",
+	       lfb_event_get_event (event));
+  }
+}
+
+
 /**
  * chatty_conv_write_conversation:
  * @conv:     a PurpleConversation
@@ -2025,6 +2044,8 @@ chatty_conv_write_conversation (PurpleConversation *conv,
                             mtime,
                             conv,
                             NULL};
+  g_autoptr(GError)         err = NULL;
+  g_autoptr(LfbEvent)       event = NULL;
 
   chatty_conv = CHATTY_CONVERSATION (conv);
 
@@ -2129,6 +2150,11 @@ chatty_conv_write_conversation (PurpleConversation *conv,
       conv_active = (chatty_conv == active_chatty_conv && gtk_widget_is_drawable (convs_notebook));
 
       if (buddy && purple_blist_node_get_bool (node, "chatty-notifications") && !conv_active) {
+
+        event = lfb_event_new("message-new-instant");
+        lfb_event_trigger_feedback_async (event, NULL,
+                                          (GAsyncReadyCallback)on_feedback_triggered,
+                                          NULL);
 
         buddy_name = purple_buddy_get_alias (buddy);
 
@@ -2747,7 +2773,7 @@ chatty_conv_new (PurpleConversation *conv)
         contact = chatty_folks_find_by_number (chatty_folks, conv_name);
 
         if (contact) {
-          folks_name = chatty_user_get_name (CHATTY_USER (contact));
+          folks_name = chatty_item_get_name (CHATTY_ITEM (contact));
 
           buddy = purple_buddy_new (account, conv_name, folks_name);
 

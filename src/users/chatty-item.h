@@ -1,5 +1,5 @@
 /* -*- mode: c; c-basic-offset: 2; indent-tabs-mode: nil; -*- */
-/* chatty-user.h
+/* chatty-item.h
  *
  * Author(s):
  *   Mohammed Sadiq <sadiq@sadiqpk.org>
@@ -16,50 +16,50 @@
 
 G_BEGIN_DECLS
 
-#define CHATTY_TYPE_USER (chatty_user_get_type ())
+#define CHATTY_TYPE_ITEM (chatty_item_get_type ())
 
-G_DECLARE_DERIVABLE_TYPE (ChattyUser, chatty_user, CHATTY, USER, GObject)
+G_DECLARE_DERIVABLE_TYPE (ChattyItem, chatty_item, CHATTY, ITEM, GObject)
 
-struct _ChattyUserClass
+struct _ChattyItemClass
 {
   GObjectClass parent_class;
 
-  ChattyProtocol   (*get_protocols)       (ChattyUser           *self);
-  gboolean         (*matches)             (ChattyUser           *self,
+  ChattyProtocol   (*get_protocols)       (ChattyItem           *self);
+  gboolean         (*matches)             (ChattyItem           *self,
                                            const char           *needle,
                                            ChattyProtocol        protocols,
                                            gboolean              match_name);
-  const char      *(*get_name)            (ChattyUser           *self);
-  void             (*set_name)            (ChattyUser           *self,
+  const char      *(*get_name)            (ChattyItem           *self);
+  void             (*set_name)            (ChattyItem           *self,
                                            const char           *name);
-  GdkPixbuf       *(*get_avatar)          (ChattyUser           *self);
-  void             (*set_avatar_async)    (ChattyUser           *self,
+  GdkPixbuf       *(*get_avatar)          (ChattyItem           *self);
+  void             (*set_avatar_async)    (ChattyItem           *self,
                                            const char           *file_name,
                                            GCancellable         *cancellable,
                                            GAsyncReadyCallback   callback,
-                                           gpointer              user_data);
-  gboolean         (*set_avatar_finish)   (ChattyUser           *self,
+                                           gpointer              item_data);
+  gboolean         (*set_avatar_finish)   (ChattyItem           *self,
                                            GAsyncResult         *result,
                                            GError              **error);
 };
 
-ChattyProtocol   chatty_user_get_protocols       (ChattyUser           *self);
-gboolean         chatty_user_matches             (ChattyUser           *self,
+ChattyProtocol   chatty_item_get_protocols       (ChattyItem           *self);
+gboolean         chatty_item_matches             (ChattyItem           *self,
                                                   const char           *needle,
                                                   ChattyProtocol        protocols,
                                                   gboolean              match_name);
-int              chatty_user_compare              (ChattyUser          *a,
-                                                   ChattyUser          *b);
-const char      *chatty_user_get_name            (ChattyUser           *self);
-void             chatty_user_set_name            (ChattyUser           *self,
+int              chatty_item_compare              (ChattyItem          *a,
+                                                   ChattyItem          *b);
+const char      *chatty_item_get_name            (ChattyItem           *self);
+void             chatty_item_set_name            (ChattyItem           *self,
                                                   const char           *name);
-GdkPixbuf       *chatty_user_get_avatar          (ChattyUser           *self);
-void             chatty_user_set_avatar_async    (ChattyUser           *self,
+GdkPixbuf       *chatty_item_get_avatar          (ChattyItem           *self);
+void             chatty_item_set_avatar_async    (ChattyItem           *self,
                                                   const char           *file_name,
                                                   GCancellable         *cancellable,
                                                   GAsyncReadyCallback   callback,
-                                                  gpointer              user_data);
-gboolean         chatty_user_set_avatar_finish   (ChattyUser           *self,
+                                                  gpointer              item_data);
+gboolean         chatty_item_set_avatar_finish   (ChattyItem           *self,
                                                   GAsyncResult         *result,
                                                   GError              **error);
 

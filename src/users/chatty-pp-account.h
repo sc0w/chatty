@@ -14,7 +14,7 @@
 #include <glib-object.h>
 #include <purple.h>
 
-#include "chatty-user.h"
+#include "chatty-item.h"
 #include "chatty-pp-buddy.h"
 #include "chatty-account.h"
 #include "chatty-enums.h"

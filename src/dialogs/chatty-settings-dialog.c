@@ -204,7 +204,7 @@ settings_update_account_details (ChattySettingsDialog *self)
 
   gtk_entry_set_text (GTK_ENTRY (self->account_id_entry), account_name);
   gtk_label_set_text (GTK_LABEL (self->account_protocol_label), protocol_name);
-  chatty_avatar_set_user (CHATTY_AVATAR (self->avatar_image), CHATTY_USER (account));
+  chatty_avatar_set_item (CHATTY_AVATAR (self->avatar_image), CHATTY_ITEM (account));
 }
 
 static void
@@ -470,7 +470,7 @@ settings_avatar_button_clicked_cb (ChattySettingsDialog *self)
   file_name = settings_show_dialog_load_avatar ();
 
   if (file_name)
-    chatty_user_set_avatar_async (CHATTY_USER (self->selected_account),
+    chatty_item_set_avatar_async (CHATTY_ITEM (self->selected_account),
                                   file_name, NULL, NULL, NULL);
 }
 

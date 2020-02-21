@@ -1,5 +1,5 @@
 /* -*- mode: c; c-basic-offset: 2; indent-tabs-mode: nil; -*- */
-/* chatty-user.c
+/* chatty-item.c
  *
  * Author(s):
  *   Mohammed Sadiq <sadiq@sadiqpk.org>
@@ -7,7 +7,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-#define G_LOG_DOMAIN "chatty-user"
+#define G_LOG_DOMAIN "chatty-item"
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -16,20 +16,20 @@
 #define _GNU_SOURCE
 #include <string.h>
 
-#include "chatty-user.h"
+#include "chatty-item.h"
 
 /**
- * SECTION: chatty-user
- * @title: ChattyUser
- * @short_description: The base class for Accounts, Buddies and Contacts
+ * SECTION: chatty-item
+ * @title: ChattyItem
+ * @short_description: The base class for Accounts, Buddies, Contacts and Chats
  */
 
 typedef struct
 {
   ChattyProtocol protocols;
-} ChattyUserPrivate;
+} ChattyItemPrivate;
 
-G_DEFINE_ABSTRACT_TYPE_WITH_PRIVATE (ChattyUser, chatty_user, G_TYPE_OBJECT)
+G_DEFINE_ABSTRACT_TYPE_WITH_PRIVATE (ChattyItem, chatty_item, G_TYPE_OBJECT)
 
 enum {
   PROP_0,
@@ -48,99 +48,99 @@ static GParamSpec *properties[N_PROPS];
 static guint signals[N_SIGNALS];
 
 static ChattyProtocol
-chatty_user_real_get_protocols (ChattyUser *self)
+chatty_item_real_get_protocols (ChattyItem *self)
 {
-  ChattyUserPrivate *priv = chatty_user_get_instance_private (self);
+  ChattyItemPrivate *priv = chatty_item_get_instance_private (self);
 
-  g_assert (CHATTY_IS_USER (self));
+  g_assert (CHATTY_IS_ITEM (self));
 
   return priv->protocols;
 }
 
 static gboolean
-chatty_user_real_matches (ChattyUser     *self,
+chatty_item_real_matches (ChattyItem     *self,
                           const char     *needle,
                           ChattyProtocol  protocols,
                           gboolean        match_name)
 {
   const char *name;
 
-  g_assert (CHATTY_IS_USER (self));
+  g_assert (CHATTY_IS_ITEM (self));
 
-  name = chatty_user_get_name (self);
+  name = chatty_item_get_name (self);
 
   return strcasestr (name, needle) != NULL;
 }
 
 static const char *
-chatty_user_real_get_name (ChattyUser *self)
+chatty_item_real_get_name (ChattyItem *self)
 {
-  g_assert (CHATTY_IS_USER (self));
+  g_assert (CHATTY_IS_ITEM (self));
 
   return "";
 }
 
 static void
-chatty_user_real_set_name (ChattyUser *self,
+chatty_item_real_set_name (ChattyItem *self,
                            const char *name)
 {
-  g_assert (CHATTY_IS_USER (self));
+  g_assert (CHATTY_IS_ITEM (self));
 
   /* Do Nothing */
 }
 
 static GdkPixbuf *
-chatty_user_real_get_avatar (ChattyUser *self)
+chatty_item_real_get_avatar (ChattyItem *self)
 {
-  g_assert (CHATTY_IS_USER (self));
+  g_assert (CHATTY_IS_ITEM (self));
 
   return NULL;
 }
 
 static void
-chatty_user_real_set_avatar_async (ChattyUser          *self,
+chatty_item_real_set_avatar_async (ChattyItem          *self,
                                    const char          *filename,
                                    GCancellable        *cancellable,
                                    GAsyncReadyCallback  callback,
-                                   gpointer             user_data)
+                                   gpointer             item_data)
 {
-  g_assert (CHATTY_IS_USER (self));
+  g_assert (CHATTY_IS_ITEM (self));
   g_assert (!cancellable || G_IS_CANCELLABLE (cancellable));
 
-  g_task_report_new_error (self, callback, user_data,
-                           chatty_user_real_set_avatar_async,
+  g_task_report_new_error (self, callback, item_data,
+                           chatty_item_real_set_avatar_async,
                            G_IO_ERROR,
                            G_IO_ERROR_NOT_SUPPORTED,
                            "Setting Custom avatar not supported");
 }
 
 static gboolean
-chatty_user_real_set_avatar_finish (ChattyUser    *self,
+chatty_item_real_set_avatar_finish (ChattyItem    *self,
                                     GAsyncResult  *result,
                                     GError       **error)
 {
-  g_assert (CHATTY_IS_USER (self));
+  g_assert (CHATTY_IS_ITEM (self));
   g_assert (G_IS_TASK (result));
 
   return g_task_propagate_boolean (G_TASK (result), error);
 }
 
 static void
-chatty_user_get_property (GObject    *object,
+chatty_item_get_property (GObject    *object,
                           guint       prop_id,
                           GValue     *value,
                           GParamSpec *pspec)
 {
-  ChattyUser *self = (ChattyUser *)object;
+  ChattyItem *self = (ChattyItem *)object;
 
   switch (prop_id)
     {
     case PROP_PROTOCOLS:
-      g_value_set_int (value, chatty_user_get_protocols (self));
+      g_value_set_int (value, chatty_item_get_protocols (self));
       break;
 
     case PROP_NAME:
-      g_value_set_string (value, chatty_user_get_name (self));
+      g_value_set_string (value, chatty_item_get_name (self));
       break;
 
     default:
@@ -149,13 +149,13 @@ chatty_user_get_property (GObject    *object,
 }
 
 static void
-chatty_user_set_property (GObject      *object,
+chatty_item_set_property (GObject      *object,
                           guint         prop_id,
                           const GValue *value,
                           GParamSpec   *pspec)
 {
-  ChattyUser *self = (ChattyUser *)object;
-  ChattyUserPrivate *priv = chatty_user_get_instance_private (self);
+  ChattyItem *self = (ChattyItem *)object;
+  ChattyItemPrivate *priv = chatty_item_get_instance_private (self);
 
   switch (prop_id)
     {
@@ -164,7 +164,7 @@ chatty_user_set_property (GObject      *object,
       break;
 
     case PROP_NAME:
-      chatty_user_set_name (self, g_value_get_string (value));
+      chatty_item_set_name (self, g_value_get_string (value));
       break;
 
     default:
@@ -173,43 +173,43 @@ chatty_user_set_property (GObject      *object,
 }
 
 static void
-chatty_user_class_init (ChattyUserClass *klass)
+chatty_item_class_init (ChattyItemClass *klass)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
 
-  object_class->get_property = chatty_user_get_property;
-  object_class->set_property = chatty_user_set_property;
+  object_class->get_property = chatty_item_get_property;
+  object_class->set_property = chatty_item_set_property;
 
-  klass->get_protocols = chatty_user_real_get_protocols;
-  klass->matches  = chatty_user_real_matches;
-  klass->get_name = chatty_user_real_get_name;
-  klass->set_name = chatty_user_real_set_name;
-  klass->get_avatar = chatty_user_real_get_avatar;
-  klass->set_avatar_async  = chatty_user_real_set_avatar_async;
-  klass->set_avatar_finish = chatty_user_real_set_avatar_finish;
+  klass->get_protocols = chatty_item_real_get_protocols;
+  klass->matches  = chatty_item_real_matches;
+  klass->get_name = chatty_item_real_get_name;
+  klass->set_name = chatty_item_real_set_name;
+  klass->get_avatar = chatty_item_real_get_avatar;
+  klass->set_avatar_async  = chatty_item_real_set_avatar_async;
+  klass->set_avatar_finish = chatty_item_real_set_avatar_finish;
 
   /**
-   * ChattyUser:name:
+   * ChattyItem:name:
    *
-   * The name of the User.
+   * The name of the Item.
    */
   properties[PROP_NAME] =
     g_param_spec_string ("name",
                          "name",
-                         "The name of the User",
+                         "The name of the Item",
                          "",
                          G_PARAM_READWRITE | G_PARAM_EXPLICIT_NOTIFY | G_PARAM_STATIC_STRINGS);
 
   /**
-   * ChattyUser:protocols:
+   * ChattyItem:protocols:
    *
-   * Protocols supported by the User.  A user may
+   * Protocols supported by the Item.  An item may
    * support more than one protocol.
    */
   properties[PROP_PROTOCOLS] =
     g_param_spec_int ("protocols",
                       "Protocols",
-                      "Protocols supported by user",
+                      "Protocols supported by item",
                       CHATTY_PROTOCOL_NONE,
                       CHATTY_PROTOCOL_TELEGRAM,
                       CHATTY_PROTOCOL_NONE,
@@ -218,10 +218,10 @@ chatty_user_class_init (ChattyUserClass *klass)
   g_object_class_install_properties (object_class, N_PROPS, properties);
 
   /**
-   * ChattyUser::avatar-changed:
-   * @self: a #ChattyUser
+   * ChattyItem::avatar-changed:
+   * @self: a #ChattyItem
    *
-   * avatar-changed signal is emitted when the user’s
+   * avatar-changed signal is emitted when the item’s
    * avatar change.
    */
   signals [AVATAR_CHANGED] =
@@ -232,8 +232,8 @@ chatty_user_class_init (ChattyUserClass *klass)
                   G_TYPE_NONE, 0);
 
   /**
-   * ChattyUser::deleted:
-   * @self: a #ChattyUser
+   * ChattyItem::deleted:
+   * @self: a #ChattyItem
    *
    * deleted signal is emitted when the account
    * is deleted
@@ -247,13 +247,13 @@ chatty_user_class_init (ChattyUserClass *klass)
 }
 
 static void
-chatty_user_init (ChattyUser *self)
+chatty_item_init (ChattyItem *self)
 {
 }
 
 /**
- * chatty_user_get_protocols:
- * @self: a #ChattyUser
+ * chatty_item_get_protocols:
+ * @self: a #ChattyItem
  *
  * Get the protocols supported/implemented by @self.
  * There can be more than one protocol supported by
@@ -262,22 +262,22 @@ chatty_user_init (ChattyUser *self)
  * Returns: %ChattyProtocol flag
  */
 ChattyProtocol
-chatty_user_get_protocols (ChattyUser *self)
+chatty_item_get_protocols (ChattyItem *self)
 {
-  g_return_val_if_fail (CHATTY_IS_USER (self), CHATTY_PROTOCOL_NONE);
+  g_return_val_if_fail (CHATTY_IS_ITEM (self), CHATTY_PROTOCOL_NONE);
 
-  return CHATTY_USER_GET_CLASS (self)->get_protocols (self);
+  return CHATTY_ITEM_GET_CLASS (self)->get_protocols (self);
 }
 
 gboolean
-chatty_user_matches (ChattyUser     *self,
+chatty_item_matches (ChattyItem     *self,
                      const char     *needle,
                      ChattyProtocol  protocols,
                      gboolean        match_name)
 {
-  g_return_val_if_fail (CHATTY_IS_USER (self), FALSE);
+  g_return_val_if_fail (CHATTY_IS_ITEM (self), FALSE);
 
-  if (!(protocols & chatty_user_get_protocols (self)))
+  if (!(protocols & chatty_item_get_protocols (self)))
     return FALSE;
 
   if (!needle || !*needle)
@@ -287,102 +287,102 @@ chatty_user_matches (ChattyUser     *self,
     {
       gboolean match;
 
-      match = chatty_user_real_matches (self, needle, protocols, match_name);
+      match = chatty_item_real_matches (self, needle, protocols, match_name);
 
       if (match)
         return match;
     }
 
   /* We have done this already, and if we reached here, we have no match */
-  if (CHATTY_USER_GET_CLASS (self)->matches == chatty_user_real_matches)
+  if (CHATTY_ITEM_GET_CLASS (self)->matches == chatty_item_real_matches)
     return FALSE;
 
-  return CHATTY_USER_GET_CLASS (self)->matches (self, needle, protocols, match_name);
+  return CHATTY_ITEM_GET_CLASS (self)->matches (self, needle, protocols, match_name);
 }
 
 /**
- * chatty_user_compare:
- * @a: a #ChattyUser
- * @b: a #ChattyUser
+ * chatty_item_compare:
+ * @a: a #ChattyItem
+ * @b: a #ChattyItem
  *
- * Compare to users and find the order they
+ * Compare to items and find the order they
  * should be sorted.
  *
  * Returns: < 0 if @a before @b, 0 if they
  * compare equal, > 0 if @a compares after @b.
  */
 int
-chatty_user_compare (ChattyUser *a,
-                     ChattyUser *b)
+chatty_item_compare (ChattyItem *a,
+                     ChattyItem *b)
 {
-  g_return_val_if_fail (CHATTY_IS_USER (a), 0);
-  g_return_val_if_fail (CHATTY_IS_USER (b), 0);
+  g_return_val_if_fail (CHATTY_IS_ITEM (a), 0);
+  g_return_val_if_fail (CHATTY_IS_ITEM (b), 0);
 
-  return g_utf8_collate (chatty_user_get_name (a),
-                         chatty_user_get_name (b));
+  return g_utf8_collate (chatty_item_get_name (a),
+                         chatty_item_get_name (b));
 }
 
 /**
- * chatty_user_get_name:
- * @self: a #ChattyUser
+ * chatty_item_get_name:
+ * @self: a #ChattyItem
  *
- * Get the name of User.  In purple/pidgin it’s
+ * Get the name of Item.  In purple/pidgin it’s
  * termed as ‘alias.’
  *
- * Returns: (transfer none): the name of User.
+ * Returns: (transfer none): the name of Item.
  */
 const char *
-chatty_user_get_name (ChattyUser *self)
+chatty_item_get_name (ChattyItem *self)
 {
-  g_return_val_if_fail (CHATTY_IS_USER (self), "");
+  g_return_val_if_fail (CHATTY_IS_ITEM (self), "");
 
-  return CHATTY_USER_GET_CLASS (self)->get_name (self);
+  return CHATTY_ITEM_GET_CLASS (self)->get_name (self);
 }
 
 /**
- * chatty_user_set_name:
- * @self: a #ChattyUser
+ * chatty_item_set_name:
+ * @self: a #ChattyItem
  * @name: (nullable): a text to set as name
  *
- * Set the name of User. Can be %NULL.
+ * Set the name of Item. Can be %NULL.
  */
 void
-chatty_user_set_name (ChattyUser *self,
+chatty_item_set_name (ChattyItem *self,
                       const char *name)
 {
-  g_return_if_fail (CHATTY_IS_USER (self));
+  g_return_if_fail (CHATTY_IS_ITEM (self));
 
-  CHATTY_USER_GET_CLASS (self)->set_name (self, name);
+  CHATTY_ITEM_GET_CLASS (self)->set_name (self, name);
 }
 
 GdkPixbuf *
-chatty_user_get_avatar (ChattyUser *self)
+chatty_item_get_avatar (ChattyItem *self)
 {
-  g_return_val_if_fail (CHATTY_IS_USER (self), NULL);
+  g_return_val_if_fail (CHATTY_IS_ITEM (self), NULL);
 
-  return CHATTY_USER_GET_CLASS (self)->get_avatar (self);
+  return CHATTY_ITEM_GET_CLASS (self)->get_avatar (self);
 }
 
 void
-chatty_user_set_avatar_async (ChattyUser          *self,
+chatty_item_set_avatar_async (ChattyItem          *self,
                               const char          *file_name,
                               GCancellable        *cancellable,
                               GAsyncReadyCallback  callback,
-                              gpointer             user_data)
+                              gpointer             item_data)
 {
-  g_return_if_fail (CHATTY_IS_USER (self));
+  g_return_if_fail (CHATTY_IS_ITEM (self));
 
-  CHATTY_USER_GET_CLASS (self)->set_avatar_async (self, file_name, cancellable,
-                                                  callback, user_data);
+  CHATTY_ITEM_GET_CLASS (self)->set_avatar_async (self, file_name, cancellable,
+                                                  callback, item_data);
 }
 
 gboolean
-chatty_user_set_avatar_finish (ChattyUser    *self,
+chatty_item_set_avatar_finish (ChattyItem    *self,
                                GAsyncResult  *result,
                                GError       **error)
 {
-  g_return_val_if_fail (CHATTY_IS_USER (self), FALSE);
+  g_return_val_if_fail (CHATTY_IS_ITEM (self), FALSE);
   g_return_val_if_fail (G_IS_TASK (result), FALSE);
 
-  return CHATTY_USER_GET_CLASS (self)->set_avatar_finish (self, result, error);
+  return CHATTY_ITEM_GET_CLASS (self)->set_avatar_finish (self, result, error);
 }
