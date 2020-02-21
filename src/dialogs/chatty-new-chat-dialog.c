@@ -21,6 +21,7 @@
 #include "contrib/gtk.h"
 #include "users/chatty-pp-account.h"
 #include "chatty-buddy-list.h"
+#include "chatty-list-row.h"
 #include "chatty-dbus.h"
 #include "chatty-utils.h"
 #include "chatty-folks.h"
@@ -315,7 +316,7 @@ dialog_contact_row_new (GObject *object)
   if (CHATTY_IS_CONTACT (object))
     return dialog_create_contact_row (CHATTY_CONTACT (object));
   else if (CHATTY_IS_PP_BUDDY (object))
-    return dialog_create_buddy_row (CHATTY_PP_BUDDY (object));
+    return chatty_list_row_new (CHATTY_ITEM (object));
   else
     return dialog_create_chat_row (CHATTY_CHAT (object));
 }
@@ -428,7 +429,7 @@ contact_search_entry_changed_cb (ChattyNewChatDialog *self,
 
 static void
 contact_row_activated_cb (ChattyNewChatDialog *self,
-                          ChattyContactRow    *row)
+                          GtkListBoxRow       *row)
 {
   ChattyWindow    *window;
   PurpleBlistNode *node;
@@ -439,8 +440,8 @@ contact_row_activated_cb (ChattyNewChatDialog *self,
   const char      *number;
 
   g_assert (CHATTY_IS_NEW_CHAT_DIALOG (self));
-  g_assert (CHATTY_IS_CONTACT_ROW (row));
 
+  if (CHATTY_IS_CONTACT_ROW (row)) {
   g_object_get (row, "phone_number", &number, NULL);
 
   if (number != NULL) {
@@ -449,9 +450,18 @@ contact_row_activated_cb (ChattyNewChatDialog *self,
     return;
   }
 
-  window = chatty_utils_get_window ();
-
   g_object_get (row, "data", &node, NULL);
+  } else if (CHATTY_IS_LIST_ROW (row)) {
+    ChattyItem *item;
+
+    item = chatty_list_row_get_item (CHATTY_LIST_ROW (row));
+    g_return_if_fail (CHATTY_IS_PP_BUDDY (item));
+    node = (PurpleBlistNode *)chatty_pp_buddy_get_buddy (CHATTY_PP_BUDDY (item));
+  } else {
+    g_return_if_reached ();
+  }
+
+  window = chatty_utils_get_window ();
 
   chatty_window_set_menu_add_contact_button_visible (window, FALSE);
   chatty_window_set_menu_add_in_contacts_button_visible (window, FALSE);
