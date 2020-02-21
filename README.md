@@ -56,6 +56,11 @@ Please go to the git page where you'll find information on how to build and inst
 This can be skipped if Telegram messaging is not needed.
 
 
+### Build and install 'libfeedback'
+Please go to the git page where you'll find information on how to build and use
+[Feedbackd and libfeedback](https://source.puri.sm/Librem5/feedbackd)
+
+
 ### Build Chatty
 ``` bash
 meson build
