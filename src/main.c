@@ -13,6 +13,9 @@
 #include "chatty-history.h"
 #include "chatty-settings.h"
 
+#define LIBFEEDBACK_USE_UNSTABLE_API
+#include <libfeedback.h>
+
 
 int
 main (int   argc,
@@ -27,6 +30,7 @@ main (int   argc,
 	bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
 
   g_set_prgname (CHATTY_APP_ID);
+  lfb_init (CHATTY_APP_ID, NULL);
   application = chatty_application_new ();
 
   srand(time(NULL));
@@ -37,5 +41,6 @@ main (int   argc,
   g_object_unref (chatty_settings_get_default ());
   chatty_history_close();
 
+  lfb_uninit();
   return status;
 }
