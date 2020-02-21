@@ -78,6 +78,33 @@ chatty_pp_buddy_update_protocol (ChattyPpBuddy *self)
   self->protocol = chatty_item_get_protocols (item);
 }
 
+
+static GdkPixbuf *
+chatty_icon_from_data (const guchar *buf,
+                       gsize         size)
+{
+  g_autoptr(GdkPixbufLoader) loader = NULL;
+  g_autoptr(GError) error = NULL;
+  GdkPixbuf *pixbuf = NULL;
+
+  loader = gdk_pixbuf_loader_new ();
+  gdk_pixbuf_loader_write (loader, buf, size, &error);
+
+  if (!error)
+    gdk_pixbuf_loader_close (loader, &error);
+
+  if (error)
+    g_warning ("Error: %s: %s", __func__, error->message);
+  else
+    pixbuf = gdk_pixbuf_loader_get_pixbuf (loader);
+
+  if (!pixbuf)
+    g_warning ("%s: pixbuf creation failed", __func__);
+
+  return g_object_ref (pixbuf);
+}
+
+
 /* copied and modified from chatty_blist_add_buddy */
 static void
 chatty_add_new_buddy (ChattyPpBuddy *self)
@@ -189,6 +216,44 @@ chatty_pp_buddy_set_name (ChattyItem *item,
   purple_blist_alias_contact (contact, self->name);
 }
 
+
+static GdkPixbuf *
+chatty_pp_buddy_get_avatar (ChattyItem *item)
+{
+  ChattyPpBuddy *self = (ChattyPpBuddy *)item;
+  PurpleContact *contact;
+  PurpleStoredImage *img;
+  PurpleBuddyIcon *icon = NULL;
+  gconstpointer data = NULL;
+  size_t len;
+
+  g_assert (CHATTY_IS_PP_BUDDY (self));
+
+  contact = purple_buddy_get_contact (self->pp_buddy);
+  img = purple_buddy_icons_node_find_custom_icon ((PurpleBlistNode*)contact);
+
+  if (!img) {
+    icon = purple_buddy_get_icon (self->pp_buddy);
+
+    if (!icon)
+      icon = purple_buddy_icons_find (self->pp_buddy->account, self->pp_buddy->name);
+
+    if (icon)
+      data = purple_buddy_icon_get_data (icon, &len);
+
+    if (!data)
+      return NULL;
+  }
+
+  if (!data) {
+    data = purple_imgstore_get_data (img);
+    len = purple_imgstore_get_size (img);
+  }
+
+  return chatty_icon_from_data (data, len);
+}
+
+
 static void
 chatty_pp_buddy_set_property (GObject      *object,
                            guint         prop_id,
@@ -267,6 +332,7 @@ chatty_pp_buddy_class_init (ChattyPpBuddyClass *klass)
   item_class->matches  = chatty_pp_buddy_matches;
   item_class->get_name = chatty_pp_buddy_get_name;
   item_class->set_name = chatty_pp_buddy_set_name;
+  item_class->get_avatar = chatty_pp_buddy_get_avatar;
 
   properties[PROP_PURPLE_ACCOUNT] =
     g_param_spec_pointer ("purple-account",
