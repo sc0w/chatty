@@ -2018,6 +2018,7 @@ chatty_conv_write_conversation (PurpleConversation *conv,
                                 time_t              mtime)
 {
   ChattyConversation       *chatty_conv;
+  ChattyConversation       *active_chatty_conv;
   PurpleConversationType    type;
   PurpleConnection         *gc;
   PurplePluginProtocolInfo *prpl_info = NULL;
@@ -2026,8 +2027,11 @@ chatty_conv_write_conversation (PurpleConversation *conv,
   PurpleBlistNode          *node;
   g_autofree char          *color = NULL;
   gboolean                  group_chat = TRUE;
+  gboolean                  conv_active;
   GdkPixbuf                *avatar = NULL;
   GtkWidget                *icon = NULL;
+  ChattyWindow             *window;
+  GtkWidget                *convs_notebook;
   int                       chat_id;
   const char               *buddy_name;
   gchar                    *titel;
@@ -2136,7 +2140,16 @@ chatty_conv_write_conversation (PurpleConversation *conv,
                                    NULL,
                                    NULL);
     } else if (pcm.flags & PURPLE_MESSAGE_RECV) {
-      if (buddy && purple_blist_node_get_bool (node, "chatty-notifications")) {
+
+      window = chatty_utils_get_window ();
+
+      convs_notebook = chatty_window_get_convs_notebook (window);
+
+      active_chatty_conv = chatty_conv_container_get_active_chatty_conv (GTK_NOTEBOOK(convs_notebook));
+
+      conv_active = (chatty_conv == active_chatty_conv && gtk_widget_is_drawable (convs_notebook));
+
+      if (buddy && purple_blist_node_get_bool (node, "chatty-notifications") && !conv_active) {
 
         event = lfb_event_new("message-new-instant");
         lfb_event_trigger_feedback_async (event, NULL,
