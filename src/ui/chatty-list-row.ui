@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <template class="ChattyListRow" parent="GtkListBoxRow">
+    <property name="visible">True</property>
+    <child>
+      <object class="GtkGrid">
+        <property name="visible">True</property>
+        <property name="margin">6</property>
+        <property name="column-spacing">9</property>
+        <property name="row-spacing">3</property>
+
+        <!-- Avatar -->
+        <child>
+          <object class="ChattyAvatar" id="avatar">
+            <property name="visible">True</property>
+            <property name="valign">center</property>
+            <property name="pixel-size">36</property>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">0</property>
+            <property name="height">2</property>
+          </packing>
+        </child>
+
+        <!-- Row title -->
+        <child>
+          <object class="GtkLabel" id="title">
+            <property name="visible">True</property>
+            <property name="ellipsize">end</property>
+            <property name="halign">start</property>
+            <style>
+              <class name="bold-label"/>
+            </style>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">0</property>
+          </packing>
+        </child>
+
+        <!-- Time since/of last modification -->
+        <child>
+          <object class="GtkLabel" id="last_modified">
+            <property name="visible">False</property>
+            <attributes>
+              <attribute name="scale" value="0.7"/>
+            </attributes>
+            <style>
+              <class name="dim-label"/>
+            </style>
+          </object>
+          <packing>
+            <property name="left-attach">2</property>
+            <property name="top-attach">0</property>
+          </packing>
+        </child>
+
+        <!-- Subtitle -->
+        <child>
+          <object class="GtkLabel" id="subtitle">
+            <property name="visible">True</property>
+            <property name="halign">start</property>
+            <property name="ellipsize">end</property>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">1</property>
+          </packing>
+        </child>
+
+        <!-- Unread message count -->
+        <child>
+          <object class="GtkLabel" id="unread_message_count">
+            <property name="visible">False</property>
+            <style>
+              <class name="unread-badge"/>
+            </style>
+          </object>
+          <packing>
+            <property name="left-attach">2</property>
+            <property name="top-attach">1</property>
+          </packing>
+        </child>
+
+      </object>
+    </child>
+  </template>
+</interface>
