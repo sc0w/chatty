@@ -13,8 +13,10 @@
 # include "config.h"
 #endif
 
+#include <purple.h>
 #include <math.h>
 
+#include "users/chatty-pp-buddy.h"
 #include "chatty-avatar.h"
 
 /**
@@ -143,7 +145,14 @@ chatty_avatar_draw_label (ChattyAvatar *self,
   int pango_width, pango_height;
   int width, height;
   guint size;
+  gboolean blur = FALSE;
 
+  if (CHATTY_IS_PP_BUDDY (self->item)) {
+    PurpleBuddy *buddy;
+
+    buddy = chatty_pp_buddy_get_buddy (CHATTY_PP_BUDDY (self->item));
+    blur = !PURPLE_BUDDY_IS_ONLINE(buddy);
+  }
   width = gtk_widget_get_allocated_width (GTK_WIDGET (self));
   height = gtk_widget_get_allocated_width (GTK_WIDGET (self));
   size = MIN (width, height);
@@ -151,7 +160,10 @@ chatty_avatar_draw_label (ChattyAvatar *self,
   /* Paint background circle */
   rgba = get_rgba_for_str (label);
   cairo_arc (cr, size / 2.0, size / 2.0, size / 2.0, 0, 2 * G_PI);
-  cairo_set_source_rgb (cr, rgba.red, rgba.green, rgba.blue);
+  if (blur)
+    cairo_set_source_rgb (cr, 0.5, 0.5, 0.5);
+  else
+    cairo_set_source_rgb (cr, rgba.red, rgba.green, rgba.blue);
   cairo_fill (cr);
 
   font = g_strdup_printf ("Sans %d", (int)ceil (size / 2.5));
