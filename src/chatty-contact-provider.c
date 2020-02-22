@@ -17,6 +17,7 @@
 
 #include <gee-0.8/gee.h>
 #include <folks/folks.h>
+#include <libebook-contacts/libebook-contacts.h>
 
 #include "users/chatty-contact.h"
 #include "chatty-contact-provider.h"
@@ -39,6 +40,32 @@ struct _ChattyFolks
 
 G_DEFINE_TYPE (ChattyFolks, chatty_folks, G_TYPE_OBJECT)
 
+
+static char *
+chatty_folks_check_phonenumber (const char *phone_number)
+{
+  EPhoneNumber      *number;
+  char              *result;
+  g_autoptr(GError)  err = NULL;
+
+  number = e_phone_number_from_string (phone_number, NULL, &err);
+
+  if (!number || !e_phone_number_is_supported ()) {
+    g_debug ("%s %s: %s\n", __func__, phone_number, err->message);
+
+    result = NULL;
+  } else {
+    if (g_strrstr (phone_number, "+")) {
+      result = e_phone_number_to_string (number, E_PHONE_NUMBER_FORMAT_E164);
+    } else {
+      result = e_phone_number_get_national_number (number);
+    }
+  }
+
+  e_phone_number_free (number);
+
+  return result;
+}
 
 static void
 folks_find_contact_index (ChattyFolks     *self,
@@ -178,10 +205,28 @@ folks_load_details (ChattyFolks     *self,
     return;
 
   while (gee_iterator_next (phone_iter)) {
+    FolksAbstractFieldDetails *detail;
     ChattyContact *contact;
+    g_autofree char *value = NULL;
 
-    contact = chatty_contact_new (individual,
-                                  gee_iterator_get (phone_iter));
+    detail = gee_iterator_get (phone_iter);
+
+    if (FOLKS_IS_PHONE_FIELD_DETAILS (detail)) {
+      FolksPhoneFieldDetails *phone;
+      g_autofree char *number = NULL;
+
+      phone  = FOLKS_PHONE_FIELD_DETAILS (detail);
+      number = folks_phone_field_details_get_normalised (phone);
+      value  = chatty_folks_check_phonenumber (number);
+    }
+
+    if (!FOLKS_IS_PHONE_FIELD_DETAILS (detail) || !value) {
+      g_object_unref (detail);
+
+      continue;
+    }
+
+    contact = chatty_contact_new (individual, detail);
     g_ptr_array_add (store, contact);
   }
 
