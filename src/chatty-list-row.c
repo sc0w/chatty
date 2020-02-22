@@ -43,6 +43,15 @@ chatty_list_row_update (ChattyListRow *self)
   if (CHATTY_IS_PP_BUDDY (self->item)) {
     pp_account = chatty_pp_buddy_get_account (CHATTY_PP_BUDDY (self->item));
     subtitle = purple_account_get_username (pp_account);
+  } else if (CHATTY_IS_CONTACT (self->item)) {
+    g_autofree gchar *type = NULL;
+    const gchar *number;
+
+    number = chatty_contact_get_value (CHATTY_CONTACT (self->item));
+    type = g_strconcat (chatty_contact_get_value_type (CHATTY_CONTACT (self->item)),
+                        ": ", number, NULL);
+    gtk_label_set_label (GTK_LABEL (self->subtitle), type);
+    chatty_item_get_avatar (self->item);
   }
 
   if (subtitle)
