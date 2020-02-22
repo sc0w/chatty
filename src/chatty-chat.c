@@ -18,7 +18,10 @@
 #endif
 
 #include "chatty-settings.h"
+#include "chatty-icons.h"
 #include "chatty-chat.h"
+
+#define CHATTY_COLOR_BLUE "4A8FD9"
 
 /**
  * SECTION: chatty-chat
@@ -75,6 +78,20 @@ chatty_chat_get_protocols (ChattyItem *item)
 }
 
 
+static GdkPixbuf *
+chatty_chat_get_avatar (ChattyItem *item)
+{
+  ChattyChat *self = (ChattyChat *)item;
+
+  g_assert (CHATTY_IS_CHAT (self));
+
+  return chatty_icon_get_buddy_icon ((PurpleBlistNode *)self->pp_chat,
+                                     NULL,
+                                     CHATTY_ICON_SIZE_MEDIUM,
+                                     CHATTY_COLOR_BLUE,
+                                     FALSE);
+}
+
 static void
 chatty_chat_set_property (GObject      *object,
                           guint         prop_id,
@@ -103,6 +120,7 @@ chatty_chat_class_init (ChattyChatClass *klass)
 
   item_class->get_name = chatty_chat_get_name;
   item_class->get_protocols = chatty_chat_get_protocols;
+  item_class->get_avatar = chatty_chat_get_avatar;
 
   properties[PROP_PURPLE_CHAT] =
     g_param_spec_pointer ("purple-chat",
