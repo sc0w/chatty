@@ -149,81 +149,6 @@ chatty_about_Action (GSimpleAction *action,
 }
 
 
-static const gchar *
-chatty_folks_get_phone_type (FolksPhoneFieldDetails *details)
-{
-  GeeCollection *types;
-  GeeIterator *iter;
-  const gchar *val;
-
-  types = folks_abstract_field_details_get_parameter_values (
-            FOLKS_ABSTRACT_FIELD_DETAILS (details), "type");
-
-  if (types == NULL)
-    return NULL;
-
-  iter = gee_iterable_iterator (GEE_ITERABLE (types));
-
-  while (gee_iterator_next (iter)) {
-    char *type = gee_iterator_get (iter);
-
-    g_debug ("%s type: %s", __func__, type);
-
-    if (!g_strcmp0 (type, "cell"))
-      val = _("Mobile");
-    else if (!g_strcmp0  (type, "work"))
-      val = _("Work");
-    else if (!g_strcmp0  (type, "home"))
-      val = _("Home");
-    else if (!g_strcmp0  (type, "other"))
-      val = _("Other");
-    else
-      val = NULL;
-
-    g_free (type);
-  }
-
-  g_object_unref (iter);
-
-  return val;
-}
-
-static GtkWidget *
-dialog_create_contact_row (ChattyContact *contact)
-{
-  GtkWidget *row;
-  const char *name;
-  g_autofree char *number;
-  g_autofree char *number_e164 = NULL;
-  g_autofree char *type_number = NULL;
-  FolksIndividual *individual;
-  FolksPhoneFieldDetails *detail;
-
-  g_assert (CHATTY_IS_CONTACT (contact));
-
-  individual = chatty_contact_get_individual (contact);
-  detail = chatty_contact_get_detail (contact);
-  number = folks_phone_field_details_get_normalised (detail);
-  number_e164 = chatty_utils_check_phonenumber (number);
-  type_number = g_strconcat (chatty_folks_get_phone_type (detail),
-                             ": ", number, NULL);
-  name = chatty_item_get_name (CHATTY_ITEM (contact));
-  number = folks_phone_field_details_get_normalised (detail);
-  row = chatty_contact_row_new (NULL, NULL, name,
-                                type_number, NULL, NULL,
-                                chatty_contact_get_uid (contact),
-                                number_e164, FALSE);
-  chatty_folks_load_avatar (individual,
-                            CHATTY_CONTACT_ROW (row),
-                            NULL,
-                            NULL,
-                            CHATTY_FOLKS_SET_CONTACT_ROW_ICON,
-                            CHATTY_ICON_SIZE_MEDIUM);
-
-  return row;
-}
-
-
 static GtkWidget *
 dialog_create_chat_row (ChattyChat *chat)
 {
@@ -257,9 +182,8 @@ dialog_create_chat_row (ChattyChat *chat)
 static GtkWidget *
 dialog_contact_row_new (GObject *object)
 {
-  if (CHATTY_IS_CONTACT (object))
-    return dialog_create_contact_row (CHATTY_CONTACT (object));
-  else if (CHATTY_IS_PP_BUDDY (object))
+  if (CHATTY_IS_CONTACT (object) ||
+      CHATTY_IS_PP_BUDDY (object))
     return chatty_list_row_new (CHATTY_ITEM (object));
   else
     return dialog_create_chat_row (CHATTY_CHAT (object));
@@ -386,20 +310,19 @@ contact_row_activated_cb (ChattyNewChatDialog *self,
   g_assert (CHATTY_IS_NEW_CHAT_DIALOG (self));
 
   if (CHATTY_IS_CONTACT_ROW (row)) {
-  g_object_get (row, "phone_number", &number, NULL);
-
-  if (number != NULL) {
-    chatty_blist_add_buddy_from_uri (number);
-
-    return;
-  }
-
-  g_object_get (row, "data", &node, NULL);
+    g_object_get (row, "data", &node, NULL);
   } else if (CHATTY_IS_LIST_ROW (row)) {
     ChattyItem *item;
 
     item = chatty_list_row_get_item (CHATTY_LIST_ROW (row));
-    g_return_if_fail (CHATTY_IS_PP_BUDDY (item));
+
+    if (CHATTY_IS_CONTACT (item)) {
+      number = chatty_contact_get_value (CHATTY_CONTACT (item));
+      chatty_blist_add_buddy_from_uri (number);
+
+      return;
+    }
+
     node = (PurpleBlistNode *)chatty_pp_buddy_get_buddy (CHATTY_PP_BUDDY (item));
   } else {
     g_return_if_reached ();
