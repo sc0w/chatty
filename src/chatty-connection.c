@@ -60,9 +60,7 @@ chatty_connection_update_ui (void)
               chatty_window_get_im_account_connected (window);
 
   chatty_window_set_header_add_chat_button_sensitive (window, sensitive);
-
-  chatty_window_set_overlay_visible (window, 
-                                     !chatty_blist_list_has_children (CHATTY_LIST_CHATS));
+  chatty_window_update_overlay_visible (window);
 }
 
 
