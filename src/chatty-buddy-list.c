@@ -545,22 +545,6 @@ chatty_blist_refresh (void)
 
 
 /**
- * chatty_blist_list_has_children:
- *
- * Returns 0 if chats list is empty
- *
- */
-gboolean
-chatty_blist_list_has_children (int list_type)
-{
-  if (list_type == CHATTY_LIST_CHATS)
-    return gtk_list_box_get_row_at_index(chatty_get_chats_list (), 0) != NULL;
-
-  g_return_val_if_reached (FALSE);
-}
-
-
-/**
  * chatty_blist_chat_list_select_first:
  *
  * Activate the first entry in the chats list
