@@ -90,6 +90,7 @@ GtkWidget *chatty_window_get_new_chat_dialog (ChattyWindow *self);
 const char *chatty_window_get_uri (ChattyWindow *self);
 
 void chatty_window_set_overlay_visible (ChattyWindow *self, gboolean visible);
+void chatty_window_update_overlay_visible (ChattyWindow *self);
 void chatty_window_set_new_chat_dialog_visible (ChattyWindow *self, gboolean visible);
 
 void chatty_window_set_menu_add_contact_button_visible (ChattyWindow *self, gboolean visible);

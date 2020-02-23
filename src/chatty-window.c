@@ -550,6 +550,18 @@ chatty_window_set_overlay_visible (ChattyWindow *self,
 }
 
 
+void
+chatty_window_update_overlay_visible (ChattyWindow *self)
+{
+  gboolean has_child;
+
+  g_return_if_fail (CHATTY_IS_WINDOW (self));
+
+  has_child = gtk_list_box_get_row_at_index (GTK_LIST_BOX (self->chats_listbox), 0) != NULL;
+  chatty_window_set_overlay_visible (self, !has_child);
+}
+
+
 static int
 window_authorize_buddy_cb (ChattyWindow    *self,
                            ChattyPpAccount *account,
