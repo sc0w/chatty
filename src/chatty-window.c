@@ -898,14 +898,6 @@ chatty_window_set_header_add_chat_button_sensitive (ChattyWindow *self,
 }
 
 
-void
-chatty_window_set_header_sub_menu_button_sensitive (ChattyWindow *self,
-                                                    gboolean      sensitive)
-{
-  gtk_widget_set_sensitive (self->header_sub_menu_button, sensitive);
-}
-
-
 const char *
 chatty_window_get_uri (ChattyWindow *self)
 {
@@ -946,15 +938,6 @@ gboolean
 chatty_window_get_sms_account_connected (ChattyWindow *self)
 {
   return self->sms_account_connected;
-}
-
-
-GtkWidget *
-chatty_window_get_search_entry (ChattyWindow *self)
-{
-  g_return_val_if_fail (CHATTY_IS_WINDOW (self), NULL);
-
-  return self->chats_search_entry;
 }
 
 
