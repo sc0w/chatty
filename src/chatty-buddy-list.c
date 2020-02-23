@@ -894,26 +894,6 @@ chatty_blist_returned_from_chat (void)
 
 
 /**
- * chatty_blist_set_chat_options:
- *
- * Disable chat options if blist is empty
- *
- */
-static void
-chatty_blist_set_chat_options (void)
-{
-  ChattyWindow *window;
-  gboolean      sensitive;
-
-  window = chatty_utils_get_window ();
-
-  sensitive = chatty_blist_list_has_children (CHATTY_LIST_CHATS);
-
-  chatty_window_set_header_sub_menu_button_sensitive (window, sensitive);
-}
-
-
-/**
  * chatty_blist_chats_remove_node:
  * @node:   a PurpleBlistNode
  *
@@ -938,8 +918,6 @@ chatty_blist_chats_remove_node (PurpleBlistNode *node)
 
   gtk_widget_destroy (GTK_WIDGET (chatty_node->row_chat));
   chatty_node->row_chat = NULL;
-
-  chatty_blist_set_chat_options ();
 }
 
 
@@ -1180,7 +1158,6 @@ chatty_blist_chats_update_node (PurpleBuddy     *buddy,
                                                     
     gtk_widget_show (GTK_WIDGET (chatty_node->row_chat));
     gtk_container_add (GTK_CONTAINER (listbox), GTK_WIDGET (chatty_node->row_chat));
-    chatty_blist_set_chat_options ();
   } else {
     g_object_set (chatty_node->row_chat,
                   "avatar", avatar,
@@ -1272,7 +1249,6 @@ chatty_blist_chats_update_group_chat (PurpleBlistNode *node)
 
     gtk_widget_show (GTK_WIDGET (chatty_node->row_chat));
     gtk_container_add (GTK_CONTAINER (listbox), GTK_WIDGET (chatty_node->row_chat));
-    chatty_blist_set_chat_options ();
   } else {
     g_object_set (chatty_node->row_chat,
                   "avatar", avatar,

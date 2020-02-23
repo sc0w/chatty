@@ -262,6 +262,7 @@ window_chat_changed_cb (ChattyWindow *self,
 
   has_child = gtk_list_box_get_row_at_index (GTK_LIST_BOX (self->chats_listbox), 0) != NULL;
   chatty_window_set_overlay_visible (self, !has_child);
+  gtk_widget_set_sensitive (self->header_sub_menu_button, has_child);
 }
 
 static void
