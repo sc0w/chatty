@@ -297,8 +297,10 @@ manager_buddy_added_cb (PurpleBuddy   *pp_buddy,
 {
   ChattyPpAccount *account;
   ChattyPpBuddy *buddy;
+  ChattyContact *contact;
   PurpleAccount *pp_account;
   GListModel *model;
+  const char *id;
 
   g_assert (CHATTY_IS_MANAGER (self));
 
@@ -310,7 +312,11 @@ manager_buddy_added_cb (PurpleBuddy   *pp_buddy,
   buddy = manager_find_buddy (model, pp_buddy);
 
   if (!buddy)
-    chatty_pp_account_add_purple_buddy (account, pp_buddy);
+    buddy = chatty_pp_account_add_purple_buddy (account, pp_buddy);
+
+  id = chatty_pp_buddy_get_id (buddy);
+  contact = chatty_folks_find_by_number (self->chatty_folks, id);
+  chatty_pp_buddy_set_contact (buddy, contact);
 }
 
 static void
