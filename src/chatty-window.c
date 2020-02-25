@@ -262,6 +262,7 @@ window_chat_changed_cb (ChattyWindow *self,
 
   has_child = gtk_list_box_get_row_at_index (GTK_LIST_BOX (self->chats_listbox), 0) != NULL;
   chatty_window_set_overlay_visible (self, !has_child);
+  gtk_widget_set_sensitive (self->header_sub_menu_button, has_child);
 }
 
 static void
@@ -547,6 +548,18 @@ chatty_window_set_overlay_visible (ChattyWindow *self,
   gtk_label_set_use_markup (GTK_LABEL (self->overlay_label_1), TRUE);
   gtk_label_set_use_markup (GTK_LABEL (self->overlay_label_2), TRUE);
   gtk_label_set_use_markup (GTK_LABEL (self->overlay_label_3), TRUE);
+}
+
+
+void
+chatty_window_update_overlay_visible (ChattyWindow *self)
+{
+  gboolean has_child;
+
+  g_return_if_fail (CHATTY_IS_WINDOW (self));
+
+  has_child = gtk_list_box_get_row_at_index (GTK_LIST_BOX (self->chats_listbox), 0) != NULL;
+  chatty_window_set_overlay_visible (self, !has_child);
 }
 
 
@@ -885,14 +898,6 @@ chatty_window_set_header_add_chat_button_sensitive (ChattyWindow *self,
 }
 
 
-void
-chatty_window_set_header_sub_menu_button_sensitive (ChattyWindow *self,
-                                                    gboolean      sensitive)
-{
-  gtk_widget_set_sensitive (self->header_sub_menu_button, sensitive);
-}
-
-
 const char *
 chatty_window_get_uri (ChattyWindow *self)
 {
@@ -933,15 +938,6 @@ gboolean
 chatty_window_get_sms_account_connected (ChattyWindow *self)
 {
   return self->sms_account_connected;
-}
-
-
-GtkWidget *
-chatty_window_get_search_entry (ChattyWindow *self)
-{
-  g_return_val_if_fail (CHATTY_IS_WINDOW (self), NULL);
-
-  return self->chats_search_entry;
 }
 
 
