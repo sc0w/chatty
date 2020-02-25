@@ -424,11 +424,10 @@ chatty_user_info_dialog_constructed (GObject *object)
     gtk_widget_show (GTK_WIDGET(self->label_status_msg));
     gtk_widget_show (GTK_WIDGET(self->label_encrypt));
     gtk_widget_show (GTK_WIDGET(self->label_encrypt_status));
-    gtk_widget_show (GTK_WIDGET(self->listbox_prefs));
+    gtk_widget_show (GTK_WIDGET(self->listbox_fps));
 
     chatty_info_dialog_get_encrypt_status (self);
     chatty_user_info_dialog_request_fps (self);
-
     gtk_switch_set_state (GTK_SWITCH(self->switch_encrypt), self->chatty_conv->omemo.enabled);
   }
 
