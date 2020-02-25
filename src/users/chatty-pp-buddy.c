@@ -38,6 +38,7 @@ struct _ChattyPpBuddy
   char              *name;
   PurpleAccount     *pp_account;
   PurpleBuddy       *pp_buddy;
+  ChattyContact     *contact;
 
   PurpleStoredImage *pp_avatar;
   GdkPixbuf         *avatar;
@@ -405,4 +406,28 @@ chatty_pp_buddy_get_buddy (ChattyPpBuddy *self)
   g_return_val_if_fail (CHATTY_IS_PP_BUDDY (self), NULL);
 
   return self->pp_buddy;
+}
+
+
+ChattyContact *
+chatty_pp_buddy_get_contact (ChattyPpBuddy *self)
+{
+  g_return_val_if_fail (CHATTY_IS_PP_BUDDY (self), NULL);
+
+  return self->contact;
+}
+
+
+void
+chatty_pp_buddy_set_contact (ChattyPpBuddy *self,
+                             ChattyContact *contact)
+{
+  g_return_if_fail (CHATTY_IS_PP_BUDDY (self));
+  g_return_if_fail (!contact || CHATTY_IS_CONTACT (contact));
+  g_return_if_fail (!contact ||
+                    chatty_item_matches (CHATTY_ITEM (self),
+                                         chatty_contact_get_value (contact),
+                                         chatty_item_get_protocols (CHATTY_ITEM (contact)),
+                                         FALSE));
+  g_set_object (&self->contact, contact);
 }
