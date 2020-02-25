@@ -313,16 +313,15 @@ contact_row_activated_cb (ChattyNewChatDialog *self,
 
   g_assert (CHATTY_IS_NEW_CHAT_DIALOG (self));
 
-  g_object_get (row, "phone_number", &number, NULL);
-
-  if (number != NULL) {
-    chatty_blist_add_buddy_from_uri (number);
-
-    return;
-  }
-
   if (CHATTY_IS_CONTACT_ROW (row)) {
     g_object_get (row, "data", &node, NULL);
+    g_object_get (row, "phone_number", &number, NULL);
+
+    if (number != NULL) {
+      chatty_blist_add_buddy_from_uri (number);
+
+      return;
+    }
   } else if (CHATTY_IS_LIST_ROW (row)) {
     ChattyItem *item;
 
