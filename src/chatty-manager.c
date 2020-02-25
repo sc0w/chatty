@@ -333,7 +333,13 @@ manager_buddy_removed_cb (PurpleBuddy   *pp_buddy,
   pp_account = purple_buddy_get_account (pp_buddy);
   account = chatty_pp_account_get_object (pp_account);
 
-  g_return_if_fail (account);
+  /*
+   * If account is NULL, the account has gotten deleted, and so
+   * the buddy object is also deleted along it.
+   */
+  if (!account)
+    return;
+
   model = chatty_pp_account_get_buddy_list (account);
   buddy = manager_find_buddy (model, pp_buddy);
 
