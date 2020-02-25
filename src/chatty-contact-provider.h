@@ -24,6 +24,7 @@ G_BEGIN_DECLS
 G_DECLARE_FINAL_TYPE (ChattyFolks, chatty_folks, CHATTY, FOLKS, GObject)
 
 ChattyFolks   *chatty_folks_new            (void);
+gboolean       chatty_folks_is_ready       (ChattyFolks *self);
 GListModel    *chatty_folks_get_model      (ChattyFolks *self);
 ChattyContact *chatty_folks_find_by_name   (ChattyFolks *self,
                                             const char  *name);
