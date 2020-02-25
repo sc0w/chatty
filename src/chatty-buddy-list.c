@@ -834,8 +834,8 @@ chatty_blist_chat_list_remove_buddy (void)
       chatty_history_delete_im(buddy->account->username, buddy->name);
 
       purple_account_remove_buddy (buddy->account, buddy, NULL);
-      purple_blist_remove_buddy (buddy);
       purple_conversation_destroy (ui->conv.conv);
+      purple_blist_remove_buddy (buddy);
 
       chatty_window_update_sub_header_titlebar (window, NULL, "");
     } else if (PURPLE_BLIST_NODE_IS_CHAT(node)) {
