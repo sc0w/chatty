@@ -20,6 +20,7 @@
 #include <libebook-contacts/libebook-contacts.h>
 
 #include "users/chatty-contact.h"
+#include "users/chatty-contact-private.h"
 #include "chatty-contact-provider.h"
 
 /**
@@ -122,6 +123,13 @@ folk_item_changed_cb (ChattyFolks     *self,
   g_assert (FOLKS_IS_INDIVIDUAL (individual));
 
   folks_find_contact_index (self, individual, &position, &count);
+
+  for (guint i = position; i < position + count; i++) {
+    g_autoptr(ChattyContact) contact = NULL;
+
+    contact = g_list_model_get_item (G_LIST_MODEL (self->contact_list), i);
+    chatty_contact_clear_cache (contact);
+  }
 
   if (count)
     g_list_model_items_changed (G_LIST_MODEL (self->contact_list),

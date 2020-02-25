@@ -21,6 +21,7 @@
 #include <libebook-contacts/libebook-contacts.h>
 
 #include "chatty-contact.h"
+#include "chatty-contact-private.h"
 
 #define ICON_SIZE 96
 
@@ -449,4 +450,20 @@ chatty_contact_get_individual (ChattyContact *self)
   g_return_val_if_fail (CHATTY_IS_CONTACT (self), NULL);
 
   return self->individual;
+}
+
+
+/**
+ * chatty_contact_clear_cache:
+ * @self: #ChattyContact
+ *
+ * Reset the values cached in @self.
+ * This API is only to be used by contact-provider.
+ */
+void
+chatty_contact_clear_cache (ChattyContact *self)
+{
+  g_return_if_fail (CHATTY_IS_CONTACT (self));
+
+  g_clear_object (&self->avatar);
 }
