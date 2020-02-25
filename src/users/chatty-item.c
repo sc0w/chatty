@@ -97,6 +97,36 @@ chatty_item_real_get_avatar (ChattyItem *self)
   return NULL;
 }
 
+
+static void
+chatty_item_real_get_avatar_async (ChattyItem          *self,
+                                   GCancellable        *cancellable,
+                                   GAsyncReadyCallback  callback,
+                                   gpointer             user_data)
+{
+  g_assert (CHATTY_IS_ITEM (self));
+  g_assert (!cancellable || G_IS_CANCELLABLE (cancellable));
+
+  g_task_report_new_error (self, callback, user_data,
+                           chatty_item_real_get_avatar_async,
+                           G_IO_ERROR,
+                           G_IO_ERROR_NOT_SUPPORTED,
+                           "Loading Custom avatar not supported");
+}
+
+
+static GdkPixbuf *
+chatty_item_real_get_avatar_finish (ChattyItem    *self,
+                                    GAsyncResult  *result,
+                                    GError       **error)
+{
+  g_assert (CHATTY_IS_ITEM (self));
+  g_assert (G_IS_TASK (result));
+
+  return g_task_propagate_pointer (G_TASK (result), error);
+}
+
+
 static void
 chatty_item_real_set_avatar_async (ChattyItem          *self,
                                    const char          *filename,
@@ -185,6 +215,8 @@ chatty_item_class_init (ChattyItemClass *klass)
   klass->get_name = chatty_item_real_get_name;
   klass->set_name = chatty_item_real_set_name;
   klass->get_avatar = chatty_item_real_get_avatar;
+  klass->get_avatar_async  = chatty_item_real_get_avatar_async;
+  klass->get_avatar_finish = chatty_item_real_get_avatar_finish;
   klass->set_avatar_async  = chatty_item_real_set_avatar_async;
   klass->set_avatar_finish = chatty_item_real_set_avatar_finish;
 
@@ -362,6 +394,31 @@ chatty_item_get_avatar (ChattyItem *self)
 
   return CHATTY_ITEM_GET_CLASS (self)->get_avatar (self);
 }
+
+
+void
+chatty_item_get_avatar_async (ChattyItem          *self,
+                              GCancellable        *cancellable,
+                              GAsyncReadyCallback  callback,
+                              gpointer             user_data)
+{
+  g_return_if_fail (CHATTY_IS_ITEM (self));
+
+  CHATTY_ITEM_GET_CLASS (self)->get_avatar_async (self, cancellable,
+                                                  callback, user_data);
+}
+
+
+GdkPixbuf *
+chatty_item_get_avatar_finish (ChattyItem    *self,
+                               GAsyncResult  *result,
+                               GError       **error)
+{
+  g_return_val_if_fail (CHATTY_IS_ITEM (self), NULL);
+
+  return CHATTY_ITEM_GET_CLASS (self)->get_avatar_finish (self, result, error);
+}
+
 
 void
 chatty_item_set_avatar_async (ChattyItem          *self,
