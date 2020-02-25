@@ -409,6 +409,35 @@ chatty_pp_buddy_get_buddy (ChattyPpBuddy *self)
 }
 
 
+/**
+ * chatty_pp_buddy_get_id:
+ * @self: a #ChattyPpBuddy
+ *
+ * Get the user id of @self.  For XMPP, this
+ * is the XMPP name (eg: name@example.com).
+ * For SMS buddy, this is the phone number.
+ *
+ * Returns: (transfer none): the id of Buddy.
+ * or an empty string if not found or on error.
+ */
+const char *
+chatty_pp_buddy_get_id (ChattyPpBuddy *self)
+{
+  const char *name;
+
+  g_return_val_if_fail (CHATTY_IS_PP_BUDDY (self), "");
+
+  if (!self->pp_buddy)
+    return "";
+
+  name = purple_buddy_get_name (self->pp_buddy);
+
+  if (!name)
+    name = "";
+
+  return name;
+}
+
 ChattyContact *
 chatty_pp_buddy_get_contact (ChattyPpBuddy *self)
 {
