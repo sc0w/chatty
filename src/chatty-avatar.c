@@ -26,6 +26,8 @@
  * @include: "chatty-avatar.h"
  */
 
+#define INTENSITY(r, g, b) ((r) * 0.30 + (g) * 0.59 + (b) * 0.11)
+
 struct _ChattyAvatar
 {
   GtkImage    parent_instance;
@@ -141,7 +143,7 @@ chatty_avatar_draw_label (ChattyAvatar *self,
   const char *text_end;
   g_autofree char *font = NULL;
   g_autofree char *upcase_str = NULL;
-  GdkRGBA rgba;
+  GdkRGBA bg, fg;
   int pango_width, pango_height;
   int width, height;
   guint size;
@@ -158,12 +160,17 @@ chatty_avatar_draw_label (ChattyAvatar *self,
   size = MIN (width, height);
 
   /* Paint background circle */
-  rgba = get_rgba_for_str (label);
+  bg = get_rgba_for_str (label);
   cairo_arc (cr, size / 2.0, size / 2.0, size / 2.0, 0, 2 * G_PI);
   if (blur)
-    cairo_set_source_rgb (cr, 0.5, 0.5, 0.5);
+    bg.red = 0.4, bg.green = 0.4, bg.blue = 0.4;
+
+  if (INTENSITY (bg.red, bg.green, bg.blue) > 0.50)
+    fg.red = 0.1, fg.blue = 0.1, fg.green = 0.1;
   else
-    cairo_set_source_rgb (cr, rgba.red, rgba.green, rgba.blue);
+    fg.red = 0.95, fg.green = 0.95, fg.blue = 0.95;
+
+  cairo_set_source_rgb (cr, bg.red, bg.green, bg.blue);
   cairo_fill (cr);
 
   font = g_strdup_printf ("Sans %d", (int)ceil (size / 2.5));
@@ -178,7 +185,7 @@ chatty_avatar_draw_label (ChattyAvatar *self,
   pango_layout_set_text (layout, upcase_str, -1);
 
   pango_layout_get_size (layout, &pango_width, &pango_height);
-  cairo_set_source_rgb (cr, 0.95, 0.95, 0.95);
+  cairo_set_source_rgb (cr, fg.red, fg.blue, fg.green);
   cairo_translate (cr, size / 2.0, size / 2.0);
   /* XXX: Adjusted to 2px off in vertical orientation, but why? */
   cairo_move_to (cr,
