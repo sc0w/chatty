@@ -36,9 +36,19 @@ struct _ChattyFolks
   GListStore *contact_list;
 
   FolksIndividualAggregator *folks_aggregator;
+
+  gboolean   is_ready;
 };
 
 G_DEFINE_TYPE (ChattyFolks, chatty_folks, G_TYPE_OBJECT)
+
+enum {
+  PROP_0,
+  PROP_IS_READY,
+  N_PROPS
+};
+
+static GParamSpec *properties[N_PROPS];
 
 
 static char *
@@ -316,7 +326,27 @@ folks_aggregator_is_quiescent_cb (ChattyFolks *self)
                            "individuals-changed-detailed",
                            G_CALLBACK (folks_individual_changed_cb),
                            self, G_CONNECT_SWAPPED);
+  self->is_ready = TRUE;
+  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_IS_READY]);
+}
 
+static void
+chatty_folks_get_property (GObject    *object,
+                           guint       prop_id,
+                           GValue     *value,
+                           GParamSpec *pspec)
+{
+  ChattyFolks *self = (ChattyFolks *)object;
+
+  switch (prop_id)
+    {
+    case PROP_IS_READY:
+      g_value_set_boolean (value, self->is_ready);
+      break;
+
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+    }
 }
 
 static void
@@ -335,7 +365,23 @@ chatty_folks_class_init (ChattyFolksClass *klass)
 {
   GObjectClass *object_class  = G_OBJECT_CLASS (klass);
 
+  object_class->get_property = chatty_folks_get_property;
   object_class->finalize = chatty_folks_finalize;
+
+  /**
+   * ChattyFolks:is-ready:
+   *
+   * Emitted when the contact provider is ready and all contacts
+   * are initially loaded.
+   */
+  properties[PROP_IS_READY] =
+    g_param_spec_boolean ("is-ready",
+                          "Is Ready",
+                          "The contact provider is ready and loaded",
+                          FALSE,
+                          G_PARAM_READABLE | G_PARAM_STATIC_STRINGS);
+
+  g_object_class_install_properties (object_class, N_PROPS, properties);
 }
 
 
@@ -360,6 +406,13 @@ chatty_folks_new (void)
   return g_object_new (CHATTY_TYPE_FOLKS, NULL);
 }
 
+gboolean
+chatty_folks_is_ready (ChattyFolks *self)
+{
+  g_return_val_if_fail (CHATTY_IS_FOLKS (self), FALSE);
+
+  return self->is_ready;
+}
 
 GListModel *
 chatty_folks_get_model (ChattyFolks *self)

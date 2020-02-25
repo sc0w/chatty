@@ -93,6 +93,45 @@ static guint signals[N_SIGNALS];
 
 
 static void
+manager_folks_is_ready (ChattyManager *self)
+{
+  GListModel *accounts, *model;
+  ChattyContact *contact;
+  const char *id;
+  ChattyProtocol protocol;
+  guint n_accounts, n_buddies;
+
+  g_assert (CHATTY_IS_MANAGER (self));
+
+  accounts = chatty_manager_get_accounts (self);
+  n_accounts = g_list_model_get_n_items (accounts);
+
+  /* TODO: Optimize */
+  for (guint i = 0; i < n_accounts; i++) {
+    g_autoptr(ChattyPpAccount) account = NULL;
+
+    account  = g_list_model_get_item (accounts, i);
+    protocol = chatty_item_get_protocols (CHATTY_ITEM (account));
+
+    if (protocol != CHATTY_PROTOCOL_SMS)
+      continue;
+
+    model = chatty_pp_account_get_buddy_list (account);
+    n_buddies = g_list_model_get_n_items (model);
+    for (guint j = 0; j < n_buddies; j++) {
+      g_autoptr(ChattyPpBuddy) buddy = NULL;
+
+      buddy = g_list_model_get_item (model, j);
+      id = chatty_pp_buddy_get_id (buddy);
+
+      contact = chatty_folks_find_by_number (self->chatty_folks, id);
+
+      chatty_pp_buddy_set_contact (buddy, contact);
+    }
+  }
+}
+
+static void
 chatty_manager_account_notify_added (PurpleAccount *pp_account,
                                      const char    *remote_user,
                                      const char    *id,
@@ -258,8 +297,10 @@ manager_buddy_added_cb (PurpleBuddy   *pp_buddy,
 {
   ChattyPpAccount *account;
   ChattyPpBuddy *buddy;
+  ChattyContact *contact;
   PurpleAccount *pp_account;
   GListModel *model;
+  const char *id;
 
   g_assert (CHATTY_IS_MANAGER (self));
 
@@ -271,7 +312,11 @@ manager_buddy_added_cb (PurpleBuddy   *pp_buddy,
   buddy = manager_find_buddy (model, pp_buddy);
 
   if (!buddy)
-    chatty_pp_account_add_purple_buddy (account, pp_buddy);
+    buddy = chatty_pp_account_add_purple_buddy (account, pp_buddy);
+
+  id = chatty_pp_buddy_get_id (buddy);
+  contact = chatty_folks_find_by_number (self->chatty_folks, id);
+  chatty_pp_buddy_set_contact (buddy, contact);
 }
 
 static void
@@ -739,6 +784,10 @@ chatty_manager_init (ChattyManager *self)
   g_list_store_append (self->list_of_user_list, G_LIST_MODEL (self->chat_list));
   g_list_store_append (self->list_of_user_list,
                        chatty_folks_get_model (self->chatty_folks));
+
+  g_signal_connect_object (self->chatty_folks, "notify::is-ready",
+                           G_CALLBACK (manager_folks_is_ready), self,
+                           G_CONNECT_SWAPPED);
 }
 
 ChattyManager *

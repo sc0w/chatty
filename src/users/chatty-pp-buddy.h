@@ -15,6 +15,7 @@
 #include <purple.h>
 
 #include "chatty-contact-row.h"
+#include "chatty-contact.h"
 #include "chatty-item.h"
 #include "chatty-enums.h"
 
@@ -44,5 +45,9 @@ typedef struct _chatty_blist_node {
 ChattyPpBuddy   *chatty_pp_buddy_get_object    (PurpleBuddy   *buddy);
 PurpleAccount   *chatty_pp_buddy_get_account   (ChattyPpBuddy *self);
 PurpleBuddy     *chatty_pp_buddy_get_buddy      (ChattyPpBuddy *self);
+const char      *chatty_pp_buddy_get_id        (ChattyPpBuddy *self);
+ChattyContact   *chatty_pp_buddy_get_contact   (ChattyPpBuddy *self);
+void             chatty_pp_buddy_set_contact   (ChattyPpBuddy *self,
+                                                ChattyContact *contact);
 
 G_END_DECLS
