@@ -33,6 +33,13 @@ struct _ChattyItemClass
   void             (*set_name)            (ChattyItem           *self,
                                            const char           *name);
   GdkPixbuf       *(*get_avatar)          (ChattyItem           *self);
+  void             (*get_avatar_async)    (ChattyItem           *self,
+                                           GCancellable         *cancellable,
+                                           GAsyncReadyCallback   callback,
+                                           gpointer              user_data);
+  GdkPixbuf       *(*get_avatar_finish)   (ChattyItem           *self,
+                                           GAsyncResult         *result,
+                                           GError              **error);
   void             (*set_avatar_async)    (ChattyItem           *self,
                                            const char           *file_name,
                                            GCancellable         *cancellable,
@@ -54,6 +61,13 @@ const char      *chatty_item_get_name            (ChattyItem           *self);
 void             chatty_item_set_name            (ChattyItem           *self,
                                                   const char           *name);
 GdkPixbuf       *chatty_item_get_avatar          (ChattyItem           *self);
+void             chatty_item_get_avatar_async    (ChattyItem           *self,
+                                                  GCancellable         *cancellable,
+                                                  GAsyncReadyCallback   callback,
+                                                  gpointer              user_data);
+GdkPixbuf       *chatty_item_get_avatar_finish   (ChattyItem           *self,
+                                                  GAsyncResult         *result,
+                                                  GError              **error);
 void             chatty_item_set_avatar_async    (ChattyItem           *self,
                                                   const char           *file_name,
                                                   GCancellable         *cancellable,
