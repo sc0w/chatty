@@ -103,6 +103,63 @@ load_avatar_finish_cb (GObject      *object,
     g_signal_emit_by_name (self, "avatar-changed");
 }
 
+static void
+contact_pixbuf_load_finish_cb (GObject      *object,
+                               GAsyncResult *result,
+                               gpointer      user_data)
+{
+  ChattyContact *self;
+  g_autoptr(GTask) task = user_data;
+  g_autoptr(GError) error = NULL;
+
+  g_assert (G_IS_TASK (task));
+
+  self = g_task_get_source_object (task);
+  g_assert (CHATTY_IS_CONTACT (self));
+
+  self->avatar = gdk_pixbuf_new_from_stream_finish (result, &error);
+
+  if (error) {
+    g_task_return_error (task, error);
+
+    return;
+  }
+
+  g_signal_emit_by_name (self, "avatar-changed");
+  g_task_return_pointer (task, self->avatar, NULL);
+}
+
+static void
+load_avatar_async_finish_cb (GObject      *object,
+                             GAsyncResult *result,
+                             gpointer      user_data)
+{
+  g_autoptr(GTask) task = user_data;
+  GLoadableIcon *icon = G_LOADABLE_ICON (object);
+  GCancellable *cancellable;
+  GInputStream  *stream;
+  g_autoptr(GError) error = NULL;
+
+  g_assert (G_IS_TASK (task));
+
+  stream = g_loadable_icon_load_finish (icon, result, NULL, &error);
+  cancellable = g_task_get_cancellable (task);
+
+  if (error) {
+    g_task_return_error (task, error);
+
+    return;
+  }
+
+  gdk_pixbuf_new_from_stream_at_scale_async (stream,
+                                             ICON_SIZE,
+                                             ICON_SIZE,
+                                             TRUE,
+                                             cancellable,
+                                             contact_pixbuf_load_finish_cb,
+                                             g_steal_pointer (&task));
+}
+
 /* Always assume it’s a phone number, we create only such contacts */
 static ChattyProtocol
 chatty_contact_get_protocols (ChattyItem *item)
@@ -182,6 +239,37 @@ chatty_contact_get_avatar (ChattyItem *item)
 }
 
 static void
+chatty_contact_get_avatar_async (ChattyItem          *item,
+                                 GCancellable        *cancellable,
+                                 GAsyncReadyCallback  callback,
+                                 gpointer             user_data)
+{
+  ChattyContact *self = (ChattyContact *)item;
+  g_autoptr(GTask) task = NULL;
+  GLoadableIcon *avatar;
+
+  g_assert (CHATTY_IS_CONTACT (self));
+  g_assert (!cancellable || G_IS_CANCELLABLE (cancellable));
+
+  task = g_task_new (self, cancellable, callback, user_data);
+
+  if (self->avatar) {
+    g_task_return_pointer (task, self->avatar, NULL);
+
+    return;
+  }
+
+  avatar = folks_avatar_details_get_avatar (FOLKS_AVATAR_DETAILS (self->individual));
+
+  if (!avatar)
+    g_task_return_pointer (task, NULL, NULL);
+  else
+    g_loadable_icon_load_async (avatar, ICON_SIZE, cancellable,
+                                load_avatar_async_finish_cb,
+                                g_steal_pointer (&task));
+}
+
+static void
 chatty_contact_finalize (GObject *object)
 {
   ChattyContact *self = (ChattyContact *)object;
@@ -208,6 +296,7 @@ chatty_contact_class_init (ChattyContactClass *klass)
   item_class->matches  = chatty_contact_matches;
   item_class->get_name = chatty_contact_get_name;
   item_class->get_avatar = chatty_contact_get_avatar;
+  item_class->get_avatar_async  = chatty_contact_get_avatar_async;
 }
 
 
