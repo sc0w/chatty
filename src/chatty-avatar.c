@@ -187,10 +187,9 @@ chatty_avatar_draw_label (ChattyAvatar *self,
   pango_layout_get_size (layout, &pango_width, &pango_height);
   cairo_set_source_rgb (cr, fg.red, fg.blue, fg.green);
   cairo_translate (cr, size / 2.0, size / 2.0);
-  /* XXX: Adjusted to 2px off in vertical orientation, but why? */
   cairo_move_to (cr,
                  -((double)pango_width / PANGO_SCALE) / 2,
-                 -((double)pango_height / PANGO_SCALE) / 2 + 2);
+                 -((double)pango_height / PANGO_SCALE) / 2);
   pango_cairo_show_layout (cr, layout);
 }
 
