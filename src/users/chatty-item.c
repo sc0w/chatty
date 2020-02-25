@@ -301,6 +301,19 @@ chatty_item_get_protocols (ChattyItem *self)
   return CHATTY_ITEM_GET_CLASS (self)->get_protocols (self);
 }
 
+/**
+ * chatty_item_matches:
+ * @self: a #ChattyItem
+ * @needle: The string to search for
+ * @protocols: Allowed protocols
+ * @match_name: %TRUE to match name of contact
+ *
+ * See if @needle matches @self (partially or fully).
+ * If @match_name is %TRUE, first matches the name of @self.
+ *
+ * Returns: %TRUE if @needle and @self has some match.
+ * %FALSE otherwise.
+ */
 gboolean
 chatty_item_matches (ChattyItem     *self,
                      const char     *needle,
@@ -387,6 +400,18 @@ chatty_item_set_name (ChattyItem *self,
   CHATTY_ITEM_GET_CLASS (self)->set_name (self, name);
 }
 
+/**
+ * chatty_item_get_avatar:
+ * @self: a #ChattyItem
+ *
+ * Get the avatar of @item.  If avatar hasn’t loaded
+ * A %NULL may be returned immediately and load the
+ * avatar async.  So hook to ::avatar-changed signal
+ * if you need to update avatar on change or use
+ * chatty_item_get_avatar_async().
+ *
+ * Returns: (transfer none) (nullable): A #GdkPixbuf.
+ */
 GdkPixbuf *
 chatty_item_get_avatar (ChattyItem *self)
 {

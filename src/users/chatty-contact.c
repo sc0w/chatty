@@ -306,6 +306,19 @@ chatty_contact_init (ChattyContact *self)
 }
 
 
+/**
+ * chatty_contact_new:
+ * @individual: A #FolksIndividual
+ * @detail: (transfer full): A #FolksAbstractFieldDetails
+ *
+ * Create a new contact which represents the @detail of
+ * the @individual.
+ *
+ * Currently, only #FolksPhoneFieldDetails is supported
+ * as @detail.
+ *
+ * Returns: (transfer full): A #ChattyContact
+ */
 ChattyContact *
 chatty_contact_new (FolksIndividual           *individual,
                     FolksAbstractFieldDetails *detail)
@@ -322,6 +335,17 @@ chatty_contact_new (FolksIndividual           *individual,
 }
 
 
+/**
+ * chatty_contact_get_value:
+ * @self: A #ChattyContact
+ *
+ * Get the value stored in @self. It can be a phone
+ * number, an XMPP ID, etc.
+ * Also see chatty_contact_get_value_type().
+ *
+ * Returns: (transfer none): The value of @self.
+ * Or an empty string if no value.
+ */
 const char *
 chatty_contact_get_value (ChattyContact *self)
 {
@@ -348,6 +372,16 @@ chatty_contact_get_value (ChattyContact *self)
   return "";
 }
 
+/**
+ * chatty_contact_get_value:
+ * @self: A #ChattyContact
+ *
+ * Get the type of value stored in @self.
+ * Eg: “Mobile”, “Work”, etc. translated to
+ * the current locale.
+ *
+ * Returns: (transfer none) (nullable): The value type of @self.
+ */
 const char *
 chatty_contact_get_value_type (ChattyContact *self)
 {
@@ -382,6 +416,15 @@ chatty_contact_get_value_type (ChattyContact *self)
 }
 
 
+/**
+ * chatty_contact_get_uid:
+ * @self: A #ChattyContact
+ *
+ * A unique ID reperesenting the contact.  This
+ * ID won’t change unless the contact is modified.
+ *
+ * Returns: (transfer none): A unique ID of @self.
+ */
 const char *
 chatty_contact_get_uid (ChattyContact *self)
 {
@@ -391,6 +434,15 @@ chatty_contact_get_uid (ChattyContact *self)
 }
 
 
+/**
+ * chatty_contact_get_individual:
+ * @self: A #ChattyContact
+ *
+ * Get the #FolksIndividual used to create @self.
+ * Use this only for debug purposes.
+ *
+ * Returns: (transfer none): A #FolksIndividual
+ */
 FolksIndividual *
 chatty_contact_get_individual (ChattyContact *self)
 {

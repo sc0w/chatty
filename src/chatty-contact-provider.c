@@ -400,12 +400,30 @@ chatty_folks_init (ChattyFolks *self)
 }
 
 
+/**
+ * chatty_folks_new:
+ *
+ * Create a New Contact Provider.  Call this function only
+ * once and reuse the #ChattyFolks for further use.
+ *
+ * Returns: (transfer full): A #ChattyFolks
+ */
 ChattyFolks *
 chatty_folks_new (void)
 {
   return g_object_new (CHATTY_TYPE_FOLKS, NULL);
 }
 
+/**
+ * chatty_folks_is_ready:
+ * @self: A #ChattyFolks
+ *
+ * Get if the contact provider is ready and all
+ * contacts are initially loaded.
+ *
+ * Returns: %TRUE if @self is ready for use.
+ * %FALSE otherwise
+ */
 gboolean
 chatty_folks_is_ready (ChattyFolks *self)
 {
@@ -414,6 +432,15 @@ chatty_folks_is_ready (ChattyFolks *self)
   return self->is_ready;
 }
 
+/**
+ * chatty_folks_get_model:
+ * @self: A #ChattyFolks
+ *
+ * Get A #GListModel that contains all the
+ * #ChattyContact loaded.
+ *
+ * Returns: (transfer none): A #GListModel.
+ */
 GListModel *
 chatty_folks_get_model (ChattyFolks *self)
 {
@@ -423,6 +450,15 @@ chatty_folks_get_model (ChattyFolks *self)
 }
 
 
+/**
+ * chatty_folks_find_by_name:
+ * @self: A #ChattyFolks
+ * @name: A Valid string to search
+ *
+ * Find the first #ChattyContact matching @name.
+ *
+ * Returns: (transfer none): A #ChattyContact.
+ */
 ChattyContact *
 chatty_folks_find_by_name (ChattyFolks *self,
                            const char  *name)
@@ -433,6 +469,17 @@ chatty_folks_find_by_name (ChattyFolks *self,
 }
 
 
+/**
+ * chatty_folks_find_by_name:
+ * @self: A #ChattyFolks
+ * @phone_number: A Valid Phone number to match
+ *
+ * Find the first #ChattyContact matching @phone_number.
+ * A match can be either exact or one excluding the
+ * country prefix (Eg: +1987654321 and 987654321 matches)
+ *
+ * Returns: (transfer none): A #ChattyContact.
+ */
 ChattyContact *
 chatty_folks_find_by_number (ChattyFolks *self,
                              const char  *phone_number)
