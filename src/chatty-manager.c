@@ -54,10 +54,6 @@ struct _ChattyManager
   gboolean         disable_auto_login;
   gboolean         network_available;
 
-  /* Number of accounts currently connected */
-  guint            xmpp_count;
-  guint            telegram_count;
-  guint            matrix_count;
   gboolean         has_modem;
   ChattyProtocol   active_protocols;
 };
@@ -445,6 +441,39 @@ manager_connection_changed_cb (PurpleConnection *gc,
 }
 
 static void
+manager_update_protocols (ChattyManager *self)
+{
+  GListModel *model;
+  ChattyProtocol old_protocols, protocol;
+  ChattyStatus status;
+  guint n_items;
+
+  g_assert (CHATTY_IS_MANAGER (self));
+
+  model = G_LIST_MODEL (self->account_list);
+  n_items = g_list_model_get_n_items (model);
+  old_protocols = self->active_protocols;
+  self->active_protocols = 0;
+
+  for (guint i = 0; i < n_items; i++) {
+    g_autoptr(ChattyAccount) account = NULL;
+
+    account = g_list_model_get_item (model, i);
+    status  = chatty_account_get_status (account);
+    protocol = chatty_item_get_protocols (CHATTY_ITEM (account));
+
+    if (status == CHATTY_CONNECTED)
+      self->active_protocols |= protocol;
+  }
+
+  if (self->has_modem)
+    self->active_protocols |= CHATTY_PROTOCOL_SMS;
+
+  if (old_protocols != self->active_protocols)
+    g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_ACTIVE_PROTOCOLS]);
+}
+
+static void
 manager_connection_signed_on_cb (PurpleConnection *gc,
                                  ChattyManager    *self)
 {
@@ -469,13 +498,6 @@ manager_connection_signed_on_cb (PurpleConnection *gc,
   old_protocols = self->active_protocols;
   self->active_protocols |= protocol;
 
-  if (protocol & CHATTY_PROTOCOL_XMPP)
-    self->xmpp_count++;
-  if (protocol & CHATTY_PROTOCOL_MATRIX)
-    self->matrix_count++;
-  if (protocol & CHATTY_PROTOCOL_TELEGRAM)
-    self->telegram_count++;
-
   if (old_protocols != self->active_protocols)
     g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_ACTIVE_PROTOCOLS]);
 
@@ -488,7 +510,6 @@ manager_connection_signed_off_cb (PurpleConnection *gc,
 {
   PurpleAccount *pp_account;
   ChattyPpAccount *account;
-  ChattyProtocol protocol, old_protocols;
 
   g_assert (CHATTY_IS_MANAGER (self));
 
@@ -503,31 +524,7 @@ manager_connection_signed_off_cb (PurpleConnection *gc,
   if (chatty_pp_account_is_sms (account))
     return;
 
-  protocol = chatty_item_get_protocols (CHATTY_ITEM (account));
-  old_protocols = self->active_protocols;
-  self->active_protocols = CHATTY_PROTOCOL_NONE;
-
-  if (protocol & CHATTY_PROTOCOL_XMPP)
-    if (self->xmpp_count > 0)
-      self->xmpp_count--;
-  if (protocol & CHATTY_PROTOCOL_MATRIX)
-    if (self->matrix_count > 0)
-      self->matrix_count--;
-  if (protocol & CHATTY_PROTOCOL_TELEGRAM)
-    if (self->telegram_count > 0)
-      self->telegram_count--;
-
-  if (self->xmpp_count)
-    self->active_protocols |= CHATTY_PROTOCOL_XMPP;
-  if (self->matrix_count)
-    self->active_protocols |= CHATTY_PROTOCOL_MATRIX;
-  if (self->telegram_count)
-    self->active_protocols |= CHATTY_PROTOCOL_TELEGRAM;
-  if (self->has_modem)
-    self->active_protocols |= CHATTY_PROTOCOL_SMS;
-
-  if (old_protocols != self->active_protocols)
-    g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_ACTIVE_PROTOCOLS]);
+  manager_update_protocols (self);
 
   g_object_notify (G_OBJECT (account), "status");
 }
