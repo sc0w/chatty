@@ -1,3 +1,266 @@
+chatty (0.1.8) amber-phone; urgency=medium
+
+  [ Mohammed Sadiq ]
+  * manager: Manage loading plugins
+
+  [ Andrea Schaefer ]
+  * Create seperate class for 'new chat' dialog
+  * Adjust (c) date
+  * Add grey '+' icon to 'Send to:' row
+  * Add search-entry placeholder text
+  * Move account-list handling to new-chat-dialog
+  * Add new-chat-dialog to potfiles
+  * Move cb_account_list_row_activated to ui-xml
+  * Rename function
+  * Remove unused code
+
+  [ Mohammed Sadiq ]
+  * user: Add API to set avatar
+  * pp-account: Implement set_avatar_async()
+  * settings-dialog: Use the new API to set avatar
+  * icons: Remove no-longer used code
+  * pp-account: Add API to add specific accounts
+  * settings-dialog: Use the new APIs to create account
+
+  [ Andrea Schaefer ]
+  * Move 'selected_account' to the class struct
+  * Change name entry signal
+  * Cleanup
+
+  [ Mohammed Sadiq ]
+  * Remove msg_carbons purple setting
+  * manager: Simplify loading plugins
+  * purple-init: Remove No longer used code
+
+  [ Andrea Schaefer ]
+  * Create seperate object for 'add muc' dialog
+  * Code cleanup
+  * Adjust symbol naming
+
+  [ Mohammed Sadiq ]
+  * pp-account: Add API to create sms account
+  * manager: Use the new API to create SMS account
+  * manager: make enable_sms_account() private
+  * manager: Fix typo in variable name
+  * manager: Check if lurch plugin is loaded right
+  * tests: Use built in method to get build dir
+  * pp-account: Fix creating XMPP account
+  * tests: Add XMPP account tests
+  * pp-account: Fix tests to guard against invalid input
+  * pp-account: Fix creating new SMS account
+
+  [ Sebastian Krzyszkowiak ]
+  * debian: Add used purple plugins to Recommends
+
+  [ Andrea Schaefer ]
+  * Add separate class for 'user info' dialog
+  * Code cleanup
+  * Add constructor
+
+  [ Mohammed Sadiq ]
+  * Move chatty-users class to ‘users’ subdir
+
+  [ Andrea Schaefer ]
+  * Don't show empty listbox
+  * Move dialog- files into subdirectory
+
+  [ Mohammed Sadiq ]
+  * Add chatty-account class
+  * pp-account: Derive from chatty-account
+
+  [ Andrea Schaefer ]
+  * Move lurch functions to dialogs
+  * Code cleanup
+  * Cleanup
+  * Update translations
+  * Update linguas and potfile-sources
+
+  [ Mohammed Sadiq ]
+  * enums: Add ChattyProtocol enum
+  * user: Add ‘protocol’ property
+  * Add chatty-pp-buddy class
+  * account: Add API to add buddy
+  * pp-account: Add API to add buddy
+  * new-chat-dialog: Use new API to add buddy
+  * buddy-list: Remove unused code
+  * Simplify managing accounts created
+
+  [ Andrea Schaefer ]
+  * Create separate class for muc-info dialog
+  * Remove whitespace
+
+  [ Mohammed Sadiq ]
+  * account: Remove unused code
+  * pp-account: Update comment on ‘ui_data’
+  * pp-account: Fix a dangling pointer
+  * new-chat-dialog: Populate account list from pp-account
+  * utils: Add API to remove an item from a GListStore
+  * buddy-list: Remove unused code
+  * conversation: Remove unused code
+  * icons: Remove unused code
+  * connection: Remove unused code
+  * window: Remove unused code
+
+  [ Andrea Schaefer ]
+  * Merge master
+  * Resolve merge conflicts
+
+  [ Mohammed Sadiq ]
+  * pp-account: Add API to get buddy list model
+  * pp-buddy: Add a pointer to self from PurpleBuddy
+  * manager: Add API to load buddies
+
+  [ Ruslan N. Marchenko ]
+  * Dedup forward notification (eg. carbons) as well
+
+  [ Andrea Schaefer ]
+  * Code rework
+  * Add changes according to MR review comments
+  * Fix issue #264 'libpurple is never properly closed'
+  * Disconnect listbox_chats signals
+  * Fix button_header_add ccp issue
+
+  [ Guido Günther ]
+  * conversation: Don't carry on with uninitialized status_msg
+  * chatty-new-chat-dialog: Don't use uninitialized buddy
+  * chatty_pp_account_set_avatar_async: Fix error check
+
+  [ Andrea Schaefer ]
+  * Change names/formatting
+  * Use gtk_widget_set_visible
+  * Add coding conventions
+  * Move action_entries to new_chat_dialog
+  * Change names and formatting
+  * Move popover actions to chatty-window
+  * Remove chatty-popover-actions.*
+  * Replace chatty_utils_get_window in dialog
+  * Change g_autoptr example
+  * Use g_uuid_string_random
+  * Revert "Merge branch 'coding-conventions' into 'master'"
+  * Add password entry icons from Gtk4
+  * Add peek icons to password entries
+
+  [ Guido Günther ]
+  * chatty_icon_get_data_from_image: Don't return without an error set
+  * chatty_icon_get_data_from_image: Don't carry on after errors
+
+  [ Andrea Schaefer ]
+  * Set badge color according to notification mode
+  * Remove dbg-printf
+  * Remove g_strdup
+
+  [ Guido Günther ]
+  * Provide user feedback via libfeedback
+
+  [ Mohammed Sadiq ]
+  * enums: Add CHATTY_PROTOCOL_ANY
+  * pp-account: Fix logic to set protocol
+  * pp-account: Test the right argument on adding buddy
+  * user: Add API to find matches
+  * user: Add API to compare two users
+  * pp-buddy: Implement get_protocols()
+  * pp-buddy: Implement matches()
+  * contrib: Add various list models
+  * Add chatty-contact
+  * Add chatty-contact-provider
+  * manager: Simplify loading buddies
+  * manager: Add API to get active protocols
+  * manager: Create a list of buddies
+  * purple-init: Load buddies after init
+  * manager: Load all folks contacts
+  * folks: Make API to load avatar public
+  * new-chat-dialog: Populate contacts using the new API
+  * manager: Try harder to find associated pp-buddy
+  * Remove obsolete code
+  * manager: Add API to get folks instance
+  * Use new folks API to find contact
+  * add chatty-chat class
+  * manager: Add API to add chat node
+  * buddy-list: Update manager list model on group chat changes
+  * new-chat-dialog: Handle group chat items
+  * manager: Update buddy list on status change
+  * pp-buddy: Add a pointer to self before updating blist
+  * manager: Try harder to avoid duplicate buddies
+  * pp-buddy: Don't add weak pointer to self
+  * pp-buddy: Add to pp-account store when creating buddy
+  * manager: Fix a double free
+  * manager: Don't warn if chat not found on removing
+  * manager: Simplify handling node change
+  * pp-buddy: Add “changed” signal
+  * manager: Emit “changed” signal if buddy detail changes
+  * new-chat-dialog: Update contact row on buddy detail change
+  * window: Move Populating chat list from buddy-list
+  * manager: Fix "active-protocols" property
+  * Move account management to chatty-manager
+  * Remove obsolete code
+  * Rename user class to item
+
+  [ Andrea Schaefer ]
+  * Fix #289 'don't show notifications in active chats'
+
+  [ Mohammed Sadiq ]
+  * chat: Derive from chatty-item
+  * chat: Implement get_name()
+  * chat: Implement get_protocols()
+  * new-chat-dialog: Simplify filtering items
+  * avatar: Mark offline buddy with grey color
+
+  [ Guido Günther ]
+  * README: Mention libfeedback
+  * README: Use a tested list of build dependencies
+
+  [ Mohammed Sadiq ]
+  * contact-provider: Update contact list on change
+  * pp-buddy: Implement get_avatar()
+  * Add chatty-list-row
+  * new-chat-dialog: Use list-row to create buddy row
+  * new-chat-dialog: Remove unused code
+  * contact-provider: Ignore contacts with invalid details
+  * contact: Load and cache more details
+  * list-row: Handle chatty-contact
+  * new-chat-dialog: Simply chatty-contact row
+  * build: Build chatty-icons at library build stage
+  * chat: Implement get_avatar()
+  * folks: Remove unused code
+  * window: Add api to update overlay
+  * connection: Use the new API to update window overlay
+  * window: Simplify updating menu on chat list change
+  * buddy-list: Remove unused code
+  * window: Remove unused code
+  * item: Add get_avatar_asyn()
+  * contact: Implement get_avatar_async()
+  * pp-buddy: Add API to get and set contact
+  * pp-buddy: Add API get buddy id
+  * folks: Add is-ready property
+  * new-chat-dialog: Hide buddies with contact associated
+  * manager: Associate buddies with folks contacts
+  * manager: Set contact for newly added buddies
+
+  [ Andrea Schaefer ]
+  * Bring back OMEMO FPs to user-info
+
+  [ Mohammed Sadiq ]
+  * avatar: Calculate the right text color
+  * avatar: Avoid a padding
+  * buddy-list: Fix a crash
+  * manager: Avoid warning when an account is deleted
+
+  [ Andrea Schaefer ]
+  * Enable direct SMS from contacts search-entry
+  * Evaluate row-type first
+
+  [ Mohammed Sadiq ]
+  * Add documentation
+  * Fix Updating avatar on change
+  * manager: Fix populating active protocols
+
+  [ Andrea Schaefer ]
+  * Don't show empty fingerprint list
+  * Use phonenumber for SMS alias
+  * Fix #292 'dialog on top of the current appliation'
+
+ -- Andrea Schaefer <andrea.schaefer@puri.sm>  Wed, 26 Feb 2020 14:20:32 +0100
+
 chatty (0.1.7) amber-phone; urgency=high
 
   [ Mohammed Sadiq ]
