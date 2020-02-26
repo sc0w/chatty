@@ -606,6 +606,8 @@ chatty_blist_add_buddy_from_uri (const char *uri)
 
   if (contact)
     alias = chatty_item_get_name (CHATTY_ITEM (contact));
+  else
+    alias = uri;
 
   g_return_if_fail (who != NULL);
 
@@ -617,7 +619,7 @@ chatty_blist_add_buddy_from_uri (const char *uri)
     purple_blist_add_buddy (buddy, NULL, NULL, NULL);
   }
 
-  if (!purple_buddy_icons_node_has_custom_icon (PURPLE_BLIST_NODE(buddy))) {
+  if (!purple_buddy_icons_node_has_custom_icon (PURPLE_BLIST_NODE(buddy)) && contact) {
     chatty_folks_set_purple_buddy_data (contact, account, g_strdup (who));
   }
 
