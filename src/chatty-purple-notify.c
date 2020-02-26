@@ -8,6 +8,7 @@
 
 #include <glib/gi18n.h>
 #include "chatty-purple-notify.h"
+#include "chatty-utils.h"
 
 
 static void
@@ -25,12 +26,12 @@ chatty_notify_message (PurpleNotifyMsgType  type,
                        const char          *primary,
                        const char          *secondary)
 {
-  GtkWindow *window;
-  GtkWidget *dialog;
+  ChattyWindow *window;
+  GtkWidget    *dialog;
 
-  window = gtk_application_get_active_window (GTK_APPLICATION (g_application_get_default ()));
+  window = chatty_utils_get_window ();
 
-  dialog = gtk_message_dialog_new (window,
+  dialog = gtk_message_dialog_new (GTK_WINDOW(window),
                                    GTK_DIALOG_MODAL,
                                    GTK_MESSAGE_INFO,
                                    GTK_BUTTONS_NONE,
@@ -49,7 +50,7 @@ chatty_notify_message (PurpleNotifyMsgType  type,
                     G_CALLBACK(cb_message_response_cb),
                     dialog);
 
-  gtk_window_set_transient_for (GTK_WINDOW(dialog), window);
+  gtk_window_set_transient_for (GTK_WINDOW(dialog), GTK_WINDOW(window));
 
   gtk_widget_show_all (dialog);
 
