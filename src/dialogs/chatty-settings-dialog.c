@@ -230,7 +230,7 @@ chatty_settings_add_clicked_cb (ChattySettingsDialog *self)
   else if (is_telegram)
     account = chatty_pp_account_new (CHATTY_PROTOCOL_TELEGRAM, user_id, NULL);
   else /* XMPP */
-    account = chatty_pp_account_new (CHATTY_PROTOCOL_XMPP, user_id, server_url);
+    account = chatty_pp_account_new (CHATTY_PROTOCOL_XMPP, user_id, NULL);
 
   if (password)
     {
@@ -546,8 +546,8 @@ settings_protocol_changed_cb (ChattySettingsDialog *self,
   g_assert (CHATTY_IS_SETTINGS_DIALOG (self));
   g_assert (GTK_IS_TOGGLE_BUTTON (button));
 
-  /* Show URL entry for non-Telegram accounts */
-  gtk_widget_set_visible (self->server_url_entry, button != self->telegram_radio_button);
+  /* Show URL entry only for Matrix accounts */
+  gtk_widget_set_visible (self->server_url_entry, button == self->matrix_radio_button);
 
   if (button == self->xmpp_radio_button)
     gtk_entry_set_text (GTK_ENTRY (self->server_url_entry), "");
