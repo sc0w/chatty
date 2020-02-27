@@ -344,6 +344,9 @@ contact_row_activated_cb (ChattyNewChatDialog *self,
   chatty_window_set_menu_add_contact_button_visible (window, FALSE);
   chatty_window_set_menu_add_in_contacts_button_visible (window, FALSE);
 
+  purple_blist_node_set_bool (node, "chatty-autojoin", TRUE);
+  purple_blist_node_set_bool (node, "chatty-notifications", TRUE);
+
   if (PURPLE_BLIST_NODE_IS_BUDDY(node)) {
     PurpleBuddy *buddy;
 
@@ -371,8 +374,6 @@ contact_row_activated_cb (ChattyNewChatDialog *self,
       chatty_window_set_menu_add_contact_button_visible (window, TRUE);
     }
 
-    purple_blist_node_set_bool (node, "chatty-autojoin", TRUE);
-
     chatty_conv_im_with_buddy (account, purple_buddy_get_name (buddy));
 
     chatty_window_set_new_chat_dialog_visible (window, FALSE);
@@ -382,8 +383,6 @@ contact_row_activated_cb (ChattyNewChatDialog *self,
     chat_name = purple_chat_get_name (chat);
 
     chatty_conv_join_chat (chat);
-
-    purple_blist_node_set_bool (node, "chatty-autojoin", TRUE);
 
     avatar = chatty_icon_get_buddy_icon (node,
                                          NULL,
