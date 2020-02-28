@@ -142,6 +142,9 @@ chatty_request_close (PurpleRequestType  type,
 {
   ChattyRequestData *data = (ChattyRequestData *)ui_handle;
 
+  if (!data)
+    return;
+
   g_free(data->cbs);
   g_free(data->file_name);
 
