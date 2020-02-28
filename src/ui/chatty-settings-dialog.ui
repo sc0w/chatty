@@ -688,9 +688,8 @@
                                 <child type="action">
                                   <object class="GtkEntry" id="server_url_entry">
                                     <property name="activates_default">True</property>
-                                    <property name="placeholder-text">any-xmpp-server</property>
                                     <property name="hexpand">False</property>
-                                    <property name="visible">True</property>
+                                    <property name="visible">False</property>
                                     <property name="halign">end</property>
                                     <property name="valign">center</property>
                                   </object>
