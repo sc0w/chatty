@@ -146,23 +146,7 @@ chatty_pp_account_create (ChattyPpAccount *self)
   else if (protocol == CHATTY_PROTOCOL_TELEGRAM)
     protocol_id = "prpl-telegram";
 
-  if (protocol == CHATTY_PROTOCOL_XMPP)
-    {
-      g_autofree gchar *username = NULL;
-      const char *url_prefix = NULL;
-
-      if (!strchr (self->username, '@'))
-        url_prefix = "@";
-
-      if (url_prefix &&
-          !(self->server_url && *self->server_url))
-        g_return_if_reached ();
-
-      username = self->username;
-      self->username = g_strconcat (username, url_prefix, self->server_url, NULL);
-    }
-
-    self->pp_account = purple_account_new (self->username, protocol_id);
+  self->pp_account = purple_account_new (self->username, protocol_id);
 
     if (protocol == CHATTY_PROTOCOL_MATRIX)
       {
