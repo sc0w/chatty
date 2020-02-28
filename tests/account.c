@@ -76,10 +76,6 @@ test_account_new_xmpp (void)
 {
   ChattyPpAccount *account;
 
-  account = chatty_pp_account_new (CHATTY_PROTOCOL_XMPP, "test", "example.com");
-  test_account (CHATTY_ACCOUNT (account), "prpl-jabber", "test@example.com", FALSE);
-  g_object_unref (account);
-
   account = chatty_pp_account_new (CHATTY_PROTOCOL_XMPP, "test@example.com", NULL);
   test_account (CHATTY_ACCOUNT (account), "prpl-jabber", "test@example.com", FALSE);
   g_object_unref (account);
