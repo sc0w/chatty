@@ -66,6 +66,8 @@ chatty_deps = [
   dependency('libhandy-0.0'),
   dependency('sqlite3', version: '>=3.0.0'),
   dependency('gee-0.8'),
+  dependency('libebook-contacts-1.2'),
+  dependency('libebook-1.2'),
   dependency('folks'),
   libebook_dep,
   libfeedback_dep,

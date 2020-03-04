@@ -2766,11 +2766,11 @@ chatty_conv_new (PurpleConversation *conv)
 
     if (g_strcmp0 (protocol_id, "prpl-mm-sms") == 0) {
       if (buddy == NULL) {
-        ChattyFolks *chatty_folks;
+        ChattyEds *chatty_eds;
         ChattyContact *contact;
 
-        chatty_folks = chatty_manager_get_folks (chatty_manager_get_default ());
-        contact = chatty_folks_find_by_number (chatty_folks, conv_name);
+        chatty_eds = chatty_manager_get_eds (chatty_manager_get_default ());
+        contact = chatty_eds_find_by_number (chatty_eds, conv_name);
 
         if (contact) {
           folks_name = chatty_item_get_name (CHATTY_ITEM (contact));

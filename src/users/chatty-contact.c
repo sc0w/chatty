@@ -18,8 +18,10 @@
 #include <glib/gi18n.h>
 #include <gee-0.8/gee.h>
 #include <folks/folks.h>
+#include <gtk/gtk.h>
 #include <libebook-contacts/libebook-contacts.h>
 
+#include "chatty-icons.h"
 #include "chatty-contact.h"
 #include "chatty-contact-private.h"
 
@@ -36,130 +38,15 @@ struct _ChattyContact
 {
   ChattyItem       parent_instance;
 
-  FolksIndividual *individual;
-  FolksAbstractFieldDetails *detail;
+  EContact        *e_contact;
+  EVCardAttribute *attribute;
+  ChattyProtocol   protocol;
 
-  char *value;
   GdkPixbuf *avatar;
 };
 
 G_DEFINE_TYPE (ChattyContact, chatty_contact, CHATTY_TYPE_ITEM)
 
-static char *
-chatty_contact_check_phonenumber (const char *phone_number)
-{
-  EPhoneNumber      *number;
-  char              *result;
-  g_autoptr(GError)  err = NULL;
-
-  number = e_phone_number_from_string (phone_number, NULL, &err);
-
-  if (!number || !e_phone_number_is_supported ()) {
-    g_debug ("%s %s: %s\n", __func__, phone_number, err->message);
-
-    result = NULL;
-  } else {
-    if (g_strrstr (phone_number, "+")) {
-      result = e_phone_number_to_string (number, E_PHONE_NUMBER_FORMAT_E164);
-    } else {
-      result = e_phone_number_to_string (number, E_PHONE_NUMBER_FORMAT_NATIONAL);
-    }
-  }
-
-  e_phone_number_free (number);
-
-  return result;
-}
-
-
-static void
-load_avatar_finish_cb (GObject      *object,
-                       GAsyncResult *result,
-                       gpointer      user_data)
-{
-  ChattyContact *self = user_data;
-  GLoadableIcon *icon = G_LOADABLE_ICON (object);
-  GInputStream  *stream;
-  g_autoptr(GError) error = NULL;
-
-  g_assert (CHATTY_IS_CONTACT (self));
-
-  stream = g_loadable_icon_load_finish (icon, result, NULL, &error);
-
-  if (error) {
-    g_debug ("Could not load icon: %s", error->message);
-
-    return;
-  }
-
-  self->avatar = gdk_pixbuf_new_from_stream_at_scale (stream,
-                                                      ICON_SIZE,
-                                                      ICON_SIZE,
-                                                      TRUE,
-                                                      NULL,
-                                                      &error);
-  if (error)
-    g_debug ("Could not load icon: %s", error->message);
-  else
-    g_signal_emit_by_name (self, "avatar-changed");
-}
-
-static void
-contact_pixbuf_load_finish_cb (GObject      *object,
-                               GAsyncResult *result,
-                               gpointer      user_data)
-{
-  ChattyContact *self;
-  g_autoptr(GTask) task = user_data;
-  g_autoptr(GError) error = NULL;
-
-  g_assert (G_IS_TASK (task));
-
-  self = g_task_get_source_object (task);
-  g_assert (CHATTY_IS_CONTACT (self));
-
-  self->avatar = gdk_pixbuf_new_from_stream_finish (result, &error);
-
-  if (error) {
-    g_task_return_error (task, error);
-
-    return;
-  }
-
-  g_signal_emit_by_name (self, "avatar-changed");
-  g_task_return_pointer (task, self->avatar, NULL);
-}
-
-static void
-load_avatar_async_finish_cb (GObject      *object,
-                             GAsyncResult *result,
-                             gpointer      user_data)
-{
-  g_autoptr(GTask) task = user_data;
-  GLoadableIcon *icon = G_LOADABLE_ICON (object);
-  GCancellable *cancellable;
-  GInputStream  *stream;
-  g_autoptr(GError) error = NULL;
-
-  g_assert (G_IS_TASK (task));
-
-  stream = g_loadable_icon_load_finish (icon, result, NULL, &error);
-  cancellable = g_task_get_cancellable (task);
-
-  if (error) {
-    g_task_return_error (task, error);
-
-    return;
-  }
-
-  gdk_pixbuf_new_from_stream_at_scale_async (stream,
-                                             ICON_SIZE,
-                                             ICON_SIZE,
-                                             TRUE,
-                                             cancellable,
-                                             contact_pixbuf_load_finish_cb,
-                                             g_steal_pointer (&task));
-}
 
 /* Always assume it’s a phone number, we create only such contacts */
 static ChattyProtocol
@@ -169,10 +56,7 @@ chatty_contact_get_protocols (ChattyItem *item)
 
   g_assert (CHATTY_IS_CONTACT (self));
 
-  if (FOLKS_IS_PHONE_FIELD_DETAILS (self->detail))
-    return CHATTY_PROTOCOL_SMS;
-
-  return CHATTY_PROTOCOL_NONE;
+  return self->protocol;
 }
 
 
@@ -213,10 +97,16 @@ static const char *
 chatty_contact_get_name (ChattyItem *item)
 {
   ChattyContact *self = (ChattyContact *)item;
+  const char *value;
 
   g_assert (CHATTY_IS_CONTACT (self));
 
-  return folks_individual_get_display_name (self->individual);
+  value = e_contact_get_const (self->e_contact, E_CONTACT_FULL_NAME);
+
+  if (!value)
+    value = "";
+
+  return value;
 }
 
 
@@ -224,19 +114,39 @@ static GdkPixbuf *
 chatty_contact_get_avatar (ChattyItem *item)
 {
   ChattyContact *self = (ChattyContact *)item;
-  GLoadableIcon *avatar;
+  g_autoptr(GError) error = NULL;
+  EContactPhoto *photo;
 
   g_assert (CHATTY_IS_CONTACT (self));
 
   if (self->avatar)
     return self->avatar;
 
-  avatar = folks_avatar_details_get_avatar (FOLKS_AVATAR_DETAILS (self->individual));
+  photo = e_contact_get (self->e_contact, E_CONTACT_PHOTO);
 
-  if (avatar)
-    g_loadable_icon_load_async (avatar, ICON_SIZE, NULL, load_avatar_finish_cb, self);
+  if (!photo)
+    return NULL;
 
-  return NULL;
+  if (photo->type == E_CONTACT_PHOTO_TYPE_URI) {
+    g_autoptr(GFileInputStream) stream = NULL;
+    g_autoptr(GFile) file = NULL;
+
+    file = g_file_new_for_uri (e_contact_photo_get_uri (photo));
+    stream = g_file_read (file, NULL, NULL);
+
+    if (stream)
+      self->avatar = gdk_pixbuf_new_from_stream (G_INPUT_STREAM (stream), NULL, NULL);
+  } else {
+    const guchar *data;
+    gsize len;
+
+    data = e_contact_photo_get_inlined (photo, &len);
+
+    if (data)
+      self->avatar = chatty_icon_pixbuf_from_data (data, len);
+  }
+
+  return self->avatar;
 }
 
 static void
@@ -247,27 +157,14 @@ chatty_contact_get_avatar_async (ChattyItem          *item,
 {
   ChattyContact *self = (ChattyContact *)item;
   g_autoptr(GTask) task = NULL;
-  GLoadableIcon *avatar;
 
   g_assert (CHATTY_IS_CONTACT (self));
   g_assert (!cancellable || G_IS_CANCELLABLE (cancellable));
 
   task = g_task_new (self, cancellable, callback, user_data);
 
-  if (self->avatar) {
-    g_task_return_pointer (task, self->avatar, NULL);
-
-    return;
-  }
-
-  avatar = folks_avatar_details_get_avatar (FOLKS_AVATAR_DETAILS (self->individual));
-
-  if (!avatar)
-    g_task_return_pointer (task, NULL, NULL);
-  else
-    g_loadable_icon_load_async (avatar, ICON_SIZE, cancellable,
-                                load_avatar_async_finish_cb,
-                                g_steal_pointer (&task));
+  self->avatar = chatty_contact_get_avatar (item);
+  g_task_return_pointer (task, self->avatar, NULL);
 }
 
 static void
@@ -276,10 +173,6 @@ chatty_contact_finalize (GObject *object)
   ChattyContact *self = (ChattyContact *)object;
 
   g_object_unref (self->avatar);
-  g_free (self->value);
-
-  g_object_unref (self->detail);
-  g_object_unref (self->individual);
 
   G_OBJECT_CLASS (chatty_contact_parent_class)->finalize (object);
 }
@@ -309,32 +202,32 @@ chatty_contact_init (ChattyContact *self)
 
 /**
  * chatty_contact_new:
- * @individual: A #FolksIndividual
- * @detail: (transfer full): A #FolksAbstractFieldDetails
+ * @contact: A #EContact
+ * @attr: (transfer full): A #EvCardAttribute
+ * @protocol: A #ChattyProtocol for the attribute @attr
  *
- * Create a new contact which represents the @detail of
- * the @individual.
+ * Create a new contact which represents the @attr of
+ * the @contact.
  *
- * Currently, only #FolksPhoneFieldDetails is supported
- * as @detail.
+ * Currently, only %CHATTY_PROTOCOL_CALL and %CHATTY_PROTOCOL_SMS
+ * is supported as @protocol.
  *
  * Returns: (transfer full): A #ChattyContact
  */
 ChattyContact *
-chatty_contact_new (FolksIndividual           *individual,
-                    FolksAbstractFieldDetails *detail)
+chatty_contact_new (EContact        *contact,
+                    EVCardAttribute *attr,
+                    ChattyProtocol   protocol)
 {
   ChattyContact *self;
 
-  g_return_val_if_fail (FOLKS_IS_INDIVIDUAL (individual), NULL);
-
   self = g_object_new (CHATTY_TYPE_CONTACT, NULL);
-  self->individual = g_object_ref (individual);
-  self->detail = detail;
+  self->e_contact = g_object_ref (contact);
+  self->attribute = attr;
+  self->protocol  = protocol;
 
   return self;
 }
-
 
 /**
  * chatty_contact_get_value:
@@ -350,27 +243,16 @@ chatty_contact_new (FolksIndividual           *individual,
 const char *
 chatty_contact_get_value (ChattyContact *self)
 {
-  ChattyProtocol protocol;
+  const char *value;
 
   g_return_val_if_fail (CHATTY_IS_CONTACT (self), NULL);
 
-  protocol = chatty_item_get_protocols (CHATTY_ITEM (self));
+  value = e_vcard_attribute_get_value (self->attribute);
 
-  if (!self->value && protocol == CHATTY_PROTOCOL_SMS) {
-    FolksPhoneFieldDetails *phone;
-    g_autofree char *number = NULL;
+  if (!value)
+    value = "";
 
-    phone  = FOLKS_PHONE_FIELD_DETAILS (self->detail);
-    number = folks_phone_field_details_get_normalised (phone);
-
-    self->value = chatty_contact_check_phonenumber (number);
-    g_assert (self->value);
-  }
-
-  if (self->value)
-    return self->value;
-
-  return "";
+  return value;
 }
 
 /**
@@ -386,34 +268,9 @@ chatty_contact_get_value (ChattyContact *self)
 const char *
 chatty_contact_get_value_type (ChattyContact *self)
 {
-  GeeCollection *types;
-  GeeIterator *iter;
-
   g_return_val_if_fail (CHATTY_IS_CONTACT (self), NULL);
 
-  types = folks_abstract_field_details_get_parameter_values (self->detail, "type");
-
-  if (types == NULL)
-    return NULL;
-
-  iter = gee_iterable_iterator (GEE_ITERABLE (types));
-
-  while (gee_iterator_next (iter)) {
-    g_autofree char *type = gee_iterator_get (iter);
-
-    if (g_strcmp0 (type, "cell") == 0)
-      return _("Mobile");
-    if (g_strcmp0 (type, "work") == 0)
-      return _("Work");
-    if (g_strcmp0 (type, "home") == 0)
-      return _("Home");
-    else if (g_strcmp0 (type, "other") == 0)
-      return _("Other");
-  }
-
-  g_object_unref (iter);
-
-  return NULL;
+  return "Work";
 }
 
 
@@ -431,7 +288,7 @@ chatty_contact_get_uid (ChattyContact *self)
 {
   g_return_val_if_fail (CHATTY_IS_CONTACT (self), "");
 
-  return folks_individual_get_id (self->individual);
+  return e_contact_get_const (self->e_contact, E_CONTACT_UID);
 }
 
 
@@ -449,7 +306,7 @@ chatty_contact_get_individual (ChattyContact *self)
 {
   g_return_val_if_fail (CHATTY_IS_CONTACT (self), NULL);
 
-  return self->individual;
+  return NULL;
 }
 
 

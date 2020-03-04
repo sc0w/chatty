@@ -17,146 +17,52 @@
 
 #include <gee-0.8/gee.h>
 #include <folks/folks.h>
-#include <libebook-contacts/libebook-contacts.h>
+#include <libebook/libebook.h>
 
 #include "users/chatty-contact.h"
 #include "users/chatty-contact-private.h"
 #include "chatty-contact-provider.h"
 
 /**
- * SECTION: chatty-folks
- * @title: ChattyFolks
- * @short_description: A Contact List populated with libfolks
- * @include: "chatty-folks.h"
+ * SECTION: chatty-eds
+ * @title: ChattyEds
+ * @short_description: A Contact List populated with evolution-data-server
+ * @include: "chatty-contact-provider.h"
  */
 
-struct _ChattyFolks
+#define PHONE_SEXP    "(contains 'phone' '')"
+#define IM_SEXP       "(contains 'im_jabber' '')"
+#define CHATTY_SEXP   "(or " PHONE_SEXP  IM_SEXP ")"
+
+struct _ChattyEds
 {
-  GObject     parent_instance;
+  GObject           parent_instance;
 
-  GListStore *contact_list;
+  ESourceRegistry  *source_registry;
+  GCancellable     *cancellable;
 
-  FolksIndividualAggregator *folks_aggregator;
-
-  gboolean   is_ready;
+  /* contacts to be saved to contacts_list */
+  GPtrArray        *contacts_array;
+  GListStore       *eds_view_list;
+  GListStore       *contacts_list;
+  guint             providers_to_load;
+  ChattyProtocol    protocols;
+  gboolean          is_ready;
 };
 
-G_DEFINE_TYPE (ChattyFolks, chatty_folks, G_TYPE_OBJECT)
+G_DEFINE_TYPE (ChattyEds, chatty_eds, G_TYPE_OBJECT)
 
 enum {
   PROP_0,
   PROP_IS_READY,
+  PROP_PROTOCOLS,
   N_PROPS
 };
 
 static GParamSpec *properties[N_PROPS];
 
-
-static char *
-chatty_folks_check_phonenumber (const char *phone_number)
-{
-  EPhoneNumber      *number;
-  char              *result;
-  g_autoptr(GError)  err = NULL;
-
-  number = e_phone_number_from_string (phone_number, NULL, &err);
-
-  if (!number || !e_phone_number_is_supported ()) {
-    g_debug ("%s %s: %s\n", __func__, phone_number, err->message);
-
-    result = NULL;
-  } else {
-    if (g_strrstr (phone_number, "+")) {
-      result = e_phone_number_to_string (number, E_PHONE_NUMBER_FORMAT_E164);
-    } else {
-      result = e_phone_number_to_string (number, E_PHONE_NUMBER_FORMAT_NATIONAL);
-    }
-  }
-
-  e_phone_number_free (number);
-
-  return result;
-}
-
-static void
-folks_find_contact_index (ChattyFolks     *self,
-                          FolksIndividual *individual,
-                          guint           *position,
-                          guint           *count)
-{
-  const char *old_id, *id;
-  guint n_items, i;
-
-  g_assert (CHATTY_IS_FOLKS (self));
-  g_assert (FOLKS_IS_INDIVIDUAL (individual));
-  g_assert (position && count);
-
-  n_items = g_list_model_get_n_items (G_LIST_MODEL (self->contact_list));
-  *position = *count = 0;
-
-  for (i = 0; i < n_items; i++) {
-    g_autoptr(ChattyContact) contact = NULL;
-
-    contact = g_list_model_get_item (G_LIST_MODEL (self->contact_list), i);
-    old_id = chatty_contact_get_uid (contact);
-    id = folks_individual_get_id (individual);
-
-    /* The list is sorted. Find the first and last matching item indices. */
-    if (!*count && old_id == id)
-      *position = i, *count = 1;
-    else if (old_id == id)
-      ++*count;
-    else if (*position)
-      break;
-  }
-}
-
-
-static void
-folk_item_changed_cb (ChattyFolks     *self,
-                      GParamSpec      *pspec,
-                      FolksIndividual *individual)
-{
-  guint position, count;
-
-  g_assert (CHATTY_IS_FOLKS (self));
-  g_assert (FOLKS_IS_INDIVIDUAL (individual));
-
-  folks_find_contact_index (self, individual, &position, &count);
-
-  for (guint i = position; i < position + count; i++) {
-    g_autoptr(ChattyContact) contact = NULL;
-
-    contact = g_list_model_get_item (G_LIST_MODEL (self->contact_list), i);
-    chatty_contact_clear_cache (contact);
-  }
-
-  if (count)
-    g_list_model_items_changed (G_LIST_MODEL (self->contact_list),
-                                position, count, count);
-}
-
-
-static void folks_remove_contact (ChattyFolks     *self,
-                                  FolksIndividual *individual);
-static void folks_load_details   (ChattyFolks     *self,
-                                  FolksIndividual *individual,
-                                  GPtrArray       *store);
-static void
-folk_detail_changed_cb (ChattyFolks     *self,
-                        GParamSpec      *pspec,
-                        FolksIndividual *individual)
-{
-  g_assert (CHATTY_IS_FOLKS (self));
-  g_assert (FOLKS_IS_INDIVIDUAL (individual));
-
-  folks_remove_contact (self, individual);
-  folks_load_details (self, individual, NULL);
-}
-
-
 static ChattyContact *
-chatty_contact_provider_matches (ChattyFolks    *self,
+chatty_contact_provider_matches (ChattyEds      *self,
                                  const char     *needle,
                                  ChattyProtocol  protocols,
                                  gboolean        match_name)
@@ -165,7 +71,7 @@ chatty_contact_provider_matches (ChattyFolks    *self,
   guint n_items;
   gboolean match;
 
-  model = G_LIST_MODEL (self->contact_list);
+  model = G_LIST_MODEL (self->contacts_list);
   n_items = g_list_model_get_n_items (model);
 
   for (guint i = 0; i < n_items; i++)
@@ -182,169 +88,302 @@ chatty_contact_provider_matches (ChattyFolks    *self,
   return NULL;
 }
 
-
 static void
-folks_connect_signals (ChattyFolks     *self,
-                       FolksIndividual *individual)
+eds_find_contact_index (ChattyEds  *self,
+                        const char *uid,
+                        guint      *position,
+                        guint      *count)
 {
-  g_signal_connect_object (G_OBJECT (individual),
-                           "notify::avatar",
-                           G_CALLBACK (folk_item_changed_cb),
-                           self, G_CONNECT_SWAPPED);
+  const char *old_uid;
+  guint n_items, i;
+  gboolean match;
 
-  g_signal_connect_object (G_OBJECT (individual),
-                           "notify::display-name",
-                           G_CALLBACK (folk_item_changed_cb),
-                           self, G_CONNECT_SWAPPED);
+  g_assert (CHATTY_IS_EDS (self));
+  g_assert (position && count);
+  g_assert (uid && *uid);
 
-  g_signal_connect_object (G_OBJECT (individual),
-                           "notify::phone-numbers",
-                           G_CALLBACK (folk_detail_changed_cb),
-                           self, G_CONNECT_SWAPPED);
-}
+  n_items = g_list_model_get_n_items (G_LIST_MODEL (self->contacts_list));
+  *position = *count = 0;
 
-static void
-folks_load_details (ChattyFolks     *self,
-                    FolksIndividual *individual,
-                    GPtrArray       *store)
-{
-  GeeIterator *phone_iter;
-  GeeSet *phone_numbers;
-  g_autoptr(GPtrArray) array = NULL;
+  for (i = 0; i < n_items; i++) {
+    g_autoptr(ChattyContact) contact = NULL;
 
-  if (!store) {
-    array = g_ptr_array_new_full (1, g_object_unref);
-    store = array;
+    contact = g_list_model_get_item (G_LIST_MODEL (self->contacts_list), i);
+    old_uid = chatty_contact_get_uid (contact);
+    match = g_str_equal (old_uid, uid);
+
+    /* The list is sorted.  Find the first match and total count. */
+    if (!*count && match)
+      *position = i, *count = 1;
+    else if (match) /* Subsequent matches */
+      ++*count;
+    else if (*position) /* We moved past the last match */
+      break;
   }
-
-  g_object_get (individual, "phone-numbers", &phone_numbers, NULL);
-  phone_iter = gee_iterable_iterator (GEE_ITERABLE (phone_numbers));
-  if (gee_collection_get_is_empty (GEE_COLLECTION (phone_numbers)))
-    return;
-
-  while (gee_iterator_next (phone_iter)) {
-    FolksAbstractFieldDetails *detail;
-    ChattyContact *contact;
-    g_autofree char *value = NULL;
-
-    detail = gee_iterator_get (phone_iter);
-
-    if (FOLKS_IS_PHONE_FIELD_DETAILS (detail)) {
-      FolksPhoneFieldDetails *phone;
-      g_autofree char *number = NULL;
-
-      phone  = FOLKS_PHONE_FIELD_DETAILS (detail);
-      number = folks_phone_field_details_get_normalised (phone);
-      value  = chatty_folks_check_phonenumber (number);
-    }
-
-    if (!FOLKS_IS_PHONE_FIELD_DETAILS (detail) || !value) {
-      g_object_unref (detail);
-
-      continue;
-    }
-
-    contact = chatty_contact_new (individual, detail);
-    g_ptr_array_add (store, contact);
-  }
-
-  if (array)
-    g_list_store_splice (self->contact_list, 0, 0, array->pdata, array->len);
-
-  g_object_unref (phone_iter);
-  g_object_unref (phone_numbers);
 }
 
 
 static void
-folks_remove_contact (ChattyFolks     *self,
-                      FolksIndividual *individual)
+chatty_eds_load_contact (ChattyEds     *self,
+                         EContact      *contact,
+                         EContactField  field_id)
+{
+  g_autoptr(GList) attributes = NULL;
+  ChattyProtocol protocol = 0;
+
+  g_assert (CHATTY_IS_EDS (self));
+  g_assert (E_IS_CONTACT (contact));
+
+  if (field_id == E_CONTACT_TEL) {
+    if (self->protocols & CHATTY_PROTOCOL_CALL)
+      protocol = CHATTY_PROTOCOL_CALL;
+    else
+      protocol = CHATTY_PROTOCOL_SMS;
+  } else if (field_id == E_CONTACT_IM_JABBER) {
+    protocol = CHATTY_PROTOCOL_XMPP;
+  } else {
+    g_warn_if_reached ();
+  }
+
+  attributes = e_contact_get_attributes (contact, field_id);
+
+  for (GSList *l = (GSList *)attributes; l != NULL; l = l->next)
+    g_ptr_array_add (self->contacts_array,
+                     chatty_contact_new (contact, l->data, protocol));
+}
+
+static void
+chatty_eds_remove_contact (ChattyEds  *self,
+                           const char *uid)
 {
   guint position, count;
 
-  g_assert (CHATTY_IS_FOLKS (self));
-  g_assert (FOLKS_IS_INDIVIDUAL (individual));
+  g_assert (CHATTY_IS_EDS (self));
 
-  folks_find_contact_index (self, individual, &position, &count);
+  eds_find_contact_index (self, uid, &position, &count);
 
   if (count)
-    g_list_store_splice (self->contact_list, position, count, NULL, 0);
+    g_list_store_splice (self->contacts_list, position, count, NULL, 0);
 }
 
-
 static void
-folks_individual_changed_cb (ChattyFolks *self,
-                             GeeMultiMap *changes)
+chatty_eds_objects_added_cb (ChattyEds       *self,
+                             const GSList    *objects,
+                             EBookClientView *view)
 {
-  GeeMapIterator *iter;
-  g_autoptr(GPtrArray) added = NULL;
-  g_autoptr(GPtrArray) removed = NULL;
+  g_assert (CHATTY_IS_EDS (self));
+  g_assert (E_IS_BOOK_CLIENT_VIEW (view));
 
-  g_assert (CHATTY_IS_FOLKS (self));
+  if (!self->contacts_array)
+    self->contacts_array = g_ptr_array_new_full (100, g_object_unref);
 
-  iter = gee_multi_map_map_iterator (changes);
-  added = g_ptr_array_new_full (1, g_object_unref);
-  removed = g_ptr_array_new_full (1, g_object_unref);
+  for (GSList *l = (GSList *)objects; l != NULL; l = l->next)
+    {
+      if (self->protocols & CHATTY_PROTOCOL_SMS ||
+          self->protocols & CHATTY_PROTOCOL_CALL)
+        chatty_eds_load_contact (self, l->data, E_CONTACT_TEL);
 
-  while (gee_map_iterator_next (iter)) {
-    FolksIndividual *key, *value;
-
-    key = gee_map_iterator_get_key (iter);
-    value = gee_map_iterator_get_value (iter);
-
-    if (key && !g_ptr_array_find (removed, key, NULL))
-      g_ptr_array_add (removed, key);
-
-    if (value && !g_ptr_array_find (added, value, NULL))
-      g_ptr_array_add (added, value);
-  }
-
-  for (guint i = 0; i < removed->len; i++)
-    folks_remove_contact (self, removed->pdata[i]);
-
-  for (guint i = 0; i < added->len; i++) {
-    folks_load_details (self, added->pdata[i], NULL);
-    folks_connect_signals (self, added->pdata[i]);
-  }
+      if (self->protocols & CHATTY_PROTOCOL_XMPP)
+        chatty_eds_load_contact (self, l->data, E_CONTACT_IM_JABBER);
+    }
 }
 
+static void
+chatty_eds_objects_modified_cb (ChattyEds       *self,
+                                const GSList    *objects,
+                                EBookClientView *view)
+{
+  g_assert (CHATTY_IS_EDS (self));
+  g_assert (E_IS_BOOK_CLIENT_VIEW (view));
+
+  for (GSList *l = (GSList *)objects; l != NULL; l = l->next)
+    chatty_eds_remove_contact (self, e_contact_get_const (l->data, E_CONTACT_UID));
+
+  chatty_eds_objects_added_cb (self, objects, view);
+}
 
 static void
-folks_aggregator_is_quiescent_cb (ChattyFolks *self)
+chatty_eds_objects_removed_cb (ChattyEds       *self,
+                               const GSList    *objects,
+                               EBookClientView *view)
 {
-  GeeMap *individuals;
-  GeeMapIterator *iter;
+  g_assert (CHATTY_IS_EDS (self));
+  g_assert (E_IS_BOOK_CLIENT_VIEW (view));
+
+  for (GSList *node = (GSList *)objects; node; node = node->next)
+    chatty_eds_remove_contact (self, node->data);
+}
+
+static void
+chatty_eds_load_complete_cb (ChattyEds *self)
+{
   g_autoptr(GPtrArray) array = NULL;
 
-  g_assert (CHATTY_IS_FOLKS (self));
+  if (!self->contacts_array || !self->contacts_array->len)
+    return;
 
-  individuals = folks_individual_aggregator_get_individuals (self->folks_aggregator);
-  iter = gee_map_map_iterator (individuals);
-  array = g_ptr_array_new_full (100, g_object_unref);
+  array = g_steal_pointer (&self->contacts_array);
+  g_list_store_splice (self->contacts_list, 0, 0, array->pdata, array->len);
 
-  while (gee_map_iterator_next (iter)) {
-    folks_load_details (self, gee_map_iterator_get_value (iter), array);
-    folks_connect_signals (self, gee_map_iterator_get_value (iter));
-  }
-
-  g_list_store_splice (self->contact_list, 0, 0, array->pdata, array->len);
-  g_object_unref (iter);
-
-  g_signal_connect_object (self->folks_aggregator,
-                           "individuals-changed-detailed",
-                           G_CALLBACK (folks_individual_changed_cb),
-                           self, G_CONNECT_SWAPPED);
   self->is_ready = TRUE;
   g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_IS_READY]);
 }
 
 static void
-chatty_folks_get_property (GObject    *object,
-                           guint       prop_id,
-                           GValue     *value,
-                           GParamSpec *pspec)
+chatty_eds_get_view_cb (GObject      *object,
+                        GAsyncResult *result,
+                        gpointer      user_data)
 {
-  ChattyFolks *self = (ChattyFolks *)object;
+  g_autoptr(ChattyEds) self = user_data;
+  EBookClient *client = E_BOOK_CLIENT (object);
+  EBookClientView *client_view;
+  g_autoptr(GError) error = NULL;
+
+  g_assert (CHATTY_IS_EDS (self));
+  g_assert (E_IS_BOOK_CLIENT (client));
+
+  e_book_client_get_view_finish (E_BOOK_CLIENT (client), result, &client_view, &error);
+
+  if (error)
+    {
+      if (!g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
+        g_warning ("Error: %s", error->message);
+
+      return;
+    }
+
+  g_list_store_append (self->eds_view_list, client_view);
+  g_object_unref (client_view);
+
+  g_signal_connect_object (client_view, "objects-added",
+                           G_CALLBACK (chatty_eds_objects_added_cb), self,
+                           G_CONNECT_SWAPPED);
+  g_signal_connect_object (client_view, "objects-modified",
+                           G_CALLBACK (chatty_eds_objects_modified_cb), self,
+                           G_CONNECT_SWAPPED);
+  g_signal_connect_object (client_view, "objects-removed",
+                           G_CALLBACK (chatty_eds_objects_removed_cb), self,
+                           G_CONNECT_SWAPPED);
+  g_signal_connect_object (client_view, "complete",
+                           G_CALLBACK (chatty_eds_load_complete_cb), self,
+                           G_CONNECT_SWAPPED);
+
+  e_book_client_view_start (client_view, &error);
+
+  if (error)
+    g_warning ("Error: %s", error->message);
+}
+
+static void
+chatty_eds_client_connected_cb (GObject      *object,
+                                GAsyncResult *result,
+                                gpointer      user_data)
+{
+  g_autoptr(ChattyEds) self = user_data;
+  EClient *client;
+  g_autoptr(GError) error = NULL;
+  const char *sexp;
+
+  g_assert (CHATTY_IS_EDS (self));
+
+  client = e_book_client_connect_finish (result, &error);
+
+  if (!error)
+    {
+      ESourceOffline *extension;
+      ESource *source;
+
+      source = e_client_get_source (client);
+      extension = e_source_get_extension (source, E_SOURCE_EXTENSION_OFFLINE);
+      e_source_offline_set_stay_synchronized (extension, TRUE);
+      e_source_registry_commit_source_sync (self->source_registry, source,
+                                            self->cancellable, &error);
+    }
+
+  if (error)
+    {
+      if (!g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
+        g_warning ("Error: %s", error->message);
+
+      return;
+    }
+
+  if (self->protocols & CHATTY_PROTOCOL_CALL)
+    sexp = PHONE_SEXP;
+  else
+    sexp = CHATTY_SEXP;
+
+  e_book_client_get_view (E_BOOK_CLIENT (client),
+                          sexp,
+                          NULL,
+                          chatty_eds_get_view_cb,
+                          g_object_ref (self));
+}
+
+
+static void
+chatty_eds_load_contacts (ChattyEds *self)
+{
+  GList *sources;
+
+  g_assert (CHATTY_IS_EDS (self));
+  g_assert (E_IS_SOURCE_REGISTRY (self->source_registry));
+
+  sources = e_source_registry_list_sources (self->source_registry,
+                                            E_SOURCE_EXTENSION_ADDRESS_BOOK);
+
+  for (GList *l = sources; l != NULL; l = l->next)
+    {
+      self->providers_to_load++;
+      e_book_client_connect (l->data,
+                             -1,    /* timeout seconds */
+                             NULL,
+                             chatty_eds_client_connected_cb,
+                             g_object_ref (self));
+    }
+
+  g_list_free_full (sources, g_object_unref);
+}
+
+
+static void
+chatty_eds_registry_new_finish_cb (GObject      *object,
+                                   GAsyncResult *result,
+                                   gpointer      user_data)
+{
+  g_autoptr(ChattyEds) self = user_data;
+  g_autoptr(GError) error = NULL;
+
+  g_assert (CHATTY_IS_EDS (self));
+
+  self->source_registry = e_source_registry_new_finish (result, &error);
+
+  if (!error)
+    chatty_eds_load_contacts (self);
+  else if (!g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
+    g_warning ("Error: %s", error->message);
+}
+
+
+static void
+chatty_eds_load (ChattyEds *self)
+{
+  g_assert (CHATTY_IS_EDS (self));
+  g_assert (G_IS_CANCELLABLE (self->cancellable));
+
+  e_source_registry_new (self->cancellable,
+                         chatty_eds_registry_new_finish_cb,
+                         g_object_ref (self));
+}
+
+
+static void
+chatty_eds_get_property (GObject    *object,
+                         guint       prop_id,
+                         GValue     *value,
+                         GParamSpec *pspec)
+{
+  ChattyEds *self = (ChattyEds *)object;
 
   switch (prop_id)
     {
@@ -357,30 +396,67 @@ chatty_folks_get_property (GObject    *object,
     }
 }
 
+
 static void
-chatty_folks_finalize (GObject *object)
+chatty_eds_set_property (GObject      *object,
+                         guint         prop_id,
+                         const GValue *value,
+                         GParamSpec   *pspec)
 {
-  ChattyFolks *self = (ChattyFolks *)object;
+  ChattyEds *self = (ChattyEds *)object;
 
-  g_clear_object (&self->contact_list);
+  switch (prop_id)
+    {
+    case PROP_PROTOCOLS:
+      self->protocols = g_value_get_int (value);
+      break;
 
-  G_OBJECT_CLASS (chatty_folks_parent_class)->finalize (object);
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+    }
 }
 
 
 static void
-chatty_folks_class_init (ChattyFolksClass *klass)
+chatty_eds_constructed (GObject *object)
+{
+  ChattyEds *self = (ChattyEds *)object;
+
+  G_OBJECT_CLASS (chatty_eds_parent_class)->constructed (object);
+
+  chatty_eds_load (self);
+}
+
+
+static void
+chatty_eds_finalize (GObject *object)
+{
+  ChattyEds *self = (ChattyEds *)object;
+
+  g_cancellable_cancel (self->cancellable);
+  g_clear_object (&self->cancellable);
+
+  G_OBJECT_CLASS (chatty_eds_parent_class)->finalize (object);
+}
+
+
+static void
+chatty_eds_class_init (ChattyEdsClass *klass)
 {
   GObjectClass *object_class  = G_OBJECT_CLASS (klass);
 
-  object_class->get_property = chatty_folks_get_property;
-  object_class->finalize = chatty_folks_finalize;
+  object_class->get_property = chatty_eds_get_property;
+  object_class->set_property = chatty_eds_set_property;
+  object_class->constructed  = chatty_eds_constructed;
+  object_class->finalize = chatty_eds_finalize;
 
   /**
-   * ChattyFolks:is-ready:
+   * ChattyEds:is-ready:
    *
    * Emitted when the contact provider is ready and all contacts
-   * are initially loaded.
+   * from at least one provider has loaded.
+   * The property change may be notified multiple times as new
+   * providers are loaded.
    */
   properties[PROP_IS_READY] =
     g_param_spec_boolean ("is-ready",
@@ -389,60 +465,83 @@ chatty_folks_class_init (ChattyFolksClass *klass)
                           FALSE,
                           G_PARAM_READABLE | G_PARAM_STATIC_STRINGS);
 
+  /**
+   * ChattyEds:protocols:
+   *
+   * Matching protocols for the contacts to be loaded.
+   */
+  properties[PROP_PROTOCOLS] =
+    g_param_spec_int ("protocols",
+                      "Protocols",
+                      "Protocols to be loaded from contact",
+                      CHATTY_PROTOCOL_NONE,
+                      CHATTY_PROTOCOL_XMPP,
+                      CHATTY_PROTOCOL_NONE,
+                      G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY | G_PARAM_STATIC_STRINGS);
+
   g_object_class_install_properties (object_class, N_PROPS, properties);
 }
 
 
 static void
-chatty_folks_init (ChattyFolks *self)
+chatty_eds_init (ChattyEds *self)
 {
-  self->contact_list = g_list_store_new (CHATTY_TYPE_CONTACT);
-  self->folks_aggregator = folks_individual_aggregator_dup ();
-
-  g_signal_connect_object (self->folks_aggregator,
-                           "notify::is-quiescent",
-                           G_CALLBACK (folks_aggregator_is_quiescent_cb),
-                           self, G_CONNECT_SWAPPED);
-
-  folks_individual_aggregator_prepare (self->folks_aggregator, NULL, NULL);
+  self->eds_view_list = g_list_store_new (E_TYPE_BOOK_CLIENT_VIEW);
+  self->contacts_list = g_list_store_new (CHATTY_TYPE_CONTACT);
+  self->cancellable = g_cancellable_new ();
 }
 
 
 /**
- * chatty_folks_new:
+ * chatty_eds_new:
+ * @protocols: #ChattyProtocol flag
  *
- * Create a New Contact Provider.  Call this function only
- * once and reuse the #ChattyFolks for further use.
+ * Create a new contact provider.  Call this function only
+ * once and reuse the #ChattyEds for further use.
  *
- * Returns: (transfer full): A #ChattyFolks
+ * @protocols should contain all the protocols to be loaded
+ * from the contacts found.  Load all protocols at once even
+ * if you don't require now, but may be required later.
+ *
+ * Say for example: You may not require XMPP contacts
+ * if the network is down, but you may require them when
+ * network is up.  So, regardless of the network state,
+ * always load XMPP contacts and filter it out when not
+ * needed.
+ *
+ * Returns: (transfer full): A #ChattyEds
  */
-ChattyFolks *
-chatty_folks_new (void)
+ChattyEds *
+chatty_eds_new (ChattyProtocol protocols)
 {
-  return g_object_new (CHATTY_TYPE_FOLKS, NULL);
+  return g_object_new (CHATTY_TYPE_EDS,
+                       "protocols", protocols,
+                       NULL);
 }
 
+
 /**
- * chatty_folks_is_ready:
- * @self: A #ChattyFolks
+ * chatty_eds_is_ready:
+ * @self: A #ChattyEds
  *
- * Get if the contact provider is ready and all
- * contacts are initially loaded.
+ * Get if the contact provider is ready and loading
+ * of at least one provider is complete.
  *
  * Returns: %TRUE if @self is ready for use.
  * %FALSE otherwise
  */
 gboolean
-chatty_folks_is_ready (ChattyFolks *self)
+chatty_eds_is_ready (ChattyEds  *self)
 {
-  g_return_val_if_fail (CHATTY_IS_FOLKS (self), FALSE);
+  g_return_val_if_fail (CHATTY_IS_EDS (self), FALSE);
 
   return self->is_ready;
 }
 
+
 /**
- * chatty_folks_get_model:
- * @self: A #ChattyFolks
+ * chatty_eds_get_model:
+ * @self: A #ChattyEds
  *
  * Get A #GListModel that contains all the
  * #ChattyContact loaded.
@@ -450,49 +549,30 @@ chatty_folks_is_ready (ChattyFolks *self)
  * Returns: (transfer none): A #GListModel.
  */
 GListModel *
-chatty_folks_get_model (ChattyFolks *self)
+chatty_eds_get_model (ChattyEds *self)
 {
-  g_return_val_if_fail (CHATTY_IS_FOLKS (self), NULL);
+  g_return_val_if_fail (CHATTY_IS_EDS (self), NULL);
 
-  return G_LIST_MODEL (self->contact_list);
+  return G_LIST_MODEL (self->contacts_list);
 }
 
 
 /**
- * chatty_folks_find_by_name:
- * @self: A #ChattyFolks
- * @name: A Valid string to search
- *
- * Find the first #ChattyContact matching @name.
- *
- * Returns: (transfer none): A #ChattyContact.
- */
-ChattyContact *
-chatty_folks_find_by_name (ChattyFolks *self,
-                           const char  *name)
-{
-  g_return_val_if_fail (CHATTY_IS_FOLKS (self), NULL);
-
-  return chatty_contact_provider_matches (self, name, CHATTY_PROTOCOL_ANY, TRUE);
-}
-
-
-/**
- * chatty_folks_find_by_name:
- * @self: A #ChattyFolks
+ * chatty_eds_find_by_number:
+ * @self: A #ChattyEds
  * @phone_number: A Valid Phone number to match
  *
  * Find the first #ChattyContact matching @phone_number.
  * A match can be either exact or one excluding the
  * country prefix (Eg: +1987654321 and 987654321 matches)
  *
- * Returns: (transfer none): A #ChattyContact.
+ * Returns: (transfer none) (nullable): A #ChattyContact.
  */
 ChattyContact *
-chatty_folks_find_by_number (ChattyFolks *self,
-                             const char  *phone_number)
+chatty_eds_find_by_number (ChattyEds  *self,
+                           const char *phone_number)
 {
-  g_return_val_if_fail (CHATTY_IS_FOLKS (self), NULL);
+  g_return_val_if_fail (CHATTY_IS_EDS (self), NULL);
 
   return chatty_contact_provider_matches (self, phone_number, CHATTY_PROTOCOL_ANY, FALSE);
 }

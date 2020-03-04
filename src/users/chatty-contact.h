@@ -13,6 +13,7 @@
 
 #include <glib-object.h>
 #include <folks/folks.h>
+#include <libebook-contacts/libebook-contacts.h>
 
 #include "users/chatty-item.h"
 #include "chatty-enums.h"
@@ -23,8 +24,9 @@ G_BEGIN_DECLS
 
 G_DECLARE_FINAL_TYPE (ChattyContact, chatty_contact, CHATTY, CONTACT, ChattyItem)
 
-ChattyContact     *chatty_contact_new                   (FolksIndividual           *individual,
-                                                         FolksAbstractFieldDetails *detail);
+ChattyContact     *chatty_contact_new                   (EContact          *contact,
+                                                         EVCardAttribute   *attr,
+                                                         ChattyProtocol     protocol);
 const char        *chatty_contact_get_value             (ChattyContact     *self);
 const char        *chatty_contact_get_value_type        (ChattyContact     *self);
 const char        *chatty_contact_get_uid               (ChattyContact     *self);

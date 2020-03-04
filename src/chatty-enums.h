@@ -34,10 +34,11 @@ typedef enum
   CHATTY_PROTOCOL_NONE     = 0,
   CHATTY_PROTOCOL_SMS      = 1 << 0,
   CHATTY_PROTOCOL_MMS      = 1 << 1,
-  CHATTY_PROTOCOL_XMPP     = 1 << 2,
-  CHATTY_PROTOCOL_MATRIX   = 1 << 3,
-  CHATTY_PROTOCOL_TELEGRAM = 1 << 4,
-  CHATTY_PROTOCOL_DELTA    = 1 << 5, /* prpl-delta */
-  CHATTY_PROTOCOL_THREEPL  = 1 << 6, /* prpl-threepl */
+  CHATTY_PROTOCOL_CALL     = 1 << 2,
+  CHATTY_PROTOCOL_XMPP     = 1 << 3,
+  CHATTY_PROTOCOL_MATRIX   = 1 << 4,
+  CHATTY_PROTOCOL_TELEGRAM = 1 << 5,
+  CHATTY_PROTOCOL_DELTA    = 1 << 6, /* prpl-delta */
+  CHATTY_PROTOCOL_THREEPL  = 1 << 7, /* prpl-threepl */
   CHATTY_PROTOCOL_ANY      = ~0
 } ChattyProtocol;

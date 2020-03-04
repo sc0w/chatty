@@ -201,12 +201,12 @@ window_chat_row_activated_cb (GtkListBox    *box,
     chatty_window_set_header_chat_info_button_visible (window, FALSE);
 
     if (chatty_blist_protocol_is_sms (account)) {
-      ChattyFolks *chatty_folks;
+      ChattyEds *chatty_eds;
       ChattyContact *contact;
 
-      chatty_folks = chatty_manager_get_folks (chatty_manager_get_default ());
+      chatty_eds = chatty_manager_get_eds (chatty_manager_get_default ());
       number = purple_buddy_get_name (buddy);
-      contact = chatty_folks_find_by_number (chatty_folks, number);
+      contact = chatty_eds_find_by_number (chatty_eds, number);
 
       if (!contact) {
         chatty_window_set_menu_add_in_contacts_button_visible (window, TRUE);
