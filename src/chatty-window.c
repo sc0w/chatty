@@ -958,12 +958,3 @@ chatty_window_get_convs_notebook (ChattyWindow *self)
 
   return self->convs_notebook;
 }
-
-
-GtkWidget *
-chatty_window_get_new_chat_dialog (ChattyWindow *self)
-{
-  g_return_val_if_fail (CHATTY_IS_WINDOW (self), NULL);
-
-  return self->new_chat_dialog;
-}

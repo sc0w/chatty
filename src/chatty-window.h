@@ -85,7 +85,6 @@ void chatty_window_update_sub_header_titlebar (ChattyWindow *self, GdkPixbuf *ic
 
 GtkWidget *chatty_window_get_chats_listbox (ChattyWindow *self);
 GtkWidget *chatty_window_get_convs_notebook (ChattyWindow *self);
-GtkWidget *chatty_window_get_new_chat_dialog (ChattyWindow *self);
 const char *chatty_window_get_uri (ChattyWindow *self);
 
 void chatty_window_set_overlay_visible (ChattyWindow *self, gboolean visible);
