@@ -12,7 +12,6 @@
 #include <glib/gi18n.h>
 #include <glib-object.h>
 #include "chatty-window.h"
-#include "chatty-dialogs.h"
 #include "users/chatty-pp-account.h"
 #include "chatty-buddy-list.h"
 #include "chatty-dbus.h"

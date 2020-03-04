@@ -30,7 +30,6 @@ chatty_sources = [
   'chatty-manager.c',
   'chatty-application.c',
   'chatty-window.c',
-  'dialogs/chatty-dialogs.c',
   'dialogs/chatty-settings-dialog.c',
   'dialogs/chatty-new-chat-dialog.c',
   'dialogs/chatty-new-muc-dialog.c',

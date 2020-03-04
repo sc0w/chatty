@@ -23,7 +23,6 @@
 #include "chatty-manager.h"
 #include "chatty-purple-init.h"
 #include "chatty-icons.h"
-#include "dialogs/chatty-dialogs.h"
 #include "dialogs/chatty-settings-dialog.h"
 #include "dialogs/chatty-new-chat-dialog.h"
 #include "dialogs/chatty-new-muc-dialog.h"

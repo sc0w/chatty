@@ -15,7 +15,7 @@
 #include <glib-object.h>
 #include "chatty-window.h"
 #include "chatty-manager.h"
-#include "chatty-dialogs.h"
+#include "chatty-conversation.h"
 #include "chatty-chat.h"
 #include "users/chatty-contact.h"
 #include "contrib/gtk.h"
