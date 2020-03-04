@@ -270,7 +270,14 @@ chatty_contact_get_value_type (ChattyContact *self)
 {
   g_return_val_if_fail (CHATTY_IS_CONTACT (self), NULL);
 
-  return "Work";
+  if (e_vcard_attribute_has_type (self->attribute, "cell"))
+    return _("Mobile");
+  if (e_vcard_attribute_has_type (self->attribute, "work"))
+    return _("Work");
+  if (e_vcard_attribute_has_type (self->attribute, "other"))
+    return _("Other");
+
+  return NULL;
 }
 
 
