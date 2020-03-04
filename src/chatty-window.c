@@ -654,6 +654,7 @@ chatty_window_set_property (GObject      *object,
       break;
 
     case PROP_URI:
+      g_free (self->uri);
       self->uri = g_value_dup_string (value);
       break;
 
