@@ -244,7 +244,7 @@ chatty_utils_check_phonenumber (const char *phone_number)
     if (g_strrstr (phone_number, "+")) {
       result = e_phone_number_to_string (number, E_PHONE_NUMBER_FORMAT_E164);
     } else {
-      result = e_phone_number_get_national_number (number);
+      result = e_phone_number_to_string (number, E_PHONE_NUMBER_FORMAT_NATIONAL);
     }
   }
 
