@@ -12,7 +12,6 @@
 #include <glib/gi18n.h>
 #include <glib-object.h>
 #include "chatty-window.h"
-#include "chatty-dialogs.h"
 #include "chatty-manager.h"
 #include "users/chatty-pp-account.h"
 #include "chatty-utils.h"
@@ -62,13 +61,45 @@ static void chatty_user_info_dialog_set_encrypt (ChattyUserInfoDialog *self, gbo
 static void chatty_info_dialog_get_encrypt_status (ChattyUserInfoDialog *self);
 
 
+/* Copied from chatty-dialogs.c written by Andrea Schäfer <mosibasu@me.com> */
+static char *
+show_select_avatar_dialog (ChattyUserInfoDialog *self)
+{
+  GtkFileChooserNative *dialog;
+  gchar                *file_name;
+  int                   response;
+
+  dialog = gtk_file_chooser_native_new (_("Set Avatar"),
+                                        GTK_WINDOW (self),
+                                        GTK_FILE_CHOOSER_ACTION_OPEN,
+                                        _("Open"),
+                                        _("Cancel"));
+
+  gtk_file_chooser_set_current_folder (GTK_FILE_CHOOSER (dialog), getenv ("HOME"));
+
+  // TODO: add preview widget when available in portrait mode
+
+  response = gtk_native_dialog_run (GTK_NATIVE_DIALOG (dialog));
+
+  if (response == GTK_RESPONSE_ACCEPT) {
+    file_name = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (dialog));
+  } else {
+    file_name = NULL;
+  }
+
+  g_object_unref (dialog);
+
+  return file_name;
+}
+
+
 static void
 button_avatar_clicked_cb (ChattyUserInfoDialog *self)
 {
   PurpleContact *contact;
   char          *file_name = NULL;
   
-  file_name = chatty_dialogs_show_dialog_load_avatar ();
+  file_name = show_select_avatar_dialog (self);
 
   if (file_name) {
     contact = purple_buddy_get_contact (self->buddy);

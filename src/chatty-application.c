@@ -155,7 +155,6 @@ chatty_application_startup (GApplication *application)
 
   self->daemon = FALSE;
 
-  self->uri = NULL;
   chatty_manager_get_default ();
 
   G_APPLICATION_CLASS (chatty_application_parent_class)->startup (application);

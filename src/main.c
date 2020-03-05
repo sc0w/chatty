@@ -33,7 +33,6 @@ main (int   argc,
   lfb_init (CHATTY_APP_ID, NULL);
   application = chatty_application_new ();
 
-  srand(time(NULL));
   chatty_history_open();
 
   status = g_application_run (G_APPLICATION (application), argc, argv);

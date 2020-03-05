@@ -23,7 +23,6 @@
 #include "chatty-manager.h"
 #include "chatty-purple-init.h"
 #include "chatty-icons.h"
-#include "dialogs/chatty-dialogs.h"
 #include "dialogs/chatty-settings-dialog.h"
 #include "dialogs/chatty-new-chat-dialog.h"
 #include "dialogs/chatty-new-muc-dialog.h"
@@ -451,6 +450,50 @@ chatty_window_show_chat_info (ChattyWindow *self)
 }
 
 
+/* Copied from chatty-dialogs.c written by Andrea Schäfer <mosibasu@me.com> */
+static void
+chatty_window_show_about_dialog (ChattyWindow *self)
+{
+  static const gchar *authors[] = {
+    "Adrien Plazas <kekun.plazas@laposte.net>",
+    "Andrea Schäfer <mosibasu@me.com>",
+    "Benedikt Wildenhain <benedikt.wildenhain@hs-bochum.de>",
+    "Guido Günther <agx@sigxcpu.org>",
+    "Julian Sparber <jsparber@gnome.org>",
+    "Leland Carlye <leland.carlye@protonmail.com>",
+    "Mohammed Sadiq https://www.sadiqpk.org/",
+    "Richard Bayerle (OMEMO Plugin) https://github.com/gkdr/lurch",
+    "Ruslan Marchenko <me@ruff.mobi>",
+    "and more...",
+    NULL
+  };
+
+  static const gchar *artists[] = {
+    "Tobias Bernard <tbernard@gnome.org>",
+    NULL
+  };
+
+  static const gchar *documenters[] = {
+    "Heather Ellsworth <heather.ellsworth@puri.sm>",
+    NULL
+  };
+
+  gtk_show_about_dialog (GTK_WINDOW (self),
+                         "logo-icon-name", CHATTY_APP_ID,
+                         "program-name", _("Chats"),
+                         "version", GIT_VERSION,
+                         "comments", _("An SMS and XMPP messaging client"),
+                         "website", "https://source.puri.sm/Librem5/chatty",
+                         "copyright", "© 2018 Purism SPC",
+                         "license-type", GTK_LICENSE_GPL_3_0,
+                         "authors", authors,
+                         "artists", artists,
+                         "documenters", documenters,
+                         "translator-credits", _("translator-credits"),
+                         NULL);
+}
+
+
 void
 chatty_window_change_view (ChattyWindow      *self,
                            ChattyWindowState  view)
@@ -462,7 +505,7 @@ chatty_window_change_view (ChattyWindow      *self,
       chatty_window_show_settings_dialog (self);
       break;
     case CHATTY_VIEW_ABOUT_CHATTY:
-      chatty_dialogs_show_dialog_about_chatty ();
+      chatty_window_show_about_dialog (self);
       break;
     case CHATTY_VIEW_JOIN_CHAT:
       chatty_window_show_new_muc_dialog (self);
@@ -654,6 +697,7 @@ chatty_window_set_property (GObject      *object,
       break;
 
     case PROP_URI:
+      g_free (self->uri);
       self->uri = g_value_dup_string (value);
       break;
 
@@ -956,13 +1000,4 @@ chatty_window_get_convs_notebook (ChattyWindow *self)
   g_return_val_if_fail (CHATTY_IS_WINDOW (self), NULL);
 
   return self->convs_notebook;
-}
-
-
-GtkWidget *
-chatty_window_get_new_chat_dialog (ChattyWindow *self)
-{
-  g_return_val_if_fail (CHATTY_IS_WINDOW (self), NULL);
-
-  return self->new_chat_dialog;
 }
