@@ -40,7 +40,7 @@ struct _ChattyManager
 {
   GObject          parent_instance;
 
-  ChattyFolks     *chatty_folks;
+  ChattyEds       *chatty_eds;
   GListStore      *account_list;
   GListStore      *chat_list;
   GListStore      *list_of_user_list;
@@ -89,7 +89,7 @@ static guint signals[N_SIGNALS];
 
 
 static void
-manager_folks_is_ready (ChattyManager *self)
+manager_eds_is_ready (ChattyManager *self)
 {
   GListModel *accounts, *model;
   ChattyContact *contact;
@@ -120,7 +120,10 @@ manager_folks_is_ready (ChattyManager *self)
       buddy = g_list_model_get_item (model, j);
       id = chatty_pp_buddy_get_id (buddy);
 
-      contact = chatty_folks_find_by_number (self->chatty_folks, id);
+      if (chatty_pp_buddy_get_contact (buddy))
+        continue;
+
+      contact = chatty_eds_find_by_number (self->chatty_eds, id);
 
       chatty_pp_buddy_set_contact (buddy, contact);
     }
@@ -311,7 +314,7 @@ manager_buddy_added_cb (PurpleBuddy   *pp_buddy,
     buddy = chatty_pp_account_add_purple_buddy (account, pp_buddy);
 
   id = chatty_pp_buddy_get_id (buddy);
-  contact = chatty_folks_find_by_number (self->chatty_folks, id);
+  contact = chatty_eds_find_by_number (self->chatty_eds, id);
   chatty_pp_buddy_set_contact (buddy, contact);
 }
 
@@ -777,7 +780,7 @@ chatty_manager_class_init (ChattyManagerClass *klass)
 static void
 chatty_manager_init (ChattyManager *self)
 {
-  self->chatty_folks = chatty_folks_new ();
+  self->chatty_eds = chatty_eds_new (CHATTY_PROTOCOL_SMS);
 
   self->account_list = g_list_store_new (CHATTY_TYPE_PP_ACCOUNT);
   self->chat_list = g_list_store_new (CHATTY_TYPE_CHAT);
@@ -786,10 +789,10 @@ chatty_manager_init (ChattyManager *self)
                                                    G_LIST_MODEL (self->list_of_user_list));
   g_list_store_append (self->list_of_user_list, G_LIST_MODEL (self->chat_list));
   g_list_store_append (self->list_of_user_list,
-                       chatty_folks_get_model (self->chatty_folks));
+                       chatty_eds_get_model (self->chatty_eds));
 
-  g_signal_connect_object (self->chatty_folks, "notify::is-ready",
-                           G_CALLBACK (manager_folks_is_ready), self,
+  g_signal_connect_object (self->chatty_eds, "notify::is-ready",
+                           G_CALLBACK (manager_eds_is_ready), self,
                            G_CONNECT_SWAPPED);
 }
 
@@ -953,12 +956,13 @@ chatty_manager_get_active_protocols (ChattyManager *self)
   return self->active_protocols;
 }
 
-ChattyFolks *
-chatty_manager_get_folks (ChattyManager *self)
+
+ChattyEds *
+chatty_manager_get_eds (ChattyManager *self)
 {
   g_return_val_if_fail (CHATTY_IS_MANAGER (self), NULL);
 
-  return self->chatty_folks;
+  return self->chatty_eds;
 }
 
 

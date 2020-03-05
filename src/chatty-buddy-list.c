@@ -101,12 +101,12 @@ row_selected_cb (GtkListBox    *box,
     chatty_window_set_header_chat_info_button_visible (window, FALSE);
 
     if (chatty_blist_protocol_is_sms (account)) {
-      ChattyFolks *chatty_folks;
+      ChattyEds *chatty_eds;
       ChattyContact *contact;
 
-      chatty_folks = chatty_manager_get_folks (chatty_manager_get_default ());
+      chatty_eds = chatty_manager_get_eds (chatty_manager_get_default ());
       number = purple_buddy_get_name (buddy);
-      contact = chatty_folks_find_by_number (chatty_folks, number);
+      contact = chatty_eds_find_by_number (chatty_eds, number);
 
       if (!contact) {
         chatty_window_set_menu_add_in_contacts_button_visible (window, TRUE);
@@ -583,7 +583,7 @@ chatty_blist_chat_list_select_first (void)
 void
 chatty_blist_add_buddy_from_uri (const char *uri)
 {
-  ChattyFolks   *chatty_folks;
+  ChattyEds     *chatty_eds;
   ChattyContact *contact;
   ChattyWindow  *window;
   PurpleAccount *account;
@@ -601,8 +601,8 @@ chatty_blist_add_buddy_from_uri (const char *uri)
 
   who = chatty_utils_check_phonenumber (uri);
 
-  chatty_folks = chatty_manager_get_folks (chatty_manager_get_default ());
-  contact = chatty_folks_find_by_number (chatty_folks, who);
+  chatty_eds = chatty_manager_get_eds (chatty_manager_get_default ());
+  contact = chatty_eds_find_by_number (chatty_eds, who);
 
   if (contact)
     alias = chatty_item_get_name (CHATTY_ITEM (contact));
@@ -670,17 +670,17 @@ chatty_blist_contact_list_add_buddy (void)
   purple_blist_node_set_bool (PURPLE_BLIST_NODE (buddy), "chatty-notifications", TRUE);
 
   if (chatty_blist_protocol_is_sms (account)) {
-    ChattyFolks *chatty_folks;
+    ChattyEds *chatty_eds;
     ChattyContact *contact = NULL;
 
-    chatty_folks = chatty_manager_get_folks (chatty_manager_get_default ());
+    chatty_eds = chatty_manager_get_eds (chatty_manager_get_default ());
 
     who = purple_buddy_get_name (buddy);
 
     number = chatty_utils_check_phonenumber (who);
 
     if (number)
-      contact = chatty_folks_find_by_number (chatty_folks, number);
+      contact = chatty_eds_find_by_number (chatty_eds, number);
 
     if (contact) {
       chatty_dbus_gc_write_contact (who, number);

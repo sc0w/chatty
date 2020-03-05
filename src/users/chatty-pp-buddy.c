@@ -453,10 +453,6 @@ chatty_pp_buddy_set_contact (ChattyPpBuddy *self,
 {
   g_return_if_fail (CHATTY_IS_PP_BUDDY (self));
   g_return_if_fail (!contact || CHATTY_IS_CONTACT (contact));
-  g_return_if_fail (!contact ||
-                    chatty_item_matches (CHATTY_ITEM (self),
-                                         chatty_contact_get_value (contact),
-                                         chatty_item_get_protocols (CHATTY_ITEM (contact)),
-                                         FALSE));
+
   g_set_object (&self->contact, contact);
 }
