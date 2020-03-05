@@ -42,5 +42,12 @@ gboolean        chatty_settings_get_indicate_unkown_contacts (ChattySettings *se
 gboolean        chatty_settings_get_convert_emoticons        (ChattySettings *self);
 gboolean        chatty_settings_get_return_sends_message     (ChattySettings *self);
 gboolean        chatty_settings_get_mam_enabled              (ChattySettings *self);
+gboolean        chatty_settings_get_window_maximized         (ChattySettings *self);
+void            chatty_settings_set_window_maximized         (ChattySettings *self,
+                                                              gboolean        maximized);
+void            chatty_settings_get_window_geometry          (ChattySettings *self,
+                                                              GdkRectangle   *geometry);
+void            chatty_settings_set_window_geometry          (ChattySettings *self,
+                                                              GdkRectangle   *geometry);
 
 G_END_DECLS
