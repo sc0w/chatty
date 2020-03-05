@@ -20,50 +20,6 @@
 
 
 static void
-chatty_connection_update_ui (void)
-{
-  ChattyWindow *window;
-  GList        *accounts;
-  gboolean      sensitive;
-
-  window = chatty_utils_get_window ();
-
-  chatty_window_set_im_account_connected (window, FALSE);
-  chatty_window_set_sms_account_connected (window, FALSE);
-
-  chatty_window_set_button_group_chat_sensitive (window, FALSE);
-
-  for (accounts = purple_accounts_get_all (); accounts != NULL; accounts = accounts->next) {
-    ChattyPpAccount *account;
-
-    account = chatty_pp_account_get_object (accounts->data);
-
-    /* The account should exist */
-    if (!CHATTY_IS_PP_ACCOUNT (account))
-      {
-        g_warn_if_reached ();
-        continue;
-      }
-
-    if (chatty_account_get_status (CHATTY_ACCOUNT (account)) == CHATTY_CONNECTED) {
-      if (chatty_pp_account_is_sms (account)) {
-        chatty_window_set_sms_account_connected (window, TRUE);
-      }  else {
-        chatty_window_set_im_account_connected (window, TRUE);
-        chatty_window_set_button_group_chat_sensitive (window, TRUE);
-      } 
-    }
-  }
-
-  sensitive = chatty_window_get_sms_account_connected (window) |
-              chatty_window_get_im_account_connected (window);
-
-  chatty_window_set_header_add_chat_button_sensitive (window, sensitive);
-  chatty_window_update_overlay_visible (window);
-}
-
-
-static void
 chatty_connection_error_dialog (ChattyPpAccount *account,
                                 const gchar     *error)
 {
@@ -116,18 +72,7 @@ chatty_connection_connected (PurpleConnection *gc)
       }
     }
 
-  chatty_connection_update_ui ();
-
   g_debug ("%s account: %s", __func__, chatty_pp_account_get_username (pp_account));
-}
-
-
-static void
-chatty_connection_disconnected (PurpleConnection *gc)
-{
-  chatty_connection_update_ui ();
-
-  g_debug ("chatty_connection_disconnected");
 }
 
 
@@ -169,7 +114,7 @@ static PurpleConnectionUiOps connection_ui_ops =
 {
   NULL,
   chatty_connection_connected,
-  chatty_connection_disconnected,
+  NULL,
   chatty_connection_info,
   NULL,
   NULL,

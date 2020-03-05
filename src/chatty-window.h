@@ -25,27 +25,11 @@ G_DECLARE_FINAL_TYPE (ChattyWindow, chatty_window, CHATTY, WINDOW, GtkApplicatio
 #define CHATTY_COLOR_DARK_GREY "323232"
 
 typedef enum {
-  CHATTY_PREF_MUC_NOTIFICATIONS,
-  CHATTY_PREF_MUC_STATUS_MSG,
-  CHATTY_PREF_MUC_AUTOJOIN,
-  CHATTY_PREF_MUC_PERSISTANT,
-  CHATTY_PREF_LAST
-} ChattyPreferences;
-
-
-typedef enum {
   CHATTY_OVERLAY_EMPTY_CHAT,
   CHATTY_OVERLAY_EMPTY_CHAT_NO_SMS,
   CHATTY_OVERLAY_EMPTY_CHAT_NO_IM,
   CHATTY_OVERLAY_EMPTY_CHAT_NO_SMS_IM,
 } ChattyOverlayMode;
-
-
-typedef enum {
-  CHATTY_LIST_CHATS,
-  CHATTY_LIST_CONTACTS,
-  CHATTY_LIST_MUC
-} ChattyListType;
 
 
 typedef enum {
@@ -88,19 +72,11 @@ GtkWidget *chatty_window_get_convs_notebook (ChattyWindow *self);
 const char *chatty_window_get_uri (ChattyWindow *self);
 
 void chatty_window_set_overlay_visible (ChattyWindow *self, gboolean visible);
-void chatty_window_update_overlay_visible (ChattyWindow *self);
 void chatty_window_set_new_chat_dialog_visible (ChattyWindow *self, gboolean visible);
 
 void chatty_window_set_menu_add_contact_button_visible (ChattyWindow *self, gboolean visible);
 void chatty_window_set_menu_add_in_contacts_button_visible (ChattyWindow *self, gboolean visible);
 void chatty_window_set_header_chat_info_button_visible (ChattyWindow *self, gboolean visible);
-void chatty_window_set_button_group_chat_sensitive (ChattyWindow *self, gboolean sensitive);
-void chatty_window_set_header_add_chat_button_sensitive (ChattyWindow *self, gboolean sensitive);
-
-void chatty_window_set_im_account_connected (ChattyWindow *self, gboolean connected);
-gboolean chatty_window_get_im_account_connected (ChattyWindow *self);
-void chatty_window_set_sms_account_connected (ChattyWindow *self, gboolean connected);
-gboolean chatty_window_get_sms_account_connected (ChattyWindow *self);
 
 
 G_END_DECLS
