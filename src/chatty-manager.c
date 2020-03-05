@@ -81,6 +81,7 @@ enum {
 enum {
   AUTHORIZE_BUDDY,
   NOTIFY_ADDED,
+  CONNECTION_ERROR,
   N_SIGNALS
 };
 
@@ -423,6 +424,9 @@ manager_account_connection_failed_cb (PurpleAccount         *pp_account,
   if (error == PURPLE_CONNECTION_ERROR_NETWORK_ERROR &&
       self->network_available)
     chatty_pp_account_connect (account, TRUE);
+
+  if (purple_connection_error_is_fatal (error))
+    g_signal_emit (self,  signals[CONNECTION_ERROR], 0, account, error_msg);
 }
 
 static void
@@ -757,6 +761,22 @@ chatty_manager_class_init (ChattyManagerClass *klass)
                   G_TYPE_INT,
                   4, CHATTY_TYPE_PP_ACCOUNT, G_TYPE_STRING,
                   G_TYPE_STRING, G_TYPE_STRING);
+
+  /**
+   * ChattyManager::connection-error:
+   * @self: a #ChattyManager
+   * @account: A #ChattyPpAccount
+   * @error: The error message
+   *
+   * Emitted when connection to @account failed
+   */
+  signals [CONNECTION_ERROR] =
+    g_signal_new ("connection-error",
+                  G_TYPE_FROM_CLASS (klass),
+                  G_SIGNAL_RUN_LAST,
+                  0, NULL, NULL, NULL,
+                  G_TYPE_NONE,
+                  2, CHATTY_TYPE_PP_ACCOUNT, G_TYPE_STRING);
 
   /**
    * ChattyManager::notify-added:
