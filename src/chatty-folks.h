@@ -12,7 +12,7 @@
 
 #include "users/chatty-contact.h"
 
-enum {
+typedef enum {
   CHATTY_FOLKS_SET_CONTACT_ROW_ICON,
   CHATTY_FOLKS_SET_PURPLE_BUDDY_ICON
 } e_folks_modes;

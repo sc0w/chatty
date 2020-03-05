@@ -73,7 +73,7 @@ typedef enum
 } ChattyUnseenState;
 
 
-enum
+typedef enum
 {
   CHATTY_SMS_RECEIPT_NONE      = -1,
   CHATTY_SMS_RECEIPT_MM_ACKN   =  0,
