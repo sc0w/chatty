@@ -31,7 +31,7 @@ typedef struct {
 } header_strings_t;
 
 
-enum {
+typedef enum {
   MSG_LIST_HEADER     = 1 << 0,
   MSG_LIST_RULER      = 1 << 1,
   MSG_LIST_TIMESTAMP  = 1 << 2,
@@ -39,7 +39,7 @@ enum {
 } message_list_features;
 
 
-enum {
+typedef enum {
   CHATTY_MSG_TYPE_UNKNOWN,
   CHATTY_MSG_TYPE_IM,
   CHATTY_MSG_TYPE_IM_E2EE,
@@ -49,14 +49,14 @@ enum {
 } e_msg_type;
 
 
-enum {
+typedef enum {
   MSG_IS_OUTGOING,
   MSG_IS_INCOMING,
   MSG_IS_SYSTEM
 } e_msg_dir;
 
 
-enum {
+typedef enum {
   ADD_MESSAGE_ON_BOTTOM,
   ADD_MESSAGE_ON_TOP,
 } e_msg_pos;

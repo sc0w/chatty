@@ -24,7 +24,7 @@ G_DECLARE_FINAL_TYPE (ChattyWindow, chatty_window, CHATTY, WINDOW, GtkApplicatio
 #define CHATTY_COLOR_DIM_GREY  "797979"
 #define CHATTY_COLOR_DARK_GREY "323232"
 
-enum {
+typedef enum {
   CHATTY_PREF_MUC_NOTIFICATIONS,
   CHATTY_PREF_MUC_STATUS_MSG,
   CHATTY_PREF_MUC_AUTOJOIN,
@@ -33,7 +33,7 @@ enum {
 } ChattyPreferences;
 
 
-enum {
+typedef enum {
   CHATTY_OVERLAY_EMPTY_CHAT,
   CHATTY_OVERLAY_EMPTY_CHAT_NO_SMS,
   CHATTY_OVERLAY_EMPTY_CHAT_NO_IM,
@@ -41,14 +41,14 @@ enum {
 } ChattyOverlayMode;
 
 
-enum {
+typedef enum {
   CHATTY_LIST_CHATS,
   CHATTY_LIST_CONTACTS,
   CHATTY_LIST_MUC
 } ChattyListType;
 
 
-enum {
+typedef enum {
   CHATTY_ACCOUNTS_NONE   = 0,
   CHATTY_ACCOUNTS_SMS    = 1 << 0,
   CHATTY_ACCOUNTS_IM     = 1 << 1,
@@ -56,7 +56,7 @@ enum {
 } ChattyActiveAccounts;
 
 
-enum {
+typedef enum {
   LURCH_STATUS_DISABLED = 0,  // manually disabled
   LURCH_STATUS_NOT_SUPPORTED, // no OMEMO support, i.e. there is no devicelist node
   LURCH_STATUS_NO_SESSION,    // OMEMO is supported, but there is no libsignal session yet
