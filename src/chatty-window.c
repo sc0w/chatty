@@ -680,6 +680,11 @@ window_active_protocols_changed_cb (ChattyWindow *self)
   gtk_widget_set_sensitive (self->header_add_chat_button, has_sms || has_im);
   gtk_widget_set_sensitive (self->menu_new_group_chat_button, has_im);
   window_chat_changed_cb (self);
+
+  if (has_sms && self->uri)
+    chatty_blist_add_buddy_from_uri (self->uri);
+
+  g_clear_pointer (&self->uri, g_free);
 }
 
 
@@ -992,15 +997,6 @@ chatty_window_set_header_chat_info_button_visible (ChattyWindow *self,
                                                    gboolean      visible)
 {
   gtk_widget_set_visible (self->header_chat_info_button, visible);
-}
-
-
-const char *
-chatty_window_get_uri (ChattyWindow *self)
-{
-  g_return_val_if_fail (CHATTY_IS_WINDOW (self), NULL);
-
-  return self->uri;
 }
 
 
