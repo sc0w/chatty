@@ -20,33 +20,6 @@
 
 
 static void
-chatty_connection_error_dialog (ChattyPpAccount *account,
-                                const gchar     *error)
-{
-  GtkWidget *dialog;
-
-  dialog = gtk_message_dialog_new (NULL,
-                                   GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
-                                   GTK_MESSAGE_ERROR,
-                                   GTK_BUTTONS_OK,
-                                   _("Login failed"));
-
-  gtk_message_dialog_format_secondary_text (GTK_MESSAGE_DIALOG(dialog),
-                                            "%s: %s\n\n%s",
-                                            error,
-                                            chatty_pp_account_get_username (account),
-                                            _("Please check ID and password"));
-
-  gtk_dialog_set_default_response (GTK_DIALOG(dialog), GTK_RESPONSE_CANCEL);
-  gtk_window_set_position (GTK_WINDOW(dialog), GTK_WIN_POS_CENTER_ON_PARENT);
-
-  gtk_dialog_run (GTK_DIALOG(dialog));
-
-  gtk_widget_destroy (dialog);
-}
-
-
-static void
 chatty_connection_connected (PurpleConnection *gc)
 {
   ChattyWindow    *window;
@@ -77,32 +50,6 @@ chatty_connection_connected (PurpleConnection *gc)
 
 
 static void
-chatty_connection_report_disconnect_reason (PurpleConnection     *gc,
-                                            PurpleConnectionError reason,
-                                            const char           *text)
-{
-  ChattyPpAccount  *pp_account;
-  PurpleAccount    *account;
-  g_autofree gchar *message = NULL;
-  const char       *user_name;
-  const char       *protocol_id;
-
-  account = purple_connection_get_account (gc);
-  pp_account = chatty_pp_account_get_object (account);
-  g_return_if_fail (CHATTY_IS_PP_ACCOUNT (pp_account));
-
-  user_name = chatty_pp_account_get_username (pp_account);
-  protocol_id = chatty_pp_account_get_protocol_id (pp_account);
-
-  g_debug ("Disconnected: \"%s\" (%s)\nError: %d\nReason: %s",
-           user_name, protocol_id, reason, text);
-
-  if (purple_connection_error_is_fatal (reason))
-    chatty_connection_error_dialog (pp_account, text);
-}
-
-
-static void
 chatty_connection_info (PurpleConnection *gc,
                         const char       *text)
 {
@@ -119,7 +66,7 @@ static PurpleConnectionUiOps connection_ui_ops =
   NULL,
   NULL,
   NULL,
-  chatty_connection_report_disconnect_reason,
+  NULL,
   NULL,
   NULL,
   NULL

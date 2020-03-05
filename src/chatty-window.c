@@ -682,6 +682,35 @@ window_active_protocols_changed_cb (ChattyWindow *self)
   window_chat_changed_cb (self);
 }
 
+
+static void
+window_show_connection_error (ChattyWindow    *self,
+                              ChattyPpAccount *account,
+                              const char      *message)
+{
+  GtkWidget *dialog;
+
+  dialog = gtk_message_dialog_new (NULL,
+                                   GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+                                   GTK_MESSAGE_ERROR,
+                                   GTK_BUTTONS_OK,
+                                   _("Login failed"));
+
+  gtk_message_dialog_format_secondary_text (GTK_MESSAGE_DIALOG(dialog),
+                                            "%s: %s\n\n%s",
+                                            message,
+                                            chatty_pp_account_get_username (account),
+                                            _("Please check ID and password"));
+
+  gtk_dialog_set_default_response (GTK_DIALOG (dialog), GTK_RESPONSE_CANCEL);
+  gtk_window_set_position (GTK_WINDOW(dialog), GTK_WIN_POS_CENTER_ON_PARENT);
+
+  gtk_dialog_run (GTK_DIALOG(dialog));
+
+  gtk_widget_destroy (dialog);
+}
+
+
 static void
 chatty_window_set_property (GObject      *object,
                             guint         prop_id,
@@ -880,6 +909,9 @@ chatty_window_init (ChattyWindow *self)
                            G_CONNECT_SWAPPED);
   g_signal_connect_object (self->manager, "notify::active-protocols",
                            G_CALLBACK (window_active_protocols_changed_cb), self,
+                           G_CONNECT_SWAPPED);
+  g_signal_connect_object (self->manager, "connection-error",
+                           G_CALLBACK (window_show_connection_error), self,
                            G_CONNECT_SWAPPED);
 }
 
