@@ -62,5 +62,17 @@
       <description>Whether pressing Enter key sends the message</description>
     </key>
 
+    <key name="window-maximized" type="b">
+      <default>false</default>
+      <summary>Window maximized</summary>
+      <description>Window maximized state</description>
+    </key>
+
+    <key name="window-size" type="(ii)">
+      <default>(360, 576)</default>
+      <summary>Window size</summary>
+      <description>Window size (width, height).</description>
+    </key>
+
   </schema>
 </schemalist>

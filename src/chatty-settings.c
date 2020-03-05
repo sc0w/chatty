@@ -463,3 +463,72 @@ chatty_settings_get_return_sends_message (ChattySettings *self)
 
   return g_settings_get_boolean (self->settings, "return-sends-message");
 }
+
+/**
+ * chatty_settings_get_window_maximized:
+ * @self: A #ChattySettings
+ *
+ * Get the window maximized state as saved in @self.
+ *
+ * Returns: %TRUE if maximized.  %FALSE otherwise.
+ */
+gboolean
+chatty_settings_get_window_maximized (ChattySettings *self)
+{
+  g_return_val_if_fail (CHATTY_IS_SETTINGS (self), FALSE);
+
+  return g_settings_get_boolean (G_SETTINGS (self->settings), "window-maximized");
+}
+
+/**
+ * chatty_settings_set_window_maximized:
+ * @self: A #ChattySettings
+ * @maximized: The window state to save
+ *
+ * Set the window maximized state in @self.
+ */
+void
+chatty_settings_set_window_maximized (ChattySettings *self,
+                                      gboolean        maximized)
+{
+  g_return_if_fail (CHATTY_IS_SETTINGS (self));
+
+  g_settings_set_boolean (G_SETTINGS (self->settings), "window-maximized", !!maximized);
+}
+
+/**
+ * chatty_settings_get_window_geometry:
+ * @self: A #ChattySettings
+ * @geometry: (out): A #GdkRectangle
+ *
+ * Get the window geometry as saved in @self.
+ */
+void
+chatty_settings_get_window_geometry (ChattySettings *self,
+                                     GdkRectangle   *geometry)
+{
+  g_return_if_fail (CHATTY_IS_SETTINGS (self));
+  g_return_if_fail (geometry != NULL);
+
+  g_settings_get (G_SETTINGS (self->settings), "window-size", "(ii)", &geometry->width, &geometry->height);
+
+  geometry->x = geometry->y = -1;
+}
+
+/**
+ * chatty_settings_set_window_geometry:
+ * @self: A #ChattySettings
+ * @geometry: A #GdkRectangle
+ *
+ * Set the window geometry in @self.
+ */
+void
+chatty_settings_set_window_geometry (ChattySettings *self,
+                                     GdkRectangle   *geometry)
+{
+  g_return_if_fail (CHATTY_IS_SETTINGS (self));
+  g_return_if_fail (geometry != NULL);
+
+  g_settings_set (G_SETTINGS (self->settings), "window-size", "(ii)", geometry->width, geometry->height);
+}
+

@@ -711,10 +711,32 @@ chatty_window_set_property (GObject      *object,
 
 
 static void
+chatty_window_unmap (GtkWidget *widget)
+{
+  ChattyWindow *self = (ChattyWindow *)widget;
+  GtkWindow    *window = (GtkWindow *)widget;
+  GdkRectangle  geometry;
+  gboolean      is_maximized;
+
+  is_maximized = gtk_window_is_maximized (window);
+
+  chatty_settings_set_window_maximized (self->settings, is_maximized);
+
+  if (!is_maximized) {
+    gtk_window_get_size (window, &geometry.width, &geometry.height);
+    chatty_settings_set_window_geometry (self->settings, &geometry);
+  }
+
+  GTK_WIDGET_CLASS (chatty_window_parent_class)->unmap (widget);
+}
+
+
+static void
 chatty_window_constructed (GObject *object)
 {
   ChattyWindow *self = (ChattyWindow *)object;
   GtkWindow    *window = (GtkWindow *)object;
+  GdkRectangle  geometry;
 
   GSimpleActionGroup *simple_action_group;
 
@@ -734,6 +756,11 @@ chatty_window_constructed (GObject *object)
     { "chat-info", msg_view_chat_info_action }
   };
 
+  chatty_settings_get_window_geometry (self->settings, &geometry);
+  gtk_window_set_default_size (window, geometry.width, geometry.height);
+
+  if (chatty_settings_get_window_maximized (self->settings))
+    gtk_window_maximize (window);
 
   self->new_chat_dialog = chatty_window_create_new_chat_dialog (self);
 
@@ -806,6 +833,8 @@ chatty_window_class_init (ChattyWindowClass *klass)
   object_class->set_property = chatty_window_set_property;
   object_class->constructed  = chatty_window_constructed;
   object_class->finalize     = chatty_window_finalize;
+
+  widget_class->unmap = chatty_window_unmap;
 
   props[PROP_DAEMON] =
     g_param_spec_boolean ("daemon-mode",
