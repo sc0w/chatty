@@ -65,6 +65,7 @@ struct _ChattyWindow
   GtkWidget *overlay_label_2;
   GtkWidget *overlay_label_3;
 
+  ChattyManager *manager;
   char      *uri;
   
   gboolean daemon_mode;
@@ -250,14 +251,11 @@ window_chat_row_activated_cb (GtkListBox    *box,
 
 
 static void
-window_chat_changed_cb (ChattyWindow *self,
-                        GtkWidget    *child,
-                        GtkContainer *container)
+window_chat_changed_cb (ChattyWindow *self)
 {
   gboolean has_child;
 
   g_assert (CHATTY_IS_WINDOW (self));
-  g_assert (GTK_IS_CONTAINER (container));
 
   has_child = gtk_list_box_get_row_at_index (GTK_LIST_BOX (self->chats_listbox), 0) != NULL;
   chatty_window_set_overlay_visible (self, !has_child);
@@ -594,18 +592,6 @@ chatty_window_set_overlay_visible (ChattyWindow *self,
 }
 
 
-void
-chatty_window_update_overlay_visible (ChattyWindow *self)
-{
-  gboolean has_child;
-
-  g_return_if_fail (CHATTY_IS_WINDOW (self));
-
-  has_child = gtk_list_box_get_row_at_index (GTK_LIST_BOX (self->chats_listbox), 0) != NULL;
-  chatty_window_set_overlay_visible (self, !has_child);
-}
-
-
 static int
 window_authorize_buddy_cb (ChattyWindow    *self,
                            ChattyPpAccount *account,
@@ -677,6 +663,23 @@ window_buddy_added_cb (ChattyWindow    *self,
   gtk_dialog_run (GTK_DIALOG (dialog));
 
   gtk_widget_destroy (dialog);
+}
+
+static void
+window_active_protocols_changed_cb (ChattyWindow *self)
+{
+  ChattyProtocol protocols;
+  gboolean has_sms, has_im;
+
+  g_assert (CHATTY_IS_WINDOW (self));
+
+  protocols = chatty_manager_get_active_protocols (self->manager);
+  has_sms = !!(protocols & CHATTY_PROTOCOL_SMS);
+  has_im  = !!(protocols & ~CHATTY_PROTOCOL_SMS);
+
+  gtk_widget_set_sensitive (self->header_add_chat_button, has_sms || has_im);
+  gtk_widget_set_sensitive (self->menu_new_group_chat_button, has_im);
+  window_chat_changed_cb (self);
 }
 
 static void
@@ -771,6 +774,9 @@ chatty_window_constructed (GObject *object)
 
   chatty_window_change_view (self, CHATTY_VIEW_CHAT_LIST);
 
+  gtk_widget_set_sensitive (self->header_add_chat_button, FALSE);
+  window_chat_changed_cb (self);
+
   G_OBJECT_CLASS (chatty_window_parent_class)->constructed (object);
 }
 
@@ -783,6 +789,7 @@ chatty_window_finalize (GObject *object)
   chatty_purple_quit ();
 
   g_object_unref (self->settings);
+  g_object_unref (self->manager);
 
   g_free (self->uri);
 
@@ -858,20 +865,21 @@ chatty_window_class_init (ChattyWindowClass *klass)
 static void
 chatty_window_init (ChattyWindow *self)
 {
-  ChattyManager *manager;
-
   gtk_widget_init_template (GTK_WIDGET (self));
 
   gtk_list_box_set_sort_func (GTK_LIST_BOX (self->chats_listbox), chatty_blist_sort, NULL, NULL);
   gtk_list_box_set_filter_func (GTK_LIST_BOX (self->chats_listbox),
                                 (GtkListBoxFilterFunc)filter_chat_list_cb, self, NULL);
 
-  manager = chatty_manager_get_default ();
-  g_signal_connect_object (manager, "authorize-buddy",
+  self->manager = g_object_ref (chatty_manager_get_default ());
+  g_signal_connect_object (self->manager, "authorize-buddy",
                            G_CALLBACK (window_authorize_buddy_cb), self,
                            G_CONNECT_SWAPPED);
-  g_signal_connect_object (manager, "notify-added",
+  g_signal_connect_object (self->manager, "notify-added",
                            G_CALLBACK (window_buddy_added_cb), self,
+                           G_CONNECT_SWAPPED);
+  g_signal_connect_object (self->manager, "notify::active-protocols",
+                           G_CALLBACK (window_active_protocols_changed_cb), self,
                            G_CONNECT_SWAPPED);
 }
 
@@ -926,62 +934,12 @@ chatty_window_set_header_chat_info_button_visible (ChattyWindow *self,
 }
 
 
-void
-chatty_window_set_button_group_chat_sensitive (ChattyWindow *self,
-                                               gboolean      sensitive)
-{
-  gtk_widget_set_sensitive (self->menu_new_group_chat_button, sensitive);
-}
-
-
-void
-chatty_window_set_header_add_chat_button_sensitive (ChattyWindow *self,
-                                                    gboolean      sensitive)
-{
-  gtk_widget_set_sensitive (self->header_add_chat_button, sensitive);
-}
-
-
 const char *
 chatty_window_get_uri (ChattyWindow *self)
 {
   g_return_val_if_fail (CHATTY_IS_WINDOW (self), NULL);
 
   return self->uri;
-}
-
-
-// TODO: Needs to be moved to accounts-manager
-void
-chatty_window_set_im_account_connected (ChattyWindow *self,
-                                        gboolean      connected)
-{
-  self->im_account_connected = connected;
-}
-
-
-// TODO: Needs to be moved to accounts-manager
-gboolean
-chatty_window_get_im_account_connected (ChattyWindow *self)
-{
-  return self->im_account_connected;
-}
-
-
-// TODO: Needs to be moved to accounts-manager
-void
-chatty_window_set_sms_account_connected (ChattyWindow *self,
-                                         gboolean      connected)
-{
-  self->sms_account_connected = connected;
-}
-
-
-// TODO: Needs to be moved to accounts-manager
-gboolean
-chatty_window_get_sms_account_connected (ChattyWindow *self)
-{
-  return self->sms_account_connected;
 }
 
 
