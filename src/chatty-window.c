@@ -492,6 +492,12 @@ chatty_window_show_about_dialog (ChattyWindow *self)
 }
 
 
+static void
+chatty_window_show_new_chat_dialog (ChattyWindow *self)
+{
+  gtk_widget_show (GTK_WIDGET (self->new_chat_dialog));
+}
+
 void
 chatty_window_change_view (ChattyWindow      *self,
                            ChattyWindowState  view)
@@ -501,12 +507,6 @@ chatty_window_change_view (ChattyWindow      *self,
   switch (view) {
     case CHATTY_VIEW_SETTINGS:
       chatty_window_show_settings_dialog (self);
-      break;
-    case CHATTY_VIEW_ABOUT_CHATTY:
-      chatty_window_show_about_dialog (self);
-      break;
-    case CHATTY_VIEW_JOIN_CHAT:
-      chatty_window_show_new_muc_dialog (self);
       break;
     case CHATTY_VIEW_NEW_CHAT:
       gtk_widget_show (GTK_WIDGET (self->new_chat_dialog));
@@ -922,6 +922,10 @@ chatty_window_class_init (ChattyWindowClass *klass)
   gtk_widget_class_bind_template_callback (widget_class, header_visible_child_cb);
   gtk_widget_class_bind_template_callback (widget_class, window_chat_row_activated_cb);
   gtk_widget_class_bind_template_callback (widget_class, window_chat_changed_cb);
+  gtk_widget_class_bind_template_callback (widget_class, chatty_window_show_new_muc_dialog);
+  gtk_widget_class_bind_template_callback (widget_class, chatty_window_show_new_chat_dialog);
+  gtk_widget_class_bind_template_callback (widget_class, chatty_window_show_settings_dialog);
+  gtk_widget_class_bind_template_callback (widget_class, chatty_window_show_about_dialog);
 }
 
 

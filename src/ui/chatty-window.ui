@@ -15,8 +15,8 @@
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">False</property>
-            <property name="action_name">chat_list.group-chat</property>
             <property name="text" translatable="yes">New Group Chat</property>
+            <signal name="clicked" handler="chatty_window_show_new_muc_dialog" swapped="yes"/>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -28,8 +28,7 @@
             <property name="visible">False</property>
             <property name="can_focus">True</property>
             <property name="receives_default">False</property>
-            <property name="action_name">chat_list.direct-chat</property>
-            <property name="text" translatable="yes">New Direct Chat</property>
+            <signal name="clicked" handler="chatty_window_show_new_chat_dialog" swapped="yes"/>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -53,8 +52,8 @@
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">False</property>
-            <property name="action_name">chat_list.settings</property>
             <property name="text" translatable="yes">Preferences</property>
+            <signal name="clicked" handler="chatty_window_show_settings_dialog" swapped="yes"/>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -66,8 +65,8 @@
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">False</property>
-            <property name="action_name">chat_list.about</property>
             <property name="text" translatable="yes">About Chats</property>
+            <signal name="clicked" handler="chatty_window_show_about_dialog" swapped="yes"/>
           </object>
           <packing>
             <property name="expand">False</property>
