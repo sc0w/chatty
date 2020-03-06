@@ -154,3 +154,12 @@ chatty_chat_get_purple_chat (ChattyChat *self)
 
   return self->pp_chat;
 }
+
+
+const char *
+chatty_chat_get_username (ChattyChat *self)
+{
+  g_return_val_if_fail (CHATTY_IS_CHAT (self), "");
+
+  return purple_account_get_username (self->pp_chat->account);
+}
