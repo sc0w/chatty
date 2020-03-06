@@ -865,23 +865,6 @@ chatty_blist_chat_list_remove_buddy (void)
 
 
 /**
- * chatty_blist_returned_from_chat:
- *
- * Clears 'selected_node' which is evaluated to
- * block the counting of pending messages
- * while chatting with this node
- *
- * Called from chatty_back_action in
- * chatty-window.c
- */
-void
-chatty_blist_returned_from_chat (void)
-{
-  gtk_list_box_unselect_all (chatty_get_chats_list ());
-}
-
-
-/**
  * chatty_blist_chats_remove_node:
  * @node:   a PurpleBlistNode
  *
