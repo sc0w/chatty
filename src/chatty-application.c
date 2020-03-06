@@ -27,6 +27,7 @@
 
 #include "chatty-config.h"
 #include "chatty-window.h"
+#include "chatty-utils.h"
 #include "users/chatty-pp-account.h"
 #include "chatty-manager.h"
 #include "chatty-application.h"
@@ -122,28 +123,22 @@ chatty_application_command_line (GApplication            *application,
 
   arguments = g_application_command_line_get_arguments (command_line, &argc);
 
-  if (argc <= 1) {
-    g_application_activate (application);
-  } else if (!(g_application_get_flags (application) & G_APPLICATION_HANDLES_OPEN)) {
-    g_critical ("This application can not open files.");
-    return 1;
-  } else {
-    GFile **files;
-    gint n_files;
-    gint i;
+  for (guint i = 0; i < argc; i++) {
+    ChattyWindow *window;
 
-    n_files = argc - 1;
-    files = g_new (GFile *, n_files);
+    window = chatty_utils_get_window ();
 
-    for (i = 0; i < n_files; i++)
-      files[i] = g_file_new_for_commandline_arg (arguments[i + 1]);
-
-    g_application_open (application, files, n_files, "");
-
-    for (i = 0; i < n_files; i++)
-      g_object_unref (files[i]);
-    g_free (files);
+    if (g_str_has_prefix (arguments[i], "sms:")) {
+      if (window) {
+        chatty_blist_add_buddy_from_uri (arguments[i]);
+      } else {
+        g_free (self->uri);
+        self->uri = g_strdup (arguments[i]);
+      }
+    }
   }
+
+  g_application_activate (application);
 
   return 0;
 }
@@ -208,37 +203,6 @@ chatty_application_activate (GApplication *application)
 
 
 static void
-chatty_application_open (GApplication  *application,
-                         GFile        **files,
-                         gint           n_files,
-                         const gchar   *hint)
-{
-  ChattyApplication *self = (ChattyApplication *)application;
-  
-  gint i;
-
-  for (i = 0; i < n_files; i++) {
-    char *uri;
-
-    if (g_file_has_uri_scheme (files[i], "sms")) {
-      uri = g_file_get_uri (files[i]);
-
-      if (gtk_application_get_active_window (GTK_APPLICATION (application))) {
-        chatty_blist_add_buddy_from_uri (uri);
-      } else {
-        g_free (self->uri);
-        self->uri = g_strdup (uri);
-      }
-
-      g_free (uri);
-    }
-  }
-
-  g_application_activate (application);
-}
-
-
-static void
 chatty_application_class_init (ChattyApplicationClass *klass)
 {
   GApplicationClass *application_class = G_APPLICATION_CLASS (klass);
@@ -250,7 +214,6 @@ chatty_application_class_init (ChattyApplicationClass *klass)
   application_class->command_line = chatty_application_command_line;
   application_class->startup = chatty_application_startup;
   application_class->activate = chatty_application_activate;
-  application_class->open = chatty_application_open;
 }
 
 
@@ -266,7 +229,7 @@ chatty_application_new (void)
 {
   return g_object_new (CHATTY_TYPE_APPLICATION,
                        "application-id", CHATTY_APP_ID,
-                       "flags", G_APPLICATION_HANDLES_OPEN | G_APPLICATION_HANDLES_COMMAND_LINE,
+                       "flags", G_APPLICATION_HANDLES_COMMAND_LINE,
                        "register-session", TRUE,
                        NULL);
 }
