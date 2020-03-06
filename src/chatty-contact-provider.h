@@ -27,5 +27,6 @@ gboolean       chatty_eds_is_ready       (ChattyEds  *self);
 GListModel    *chatty_eds_get_model      (ChattyEds  *self);
 ChattyContact *chatty_eds_find_by_number (ChattyEds  *self,
                                           const char *phone_number);
+void           chatty_eds_open_contacts_app (ChattyEds *self);
 
 G_END_DECLS
