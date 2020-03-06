@@ -25,5 +25,6 @@ G_DECLARE_FINAL_TYPE (ChattyChat, chatty_chat, CHATTY, CHAT, ChattyItem)
 
 ChattyChat         *chatty_chat_new_purple_chat       (PurpleChat         *pp_chat);
 PurpleChat         *chatty_chat_get_purple_chat       (ChattyChat         *self);
+const char         *chatty_chat_get_username          (ChattyChat         *self);
 
 G_END_DECLS

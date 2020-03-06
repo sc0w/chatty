@@ -52,6 +52,8 @@ chatty_list_row_update (ChattyListRow *self)
                         ": ", number, NULL);
     gtk_label_set_label (GTK_LABEL (self->subtitle), type);
     chatty_item_get_avatar (self->item);
+  } else if (CHATTY_IS_CHAT (self->item)) {
+    subtitle = chatty_chat_get_username (CHATTY_CHAT (self->item));
   }
 
   if (subtitle)

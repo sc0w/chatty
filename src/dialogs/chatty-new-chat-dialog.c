@@ -153,47 +153,6 @@ chatty_about_Action (GSimpleAction *action,
 }
 
 
-static GtkWidget *
-dialog_create_chat_row (ChattyChat *chat)
-{
-  GdkPixbuf     *avatar;
-  PurpleChat    *pp_chat;
-  const gchar   *chat_name;
-  const gchar   *account_name;
-
-  g_assert (CHATTY_IS_CHAT (chat));
-
-  pp_chat = chatty_chat_get_purple_chat (chat);
-
-  avatar = chatty_icon_get_buddy_icon ((PurpleBlistNode *)pp_chat,
-                                       NULL,
-                                       CHATTY_ICON_SIZE_MEDIUM,
-                                       CHATTY_COLOR_BLUE,
-                                       FALSE);
-  account_name = purple_account_get_username (pp_chat->account);
-  chat_name = purple_chat_get_name (pp_chat);
-  return chatty_contact_row_new ((gpointer) pp_chat,
-                                 avatar,
-                                 chat_name,
-                                 account_name,
-                                 NULL,
-                                 NULL,
-                                 NULL,
-                                 NULL,
-                                 FALSE);
-}
-
-static GtkWidget *
-dialog_contact_row_new (GObject *object)
-{
-  if (CHATTY_IS_CONTACT (object) ||
-      CHATTY_IS_PP_BUDDY (object))
-    return chatty_list_row_new (CHATTY_ITEM (object));
-  else
-    return dialog_create_chat_row (CHATTY_CHAT (object));
-}
-
-
 static void
 back_button_clicked_cb (ChattyNewChatDialog *self)
 {
@@ -334,7 +293,12 @@ contact_row_activated_cb (ChattyNewChatDialog *self,
       return;
     }
 
-    node = (PurpleBlistNode *)chatty_pp_buddy_get_buddy (CHATTY_PP_BUDDY (item));
+    if (CHATTY_IS_PP_BUDDY (item))
+      node = (PurpleBlistNode *)chatty_pp_buddy_get_buddy (CHATTY_PP_BUDDY (item));
+    else if (CHATTY_IS_CHAT (item))
+      node = (PurpleBlistNode *)chatty_chat_get_purple_chat (CHATTY_CHAT (item));
+    else
+      g_return_if_reached ();
   } else {
     g_return_if_reached ();
   }
@@ -725,7 +689,7 @@ chatty_new_chat_dialog_init (ChattyNewChatDialog *self)
   self->slice_model = gtk_slice_list_model_new (G_LIST_MODEL (self->filter_model), 0, ITEMS_COUNT);
   gtk_list_box_bind_model (GTK_LIST_BOX (self->chats_listbox),
                            G_LIST_MODEL (self->slice_model),
-                           (GtkListBoxCreateWidgetFunc)dialog_contact_row_new,
+                           (GtkListBoxCreateWidgetFunc)chatty_list_row_new,
                            NULL, NULL);
 
   chatty_new_chat_dialog_update_new_contact_row (self);
