@@ -604,9 +604,15 @@ chatty_history_add_message (PurpleAccount *pa, PurpleConvMessage *pcm,
                             char **sid, PurpleConversationType type,
                             gpointer data)
 {
-  // (SYS XOR 1) * (RECV - SEND) - so 1 or -1 for RECV/SEND or zeroed by SYS
-  int dir = ( ((pcm->flags & 4) >> 2) ^ 1 ) 
-          * ( ((pcm->flags & 2) >> 1) - (pcm->flags & 1) );
+  int dir = 0;
+
+  /* direction of message */
+  if (pcm->flags & PURPLE_MESSAGE_SYSTEM)
+    dir = 0;
+  else if (pcm->flags & PURPLE_MESSAGE_RECV)
+    dir = 1;
+  else if (pcm->flags & PURPLE_MESSAGE_SEND)
+    dir = -1;
 
   // MAM XEP for one should set it to take over the history
   if(pcm->flags & PURPLE_MESSAGE_NO_LOG)
