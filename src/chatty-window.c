@@ -66,8 +66,7 @@ struct _ChattyWindow
   GtkWidget *overlay_label_3;
 
   ChattyManager *manager;
-  char      *uri;
-  
+
   gboolean daemon_mode;
   gboolean im_account_connected;
   gboolean sms_account_connected;
@@ -84,7 +83,6 @@ enum {
   PROP_0,
   PROP_DAEMON,
   PROP_SETTINGS,
-  PROP_URI,
   PROP_LAST
 };
 
@@ -680,11 +678,6 @@ window_active_protocols_changed_cb (ChattyWindow *self)
   gtk_widget_set_sensitive (self->header_add_chat_button, has_sms || has_im);
   gtk_widget_set_sensitive (self->menu_new_group_chat_button, has_im);
   window_chat_changed_cb (self);
-
-  if (has_sms && self->uri)
-    chatty_blist_add_buddy_from_uri (self->uri);
-
-  g_clear_pointer (&self->uri, g_free);
 }
 
 
@@ -731,11 +724,6 @@ chatty_window_set_property (GObject      *object,
 
     case PROP_SETTINGS:
       self->settings = g_value_dup_object (value);
-      break;
-
-    case PROP_URI:
-      g_free (self->uri);
-      self->uri = g_value_dup_string (value);
       break;
 
     default:
@@ -852,8 +840,6 @@ chatty_window_finalize (GObject *object)
   g_object_unref (self->settings);
   g_object_unref (self->manager);
 
-  g_free (self->uri);
-
   G_OBJECT_CLASS (chatty_window_parent_class)->finalize (object);
 }
 
@@ -883,13 +869,6 @@ chatty_window_class_init (ChattyWindowClass *klass)
                          "Application settings",
                          CHATTY_TYPE_SETTINGS,
                          G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY | G_PARAM_STATIC_STRINGS);
-
-  props[PROP_URI] =
-    g_param_spec_string ("uri",
-                         "An URI",
-                         "An URI string passed to the application",
-                         "",
-                         G_PARAM_WRITABLE | G_PARAM_STATIC_STRINGS);
 
   g_object_class_install_properties (object_class, PROP_LAST, props);
 
@@ -957,8 +936,7 @@ chatty_window_init (ChattyWindow *self)
 GtkWidget *
 chatty_window_new (GtkApplication *application,
                    gboolean        daemon_mode,
-                   ChattySettings *settings,
-                   const char     *uri)
+                   ChattySettings *settings)
 {
   g_assert (GTK_IS_APPLICATION (application));
   g_assert (CHATTY_IS_SETTINGS (settings));
@@ -967,8 +945,15 @@ chatty_window_new (GtkApplication *application,
                        "application", application,
                        "daemon-mode", daemon_mode,
                        "settings", settings,
-                       "uri", uri,
                        NULL);
+}
+
+
+void
+chatty_window_set_uri (ChattyWindow *self,
+                       const char   *uri)
+{
+  chatty_blist_add_buddy_from_uri (uri);
 }
 
 

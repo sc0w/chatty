@@ -46,10 +46,12 @@ struct _ChattyApplication
 {
   GtkApplication  parent_instance;
 
+  GtkWidget      *main_window;
   ChattySettings *settings;
   GtkCssProvider *css_provider;
 
   char *uri;
+  guint open_uri_id;
 
   gboolean daemon;
   gboolean enable_debug;
@@ -67,11 +69,25 @@ static GOptionEntry cmd_options[] = {
   { NULL }
 };
 
+static gboolean
+application_open_uri (ChattyApplication *self)
+{
+  g_clear_handle_id (&self->open_uri_id, g_source_remove);
+
+  if (self->main_window && self->uri)
+    chatty_window_set_uri (CHATTY_WINDOW (self->main_window), self->uri);
+
+  g_clear_pointer (&self->uri, g_free);
+
+  return G_SOURCE_REMOVE;
+}
+
 static void
 chatty_application_finalize (GObject *object)
 {
   ChattyApplication *self = (ChattyApplication *)object;
 
+  g_clear_handle_id (&self->open_uri_id, g_source_remove);
   g_clear_object (&self->css_provider);
 
   G_OBJECT_CLASS (chatty_application_parent_class)->finalize (object);
@@ -123,20 +139,12 @@ chatty_application_command_line (GApplication            *application,
 
   arguments = g_application_command_line_get_arguments (command_line, &argc);
 
-  for (guint i = 0; i < argc; i++) {
-    ChattyWindow *window;
-
-    window = chatty_utils_get_window ();
-
+  /* Keep only the last URI, if there are many */
+  for (guint i = 0; i < argc; i++)
     if (g_str_has_prefix (arguments[i], "sms:")) {
-      if (window) {
-        chatty_blist_add_buddy_from_uri (arguments[i]);
-      } else {
-        g_free (self->uri);
-        self->uri = g_strdup (arguments[i]);
-      }
+      g_free (self->uri);
+      self->uri = g_strdup (arguments[i]);
     }
-  }
 
   g_application_activate (application);
 
@@ -184,11 +192,11 @@ chatty_application_activate (GApplication *application)
   if (window) {
     show_win = TRUE;
   } else {
-    chatty_window_new (app, 
-                       self->daemon, 
-                       self->settings, 
-                       self->uri);
+    self->main_window = chatty_window_new (app,
+                                           self->daemon,
+                                           self->settings);
 
+    g_object_add_weak_pointer (G_OBJECT (self->main_window), (gpointer *)&self->main_window);
     show_win = !self->daemon;
 
     libpurple_init ();
@@ -199,6 +207,12 @@ chatty_application_activate (GApplication *application)
 
     gtk_window_present (window);
   }
+
+  /* Open with some delay so that the modem is ready when not in daemon mode */
+  if (self->main_window && self->uri)
+    self->open_uri_id = g_timeout_add (100,
+                                       G_SOURCE_FUNC (application_open_uri),
+                                       self);
 }
 
 
