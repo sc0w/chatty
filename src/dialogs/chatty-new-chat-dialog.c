@@ -110,50 +110,6 @@ chatty_new_chat_dialog_update_new_contact_row (ChattyNewChatDialog *self)
 }
 
 static void
-chatty_group_chat_action (GSimpleAction *action,
-                          GVariant      *parameter,
-                          gpointer       user_data)
-{
-  ChattyWindow *window = user_data;
-
-  chatty_window_change_view (window, CHATTY_VIEW_JOIN_CHAT);
-}
-
-
-static void
-chatty_direct_chat_action (GSimpleAction *action,
-                           GVariant      *parameter,
-                           gpointer       user_data)
-{
-  ChattyWindow *window = user_data;
-
-  chatty_window_change_view (window, CHATTY_VIEW_NEW_CHAT);
-}
-
-
-static void
-chatty_settings_action (GSimpleAction *action,
-                        GVariant      *parameter,
-                        gpointer       user_data)
-{
-  ChattyWindow *window = user_data;
-
-  chatty_window_change_view (window, CHATTY_VIEW_SETTINGS);
-}
-
-
-static void
-chatty_about_Action (GSimpleAction *action,
-                     GVariant      *parameter,
-                     gpointer       user_data)
-{
-  ChattyWindow *window = user_data;
-
-  chatty_window_change_view (window, CHATTY_VIEW_ABOUT_CHATTY);
-}
-
-
-static void
 back_button_clicked_cb (ChattyNewChatDialog *self)
 {
   g_assert (CHATTY_IS_NEW_CHAT_DIALOG (self));
@@ -585,36 +541,6 @@ chatty_new_chat_dialog_update (ChattyNewChatDialog *self)
 
 
 static void
-chatty_new_chat_dialog_constructed (GObject *object)
-{
-  GtkWindow          *window;
-  GSimpleActionGroup *simple_action_group;
-
-  const GActionEntry view_chat_list_entries [] =
-  {
-    { "group-chat", chatty_group_chat_action },
-    { "direct-chat", chatty_direct_chat_action },
-    { "settings", chatty_settings_action },
-    { "about", chatty_about_Action }
-  };
-
-  ChattyNewChatDialog *self = (ChattyNewChatDialog *)object;
-
-  window = gtk_window_get_transient_for (GTK_WINDOW (self));
-
-  simple_action_group = g_simple_action_group_new ();
-  g_action_map_add_action_entries (G_ACTION_MAP (simple_action_group),
-                                   view_chat_list_entries,
-                                   G_N_ELEMENTS (view_chat_list_entries),
-                                   window);
-
-  gtk_widget_insert_action_group (GTK_WIDGET (window),
-                                  "chat_list",
-                                  G_ACTION_GROUP (simple_action_group));
-}
-
-
-static void
 chatty_new_chat_dialog_finalize (GObject *object)
 {
   ChattyNewChatDialog *self = (ChattyNewChatDialog *)object;
@@ -630,7 +556,6 @@ chatty_new_chat_dialog_class_init (ChattyNewChatDialogClass *klass)
   GObjectClass   *object_class = G_OBJECT_CLASS (klass);
   GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
 
-  object_class->constructed  = chatty_new_chat_dialog_constructed;
   object_class->finalize = chatty_new_chat_dialog_finalize;
 
   gtk_widget_class_set_template_from_resource (widget_class,
