@@ -61,6 +61,49 @@ enum {
 
 static GParamSpec *properties[N_PROPS];
 
+static void
+chatty_app_run_cb (GObject      *object,
+                   GAsyncResult *result,
+                   gpointer      user_data)
+{
+  GDBusConnection *connection = (GDBusConnection *)object;
+  g_autoptr(GError) error = NULL;
+  g_autoptr(GVariant) variant = NULL;
+
+  variant = g_dbus_connection_call_finish (connection, result, &error);
+
+  if (error && !g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
+    g_warning ("Error: %s", error->message);
+}
+
+static void
+chatty_eds_bus_got (GObject      *object,
+                    GAsyncResult *result,
+                    gpointer      user_data)
+{
+  g_autoptr(ChattyEds) self = user_data;
+  g_autoptr(GDBusConnection) connection = NULL;
+  g_autoptr(GError) error = NULL;
+
+  connection  = g_bus_get_finish (result, &error);
+
+  if (error && !g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
+    g_warning ("Error: %s", error->message);
+  else if (!error)
+    g_dbus_connection_call (connection,
+                            "org.gnome.Contacts",
+                            "/org/gnome/Contacts",
+                            "org.gtk.Application",
+                            "Activate",
+                            g_variant_new ("(a{sv})", NULL),
+                            NULL,
+                            G_DBUS_CALL_FLAGS_NONE,
+                            -1,
+                            self->cancellable,
+                            chatty_app_run_cb,
+                            NULL);
+}
+
 static ChattyContact *
 chatty_contact_provider_matches (ChattyEds      *self,
                                  const char     *needle,
@@ -575,4 +618,20 @@ chatty_eds_find_by_number (ChattyEds  *self,
   g_return_val_if_fail (CHATTY_IS_EDS (self), NULL);
 
   return chatty_contact_provider_matches (self, phone_number, CHATTY_PROTOCOL_ANY, FALSE);
+}
+
+
+/**
+ * chatty_eds_launch_contacts:
+ * @self: A #ChattyEds
+ *
+ * Open GNOME Contacts.
+ */
+void
+chatty_eds_open_contacts_app (ChattyEds *self)
+{
+  g_bus_get (G_BUS_TYPE_SESSION,
+             self->cancellable,
+             chatty_eds_bus_got,
+             g_object_ref (self));
 }

@@ -132,10 +132,13 @@ edit_contact_button_clicked_cb (ChattyNewChatDialog *self)
 static void
 add_in_contacts_button_clicked_cb (ChattyNewChatDialog *self)
 {
+  ChattyEds *chatty_eds;
+
   g_assert (CHATTY_IS_NEW_CHAT_DIALOG (self));
 
-  chatty_dbus_gc_write_contact ("", "");
-   
+  chatty_eds = chatty_manager_get_eds (self->manager);
+  chatty_eds_open_contacts_app (chatty_eds);
+
   gtk_stack_set_visible_child_name (GTK_STACK (self->new_chat_stack), "view-new-chat");
 }
 
