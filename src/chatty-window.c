@@ -69,8 +69,6 @@ struct _ChattyWindow
   char      *uri;
   
   gboolean daemon_mode;
-  gboolean im_account_connected;
-  gboolean sms_account_connected;
 };
 
 
@@ -253,13 +251,37 @@ window_chat_row_activated_cb (GtkListBox    *box,
 static void
 window_chat_changed_cb (ChattyWindow *self)
 {
+  ChattyProtocol protocols;
+  gint mode = CHATTY_OVERLAY_EMPTY_CHAT_NO_SMS_IM;
+  gboolean has_sms, has_im;
   gboolean has_child;
 
   g_assert (CHATTY_IS_WINDOW (self));
 
   has_child = gtk_list_box_get_row_at_index (GTK_LIST_BOX (self->chats_listbox), 0) != NULL;
-  chatty_window_set_overlay_visible (self, !has_child);
+  gtk_widget_set_visible (self->overlay, !has_child);
   gtk_widget_set_sensitive (self->header_sub_menu_button, has_child);
+
+  if (has_child)
+    return;
+
+  protocols = chatty_manager_get_active_protocols (self->manager);
+  has_sms = !!(protocols & CHATTY_PROTOCOL_SMS);
+  has_im  = !!(protocols & ~CHATTY_PROTOCOL_SMS);
+
+  if (has_sms && has_im)
+    mode = CHATTY_OVERLAY_EMPTY_CHAT;
+  else if (has_sms)
+    mode = CHATTY_OVERLAY_EMPTY_CHAT_NO_IM;
+  else if (has_im)
+    mode = CHATTY_OVERLAY_EMPTY_CHAT_NO_SMS;
+
+  gtk_label_set_markup (GTK_LABEL (self->overlay_label_1),
+                        gettext (OverlayContent[mode].title));
+  gtk_label_set_markup (GTK_LABEL (self->overlay_label_2),
+                        gettext (OverlayContent[mode].text_1));
+  gtk_label_set_markup (GTK_LABEL (self->overlay_label_3),
+                        gettext (OverlayContent[mode].text_2));
 }
 
 static void
@@ -539,56 +561,6 @@ chatty_window_update_sub_header_titlebar (ChattyWindow *self,
     gtk_image_clear (GTK_IMAGE (self->sub_header_icon));
 
   gtk_label_set_label (GTK_LABEL (self->sub_header_label), title);
-}
-
-
-void
-chatty_window_set_overlay_visible (ChattyWindow *self,
-                                   gboolean      visible)
-{
-  gint   mode;
-  guint8 accounts = 0;
-
-  g_assert (CHATTY_IS_WINDOW (self));
-
-  if (visible) {
-    gtk_widget_show (GTK_WIDGET (self->overlay));
-  } else {
-    gtk_widget_hide (GTK_WIDGET (self->overlay));
-    return;
-  }
-
-  if (self->sms_account_connected)
-    accounts |= CHATTY_ACCOUNTS_SMS;
-
-  if (self->im_account_connected )
-    accounts |= CHATTY_ACCOUNTS_IM;
-
-  if (accounts == CHATTY_ACCOUNTS_IM_SMS)
-    mode = CHATTY_OVERLAY_EMPTY_CHAT;
-  else if (accounts == CHATTY_ACCOUNTS_SMS)
-    mode = CHATTY_OVERLAY_EMPTY_CHAT_NO_IM;
-  else if (accounts == CHATTY_ACCOUNTS_IM)
-    mode = CHATTY_OVERLAY_EMPTY_CHAT_NO_SMS;
-  else
-    mode = CHATTY_OVERLAY_EMPTY_CHAT_NO_SMS_IM;
-
-  gtk_image_set_from_icon_name (GTK_IMAGE (self->overlay_icon),
-                                "sm.puri.Chatty-symbolic",
-                                0);
-
-  gtk_image_set_pixel_size (GTK_IMAGE (self->overlay_icon), 96);
-
-  gtk_label_set_text (GTK_LABEL (self->overlay_label_1),
-                      gettext (OverlayContent[mode].title));
-  gtk_label_set_text (GTK_LABEL (self->overlay_label_2),
-                      gettext (OverlayContent[mode].text_1));
-  gtk_label_set_text (GTK_LABEL (self->overlay_label_3),
-                      gettext (OverlayContent[mode].text_2));
-
-  gtk_label_set_use_markup (GTK_LABEL (self->overlay_label_1), TRUE);
-  gtk_label_set_use_markup (GTK_LABEL (self->overlay_label_2), TRUE);
-  gtk_label_set_use_markup (GTK_LABEL (self->overlay_label_3), TRUE);
 }
 
 
