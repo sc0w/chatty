@@ -301,9 +301,26 @@ notify_fold_cb (GObject      *sender,
   HdyFold fold = hdy_leaflet_get_fold (HDY_LEAFLET (self->header_box));
 
   if (fold != HDY_FOLD_FOLDED)
-    chatty_blist_chat_list_select_first ();
+    chatty_window_chat_list_select_first (self);
 
   chatty_update_header (self);
+}
+
+
+void
+chatty_window_chat_list_select_first (ChattyWindow *self)
+{
+  GtkListBoxRow *row;
+
+  row = gtk_list_box_get_row_at_index (GTK_LIST_BOX(self->chats_listbox), 0);
+
+  if (row != NULL) {
+    gtk_list_box_select_row (GTK_LIST_BOX(self->chats_listbox), row);
+    window_chat_row_activated_cb (GTK_LIST_BOX(self->chats_listbox), row, self);
+  } else {
+    chatty_window_update_sub_header_titlebar (self, NULL, NULL);
+    chatty_window_change_view (self, CHATTY_VIEW_CHAT_LIST);
+  }
 }
 
 

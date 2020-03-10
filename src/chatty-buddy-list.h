@@ -27,7 +27,6 @@ PurpleBlistUiOps *chatty_blist_get_ui_ops (void);
 
 void chatty_blist_init (void);
 void chatty_blist_uninit (void);
-void chatty_blist_chat_list_select_first (void);
 void chatty_blist_refresh (void);
 void chatty_blist_contact_list_add_buddy (void);
 void chatty_blist_gnome_contacts_add_buddy (void);
