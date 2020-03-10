@@ -49,9 +49,7 @@ typedef enum {
 } ChattyWindowState;
 
 
-GtkWidget *chatty_window_new (GtkApplication *application, 
-                              gboolean        daemon_mode, 
-                              ChattySettings *settings);
+GtkWidget *chatty_window_new     (GtkApplication *application);
 void       chatty_window_set_uri (ChattyWindow *self,
                                  const char   *uri);
 

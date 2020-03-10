@@ -66,8 +66,6 @@ struct _ChattyWindow
   GtkWidget *overlay_label_3;
 
   ChattyManager *manager;
-
-  gboolean daemon_mode;
 };
 
 
@@ -75,16 +73,6 @@ G_DEFINE_TYPE (ChattyWindow, chatty_window, GTK_TYPE_APPLICATION_WINDOW)
 
 
 static void chatty_update_header (ChattyWindow *self);
-
-
-enum {
-  PROP_0,
-  PROP_DAEMON,
-  PROP_SETTINGS,
-  PROP_LAST
-};
-
-static GParamSpec *props[PROP_LAST];
 
 
 typedef struct {
@@ -682,29 +670,6 @@ window_show_connection_error (ChattyWindow    *self,
 
 
 static void
-chatty_window_set_property (GObject      *object,
-                            guint         prop_id,
-                            const GValue *value,
-                            GParamSpec   *pspec)
-{
-  ChattyWindow *self = (ChattyWindow *)object;
-
-  switch (prop_id) {
-    case PROP_DAEMON:
-      self->daemon_mode = g_value_get_boolean (value);
-      break;
-
-    case PROP_SETTINGS:
-      self->settings = g_value_dup_object (value);
-      break;
-
-    default:
-      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
-  }
-}
-
-
-static void
 chatty_window_unmap (GtkWidget *widget)
 {
   ChattyWindow *self = (ChattyWindow *)widget;
@@ -750,6 +715,7 @@ chatty_window_constructed (GObject *object)
     { "chat-info", msg_view_chat_info_action }
   };
 
+  self->settings = g_object_ref (chatty_settings_get_default ());
   chatty_settings_get_window_geometry (self->settings, &geometry);
   gtk_window_set_default_size (window, geometry.width, geometry.height);
 
@@ -757,12 +723,6 @@ chatty_window_constructed (GObject *object)
     gtk_window_maximize (window);
 
   self->new_chat_dialog = chatty_window_create_new_chat_dialog (self);
-
-  if (self->daemon_mode)
-    g_signal_connect (G_OBJECT (self),
-                      "delete-event",
-                      G_CALLBACK (gtk_widget_hide_on_delete),
-                      NULL);
 
   hdy_leaflet_set_visible_child_name (HDY_LEAFLET (self->content_box), "sidebar");
 
@@ -822,27 +782,10 @@ chatty_window_class_init (ChattyWindowClass *klass)
   GObjectClass   *object_class = G_OBJECT_CLASS (klass);
   GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
 
-  object_class->set_property = chatty_window_set_property;
   object_class->constructed  = chatty_window_constructed;
   object_class->finalize     = chatty_window_finalize;
 
   widget_class->unmap = chatty_window_unmap;
-
-  props[PROP_DAEMON] =
-    g_param_spec_boolean ("daemon-mode",
-                          "Daemon Mode",
-                          "Application started in daemon mode",
-                          FALSE,
-                          G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY);
-
-  props[PROP_SETTINGS] =
-    g_param_spec_object ("settings",
-                         "Settings",
-                         "Application settings",
-                         CHATTY_TYPE_SETTINGS,
-                         G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY | G_PARAM_STATIC_STRINGS);
-
-  g_object_class_install_properties (object_class, PROP_LAST, props);
 
   gtk_widget_class_set_template_from_resource (widget_class,
                                                "/sm/puri/chatty/"
@@ -906,17 +849,12 @@ chatty_window_init (ChattyWindow *self)
 
 
 GtkWidget *
-chatty_window_new (GtkApplication *application,
-                   gboolean        daemon_mode,
-                   ChattySettings *settings)
+chatty_window_new (GtkApplication *application)
 {
   g_assert (GTK_IS_APPLICATION (application));
-  g_assert (CHATTY_IS_SETTINGS (settings));
 
   return g_object_new (CHATTY_TYPE_WINDOW,
                        "application", application,
-                       "daemon-mode", daemon_mode,
-                       "settings", settings,
                        NULL);
 }
 
