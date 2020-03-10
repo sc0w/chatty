@@ -192,14 +192,18 @@ chatty_application_activate (GApplication *application)
   if (window) {
     show_win = TRUE;
   } else {
-    self->main_window = chatty_window_new (app,
-                                           self->daemon,
-                                           self->settings);
+    self->main_window = chatty_window_new (app);
 
     g_object_add_weak_pointer (G_OBJECT (self->main_window), (gpointer *)&self->main_window);
     show_win = !self->daemon;
 
     libpurple_init ();
+
+    if (self->daemon)
+      g_signal_connect (G_OBJECT (self->main_window),
+                        "delete-event",
+                        G_CALLBACK (gtk_widget_hide_on_delete),
+                        NULL);
   }
 
   if (show_win) {
