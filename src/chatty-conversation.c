@@ -122,17 +122,6 @@ cb_buddy_typing_stopped (PurpleAccount *account,
 
 
 static void
-cb_update_buddy_status (PurpleBuddy  *buddy,
-                        PurpleStatus *old,
-                        PurpleStatus *newstatus)
-{
-  // TODO set status icon in the buddy info-popover
-  // which can be launched from the headerbar
-  // in the messages view
-}
-
-
-static void
 cb_msg_list_message_added (ChattyMsgList *sender,
                            GtkWidget     *bubble,
                            gpointer       data)
@@ -2990,9 +2979,6 @@ chatty_conversations_init (void)
                                 "conversation-write", handle,
                                 PURPLE_CALLBACK (chatty_history_add_message),
                                 NULL, PURPLE_SIGNAL_PRIORITY_HIGHEST);
-
-  purple_signal_connect (blist_handle, "buddy-status-changed",
-                         handle, PURPLE_CALLBACK (cb_update_buddy_status), NULL);
 
   purple_signal_connect (blist_handle, "buddy-icon-changed",
                           handle, PURPLE_CALLBACK (cb_update_buddy_icon), NULL);

@@ -150,32 +150,6 @@ row_selected_cb (GtkListBox    *box,
 
 
 static void
-cb_buddy_away (PurpleBuddy  *buddy,
-               PurpleStatus *old_status,
-               PurpleStatus *status)
-{
-  // TODO set the status in the message list popover
-  g_debug ("Buddy \"%s\" (%s) changed status to %s",
-            purple_buddy_get_name (buddy),
-            purple_account_get_protocol_id (purple_buddy_get_account (buddy)),
-            purple_status_get_id (status));
-}
-
-
-static void
-cb_buddy_idle (PurpleBuddy *buddy,
-               gboolean     old_idle,
-               gboolean     idle)
-{
-  // TODO set the status in the message list popover
-  g_debug ("Buddy \"%s\" (%s) changed idle state to %s",
-            purple_buddy_get_name(buddy),
-            purple_account_get_protocol_id (purple_buddy_get_account (buddy)),
-            (idle) ? "idle" : "not idle");
-}
-
-
-static void
 cb_chatty_blist_update_privacy (PurpleBuddy *buddy)
 {
   struct _chatty_blist_node *ui_data =
@@ -1472,18 +1446,6 @@ void chatty_blist_init (void)
                          "buddy-signed-off",
                          &handle,
                          PURPLE_CALLBACK (cb_buddy_signed_on_off),
-                         NULL);
-
-  purple_signal_connect (purple_blist_get_handle (),
-                         "buddy-status-changed",
-                         &handle,
-                         PURPLE_CALLBACK (cb_buddy_away),
-                         NULL);
-
-  purple_signal_connect (purple_blist_get_handle (),
-                         "buddy-idle-changed",
-                         &handle,
-                         PURPLE_CALLBACK (cb_buddy_idle),
                          NULL);
 
   purple_signal_connect (purple_blist_get_handle (),
