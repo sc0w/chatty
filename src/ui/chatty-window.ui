@@ -93,8 +93,8 @@
             <property name="active">False</property>
             <property name="can_focus">False</property>
             <property name="receives_default">False</property>
-            <property name="action_name">msg_view.chat-info</property>
             <property name="text" translatable="yes">Chat Details</property>
+            <signal name="clicked" handler="window_show_chat_info_clicked_cb" swapped="yes"/>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -107,8 +107,8 @@
             <property name="active">False</property>
             <property name="can_focus">False</property>
             <property name="receives_default">False</property>
-            <property name="action_name">msg_view.add-contact</property>
             <property name="text" translatable="yes">Add Contact</property>
+            <signal name="clicked" handler="window_add_contact_clicked_cb" swapped="yes"/>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -133,8 +133,8 @@
             <property name="active">False</property>
             <property name="can_focus">False</property>
             <property name="receives_default">False</property>
-            <property name="action_name">msg_view.add-gnome-contact</property>
             <property name="text" translatable="yes">Add to Contacts</property>
+            <signal name="clicked" handler="window_add_in_contacts_clicked_cb" swapped="yes"/>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -158,8 +158,8 @@
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="receives_default">False</property>
-            <property name="action_name">msg_view.leave-chat</property>
             <property name="text" translatable="yes">Leave Chat</property>
+            <signal name="clicked" handler="window_leave_chat_clicked_cb" swapped="yes"/>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -171,8 +171,8 @@
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="receives_default">False</property>
-            <property name="action_name">msg_view.delete-chat</property>
             <property name="text" translatable="yes">Delete Chat</property>
+            <signal name="clicked" handler="window_delete_buddy_clicked_cb" swapped="yes"/>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -212,7 +212,7 @@
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="receives_default">False</property>
-                    <property name="action_name">win.add</property>
+                    <signal name="clicked" handler="window_add_chat_clicked_cb" swapped="yes"/>
                     <child>
                       <object class="GtkImage">
                         <property name="visible">True</property>
@@ -285,7 +285,7 @@
                     <property name="can_focus">False</property>
                     <property name="receives_default">False</property>
                     <property name="visible" bind-source="header_box" bind-property="folded" bind-flags="sync-create"/>
-                    <property name="action_name">win.back</property>
+                    <signal name="clicked" handler="window_back_clicked_cb" swapped="yes"/>
                     <child>
                       <object class="GtkImage">
                         <property name="visible">True</property>
@@ -354,7 +354,7 @@
                     <property name="visible">False</property>
                     <property name="can_focus">False</property>
                     <property name="receives_default">False</property>
-                    <property name="action_name">msg_view.chat-info</property>
+                    <signal name="clicked" handler="window_show_chat_info_clicked_cb" swapped="yes"/>
                     <child>
                       <object class="GtkImage">
                         <property name="visible">True</property>
