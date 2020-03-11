@@ -59,6 +59,8 @@ void chatty_window_update_sub_header_titlebar (ChattyWindow *self, GdkPixbuf *ic
 GtkWidget *chatty_window_get_chats_listbox (ChattyWindow *self);
 GtkWidget *chatty_window_get_convs_notebook (ChattyWindow *self);
 
+void chatty_window_chat_list_select_first (ChattyWindow *self);
+
 void chatty_window_set_new_chat_dialog_visible (ChattyWindow *self, gboolean visible);
 
 void chatty_window_set_menu_add_contact_button_visible (ChattyWindow *self, gboolean visible);

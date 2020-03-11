@@ -30,7 +30,6 @@
 #include "chatty-dbus.h"
 #define HANDY_USE_UNSTABLE_API
 #include <handy.h>
-#include "dialogs/chatty-new-chat-dialog.h"
 
 
 static void chatty_blist_new_node (PurpleBlistNode *node);
@@ -58,95 +57,6 @@ chatty_get_chats_list (void)
 }
 
 static int list_refresh_timer;
-
-// *** callbacks
-static void
-row_selected_cb (GtkListBox    *box,
-                 GtkListBoxRow *row,
-                 gpointer       user_data)
-{
-  ChattyWindow    *window;
-  PurpleBlistNode *node;
-  PurpleAccount   *account;
-  PurpleChat      *chat;
-  GdkPixbuf       *avatar;
-  const char      *chat_name;
-  const char      *number;
-
-  if (row == NULL) {
-    return;
-  }
-
-  g_object_get (row, "phone_number", &number, NULL);
-
-  if (number != NULL) {
-    chatty_blist_add_buddy_from_uri (number);
-
-    return;
-  }
-
-  window = chatty_utils_get_window ();
-
-  g_object_get (row, "data", &node, NULL);
-
-  chatty_window_set_menu_add_contact_button_visible (window, FALSE);
-  chatty_window_set_menu_add_in_contacts_button_visible (window, FALSE);
-
-  if (PURPLE_BLIST_NODE_IS_BUDDY(node)) {
-    PurpleBuddy *buddy;
-
-    buddy = (PurpleBuddy*)node;
-    account = purple_buddy_get_account (buddy);
-
-    chatty_window_set_header_chat_info_button_visible (window, FALSE);
-
-    if (chatty_blist_protocol_is_sms (account)) {
-      ChattyEds *chatty_eds;
-      ChattyContact *contact;
-
-      chatty_eds = chatty_manager_get_eds (chatty_manager_get_default ());
-      number = purple_buddy_get_name (buddy);
-      contact = chatty_eds_find_by_number (chatty_eds, number);
-
-      if (!contact) {
-        chatty_window_set_menu_add_in_contacts_button_visible (window, TRUE);
-      }
-    }
-
-    if (purple_blist_node_get_bool (PURPLE_BLIST_NODE(buddy),
-                                    "chatty-unknown-contact")) {
-
-      chatty_window_set_menu_add_contact_button_visible (window, TRUE);
-    }
-
-    purple_blist_node_set_bool (node, "chatty-autojoin", TRUE);
-
-    chatty_conv_im_with_buddy (account, purple_buddy_get_name (buddy));
-
-    chatty_window_set_new_chat_dialog_visible (window, FALSE);
-
-  } else if (PURPLE_BLIST_NODE_IS_CHAT(node)) {
-    chat = (PurpleChat*)node;
-    chat_name = purple_chat_get_name (chat);
-
-    chatty_conv_join_chat (chat);
-
-    purple_blist_node_set_bool (node, "chatty-autojoin", TRUE);
-
-    avatar = chatty_icon_get_buddy_icon (node,
-                                         NULL,
-                                         CHATTY_ICON_SIZE_SMALL,
-                                         CHATTY_COLOR_GREY,
-                                         FALSE);
- 
-    chatty_window_update_sub_header_titlebar (window, avatar, chat_name);
-    chatty_window_change_view (window, CHATTY_VIEW_MESSAGE_LIST);
-
-    chatty_window_set_new_chat_dialog_visible (window, FALSE);
- 
-    g_object_unref (avatar);
-   }
-}
 
 
 static void
@@ -545,33 +455,6 @@ chatty_blist_refresh (void)
 
 
 /**
- * chatty_blist_chat_list_select_first:
- *
- * Activate the first entry in the chats list
- *
- */
-void
-chatty_blist_chat_list_select_first (void)
-{
-  ChattyWindow  *window;
-  GtkListBoxRow *row;
-
-  window = chatty_utils_get_window ();
-
-  row = gtk_list_box_get_row_at_index (chatty_get_chats_list (), 0);
-
-  if (row != NULL) {
-    row_selected_cb (chatty_get_chats_list (), row, NULL);
-    gtk_list_box_select_row (chatty_get_chats_list (), row);
-  } else {
-    // The chats list is empty, go back to initial view
-    chatty_window_update_sub_header_titlebar (window, NULL, NULL);
-    chatty_window_change_view (window, CHATTY_VIEW_CHAT_LIST);
-  }
-}
-
-
-/**
  * chatty_blist_add_buddy_from_uri:
  *
  * @uri: a const char
@@ -757,7 +640,7 @@ chatty_blist_chat_list_leave_chat (void)
     chatty_blist_chats_remove_node (node);
   }
 
-  chatty_blist_chat_list_select_first ();
+  chatty_window_chat_list_select_first (window);
 }
 
 
@@ -855,7 +738,7 @@ chatty_blist_chat_list_remove_buddy (void)
       purple_blist_remove_chat (chat);
     }
 
-    chatty_blist_chat_list_select_first ();
+    chatty_window_chat_list_select_first (window);
 
     chatty_window_change_view (window, CHATTY_VIEW_CHAT_LIST);
   }
