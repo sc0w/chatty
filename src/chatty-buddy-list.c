@@ -58,45 +58,6 @@ chatty_get_chats_list (void)
 
 
 static void
-cb_buddy_away (PurpleBuddy  *buddy,
-               PurpleStatus *old_status,
-               PurpleStatus *status)
-{
-  // TODO set the status in the message list popover
-  g_debug ("Buddy \"%s\" (%s) changed status to %s",
-            purple_buddy_get_name (buddy),
-            purple_account_get_protocol_id (purple_buddy_get_account (buddy)),
-            purple_status_get_id (status));
-}
-
-
-static void
-cb_buddy_idle (PurpleBuddy *buddy,
-               gboolean     old_idle,
-               gboolean     idle)
-{
-  // TODO set the status in the message list popover
-  g_debug ("Buddy \"%s\" (%s) changed idle state to %s",
-            purple_buddy_get_name(buddy),
-            purple_account_get_protocol_id (purple_buddy_get_account (buddy)),
-            (idle) ? "idle" : "not idle");
-}
-
-
-static gboolean
-cb_buddy_signonoff_timeout (PurpleBuddy *buddy)
-{
-  ChattyBlistNode *chatty_node = ((PurpleBlistNode*)buddy)->ui_data;
-
-  chatty_node->recent_signonoff_timer = 0;
-
-  chatty_blist_update (purple_get_blist(), (PurpleBlistNode*)buddy);
-
-  return FALSE;
-}
-
-
-static void
 cb_chatty_blist_update_privacy (PurpleBuddy *buddy)
 {
   struct _chatty_blist_node *ui_data =
@@ -113,33 +74,14 @@ cb_chatty_blist_update_privacy (PurpleBuddy *buddy)
 static void
 cb_buddy_signed_on_off (PurpleBuddy *buddy)
 {
-  ChattyBlistNode *chatty_node;
-
   if (!((PurpleBlistNode*)buddy)->ui_data) {
     chatty_blist_new_node ((PurpleBlistNode*)buddy);
   }
 
-  chatty_node = ((PurpleBlistNode*)buddy)->ui_data;
-
-  if(chatty_node->recent_signonoff_timer > 0) {
-    purple_timeout_remove (chatty_node->recent_signonoff_timer);
-  }
-
-  chatty_node->recent_signonoff_timer =
-    purple_timeout_add_seconds (10,
-                                (GSourceFunc)cb_buddy_signonoff_timeout,
-                                buddy);
+  chatty_blist_update (purple_get_blist(), (PurpleBlistNode*)buddy);
 
   g_debug ("Buddy \"%s\"\n (%s) signed on/off", purple_buddy_get_name (buddy),
            purple_account_get_protocol_id (purple_buddy_get_account(buddy)));
-}
-
-
-static void
-cb_sign_on_off (PurpleConnection  *gc,
-                gpointer   *data)
-{
-  // TODO ...
 }
 
 
@@ -1370,18 +1312,6 @@ void chatty_blist_init (void)
                          NULL);
 
   purple_signal_connect (purple_blist_get_handle (),
-                         "buddy-status-changed",
-                         &handle,
-                         PURPLE_CALLBACK (cb_buddy_away),
-                         NULL);
-
-  purple_signal_connect (purple_blist_get_handle (),
-                         "buddy-idle-changed",
-                         &handle,
-                         PURPLE_CALLBACK (cb_buddy_idle),
-                         NULL);
-
-  purple_signal_connect (purple_blist_get_handle (),
                          "buddy-privacy-changed",
                          &handle,
                          PURPLE_CALLBACK (cb_chatty_blist_update_privacy),
@@ -1389,11 +1319,6 @@ void chatty_blist_init (void)
 
 
   conv_handle = purple_connections_get_handle ();
-
-  purple_signal_connect (conv_handle, "signed-on", &handle,
-                        PURPLE_CALLBACK(cb_sign_on_off), NULL);
-  purple_signal_connect (conv_handle, "signed-off", &handle,
-                        PURPLE_CALLBACK(cb_sign_on_off), NULL);
 
   conv_handle = purple_conversations_get_handle();
 
