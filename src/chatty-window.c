@@ -15,6 +15,8 @@
 #include "chatty-window.h"
 #include "chatty-contact-row.h"
 #include "chatty-folks.h"
+#include "chatty-dbus.h"
+#include "chatty-history.h"
 #include "chatty-manager.h"
 #include "chatty-settings.h"
 #include "chatty-message-list.h"
@@ -23,6 +25,7 @@
 #include "chatty-manager.h"
 #include "chatty-purple-init.h"
 #include "chatty-icons.h"
+#include "chatty-utils.h"
 #include "dialogs/chatty-settings-dialog.h"
 #include "dialogs/chatty-new-chat-dialog.h"
 #include "dialogs/chatty-new-muc-dialog.h"
@@ -106,6 +109,43 @@ overlay_content_t OverlayContent[6] = {
   }
 };
 
+
+static void
+chatty_blist_chats_remove_node (PurpleBlistNode *node)
+{
+  ChattyBlistNode *chatty_node = node->ui_data;
+
+  if (!chatty_node)
+    return;
+
+  g_free(chatty_node->conv.last_message);
+  g_free(chatty_node->conv.last_msg_timestamp);
+  chatty_node->conv.last_message = NULL;
+  chatty_node->conv.last_msg_timestamp = NULL;
+
+  if (!chatty_node->row_chat)
+    return;
+
+  gtk_widget_destroy (GTK_WIDGET (chatty_node->row_chat));
+  chatty_node->row_chat = NULL;
+}
+
+
+static PurpleBlistNode *
+chatty_get_selected_node (ChattyWindow *self)
+{
+  GtkListBoxRow *row;
+  PurpleBlistNode *node = NULL;
+
+  row = gtk_list_box_get_selected_row (GTK_LIST_BOX (self->chats_listbox));
+
+  if (row != NULL)
+    g_object_get (row, "data", &node, NULL);
+
+  return node;
+}
+
+
 static gint
 chatty_blist_sort (GtkListBoxRow *row1,
                    GtkListBoxRow *row2,
@@ -167,7 +207,7 @@ window_chat_row_activated_cb (GtkListBox    *box,
   g_object_get (row, "phone_number", &number, NULL);
 
   if (number != NULL) {
-    chatty_blist_add_buddy_from_uri (number);
+    chatty_window_set_uri (self, number);
 
     return;
   }
@@ -354,36 +394,187 @@ chatty_update_header (ChattyWindow *self)
 static void
 window_delete_buddy_clicked_cb (ChattyWindow *self)
 {
+  PurpleBlistNode *node;
+  PurpleBuddy     *buddy;
+  ChattyBlistNode *ui;
+  PurpleChat      *chat;
+  GtkWidget       *dialog;
+  GHashTable      *components;
+  const char      *name;
+  const char      *text;
+  const char      *sub_text;
+  int              response;
+  const char      *conv_name;
+
   g_assert (CHATTY_IS_WINDOW (self));
 
-  chatty_blist_chat_list_remove_buddy ();
+  node = chatty_get_selected_node (self);
+
+  if (node == NULL) {
+    chatty_window_change_view (self, CHATTY_VIEW_CHAT_LIST);
+
+    return;
+  }
+
+  ui = node->ui_data;
+
+  if (PURPLE_BLIST_NODE_IS_CHAT(node)) {
+    chat = (PurpleChat*)node;
+    name = purple_chat_get_name (chat);
+    text = _("Disconnect group chat");
+    sub_text = _("This removes chat from chats list");
+  } else {
+    buddy = (PurpleBuddy*)node;
+    name = purple_buddy_get_alias (buddy);
+    text = _("Delete chat with");
+    sub_text = _("This deletes the conversation history");
+  }
+
+  dialog = gtk_message_dialog_new (GTK_WINDOW (self),
+                                   GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+                                   GTK_MESSAGE_QUESTION,
+                                   GTK_BUTTONS_NONE,
+                                   "%s %s",
+                                   text, name);
+
+  gtk_dialog_add_buttons (GTK_DIALOG (dialog),
+                          _("Cancel"),
+                          GTK_RESPONSE_CANCEL,
+                          _("Delete"),
+                          GTK_RESPONSE_OK,
+                          NULL);
+
+  gtk_message_dialog_format_secondary_text (GTK_MESSAGE_DIALOG (dialog),
+                                            "%s",
+                                            sub_text);
+
+  gtk_dialog_set_default_response (GTK_DIALOG (dialog), GTK_RESPONSE_CANCEL);
+  gtk_window_set_position (GTK_WINDOW (dialog), GTK_WIN_POS_CENTER_ON_PARENT);
+
+  response = gtk_dialog_run (GTK_DIALOG (dialog));
+
+  if (response == GTK_RESPONSE_OK) {
+    if (PURPLE_BLIST_NODE_IS_BUDDY (node)) {
+      chatty_history_delete_im (buddy->account->username, buddy->name);
+
+      purple_account_remove_buddy (buddy->account, buddy, NULL);
+      purple_conversation_destroy (ui->conv.conv);
+      purple_blist_remove_buddy (buddy);
+
+      chatty_window_update_sub_header_titlebar (self, NULL, "");
+    } else if (PURPLE_BLIST_NODE_IS_CHAT (node)) {
+      conv_name = purple_conversation_get_name (ui->conv.conv);
+      chatty_history_delete_chat (ui->conv.conv->account->username, conv_name);
+      // TODO: LELAND: Is this the right place? After recreating a recently
+      // deleted chat (same session), the conversation is still in memory
+      // somewhere and when re-joining the same chat, the db is not re-populated
+      // (until next app session) since there is no server call. Ask @Andrea
+
+      components = purple_chat_get_components (chat);
+      g_hash_table_steal (components, "history_since");
+      purple_blist_remove_chat (chat);
+    }
+
+    chatty_window_chat_list_select_first (self);
+
+    chatty_window_change_view (self, CHATTY_VIEW_CHAT_LIST);
+  }
+
+  gtk_widget_destroy (dialog);
 }
 
 
 static void
 window_leave_chat_clicked_cb (ChattyWindow *self)
 {
+  PurpleBlistNode *node;
+  ChattyBlistNode *ui;
+
   g_assert (CHATTY_IS_WINDOW (self));
 
-  chatty_blist_chat_list_leave_chat ();
+  node = chatty_get_selected_node (self);
+
+  if (node == NULL) {
+    chatty_window_change_view (self, CHATTY_VIEW_CHAT_LIST);
+
+    return;
+  }
+
+  if (node) {
+    ui = node->ui_data;
+
+    purple_blist_node_set_bool (node, "chatty-autojoin", FALSE);
+    purple_conversation_destroy (ui->conv.conv);
+  }
+
+  if (PURPLE_BLIST_NODE_IS_CHAT (node))
+    chatty_blist_chats_remove_node (node);
+
+  chatty_window_chat_list_select_first (self);
 }
 
 
 static void
 window_add_contact_clicked_cb (ChattyWindow *self)
 {
+  PurpleAccount      *account;
+  PurpleConversation *conv;
+  PurpleBuddy        *buddy;
+  const char         *who;
+  g_autofree gchar   *number = NULL;
+
   g_assert (CHATTY_IS_WINDOW (self));
 
-  chatty_blist_contact_list_add_buddy ();
+  buddy = PURPLE_BUDDY (chatty_get_selected_node (self));
+  g_return_if_fail (buddy != NULL);
+
+  conv = chatty_conv_container_get_active_purple_conv (GTK_NOTEBOOK (self->convs_notebook));
+
+  account = purple_conversation_get_account (conv);
+  purple_account_add_buddy (account, buddy);
+  purple_blist_node_remove_setting (PURPLE_BLIST_NODE(buddy), "chatty-unknown-contact");
+  purple_blist_node_set_bool (PURPLE_BLIST_NODE (buddy), "chatty-notifications", TRUE);
+
+  if (chatty_blist_protocol_is_sms (account)) {
+    ChattyEds *chatty_eds;
+    ChattyContact *contact = NULL;
+
+    chatty_eds = chatty_manager_get_eds (self->manager);
+
+    who = purple_buddy_get_name (buddy);
+
+    number = chatty_utils_check_phonenumber (who);
+
+    if (number)
+      contact = chatty_eds_find_by_number (chatty_eds, number);
+
+    if (contact)
+      chatty_dbus_gc_write_contact (who, number);
+  }
 }
 
 
 static void
 window_add_in_contacts_clicked_cb (ChattyWindow *self)
 {
+  PurpleBuddy      *buddy;
+  PurpleContact    *contact;
+  const char       *who;
+  const char       *alias;
+  g_autofree gchar *number = NULL;
+
   g_assert (CHATTY_IS_WINDOW (self));
 
-  chatty_blist_gnome_contacts_add_buddy ();
+  buddy = PURPLE_BUDDY (chatty_get_selected_node (self));
+  g_return_if_fail (buddy != NULL);
+
+  who = purple_buddy_get_name (buddy);
+  contact = purple_buddy_get_contact (buddy);
+  alias = purple_contact_get_alias (contact);
+
+  number = chatty_utils_check_phonenumber (who);
+
+  chatty_dbus_gc_write_contact (alias, number);
 }
 
 
@@ -816,7 +1007,50 @@ void
 chatty_window_set_uri (ChattyWindow *self,
                        const char   *uri)
 {
-  chatty_blist_add_buddy_from_uri (uri);
+  ChattyEds     *chatty_eds;
+  ChattyContact *contact;
+  PurpleAccount *account;
+  PurpleBuddy   *buddy;
+  char          *who = NULL;
+  const char    *alias;
+
+  account = purple_accounts_find ("SMS", "prpl-mm-sms");
+
+  if (!purple_account_is_connected (account))
+    return;
+
+  who = chatty_utils_check_phonenumber (uri);
+
+  chatty_eds = chatty_manager_get_eds (self->manager);
+  contact = chatty_eds_find_by_number (chatty_eds, who);
+
+  if (contact)
+    alias = chatty_item_get_name (CHATTY_ITEM (contact));
+  else
+    alias = uri;
+
+  g_return_if_fail (who != NULL);
+
+  buddy = purple_find_buddy (account, who);
+
+  if (!buddy) {
+    buddy = purple_buddy_new (account, who, alias);
+
+    purple_blist_add_buddy (buddy, NULL, NULL, NULL);
+  }
+
+  if (!purple_buddy_icons_node_has_custom_icon (PURPLE_BLIST_NODE(buddy)) && contact)
+    chatty_folks_set_purple_buddy_data (contact, account, g_strdup (who));
+
+  purple_blist_node_set_bool (PURPLE_BLIST_NODE(buddy), "chatty-autojoin", TRUE);
+
+  chatty_conv_im_with_buddy (account, g_strdup (who));
+
+  gtk_widget_hide (self->new_chat_dialog);
+
+  chatty_window_change_view (self, CHATTY_VIEW_MESSAGE_LIST);
+
+  g_free (who);
 }
 
 
