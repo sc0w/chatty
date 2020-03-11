@@ -30,7 +30,6 @@ typedef struct _chatty_blist_node {
   ChattyContactRow *row_chat;
   ChattyContactRow *row_contact;
   ChattyPpBuddy    *buddy_object; /* Set only if node is buddy */
-  gint              recent_signonoff_timer;
 
   struct {
     PurpleConversation   *conv;

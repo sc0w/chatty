@@ -508,9 +508,6 @@ chatty_blist_remove (PurpleBuddyList *list,
   chatty_manager_remove_node (chatty_manager_get_default (), node);
 
   if (chatty_node) {
-    if (chatty_node->recent_signonoff_timer > 0) {
-      purple_timeout_remove(chatty_node->recent_signonoff_timer);
-    }
 
     purple_signals_disconnect_by_handle (node->ui_data);
 
