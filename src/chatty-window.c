@@ -295,6 +295,30 @@ notify_fold_cb (GObject      *sender,
 }
 
 
+static void
+window_add_chat_clicked_cb (ChattyWindow *self)
+{
+  g_assert (CHATTY_IS_WINDOW (self));
+
+  gtk_widget_show (GTK_WIDGET (self->new_chat_dialog));
+}
+
+
+static void
+window_back_clicked_cb (ChattyWindow *self)
+{
+  g_assert (CHATTY_IS_WINDOW (self));
+
+  /*
+   * Clears 'selected_node' which is evaluated to
+   * block the counting of pending messages
+   * while chatting with this node
+   */
+  gtk_list_box_unselect_all (GTK_LIST_BOX (self->chats_listbox));
+  chatty_window_change_view (self, CHATTY_VIEW_CHAT_LIST);
+}
+
+
 void
 chatty_window_chat_list_select_first (ChattyWindow *self)
 {
@@ -328,87 +352,60 @@ chatty_update_header (ChattyWindow *self)
 
 
 static void
-msg_view_delete_action (GSimpleAction *action,
-                        GVariant      *parameter,
-                        gpointer       user_data)
+window_delete_buddy_clicked_cb (ChattyWindow *self)
 {
+  g_assert (CHATTY_IS_WINDOW (self));
+
   chatty_blist_chat_list_remove_buddy ();
 }
 
 
 static void
-msg_view_leave_action (GSimpleAction *action,
-                       GVariant      *parameter,
-                       gpointer       user_data)
+window_leave_chat_clicked_cb (ChattyWindow *self)
 {
+  g_assert (CHATTY_IS_WINDOW (self));
+
   chatty_blist_chat_list_leave_chat ();
 }
 
+
 static void
-msg_view_add_contact_action (GSimpleAction *action,
-                             GVariant      *parameter,
-                             gpointer       user_data)
+window_add_contact_clicked_cb (ChattyWindow *self)
 {
+  g_assert (CHATTY_IS_WINDOW (self));
+
   chatty_blist_contact_list_add_buddy ();
 }
 
+
 static void
-msg_view_add_in_contacts_action (GSimpleAction *action,
-                                 GVariant      *parameter,
-                                 gpointer       user_data)
+window_add_in_contacts_clicked_cb (ChattyWindow *self)
 {
+  g_assert (CHATTY_IS_WINDOW (self));
+
   chatty_blist_gnome_contacts_add_buddy ();
 }
 
-static void
-msg_view_chat_info_action (GSimpleAction *action,
-                           GVariant      *parameter,
-                           gpointer       user_data)
-{
-  ChattyWindow *self = user_data;
-
-  chatty_window_change_view (self, CHATTY_VIEW_CHAT_INFO);
-}
-
 
 static void
-chatty_add_contact_action (GSimpleAction *action,
-                           GVariant      *parameter,
-                           gpointer       user_data)
+window_show_chat_info_clicked_cb (ChattyWindow *self)
 {
-  ChattyWindow *self = user_data;
+  GtkWidget *dialog;
+  ChattyConversation *chatty_conv;
 
-  chatty_window_change_view (self, CHATTY_VIEW_NEW_CHAT);
+  g_assert (CHATTY_IS_WINDOW (self));
+
+  chatty_conv = chatty_conv_container_get_active_chatty_conv (GTK_NOTEBOOK (self->convs_notebook));
+
+  if (purple_conversation_get_type (chatty_conv->conv) == PURPLE_CONV_TYPE_IM)
+    dialog = chatty_user_info_dialog_new (GTK_WINDOW (self), (gpointer)chatty_conv);
+  else if (purple_conversation_get_type (chatty_conv->conv) == PURPLE_CONV_TYPE_CHAT)
+    dialog = chatty_muc_info_dialog_new (GTK_WINDOW (self), (gpointer)chatty_conv);
+
+  gtk_dialog_run (GTK_DIALOG (dialog));
+
+  gtk_widget_destroy (dialog);
 }
-
-
-static void
-chatty_back_action (GSimpleAction *action,
-                    GVariant      *parameter,
-                    gpointer       user_data)
-{
-  ChattyWindow *self = user_data;
-
-  /*
-   * Clears 'selected_node' which is evaluated to
-   * block the counting of pending messages
-   * while chatting with this node
-   */
-  gtk_list_box_unselect_all (GTK_LIST_BOX (self->chats_listbox));
-  chatty_window_change_view (self, CHATTY_VIEW_CHAT_LIST);
-}
-
-
-static void
-chatty_new_chat_action (GSimpleAction *action,
-                        GVariant      *parameter,
-                        gpointer       user_data)
-{
-  ChattyWindow *self = user_data;
-
-  chatty_window_change_view (self, CHATTY_VIEW_NEW_CHAT);
-}
-
 
 static void
 chatty_window_show_settings_dialog (ChattyWindow *self)
@@ -448,28 +445,6 @@ chatty_window_create_new_chat_dialog (ChattyWindow *self)
   dialog = chatty_new_chat_dialog_new (GTK_WINDOW (self));
 
   return dialog;
-}
-
-
-static void
-chatty_window_show_chat_info (ChattyWindow *self)
-{
-  GtkWidget *dialog;
-
-  ChattyConversation *chatty_conv;
-
-  g_assert (CHATTY_IS_WINDOW (self));
-
-  chatty_conv = chatty_conv_container_get_active_chatty_conv (GTK_NOTEBOOK (self->convs_notebook));
-
-  if (purple_conversation_get_type (chatty_conv->conv) == PURPLE_CONV_TYPE_IM)
-    dialog = chatty_user_info_dialog_new (GTK_WINDOW (self), (gpointer)chatty_conv);
-  else if (purple_conversation_get_type (chatty_conv->conv) == PURPLE_CONV_TYPE_CHAT)
-    dialog = chatty_muc_info_dialog_new (GTK_WINDOW (self), (gpointer)chatty_conv);
-
-  gtk_dialog_run (GTK_DIALOG (dialog));
-
-  gtk_widget_destroy (dialog);
 }
 
 
@@ -532,12 +507,6 @@ chatty_window_change_view (ChattyWindow      *self,
   switch (view) {
     case CHATTY_VIEW_SETTINGS:
       chatty_window_show_settings_dialog (self);
-      break;
-    case CHATTY_VIEW_NEW_CHAT:
-      gtk_widget_show (GTK_WIDGET (self->new_chat_dialog));
-      break;
-    case CHATTY_VIEW_CHAT_INFO:
-      chatty_window_show_chat_info (self);
       break;
     case CHATTY_VIEW_MESSAGE_LIST:
       hdy_leaflet_set_visible_child_name (HDY_LEAFLET (self->content_box), "content");
@@ -714,24 +683,6 @@ chatty_window_constructed (GObject *object)
   GtkWindow    *window = (GtkWindow *)object;
   GdkRectangle  geometry;
 
-  GSimpleActionGroup *simple_action_group;
-
-  const GActionEntry window_action_entries [] = {
-    { "add", chatty_new_chat_action },
-    { "add-contact", chatty_add_contact_action },
-    { "back", chatty_back_action },
-  };
-
-
-  const GActionEntry msg_view_entries [] =
-  {
-    { "add-contact", msg_view_add_contact_action },
-    { "add-gnome-contact", msg_view_add_in_contacts_action },
-    { "leave-chat", msg_view_leave_action },
-    { "delete-chat", msg_view_delete_action },
-    { "chat-info", msg_view_chat_info_action }
-  };
-
   self->settings = g_object_ref (chatty_settings_get_default ());
   chatty_settings_get_window_geometry (self->settings, &geometry);
   gtk_window_set_default_size (window, geometry.width, geometry.height);
@@ -747,28 +698,6 @@ chatty_window_constructed (GObject *object)
                                 GTK_ENTRY (self->chats_search_entry));
 
   gtk_widget_set_sensitive (GTK_WIDGET (self->header_sub_menu_button), FALSE);
-
-  simple_action_group = g_simple_action_group_new ();
-
-  g_action_map_add_action_entries (G_ACTION_MAP (simple_action_group),
-                                   window_action_entries,
-                                   G_N_ELEMENTS (window_action_entries),
-                                   window);
-
-  gtk_widget_insert_action_group (GTK_WIDGET (window),
-                                  "win",
-                                  G_ACTION_GROUP (simple_action_group));
-
-  simple_action_group = g_simple_action_group_new ();
-
-  g_action_map_add_action_entries (G_ACTION_MAP (simple_action_group),
-                                   msg_view_entries,
-                                   G_N_ELEMENTS (msg_view_entries),
-                                   window);
-
-  gtk_widget_insert_action_group (GTK_WIDGET (window),
-                                  "msg_view",
-                                  G_ACTION_GROUP (simple_action_group));
 
   chatty_window_change_view (self, CHATTY_VIEW_CHAT_LIST);
 
@@ -830,6 +759,13 @@ chatty_window_class_init (ChattyWindowClass *klass)
   gtk_widget_class_bind_template_child (widget_class, ChattyWindow, overlay_label_3);
 
   gtk_widget_class_bind_template_callback (widget_class, notify_fold_cb);
+  gtk_widget_class_bind_template_callback (widget_class, window_add_chat_clicked_cb);
+  gtk_widget_class_bind_template_callback (widget_class, window_back_clicked_cb);
+  gtk_widget_class_bind_template_callback (widget_class, window_show_chat_info_clicked_cb);
+  gtk_widget_class_bind_template_callback (widget_class, window_add_contact_clicked_cb);
+  gtk_widget_class_bind_template_callback (widget_class, window_add_in_contacts_clicked_cb);
+  gtk_widget_class_bind_template_callback (widget_class, window_leave_chat_clicked_cb);
+  gtk_widget_class_bind_template_callback (widget_class, window_delete_buddy_clicked_cb);
   gtk_widget_class_bind_template_callback (widget_class, header_visible_child_cb);
   gtk_widget_class_bind_template_callback (widget_class, window_chat_row_activated_cb);
   gtk_widget_class_bind_template_callback (widget_class, window_chat_changed_cb);
