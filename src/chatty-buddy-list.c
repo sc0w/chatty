@@ -56,8 +56,6 @@ chatty_get_chats_list (void)
   return list;
 }
 
-static int list_refresh_timer;
-
 
 static void
 cb_buddy_away (PurpleBuddy  *buddy,
@@ -182,7 +180,6 @@ cb_conversation_updated (PurpleConversation   *conv,
         count = GPOINTER_TO_INT(purple_conversation_get_data (l->data, "unseen-count"));
       }
 
-      // TODO display the number in a notification icon
       g_debug ("%d unread message from %s",
                count, purple_conversation_get_title (l->data));
 
@@ -190,6 +187,8 @@ cb_conversation_updated (PurpleConversation   *conv,
     }
 
     g_list_free (convs);
+
+    chatty_blist_refresh ();
   }
 }
 
@@ -379,15 +378,6 @@ cb_auto_join_chats (gpointer data)
   }
 
   return FALSE;
-}
-
-
-static gboolean
-cb_chatty_blist_refresh_timer (PurpleBuddyList *list)
-{
-  cb_chatty_prefs_changed ();
-
-  return TRUE;
 }
 
 
@@ -857,10 +847,6 @@ chatty_blist_show (PurpleBuddyList *list)
 {
   void  *handle;
 
-  list_refresh_timer = purple_timeout_add_seconds (30,
-                                                   (GSourceFunc)cb_chatty_blist_refresh_timer,
-                                                   list);
-
   purple_blist_set_visible (TRUE);
 
   handle = chatty_blist_get_handle();
@@ -1240,12 +1226,6 @@ chatty_blist_destroy (PurpleBuddyList *list)
 
   list = purple_get_blist ();
   node = list->root;
-
-  if (list_refresh_timer) {
-    purple_timeout_remove (list_refresh_timer);
-
-    list_refresh_timer = 0;
-  }
 
   while (node)
   {
