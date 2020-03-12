@@ -1,3 +1,76 @@
+chatty (0.1.9) amber; urgency=medium
+
+  [ Mohammed Sadiq ]
+  * purple-request: Fix a possible crash
+
+  [ Andrea Schaefer ]
+  * Fix issue #293 'Enable notifications by defaul'
+  * Fix #284 'Add xmpp account as user@server'
+
+  [ Mohammed Sadiq ]
+  * pp-account: Simplify handling XMPP id
+
+  [ Andrea Schaefer ]
+  * Fix phonenumber formatting
+
+  [ Mohammed Sadiq ]
+  * main: Remove srand()
+  * application: Don’t set uri to NULL on startup
+  * window: Fix a possible leak
+  * window: Remove an unused method
+  * user-info-dialog: Add dialog to select avatar
+  * window: Add about dialog
+  * Remove chatty-dialogs.c
+
+  [ Nikhil Jha ]
+  * fix build on GCC 10
+
+  [ Andrea Schaefer ]
+  * Add window geometry to gsettings
+
+  [ Mohammed Sadiq ]
+  * contact-provider: Port to evolution-data-server
+  * control: build depend on libebook1.2-dev
+
+  [ Andrea Schaefer ]
+  * Add updated po files
+  * Update po sources
+  * Fix pt_BR.po
+
+  [ Mohammed Sadiq ]
+  * window: Simplify updating UI on account changes
+  * window: Remove unused enums
+  * manager: Add “connection-error” signal
+  * window: Simplify handling ‘sms’ URI
+  * Remove code no longer required
+  * buddy-list: Remove unused code
+  * application: Simplify handling sms uri
+  * new-chat-dialog: Use chatty-list-row for chats
+  * window: Simplify handling menu items
+  * eds: Add API to open GNOME Contacts
+  * history: Simplify calculating message direction
+  * application: Simplify handling URI
+  * window: Simplify updating overlay
+
+  [ Andrea Schaefer ]
+  * Code cleanup
+
+  [ Mohammed Sadiq ]
+  * window: Simplify
+
+  [ Andrea Schaefer ]
+  * Remove chats-list refresh timer
+  * Code cleanup
+  * Remove unued code
+
+  [ Mohammed Sadiq ]
+  * window: Use callbacks instead of actions
+  * Move some buddy-list methods to window
+  * buddy: Remove unused code
+  * Move some buddy-list methods to new-muc-dialog
+
+ -- Andrea Schaefer <andrea.schaefer@puri.sm>  Thu, 12 Mar 2020 14:13:55 +0100
+
 chatty (0.1.8) amber-phone; urgency=medium
 
   [ Mohammed Sadiq ]
