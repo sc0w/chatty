@@ -231,12 +231,14 @@ contact_row_activated_cb (ChattyNewChatDialog *self,
 
   g_assert (CHATTY_IS_NEW_CHAT_DIALOG (self));
 
+  window = chatty_utils_get_window ();
+
   if (CHATTY_IS_CONTACT_ROW (row)) {
     g_object_get (row, "data", &node, NULL);
     g_object_get (row, "phone_number", &number, NULL);
 
     if (number != NULL) {
-      chatty_blist_add_buddy_from_uri (number);
+      chatty_window_set_uri (window, number);
 
       return;
     }
@@ -247,7 +249,7 @@ contact_row_activated_cb (ChattyNewChatDialog *self,
 
     if (CHATTY_IS_CONTACT (item)) {
       number = chatty_contact_get_value (CHATTY_CONTACT (item));
-      chatty_blist_add_buddy_from_uri (number);
+      chatty_window_set_uri (window, number);
 
       return;
     }
@@ -261,8 +263,6 @@ contact_row_activated_cb (ChattyNewChatDialog *self,
   } else {
     g_return_if_reached ();
   }
-
-  window = chatty_utils_get_window ();
 
   chatty_window_set_menu_add_contact_button_visible (window, FALSE);
   chatty_window_set_menu_add_in_contacts_button_visible (window, FALSE);

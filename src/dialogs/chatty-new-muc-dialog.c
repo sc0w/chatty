@@ -14,6 +14,7 @@
 #include "chatty-window.h"
 #include "users/chatty-pp-account.h"
 #include "chatty-buddy-list.h"
+#include "chatty-conversation.h"
 #include "chatty-dbus.h"
 #include "chatty-utils.h"
 #include "chatty-new-muc-dialog.h"
@@ -41,6 +42,51 @@ struct _ChattyNewMucDialog
 
 
 G_DEFINE_TYPE (ChattyNewMucDialog, chatty_new_muc_dialog, HDY_TYPE_DIALOG)
+
+
+static void
+chatty_blist_join_group_chat (PurpleAccount *account,
+                              const char    *group_chat_id,
+                              const char    *room_alias,
+                              const char    *user_alias,
+                              const char    *pwd)
+{
+  PurpleChat               *chat;
+  PurpleGroup              *group;
+  PurpleConnection         *gc;
+  PurplePluginProtocolInfo *info;
+  GHashTable               *hash = NULL;
+
+  if (!purple_account_is_connected (account) || !group_chat_id)
+    return;
+
+  gc = purple_account_get_connection (account);
+
+  info = PURPLE_PLUGIN_PROTOCOL_INFO(purple_connection_get_prpl (gc));
+
+  if (info->chat_info_defaults != NULL)
+    hash = info->chat_info_defaults(gc, group_chat_id);
+
+  if (*user_alias != '\0')
+    g_hash_table_replace (hash, "handle", g_strdup (user_alias));
+
+  chat = purple_chat_new (account, group_chat_id, hash);
+
+  if (chat != NULL) {
+    if ((group = purple_find_group ("Chats")) == NULL) {
+      group = purple_group_new ("Chats");
+      purple_blist_add_group (group, NULL);
+    }
+
+    purple_blist_add_chat (chat, group, NULL);
+    purple_blist_alias_chat (chat, room_alias);
+    purple_blist_node_set_bool ((PurpleBlistNode*)chat,
+                                "chatty-autojoin",
+                                TRUE);
+
+    chatty_conv_join_chat (chat);
+  }
+}
 
 
 static void
