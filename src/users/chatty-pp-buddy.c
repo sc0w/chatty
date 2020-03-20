@@ -39,6 +39,7 @@ struct _ChattyPpBuddy
   PurpleAccount     *pp_account;
   PurpleBuddy       *pp_buddy;
   ChattyContact     *contact;
+  PurpleConversation *conv;
 
   PurpleStoredImage *pp_avatar;
   GdkPixbuf         *avatar;
@@ -306,6 +307,9 @@ chatty_pp_buddy_constructed (GObject *object)
 
   if (!has_pp_buddy)
     chatty_add_new_buddy (self);
+
+  PURPLE_BLIST_NODE (self->pp_buddy)->ui_data = self;
+  g_object_add_weak_pointer (G_OBJECT (self), (gpointer *)&PURPLE_BLIST_NODE (self->pp_buddy)->ui_data);
 }
 
 static void
@@ -380,16 +384,10 @@ ChattyPpBuddy *
 chatty_pp_buddy_get_object (PurpleBuddy *buddy)
 {
   PurpleBlistNode *node = PURPLE_BLIST_NODE (buddy);
-  ChattyBlistNode *chatty_node;
 
   g_return_val_if_fail (PURPLE_BLIST_NODE_IS_BUDDY (node), NULL);
 
-  chatty_node = node->ui_data;
-
-  if (!chatty_node)
-    return NULL;
-
-  return chatty_node->buddy_object;
+  return node->ui_data;
 }
 
 PurpleAccount *
@@ -399,6 +397,24 @@ chatty_pp_buddy_get_account (ChattyPpBuddy *self)
 
   return purple_buddy_get_account (self->pp_buddy);
 }
+
+PurpleConversation *
+chatty_pp_buddy_get_chat (ChattyPpBuddy *self)
+{
+  g_return_val_if_fail (CHATTY_IS_PP_BUDDY (self), NULL);
+
+  return self->conv;
+}
+
+void
+chatty_pp_buddy_set_chat (ChattyPpBuddy      *self,
+                          PurpleConversation *conv)
+{
+  g_return_if_fail (CHATTY_IS_PP_BUDDY (self));
+
+  self->conv = conv;
+}
+
 
 PurpleBuddy *
 chatty_pp_buddy_get_buddy (ChattyPpBuddy *self)
