@@ -55,7 +55,7 @@
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">False</property>
-            <property name="text" translatable="yes">New Message...</property>
+            <property name="text" translatable="yes">New Message…</property>
             <signal name="clicked" handler="window_new_message_clicked_cb" swapped="yes"/>
           </object>
           <packing>
@@ -68,7 +68,7 @@
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">False</property>
-            <property name="text" translatable="yes">New Group Message...</property>
+            <property name="text" translatable="yes">New Group Message…</property>
             <signal name="clicked" handler="window_new_muc_clicked_cb" swapped="yes"/>
           </object>
           <packing>
@@ -81,7 +81,7 @@
             <property name="visible">False</property>
             <property name="can_focus">True</property>
             <property name="receives_default">False</property>
-            <property name="text" translatable="yes">New Bulk SMS...</property>
+            <property name="text" translatable="yes">New Bulk SMS…</property>
           </object>
           <packing>
             <property name="expand">False</property>
