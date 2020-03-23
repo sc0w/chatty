@@ -439,10 +439,12 @@ notify_fold_cb (GObject      *sender,
   else
     gtk_list_box_set_selection_mode (GTK_LIST_BOX (self->chats_listbox), GTK_SELECTION_SINGLE);
 
-  if (self->selected_item)
-    chatty_window_open_item (self, self->selected_item);
-  else if (fold != HDY_FOLD_FOLDED)
+  if (fold == HDY_FOLD_FOLDED) {
+    self->selected_item = NULL;
+    hdy_leaflet_set_visible_child_name (HDY_LEAFLET (self->content_box), "sidebar");
+  } else {
     chatty_window_chat_list_select_first (self);
+  }
 
   chatty_update_header (self);
 }
