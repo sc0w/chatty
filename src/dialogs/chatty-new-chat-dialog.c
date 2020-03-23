@@ -92,6 +92,15 @@ dialog_filter_item_cb (ChattyItem          *item,
     if (chatty_pp_buddy_get_contact (CHATTY_PP_BUDDY (item)))
       return FALSE;
 
+  if (CHATTY_IS_PP_BUDDY (item)) {
+    PurpleAccount *account;
+
+    account = chatty_pp_buddy_get_account (CHATTY_PP_BUDDY (item));
+
+    if (!purple_account_is_connected (account))
+      return FALSE;
+  }
+
   return chatty_item_matches (item, self->search_str, self->active_protocols, TRUE);
 }
 
