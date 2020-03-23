@@ -654,6 +654,9 @@ manager_wrote_chat_im_msg_cb (PurpleAccount      *account,
 
   if (node)
     chatty_chat_set_last_message (chat, message);
+
+  chatty_chat_set_last_msg_time (chat, time (NULL));
+  gtk_sorter_changed (self->chat_sorter, GTK_SORTER_ORDER_TOTAL);
 }
 
 
