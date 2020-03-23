@@ -226,15 +226,20 @@ chatty_pp_buddy_get_avatar (ChattyItem *item)
 {
   ChattyPpBuddy *self = (ChattyPpBuddy *)item;
   PurpleContact *contact;
-  PurpleStoredImage *img;
+  PurpleStoredImage *img = NULL;
   PurpleBuddyIcon *icon = NULL;
   gconstpointer data = NULL;
   size_t len;
 
   g_assert (CHATTY_IS_PP_BUDDY (self));
 
+  if (!self->pp_buddy)
+    return NULL;
+
   contact = purple_buddy_get_contact (self->pp_buddy);
-  img = purple_buddy_icons_node_find_custom_icon ((PurpleBlistNode*)contact);
+
+  if (contact)
+    img = purple_buddy_icons_node_find_custom_icon ((PurpleBlistNode*)contact);
 
   if (!img) {
     icon = purple_buddy_get_icon (self->pp_buddy);
