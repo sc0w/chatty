@@ -641,37 +641,21 @@ manager_wrote_chat_im_msg_cb (PurpleAccount      *account,
                               PurpleMessageFlags  flag,
                               ChattyManager      *self)
 {
+  PurpleBlistNode *node = NULL;
   ChattyChat *chat;
 
   chat = chatty_manager_find_purple_conv (self, conv);
 
   if (chat && (flag & PURPLE_MESSAGE_RECV))
     chatty_chat_set_unread_count (chat, chatty_chat_get_unread_count (chat) + 1);
-}
-
-
-static void
-manager_conversation_write_cb (PurpleAccount           *pa,
-                               PurpleConvMessage       *pcm,
-                               char                   **sid,
-                               PurpleConversationType   type,
-                               ChattyManager           *self)
-{
-  PurpleBlistNode *node = NULL;
-  ChattyChat *chat;
-
-  if (!pcm->conv)
-    return;
-
-  return;
-  chat = chatty_manager_find_purple_conv (self, pcm->conv);
 
   if (chat)
     node = (PurpleBlistNode *)chatty_chat_get_purple_buddy (chat);
 
   if (node)
-    chatty_blist_update_buddy (NULL, node);
+    chatty_chat_set_last_message (chat, message);
 }
+
 
 static gboolean
 auto_join_chat_cb (gpointer data)
@@ -954,9 +938,6 @@ chatty_manager_intialize_libpurple (ChattyManager *self)
   purple_signal_connect (purple_conversations_get_handle(),
                          "wrote-im-msg", self,
                          PURPLE_CALLBACK (manager_wrote_chat_im_msg_cb), self);
-  purple_signal_connect (purple_conversations_get_handle(),
-                         "conversation-write", self,
-                         PURPLE_CALLBACK (manager_conversation_write_cb), self);
   purple_signal_connect (chatty_conversations_get_handle (),
                          "wrote-chat-msg", self,
                          PURPLE_CALLBACK (manager_wrote_chat_im_msg_cb), self);
