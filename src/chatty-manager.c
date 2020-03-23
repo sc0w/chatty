@@ -739,7 +739,7 @@ static void
 manager_update_protocols (ChattyManager *self)
 {
   GListModel *model;
-  ChattyProtocol old_protocols, protocol;
+  ChattyProtocol protocol;
   ChattyStatus status;
   guint n_items;
 
@@ -747,7 +747,6 @@ manager_update_protocols (ChattyManager *self)
 
   model = G_LIST_MODEL (self->account_list);
   n_items = g_list_model_get_n_items (model);
-  old_protocols = self->active_protocols;
   self->active_protocols = 0;
 
   for (guint i = 0; i < n_items; i++) {
@@ -764,8 +763,7 @@ manager_update_protocols (ChattyManager *self)
   if (self->has_modem)
     self->active_protocols |= CHATTY_PROTOCOL_SMS;
 
-  if (old_protocols != self->active_protocols)
-    g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_ACTIVE_PROTOCOLS]);
+  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_ACTIVE_PROTOCOLS]);
 }
 
 static void
@@ -774,7 +772,7 @@ manager_connection_signed_on_cb (PurpleConnection *gc,
 {
   PurpleAccount *pp_account;
   ChattyPpAccount *account;
-  ChattyProtocol protocol, old_protocols;
+  ChattyProtocol protocol;
 
   g_assert (CHATTY_IS_MANAGER (self));
 
@@ -790,11 +788,9 @@ manager_connection_signed_on_cb (PurpleConnection *gc,
     return;
 
   protocol = chatty_item_get_protocols (CHATTY_ITEM (account));
-  old_protocols = self->active_protocols;
   self->active_protocols |= protocol;
 
-  if (old_protocols != self->active_protocols)
-    g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_ACTIVE_PROTOCOLS]);
+  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_ACTIVE_PROTOCOLS]);
 
   g_object_notify (G_OBJECT (account), "status");
 }
