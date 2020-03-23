@@ -383,7 +383,6 @@ chatty_window_open_item (ChattyWindow *self,
     chatty_window_update_sub_header_titlebar (self, avatar, chat_name);
     chatty_window_change_view (self, CHATTY_VIEW_MESSAGE_LIST);
 
-    self->selected_item = item;
     gtk_filter_changed (self->chat_filter, GTK_FILTER_CHANGE_DIFFERENT);
     window_chat_changed_cb (self);
 
@@ -435,7 +434,14 @@ notify_fold_cb (GObject      *sender,
 {
   HdyFold fold = hdy_leaflet_get_fold (HDY_LEAFLET (self->header_box));
 
-  if (fold != HDY_FOLD_FOLDED)
+  if (fold == HDY_FOLD_FOLDED)
+    gtk_list_box_set_selection_mode (GTK_LIST_BOX (self->chats_listbox), GTK_SELECTION_NONE);
+  else
+    gtk_list_box_set_selection_mode (GTK_LIST_BOX (self->chats_listbox), GTK_SELECTION_SINGLE);
+
+  if (self->selected_item)
+    chatty_window_open_item (self, self->selected_item);
+  else if (fold != HDY_FOLD_FOLDED)
     chatty_window_chat_list_select_first (self);
 
   chatty_update_header (self);
@@ -461,6 +467,9 @@ window_add_chat_clicked_cb (ChattyWindow *self)
   dialog = CHATTY_NEW_CHAT_DIALOG (self->new_chat_dialog);
   item = chatty_new_chat_dialog_get_selected_item (dialog);
   phone_number = chatty_new_chat_dialog_get_phone_number (dialog);
+
+  if (CHATTY_IS_CHAT (item))
+    self->selected_item = item;
 
   if (item)
     chatty_window_open_item (self, item);
