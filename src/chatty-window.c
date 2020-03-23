@@ -653,6 +653,7 @@ window_leave_chat_clicked_cb (ChattyWindow *self)
   self->selected_item = NULL;
 
   chatty_window_chat_list_select_first (self);
+  chatty_window_change_view (self, CHATTY_VIEW_CHAT_LIST);
 }
 
 
