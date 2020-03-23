@@ -75,6 +75,7 @@
         <child>
           <object class="GtkLabel" id="unread_message_count">
             <property name="visible">False</property>
+            <property name="halign">end</property>
             <style>
               <class name="unread-badge"/>
             </style>
