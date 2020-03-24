@@ -613,15 +613,22 @@ manager_conversation_updated_cb (PurpleConversation   *conv,
                                  PurpleConvUpdateType  type,
                                  ChattyManager        *self)
 {
+  ChattyChat  *chat;
   PurpleBuddy *buddy;
 
   if (type != PURPLE_CONV_UPDATE_UNSEEN || !conv->name)
     return;
 
   buddy = purple_find_buddy (conv->account, conv->name);
+  chat  = chatty_manager_find_purple_conv (self, conv);
 
-  if(buddy)
+  if(buddy) {
     chatty_blist_update (NULL, (PurpleBlistNode *)buddy);
+  } else if (chat) {
+    chatty_chat_set_last_msg_time (chat, time (NULL));
+    chatty_chat_set_unread_count (chat, chatty_chat_get_unread_count (chat) + 1);
+    gtk_sorter_changed (self->chat_sorter, GTK_SORTER_ORDER_TOTAL);
+  }
 }
 
 
