@@ -17,6 +17,8 @@
 #include <math.h>
 
 #include "users/chatty-pp-buddy.h"
+#include "chatty-settings.h"
+#include "chatty-chat.h"
 #include "chatty-avatar.h"
 
 /**
@@ -149,11 +151,19 @@ chatty_avatar_draw_label (ChattyAvatar *self,
   guint size;
   gboolean blur = FALSE;
 
-  if (CHATTY_IS_PP_BUDDY (self->item)) {
+  if (CHATTY_IS_PP_BUDDY (self->item) || CHATTY_IS_CHAT (self->item)) {
     PurpleBuddy *buddy;
+    gboolean should_blur;
 
-    buddy = chatty_pp_buddy_get_buddy (CHATTY_PP_BUDDY (self->item));
-    blur = !PURPLE_BUDDY_IS_ONLINE(buddy);
+    if (CHATTY_IS_PP_BUDDY (self->item))
+      buddy = chatty_pp_buddy_get_buddy (CHATTY_PP_BUDDY (self->item));
+    else
+      buddy = chatty_chat_get_purple_buddy (CHATTY_CHAT (self->item));
+
+    should_blur = chatty_settings_get_greyout_offline_buddies (chatty_settings_get_default ());
+
+    if (should_blur && buddy)
+      blur = !PURPLE_BUDDY_IS_ONLINE(buddy);
   }
   width = gtk_widget_get_allocated_width (GTK_WIDGET (self));
   height = gtk_widget_get_allocated_width (GTK_WIDGET (self));
@@ -210,6 +220,25 @@ chatty_avatar_draw (GtkWidget *widget,
   if (self->item)
     {
       avatar = chatty_item_get_avatar (self->item);
+
+      if (!avatar && CHATTY_IS_CHAT (self->item)) {
+        ChattyPpBuddy *buddy = NULL;
+        ChattyContact *contact = NULL;
+        PurpleBuddy *pp_buddy;
+
+        pp_buddy = chatty_chat_get_purple_buddy (CHATTY_CHAT (self->item));
+
+        if (pp_buddy)
+          buddy = chatty_pp_buddy_get_object (pp_buddy);
+
+        if (buddy)
+          contact = chatty_pp_buddy_get_contact (buddy);
+
+        if (contact)
+          avatar = chatty_item_get_avatar (CHATTY_ITEM (contact));
+        else if (buddy)
+          avatar = chatty_item_get_avatar (CHATTY_ITEM (buddy));
+      }
 
       if (!avatar)
         name = chatty_item_get_name (self->item);
@@ -301,11 +330,23 @@ chatty_avatar_set_item (ChattyAvatar *self,
   /* We don’t emit notify signals as we don’t need it */
   if (self->item)
     {
+      ChattySettings *settings;
+
       g_signal_connect_swapped (self->item, "deleted",
                                 G_CALLBACK (g_clear_object), &self->item);
       g_signal_connect_object (self->item, "avatar-changed",
                                G_CALLBACK (gtk_widget_queue_draw), self,
                                G_CONNECT_SWAPPED);
+
+      settings = chatty_settings_get_default ();
+      g_object_connect (settings,
+                        "swapped-object-signal::notify::indicate-unkown-contacts",
+                        G_CALLBACK (gtk_widget_queue_draw), self,
+                        "swapped-object-signal::notify::blur-idle-buddies",
+                        G_CALLBACK (gtk_widget_queue_draw), self,
+                        "swapped-object-signal::notify::greyout-offline-buddies",
+                        G_CALLBACK (gtk_widget_queue_draw), self,
+                        NULL);
     }
 
   gtk_widget_queue_draw (GTK_WIDGET (self));

@@ -28,7 +28,9 @@
           <object class="GtkLabel" id="title">
             <property name="visible">True</property>
             <property name="ellipsize">end</property>
+            <property name="hexpand">True</property>
             <property name="halign">start</property>
+            <property name="xalign">0.0</property>
             <style>
               <class name="bold-label"/>
             </style>
@@ -73,6 +75,7 @@
         <child>
           <object class="GtkLabel" id="unread_message_count">
             <property name="visible">False</property>
+            <property name="halign">end</property>
             <style>
               <class name="unread-badge"/>
             </style>

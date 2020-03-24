@@ -15,7 +15,6 @@
 #include "chatty-manager.h"
 #include "users/chatty-pp-account.h"
 #include "chatty-utils.h"
-#include "chatty-buddy-list.h"
 #include "chatty-conversation.h"
 #include "chatty-icons.h"
 #include "chatty-purple-init.h"

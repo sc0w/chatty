@@ -11,6 +11,8 @@
 #include <gtk/gtk.h>
 #include <gtk/gtkwidget.h>
 
+#include "chatty-chat.h"
+
 G_BEGIN_DECLS
 
 #define CHATTY_TYPE_MSG_LIST (chatty_msg_list_get_type())
@@ -47,13 +49,6 @@ typedef enum {
   CHATTY_MSG_TYPE_SMS,
   CHATTY_MSG_TYPE_LAST
 } e_msg_type;
-
-
-typedef enum {
-  MSG_IS_OUTGOING,
-  MSG_IS_INCOMING,
-  MSG_IS_SYSTEM
-} e_msg_dir;
 
 
 typedef enum {

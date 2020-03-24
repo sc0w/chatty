@@ -15,6 +15,7 @@
 
 #include "users/chatty-pp-account.h"
 #include "chatty-contact-provider.h"
+#include "chatty-chat.h"
 
 G_BEGIN_DECLS
 
@@ -26,6 +27,7 @@ ChattyManager  *chatty_manager_get_default        (void);
 void            chatty_manager_purple_init        (ChattyManager *self);
 GListModel     *chatty_manager_get_accounts       (ChattyManager *self);
 GListModel     *chatty_manager_get_contact_list      (ChattyManager *self);
+GListModel     *chatty_manager_get_chat_list         (ChattyManager *self);
 void            chatty_manager_disable_auto_login    (ChattyManager *self,
                                                       gboolean       disable);
 gboolean        chatty_manager_get_disable_auto_login (ChattyManager *self);
@@ -45,5 +47,14 @@ void            chatty_manager_remove_node            (ChattyManager   *self,
                                                        PurpleBlistNode *node);
 void            chatty_manager_emit_changed           (ChattyManager   *self,
                                                        PurpleBlistNode *node);
+ChattyChat     *chatty_manager_add_conversation       (ChattyManager      *self,
+                                                       PurpleConversation *conv);
+void            chatty_manager_delete_conversation    (ChattyManager      *self,
+                                                       PurpleConversation *conv);
+ChattyChat     *chatty_manager_add_chat               (ChattyManager      *self,
+                                                       ChattyChat         *chat);
+ChattyChat     *chatty_manager_find_purple_conv       (ChattyManager      *self,
+                                                       PurpleConversation *conv);
+gboolean        chatty_blist_protocol_is_sms          (PurpleAccount      *account);
 
 G_END_DECLS

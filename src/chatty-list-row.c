@@ -5,15 +5,26 @@
  *
  * Author(s):
  *   Mohammed Sadiq <sadiq@sadiqpk.org>
+ *   Andrea Schäfer <mosibasu@me.com>
  *
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
+
+#include <glib/gi18n.h>
 
 #include "users/chatty-pp-buddy.h"
 #include "users/chatty-contact.h"
 #include "chatty-chat.h"
 #include "chatty-avatar.h"
 #include "chatty-list-row.h"
+
+#define MAX_GMT_ISO_SIZE 256
+#define SECONDS_PER_MINUTE 60.0
+#define SECONDS_PER_HOUR   3600.0
+#define SECONDS_PER_DAY    86400.0
+#define SECONDS_PER_MONTH  2592000.0
+#define SECONDS_PER_YEAR   31536000.0
+
 
 struct _ChattyListRow
 {
@@ -29,6 +40,158 @@ struct _ChattyListRow
 };
 
 G_DEFINE_TYPE (ChattyListRow, chatty_list_row, GTK_TYPE_LIST_BOX_ROW)
+
+
+/* Copied from chatty-utils by Andrea Schäfer */
+static char *
+chatty_time_ago_in_words (time_t time_stamp)
+{
+  // based on the ruby on rails method 'distance_of_time_in_words'
+
+  time_t time_now;
+  struct tm  *timeinfo;
+
+  g_autofree gchar *iso_timestamp = NULL;
+
+  const char *unit;
+  const char *prefix;
+
+  const char *str_about, *str_less_than;
+  const char *str_seconds, *str_minute, *str_minutes;
+  const char *str_hour, *str_hours, *str_day, *str_days;
+  const char *str_month, *str_months, *str_year, *str_years;
+
+  int number, seconds, minutes, hours, days, months, years, offset, remainder;
+
+  gboolean show_date = FALSE;
+
+  double dist_in_seconds;
+
+    str_about     = "~";
+    str_less_than = "<";
+    str_seconds   = _("s");
+    str_minute    = _("m");
+    str_minutes   = _("m");
+    str_hour      = _("h");
+    str_hours     = _("h");
+    str_day       = _("d");
+    str_days      = _("d");
+    str_month     = _("mo");
+    str_months    = _("mos");
+    str_year      = _("y");
+    str_years     = _("y");
+
+  time (&time_now);
+
+  timeinfo = localtime (&time_stamp);
+
+  iso_timestamp = g_malloc0 (MAX_GMT_ISO_SIZE * sizeof(char));
+
+  strftime (iso_timestamp,
+            MAX_GMT_ISO_SIZE * sizeof(char),
+            "%d.%m.%y",
+            timeinfo);
+
+  dist_in_seconds = difftime (time_now, time_stamp);
+
+  seconds = (int)dist_in_seconds;
+  minutes = (int)(dist_in_seconds / SECONDS_PER_MINUTE);
+  hours   = (int)(dist_in_seconds / SECONDS_PER_HOUR);
+  days    = (int)(dist_in_seconds / SECONDS_PER_DAY);
+  months  = (int)(dist_in_seconds / SECONDS_PER_MONTH);
+  years   = (int)(dist_in_seconds / SECONDS_PER_YEAR);
+
+  switch (minutes) {
+  case 0 ... 1:
+    unit = str_seconds;
+
+    switch (seconds) {
+    case 0 ... 14:
+      prefix = str_less_than;
+      number = 15;
+      break;
+    case 15 ... 29:
+      prefix = str_less_than;
+      number = 30;
+      break;
+    case 30 ... 59:
+      prefix = str_less_than;
+      number = 1;
+      unit = str_minute;
+      break;
+    default:
+      prefix = str_about;
+      number = 1;
+      unit = str_minute;
+      break;
+    }
+    break;
+
+  case 2 ... 44:
+    prefix = "";
+    number = minutes;
+    unit = str_minutes;
+    break;
+  case 45 ... 89:
+    prefix = str_about;
+    number = 1;
+    unit = str_hour;
+    break;
+  case 90 ... 1439:
+    prefix = str_about;
+    number = hours;
+    unit = str_hours;
+    break;
+  case 1440 ... 2529:
+    prefix = str_about;
+    number = 1;
+    unit = str_day;
+    show_date = TRUE;
+    break;
+  case 2530 ... 43199:
+    prefix = "";
+    number = days;
+    unit = str_days;
+    show_date = TRUE;
+    break;
+  case 43200 ... 86399:
+    prefix = str_about;
+    number = 1;
+    unit = str_month;
+    show_date = TRUE;
+    break;
+  case 86400 ... 525600:
+    prefix = "";
+    number = months;
+    unit = str_months;
+    show_date = TRUE;
+    break;
+
+  default:
+    number = years;
+
+    unit = (number == 1) ? str_year : str_years;
+
+    offset = (int)((float)years / 4.0) * 1440.0;
+
+    remainder = (minutes - offset) % 525600;
+    show_date = TRUE;
+
+    if (remainder < 131400) {
+      prefix = str_about;
+    } else if (remainder < 394200) {
+      prefix = _("Over");
+    } else {
+      ++number;
+      unit = str_years;
+      prefix = _("Almost");
+    }
+    break;
+  }
+
+  return show_date ? g_strdup_printf ("%s", iso_timestamp) :
+    g_strdup_printf ("%s%d%s", prefix, number, unit);
+}
 
 
 static void
@@ -53,7 +216,44 @@ chatty_list_row_update (ChattyListRow *self)
     gtk_label_set_label (GTK_LABEL (self->subtitle), type);
     chatty_item_get_avatar (self->item);
   } else if (CHATTY_IS_CHAT (self->item)) {
-    subtitle = chatty_chat_get_username (CHATTY_CHAT (self->item));
+    g_autofree char *unread = NULL;
+    const char *last_message;
+    ChattyChat *item;
+    guint unread_count;
+    time_t last_message_time;
+
+    item = CHATTY_CHAT (self->item);
+    last_message = chatty_chat_get_last_message (item);
+
+    gtk_widget_set_visible (self->subtitle, last_message && *last_message);
+    if (last_message && *last_message) {
+      g_autofree char *message_stripped = NULL;
+
+      message_stripped = purple_markup_strip_html (last_message);
+      g_strstrip (message_stripped);
+
+      gtk_label_set_label (GTK_LABEL (self->subtitle), message_stripped);
+    }
+
+    unread_count = chatty_chat_get_unread_count (item);
+    gtk_widget_set_visible (self->unread_message_count, unread_count > 0);
+
+    if (unread_count) {
+      unread = g_strdup_printf ("%d", unread_count);
+      gtk_label_set_text (GTK_LABEL (self->unread_message_count), unread);
+    }
+
+    last_message_time = chatty_chat_get_last_msg_time (item);
+    gtk_widget_set_visible (self->last_modified, last_message_time > 0);
+
+    if (last_message_time) {
+      g_autofree char *str = NULL;
+
+      str = chatty_time_ago_in_words (last_message_time);
+
+      if (str)
+        gtk_label_set_label (GTK_LABEL (self->last_modified), str);
+    }
   }
 
   if (subtitle)
@@ -110,6 +310,10 @@ chatty_list_row_new (ChattyItem *item)
                           self->title, "label",
                           G_BINDING_SYNC_CREATE);
 
+  if (CHATTY_IS_CHAT (item))
+    g_signal_connect_object (item, "changed",
+                             G_CALLBACK (chatty_list_row_update),
+                             self, G_CONNECT_SWAPPED);
   chatty_list_row_update (self);
 
   return GTK_WIDGET (self);
