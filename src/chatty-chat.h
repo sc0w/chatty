@@ -23,8 +23,39 @@ G_BEGIN_DECLS
 
 G_DECLARE_FINAL_TYPE (ChattyChat, chatty_chat, CHATTY, CHAT, ChattyItem)
 
+typedef enum {
+  MSG_IS_OUTGOING,
+  MSG_IS_INCOMING,
+  MSG_IS_SYSTEM
+} e_msg_dir;
+
+
+ChattyChat         *chatty_chat_new_im_chat           (PurpleAccount      *account,
+                                                       PurpleBuddy        *buddy);
 ChattyChat         *chatty_chat_new_purple_chat       (PurpleChat         *pp_chat);
+ChattyChat         *chatty_chat_new_purple_conv       (PurpleConversation *conv);
+void                chatty_chat_set_purple_conv       (ChattyChat         *self,
+                                                       PurpleConversation *conv);
 PurpleChat         *chatty_chat_get_purple_chat       (ChattyChat         *self);
+PurpleBuddy        *chatty_chat_get_purple_buddy      (ChattyChat         *self);
+PurpleConversation *chatty_chat_get_purple_conv       (ChattyChat         *self);
 const char         *chatty_chat_get_username          (ChattyChat         *self);
+gboolean            chatty_chat_are_same              (ChattyChat         *a,
+                                                       ChattyChat         *b);
+gboolean            chatty_chat_match_purple_conv     (ChattyChat         *self,
+                                                       PurpleConversation *conv);
+const char         *chatty_chat_get_last_message      (ChattyChat         *self);
+void                chatty_chat_set_last_message      (ChattyChat         *self,
+                                                       const char         *message);
+guint               chatty_chat_get_unread_count      (ChattyChat         *self);
+void                chatty_chat_set_unread_count      (ChattyChat         *self,
+                                                       guint               unread_count);
+e_msg_dir           chatty_chat_get_last_msg_direction (ChattyChat        *self);
+void                chatty_chat_set_last_msg_direction (ChattyChat        *self,
+                                                        e_msg_dir          direction);
+time_t              chatty_chat_get_last_msg_time      (ChattyChat        *self);
+void                chatty_chat_set_last_msg_time      (ChattyChat        *self,
+                                                        time_t             msg_time);
+
 
 G_END_DECLS

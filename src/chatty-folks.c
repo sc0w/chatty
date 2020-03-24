@@ -19,7 +19,6 @@
 #include "chatty-utils.h"
 #include "chatty-icons.h"
 #include "chatty-window.h"
-#include "chatty-buddy-list.h"
 #include <libebook-contacts/libebook-contacts.h>
 
 

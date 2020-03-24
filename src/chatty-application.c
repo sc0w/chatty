@@ -32,7 +32,6 @@
 #include "chatty-manager.h"
 #include "chatty-application.h"
 #include "chatty-purple-init.h"
-#include "chatty-buddy-list.h"
 #include "chatty-settings.h"
 
 /**

@@ -25,24 +25,11 @@ G_BEGIN_DECLS
 
 G_DECLARE_FINAL_TYPE (ChattyPpBuddy, chatty_pp_buddy, CHATTY, PP_BUDDY, ChattyItem)
 
-/* Moved from chatty-buddy-list.h to allow compilation as static library. */
-typedef struct _chatty_blist_node {
-  ChattyContactRow *row_chat;
-  ChattyContactRow *row_contact;
-  ChattyPpBuddy    *buddy_object; /* Set only if node is buddy */
-
-  struct {
-    PurpleConversation   *conv;
-    guint                 pending_messages;
-    char                 *last_msg_timestamp;
-    time_t                last_msg_ts_raw;
-    char                  *last_message;
-    int                   last_message_dir;
-  } conv;
-} ChattyBlistNode;
-
 ChattyPpBuddy   *chatty_pp_buddy_get_object    (PurpleBuddy   *buddy);
 PurpleAccount   *chatty_pp_buddy_get_account   (ChattyPpBuddy *self);
+PurpleConversation *chatty_pp_buddy_get_chat   (ChattyPpBuddy *self);
+void             chatty_pp_buddy_set_chat      (ChattyPpBuddy      *self,
+                                                PurpleConversation *conv);
 PurpleBuddy     *chatty_pp_buddy_get_buddy      (ChattyPpBuddy *self);
 const char      *chatty_pp_buddy_get_id        (ChattyPpBuddy *self);
 ChattyContact   *chatty_pp_buddy_get_contact   (ChattyPpBuddy *self);

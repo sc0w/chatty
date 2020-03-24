@@ -11,7 +11,6 @@
 #include "chatty-window.h"
 #include "chatty-manager.h"
 #include "chatty-icons.h"
-#include "chatty-buddy-list.h"
 #include "chatty-purple-init.h"
 #include "chatty-message-list.h"
 #include "chatty-conversation.h"
@@ -385,64 +384,6 @@ cb_textview_key_released (GtkWidget   *widget,
   }
 
   return TRUE;
-}
-
-
-static ChattyConversation *
-chatty_conv_get_conv_at_index (GtkNotebook *notebook,
-                               int          index)
-{
-  GtkWidget *tab_cont;
-
-  if (index == -1) {
-    index = 0;
-  }
-
-  tab_cont = gtk_notebook_get_nth_page (GTK_NOTEBOOK(notebook), index);
-
-  return tab_cont ?
-    g_object_get_data (G_OBJECT(tab_cont), "ChattyConversation") : NULL;
-}
-
-
-static void
-cb_stack_cont_before_switch_conv (GtkNotebook *notebook,
-                                  GtkWidget   *page,
-                                  gint         page_num,
-                                  gpointer     user_data)
-{
-  PurpleConversation *conv;
-  ChattyConversation *chatty_conv;
-
-  conv = chatty_conv_container_get_active_purple_conv (notebook);
-
-  g_return_if_fail (conv != NULL);
-
-  chatty_conv = CHATTY_CONVERSATION(conv);
-
-  chatty_msg_list_hide_typing_indicator (chatty_conv->msg_list);
-}
-
-
-static void
-cb_stack_cont_switch_conv (GtkNotebook *notebook,
-                           GtkWidget   *page,
-                           gint         page_num,
-                           gpointer     user_data)
-{
-  PurpleConversation *conv;
-  ChattyConversation *chatty_conv;
-
-  chatty_conv = chatty_conv_get_conv_at_index (GTK_NOTEBOOK(notebook), page_num);
-
-  conv = chatty_conv->conv;
-
-  g_return_if_fail (conv != NULL);
-
-  g_debug ("cb_stack_cont_switch_conv conv: chatty_conv->conv: %s",
-           purple_conversation_get_name (conv));
-
-  chatty_conv_set_unseen (chatty_conv, CHATTY_UNSEEN_NONE);
 }
 
 
@@ -2298,8 +2239,6 @@ chatty_conv_remove_conv (ChattyConversation *chatty_conv)
   index = gtk_notebook_page_num (GTK_NOTEBOOK(convs_notebook),
                                  chatty_conv->tab_cont);
 
-  gtk_widget_destroy (GTK_WIDGET(chatty_conv->tab_cont));
-
   gtk_notebook_remove_page (GTK_NOTEBOOK(convs_notebook), index);
 
   g_debug ("chatty_conv_remove_conv conv");
@@ -2355,12 +2294,6 @@ chatty_conv_im_with_buddy (PurpleAccount *account,
                                     account,
                                     name);
   }
-
-  purple_signal_emit (chatty_conversations_get_handle (),
-                      "conversation-displayed",
-                      CHATTY_CONVERSATION (conv));
-
-  chatty_conv_present_conversation (conv);
 
   chatty_conv_show_conversation (conv);
 }
@@ -2518,10 +2451,6 @@ chatty_conv_join_chat (PurpleChat *chat)
     serv_join_chat (purple_account_get_connection (account), components);
   } else if (conv) {
     purple_conversation_present(conv);
-
-    purple_signal_emit (chatty_conversations_get_handle (),
-                        "conversation-displayed",
-                        CHATTY_CONVERSATION (conv));
 
     chatty_conv = CHATTY_CONVERSATION (conv);
 
@@ -2813,13 +2742,6 @@ chatty_conv_new (PurpleConversation *conv)
   }
 
   chatty_conv_add_message_history_to_conv_with_limit (chatty_conv, LAZY_LOAD_INITIAL_MSGS_LIMIT);
-
-  if (CHATTY_IS_CHATTY_CONVERSATION (conv)) {
-    purple_signal_emit (chatty_conversations_get_handle (),
-                        "conversation-displayed",
-                        CHATTY_CONVERSATION (conv));
-  }
-
 }
 
 
@@ -2907,37 +2829,6 @@ chatty_conversations_get_conv_ui_ops (void)
 
 
 /**
- * chatty_conv_container_init:
- *
- * Sets the notebook container for the
- * conversation panes
- *
- * called from chatty_window_init_data()
- *
- */
-void
-chatty_conv_container_init (void)
-{
-  ChattyWindow *window;
-  GtkWidget    *convs_notebook;
-
-  window = chatty_utils_get_window ();
-
-  convs_notebook = chatty_window_get_convs_notebook (window);
-
-  g_signal_connect (G_OBJECT(convs_notebook),
-                    "switch_page",
-                    G_CALLBACK(cb_stack_cont_before_switch_conv), 0);
-
-  g_signal_connect_after (G_OBJECT(convs_notebook),
-                          "switch_page",
-                          G_CALLBACK(cb_stack_cont_switch_conv), 0);
-
-  gtk_notebook_set_show_tabs (GTK_NOTEBOOK(convs_notebook), FALSE);
-}
-
-
-/**
  * chatty_init_conversations:
  *
  * Sets purple conversations preferenz values
@@ -2950,15 +2841,8 @@ chatty_conversations_init (void)
   void *handle = chatty_conversations_get_handle ();
   void *blist_handle = purple_blist_get_handle ();
 
-  chatty_conv_container_init ();
-
   purple_prefs_add_none (CHATTY_PREFS_ROOT "/conversations");
   purple_prefs_add_bool (CHATTY_PREFS_ROOT "/conversations/show_tabs", FALSE);
-
-  purple_signal_register (handle, "conversation-displayed",
-                          purple_marshal_VOID__POINTER, NULL, 1,
-                          purple_value_new (PURPLE_TYPE_BOXED,
-                          "ChattyConversation *"));
 
   purple_signal_register (handle, "conversation-write",
                           purple_marshal_VOID__POINTER_POINTER_POINTER_UINT,

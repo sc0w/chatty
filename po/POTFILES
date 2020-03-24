@@ -5,8 +5,6 @@ src/chatty-application.c
 src/chatty-application.h
 src/chatty-avatar.c
 src/chatty-avatar.h
-src/chatty-buddy-list.c
-src/chatty-buddy-list.h
 src/chatty-chat.c
 src/chatty-chat.h
 src/chatty-connection.c

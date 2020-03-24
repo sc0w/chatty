@@ -20,7 +20,6 @@
 #include "users/chatty-contact.h"
 #include "contrib/gtk.h"
 #include "users/chatty-pp-account.h"
-#include "chatty-buddy-list.h"
 #include "chatty-list-row.h"
 #include "chatty-dbus.h"
 #include "chatty-utils.h"
@@ -64,6 +63,9 @@ struct _ChattyNewChatDialog
   ChattyPpAccount *selected_account;
   ChattyManager   *manager;
   ChattyProtocol   active_protocols;
+
+  ChattyItem *selected_item;
+  char       *phone_number;
 };
 
 
@@ -89,6 +91,15 @@ dialog_filter_item_cb (ChattyItem          *item,
   if (CHATTY_IS_PP_BUDDY (item))
     if (chatty_pp_buddy_get_contact (CHATTY_PP_BUDDY (item)))
       return FALSE;
+
+  if (CHATTY_IS_PP_BUDDY (item)) {
+    PurpleAccount *account;
+
+    account = chatty_pp_buddy_get_account (CHATTY_PP_BUDDY (item));
+
+    if (!purple_account_is_connected (account))
+      return FALSE;
+  }
 
   return chatty_item_matches (item, self->search_str, self->active_protocols, TRUE);
 }
@@ -221,105 +232,16 @@ static void
 contact_row_activated_cb (ChattyNewChatDialog *self,
                           GtkListBoxRow       *row)
 {
-  ChattyWindow    *window;
-  PurpleBlistNode *node;
-  PurpleAccount   *account;
-  PurpleChat      *chat;
-  GdkPixbuf       *avatar;
-  const char      *chat_name;
-  const char      *number;
-
   g_assert (CHATTY_IS_NEW_CHAT_DIALOG (self));
 
-  window = chatty_utils_get_window ();
+  if (CHATTY_IS_CONTACT_ROW (row))
+    g_object_get (row, "phone_number", &self->phone_number, NULL);
+  else if (CHATTY_IS_LIST_ROW (row))
+    self->selected_item = chatty_list_row_get_item (CHATTY_LIST_ROW (row));
+  else
+    g_warn_if_reached ();
 
-  if (CHATTY_IS_CONTACT_ROW (row)) {
-    g_object_get (row, "data", &node, NULL);
-    g_object_get (row, "phone_number", &number, NULL);
-
-    if (number != NULL) {
-      chatty_window_set_uri (window, number);
-
-      return;
-    }
-  } else if (CHATTY_IS_LIST_ROW (row)) {
-    ChattyItem *item;
-
-    item = chatty_list_row_get_item (CHATTY_LIST_ROW (row));
-
-    if (CHATTY_IS_CONTACT (item)) {
-      number = chatty_contact_get_value (CHATTY_CONTACT (item));
-      chatty_window_set_uri (window, number);
-
-      return;
-    }
-
-    if (CHATTY_IS_PP_BUDDY (item))
-      node = (PurpleBlistNode *)chatty_pp_buddy_get_buddy (CHATTY_PP_BUDDY (item));
-    else if (CHATTY_IS_CHAT (item))
-      node = (PurpleBlistNode *)chatty_chat_get_purple_chat (CHATTY_CHAT (item));
-    else
-      g_return_if_reached ();
-  } else {
-    g_return_if_reached ();
-  }
-
-  chatty_window_set_menu_add_contact_button_visible (window, FALSE);
-  chatty_window_set_menu_add_in_contacts_button_visible (window, FALSE);
-
-  purple_blist_node_set_bool (node, "chatty-autojoin", TRUE);
-  purple_blist_node_set_bool (node, "chatty-notifications", TRUE);
-
-  if (PURPLE_BLIST_NODE_IS_BUDDY(node)) {
-    PurpleBuddy *buddy;
-
-    buddy = (PurpleBuddy*)node;
-    account = purple_buddy_get_account (buddy);
-
-    chatty_window_set_header_chat_info_button_visible (window, FALSE);
-
-    if (chatty_blist_protocol_is_sms (account)) {
-      ChattyEds *chatty_eds;
-      ChattyContact *contact;
-
-      chatty_eds = chatty_manager_get_eds (chatty_manager_get_default ());
-      number = purple_buddy_get_name (buddy);
-      contact = chatty_eds_find_by_number (chatty_eds, number);
-
-      if (!contact) {
-        chatty_window_set_menu_add_in_contacts_button_visible (window, TRUE);
-      }
-    }
-
-    if (purple_blist_node_get_bool (PURPLE_BLIST_NODE(buddy),
-                                    "chatty-unknown-contact")) {
-
-      chatty_window_set_menu_add_contact_button_visible (window, TRUE);
-    }
-
-    chatty_conv_im_with_buddy (account, purple_buddy_get_name (buddy));
-
-    chatty_window_set_new_chat_dialog_visible (window, FALSE);
-
-  } else if (PURPLE_BLIST_NODE_IS_CHAT(node)) {
-    chat = (PurpleChat*)node;
-    chat_name = purple_chat_get_name (chat);
-
-    chatty_conv_join_chat (chat);
-
-    avatar = chatty_icon_get_buddy_icon (node,
-                                         NULL,
-                                         CHATTY_ICON_SIZE_SMALL,
-                                         CHATTY_COLOR_GREY,
-                                         FALSE);
-
-    chatty_window_update_sub_header_titlebar (window, avatar, chat_name);
-    chatty_window_change_view (window, CHATTY_VIEW_MESSAGE_LIST);
-
-    chatty_window_set_new_chat_dialog_visible (window, FALSE);
-
-    g_object_unref (avatar);
-  }
+  gtk_dialog_response (GTK_DIALOG (self), GTK_RESPONSE_OK);
 }
 
 static void
@@ -544,6 +466,18 @@ chatty_new_chat_dialog_update (ChattyNewChatDialog *self)
 
 
 static void
+chatty_new_chat_dialog_show (GtkWidget *widget)
+{
+  ChattyNewChatDialog *self = (ChattyNewChatDialog *)widget;
+
+  /* Reset selection list */
+  g_clear_pointer (&self->phone_number, g_free);
+  self->selected_item = NULL;
+
+  GTK_WIDGET_CLASS (chatty_new_chat_dialog_parent_class)->show (widget);
+}
+
+static void
 chatty_new_chat_dialog_finalize (GObject *object)
 {
   ChattyNewChatDialog *self = (ChattyNewChatDialog *)object;
@@ -560,6 +494,8 @@ chatty_new_chat_dialog_class_init (ChattyNewChatDialogClass *klass)
   GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
 
   object_class->finalize = chatty_new_chat_dialog_finalize;
+
+  widget_class->show = chatty_new_chat_dialog_show;
 
   gtk_widget_class_set_template_from_resource (widget_class,
                                                "/sm/puri/chatty/"
@@ -633,4 +569,22 @@ chatty_new_chat_dialog_new (GtkWindow *parent_window)
                        "transient-for", parent_window,
                        "use-header-bar", 1,
                        NULL);
+}
+
+
+ChattyItem *
+chatty_new_chat_dialog_get_selected_item (ChattyNewChatDialog *self)
+{
+  g_return_val_if_fail (CHATTY_IS_NEW_CHAT_DIALOG (self), NULL);
+
+  return self->selected_item;
+}
+
+
+const char *
+chatty_new_chat_dialog_get_phone_number  (ChattyNewChatDialog *self)
+{
+  g_return_val_if_fail (CHATTY_IS_NEW_CHAT_DIALOG (self), NULL);
+
+  return self->phone_number;
 }

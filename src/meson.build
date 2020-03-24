@@ -38,7 +38,6 @@ chatty_sources = [
   'chatty-message-list.c',
   'chatty-contact-row.c',
   'chatty-conversation.c',
-  'chatty-buddy-list.c',
   './xeps/xeps.c',
   './xeps/chatty-xep-0184.c',
   './xeps/chatty-xep-0313.c',

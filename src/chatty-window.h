@@ -54,15 +54,9 @@ void       chatty_window_set_uri (ChattyWindow *self,
 void chatty_window_change_view (ChattyWindow *self, guint state);
 void chatty_window_update_sub_header_titlebar (ChattyWindow *self, GdkPixbuf *icon, const char *title);
 
-GtkWidget *chatty_window_get_chats_listbox (ChattyWindow *self);
 GtkWidget *chatty_window_get_convs_notebook (ChattyWindow *self);
 
 void chatty_window_chat_list_select_first (ChattyWindow *self);
-
-void chatty_window_set_new_chat_dialog_visible (ChattyWindow *self, gboolean visible);
-
-void chatty_window_set_menu_add_contact_button_visible (ChattyWindow *self, gboolean visible);
-void chatty_window_set_menu_add_in_contacts_button_visible (ChattyWindow *self, gboolean visible);
 void chatty_window_set_header_chat_info_button_visible (ChattyWindow *self, gboolean visible);
 
 
