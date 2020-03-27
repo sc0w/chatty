@@ -271,6 +271,8 @@ chatty_blist_update_buddy (PurpleBuddyList *list,
   log_data = g_new0(ChattyLog, 1);
 
   message_exists = chatty_history_get_im_last_message (username, who, log_data);
+  if (!message_exists && !purple_blist_node_get_bool (node, "chatty-notifications"))
+    purple_blist_node_set_bool (node, "chatty-notifications", TRUE);
 
   if (purple_blist_node_get_bool (node, "chatty-autojoin") &&
       purple_account_is_connected (buddy->account) &&
