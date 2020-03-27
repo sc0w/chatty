@@ -221,20 +221,15 @@ chatty_pp_buddy_set_name (ChattyItem *item,
 }
 
 
-static GdkPixbuf *
-chatty_pp_buddy_get_avatar (ChattyItem *item)
+static gboolean
+load_icon (gpointer user_data)
 {
-  ChattyPpBuddy *self = (ChattyPpBuddy *)item;
+  ChattyPpBuddy *self = user_data;
   PurpleContact *contact;
   PurpleStoredImage *img = NULL;
   PurpleBuddyIcon *icon = NULL;
   gconstpointer data = NULL;
   size_t len;
-
-  g_assert (CHATTY_IS_PP_BUDDY (self));
-
-  if (!self->pp_buddy)
-    return NULL;
 
   contact = purple_buddy_get_contact (self->pp_buddy);
 
@@ -251,7 +246,7 @@ chatty_pp_buddy_get_avatar (ChattyItem *item)
       data = purple_buddy_icon_get_data (icon, &len);
 
     if (!data)
-      return NULL;
+      return G_SOURCE_REMOVE;
   }
 
   if (!data) {
@@ -259,7 +254,36 @@ chatty_pp_buddy_get_avatar (ChattyItem *item)
     len = purple_imgstore_get_size (img);
   }
 
-  return chatty_icon_from_data (data, len);
+  g_clear_object (&self->avatar);
+  self->avatar = chatty_icon_from_data (data, len);
+  g_signal_emit_by_name (self, "avatar-changed");
+
+  return G_SOURCE_REMOVE;
+}
+
+static GdkPixbuf *
+chatty_pp_buddy_get_avatar (ChattyItem *item)
+{
+  ChattyPpBuddy *self = (ChattyPpBuddy *)item;
+
+  g_assert (CHATTY_IS_PP_BUDDY (self));
+
+  /*
+   * XXX: purple_buddy_icons_node_find_custom_icon() when called
+   * the first time, the `update' vfunc of blist PurpleBlistUiOps
+   * is run, which in turn updates avatar, which calls
+   * chatty_pp_buddy_get_avatar().
+   */
+  /* Load the icon async. So that we won't end up dead lock. */
+  g_idle_add (load_icon, item);
+
+  if (self->avatar)
+    return self->avatar;
+
+  if (!self->pp_buddy)
+    return NULL;
+
+  return NULL;
 }
 
 
@@ -307,16 +331,16 @@ chatty_pp_buddy_constructed (GObject *object)
                                        self->username,
                                        self->name);
 
+  chatty_pp_buddy_update_protocol (self);
+  PURPLE_BLIST_NODE (self->pp_buddy)->ui_data = self;
+  g_object_add_weak_pointer (G_OBJECT (self), (gpointer *)&PURPLE_BLIST_NODE (self->pp_buddy)->ui_data);
+
   account = self->pp_buddy->account->ui_data;
   model = chatty_pp_account_get_buddy_list (account);
   g_list_store_append (G_LIST_STORE (model), self);
-  chatty_pp_buddy_update_protocol (self);
 
   if (!has_pp_buddy)
     chatty_add_new_buddy (self);
-
-  PURPLE_BLIST_NODE (self->pp_buddy)->ui_data = self;
-  g_object_add_weak_pointer (G_OBJECT (self), (gpointer *)&PURPLE_BLIST_NODE (self->pp_buddy)->ui_data);
 }
 
 static void
