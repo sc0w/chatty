@@ -176,8 +176,6 @@ static const char *
 chatty_pp_buddy_get_name (ChattyItem *item)
 {
   ChattyPpBuddy *self = (ChattyPpBuddy *)item;
-  PurpleContact *contact;
-  const char *name = NULL;
 
   g_assert (CHATTY_IS_PP_BUDDY (self));
 
@@ -186,15 +184,7 @@ chatty_pp_buddy_get_name (ChattyItem *item)
   else if (!self->pp_buddy)
     return "";
 
-  contact = purple_buddy_get_contact (self->pp_buddy);
-
-  if (contact)
-    name = purple_contact_get_alias (contact);
-
-  if (name && *name)
-    return name;
-
-  return purple_buddy_get_name (self->pp_buddy);
+  return purple_buddy_get_alias (self->pp_buddy);
 }
 
 static void
