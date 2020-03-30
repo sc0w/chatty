@@ -11,43 +11,6 @@
         <property name="margin">12</property>
         <property name="orientation">vertical</property>
         <child>
-          <object class="GtkModelButton" id="menu_new_group_chat_button">
-            <property name="visible">True</property>
-            <property name="can_focus">True</property>
-            <property name="receives_default">False</property>
-            <property name="text" translatable="yes">New Group Chat</property>
-            <signal name="clicked" handler="chatty_window_show_new_muc_dialog" swapped="yes"/>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkModelButton">
-            <property name="visible">False</property>
-            <property name="can_focus">True</property>
-            <property name="receives_default">False</property>
-            <signal name="clicked" handler="chatty_window_show_new_chat_dialog" swapped="yes"/>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkSeparator">
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="margin_top">6</property>
-            <property name="margin_bottom">6</property>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-          </packing>
-        </child>
-        <child>
           <object class="GtkModelButton">
             <property name="visible">True</property>
             <property name="can_focus">True</property>
@@ -67,6 +30,58 @@
             <property name="receives_default">False</property>
             <property name="text" translatable="yes">About Chats</property>
             <signal name="clicked" handler="chatty_window_show_about_dialog" swapped="yes"/>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+          </packing>
+        </child>
+      </object>
+      <packing>
+        <property name="submenu">main</property>
+      </packing>
+    </child>
+  </object>
+  <object class="GtkPopoverMenu" id="header_chat_list_new_msg_popover">
+    <property name="can_focus">False</property>
+    <child>
+      <object class="GtkBox">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="margin">12</property>
+        <property name="orientation">vertical</property>
+        <child>
+          <object class="GtkModelButton" id="menu_new_message_button">
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="receives_default">False</property>
+            <property name="text" translatable="yes">New Message…</property>
+            <signal name="clicked" handler="window_new_message_clicked_cb" swapped="yes"/>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkModelButton" id="menu_new_group_message_button">
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="receives_default">False</property>
+            <property name="text" translatable="yes">New Group Message…</property>
+            <signal name="clicked" handler="window_new_muc_clicked_cb" swapped="yes"/>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkModelButton" id="menu_new_bulk_sms_button">
+            <property name="visible">False</property>
+            <property name="can_focus">True</property>
+            <property name="receives_default">False</property>
+            <property name="text" translatable="yes">New Bulk SMS…</property>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -212,7 +227,7 @@
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="receives_default">False</property>
-                    <signal name="clicked" handler="window_add_chat_clicked_cb" swapped="yes"/>
+                    <signal name="clicked" handler="window_add_chat_button_clicked_cb" swapped="yes"/>
                     <child>
                       <object class="GtkImage">
                         <property name="visible">True</property>

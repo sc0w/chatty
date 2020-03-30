@@ -54,9 +54,13 @@ struct _ChattyWindow
   GtkWidget *chats_search_bar;
   GtkWidget *chats_search_entry;
 
+  GtkWidget *header_chat_list_new_msg_popover;
+
   GtkWidget *menu_add_contact_button;
   GtkWidget *menu_add_in_contacts_button;
-  GtkWidget *menu_new_group_chat_button;
+  GtkWidget *menu_new_message_button;
+  GtkWidget *menu_new_group_message_button;
+  GtkWidget *menu_new_bulk_sms_button;
   GtkWidget *header_chat_info_button;
   GtkWidget *header_add_chat_button;
   GtkWidget *header_sub_menu_button;
@@ -82,6 +86,7 @@ G_DEFINE_TYPE (ChattyWindow, chatty_window, GTK_TYPE_APPLICATION_WINDOW)
 
 
 static void chatty_update_header (ChattyWindow *self);
+static void chatty_window_show_new_muc_dialog (ChattyWindow *self);
 
 
 typedef struct {
@@ -451,7 +456,7 @@ notify_fold_cb (GObject      *sender,
 
 
 static void
-window_add_chat_clicked_cb (ChattyWindow *self)
+window_new_message_clicked_cb (ChattyWindow *self)
 {
   ChattyNewChatDialog *dialog;
   ChattyItem *item;
@@ -477,6 +482,40 @@ window_add_chat_clicked_cb (ChattyWindow *self)
     chatty_window_open_item (self, item);
   else if (phone_number)
     chatty_window_set_uri (self, phone_number);
+}
+
+
+static void
+window_new_muc_clicked_cb (ChattyWindow *self)
+{
+  g_assert (CHATTY_IS_WINDOW (self));
+
+  chatty_window_show_new_muc_dialog (self);
+}
+
+
+static void
+window_add_chat_button_clicked_cb (ChattyWindow *self)
+{
+  ChattyProtocol protocols;
+  gboolean       has_im;
+
+  g_assert (CHATTY_IS_WINDOW (self));
+
+  protocols = chatty_manager_get_active_protocols (self->manager);
+
+  has_im  = !!(protocols & ~CHATTY_PROTOCOL_SMS);
+
+  if (has_im) {
+    // TODO: popover can be bound in builder XML as 
+    // soon as bulk-sms is available
+    gtk_popover_set_relative_to (GTK_POPOVER(self->header_chat_list_new_msg_popover),
+                                 GTK_WIDGET(self->header_add_chat_button));
+
+    gtk_popover_popup (GTK_POPOVER(self->header_chat_list_new_msg_popover));
+  } else {
+    gtk_widget_show (GTK_WIDGET (self->new_chat_dialog));
+  }
 }
 
 
@@ -959,7 +998,9 @@ window_active_protocols_changed_cb (ChattyWindow *self)
   has_im  = !!(protocols & ~CHATTY_PROTOCOL_SMS);
 
   gtk_widget_set_sensitive (self->header_add_chat_button, has_sms || has_im);
-  gtk_widget_set_sensitive (self->menu_new_group_chat_button, has_im);
+  gtk_widget_set_sensitive (self->menu_new_group_message_button, has_im);
+  gtk_widget_set_sensitive (self->menu_new_bulk_sms_button, has_sms);
+  
   gtk_filter_changed (self->chat_filter, GTK_FILTER_CHANGE_DIFFERENT);
 }
 
@@ -1093,7 +1134,9 @@ chatty_window_class_init (ChattyWindowClass *klass)
   gtk_widget_class_bind_template_child (widget_class, ChattyWindow, sub_header_icon);
   gtk_widget_class_bind_template_child (widget_class, ChattyWindow, menu_add_contact_button);
   gtk_widget_class_bind_template_child (widget_class, ChattyWindow, menu_add_in_contacts_button);
-  gtk_widget_class_bind_template_child (widget_class, ChattyWindow, menu_new_group_chat_button);
+  gtk_widget_class_bind_template_child (widget_class, ChattyWindow, menu_new_message_button);
+  gtk_widget_class_bind_template_child (widget_class, ChattyWindow, menu_new_group_message_button);
+  gtk_widget_class_bind_template_child (widget_class, ChattyWindow, menu_new_bulk_sms_button);
   gtk_widget_class_bind_template_child (widget_class, ChattyWindow, header_chat_info_button);
   gtk_widget_class_bind_template_child (widget_class, ChattyWindow, header_add_chat_button);
   gtk_widget_class_bind_template_child (widget_class, ChattyWindow, header_sub_menu_button);
@@ -1109,9 +1152,12 @@ chatty_window_class_init (ChattyWindowClass *klass)
   gtk_widget_class_bind_template_child (widget_class, ChattyWindow, overlay_label_1);
   gtk_widget_class_bind_template_child (widget_class, ChattyWindow, overlay_label_2);
   gtk_widget_class_bind_template_child (widget_class, ChattyWindow, overlay_label_3);
+  gtk_widget_class_bind_template_child (widget_class, ChattyWindow, header_chat_list_new_msg_popover);
 
   gtk_widget_class_bind_template_callback (widget_class, notify_fold_cb);
-  gtk_widget_class_bind_template_callback (widget_class, window_add_chat_clicked_cb);
+  gtk_widget_class_bind_template_callback (widget_class, window_new_message_clicked_cb);
+  gtk_widget_class_bind_template_callback (widget_class, window_new_muc_clicked_cb);
+  gtk_widget_class_bind_template_callback (widget_class, window_add_chat_button_clicked_cb);
   gtk_widget_class_bind_template_callback (widget_class, window_back_clicked_cb);
   gtk_widget_class_bind_template_callback (widget_class, window_show_chat_info_clicked_cb);
   gtk_widget_class_bind_template_callback (widget_class, window_add_contact_clicked_cb);
