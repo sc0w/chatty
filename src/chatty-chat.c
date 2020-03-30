@@ -19,6 +19,7 @@
 
 #include "chatty-settings.h"
 #include "chatty-icons.h"
+#include "users/chatty-pp-buddy.h"
 #include "chatty-chat.h"
 
 #define CHATTY_COLOR_BLUE "4A8FD9"
@@ -134,11 +135,25 @@ chatty_chat_get_avatar (ChattyItem *item)
 
   g_assert (CHATTY_IS_CHAT (self));
 
-  return chatty_icon_get_buddy_icon ((PurpleBlistNode *)self->pp_chat,
-                                     NULL,
-                                     CHATTY_ICON_SIZE_MEDIUM,
-                                     CHATTY_COLOR_BLUE,
-                                     FALSE);
+  if (self->buddy) {
+    ChattyPpBuddy *buddy;
+
+    buddy = chatty_pp_buddy_get_object (self->buddy);
+
+    if (buddy)
+      return chatty_item_get_avatar (CHATTY_ITEM (buddy));
+
+    return NULL;
+  }
+
+  if (self->pp_chat)
+    return chatty_icon_get_buddy_icon ((PurpleBlistNode *)self->pp_chat,
+                                       NULL,
+                                       CHATTY_ICON_SIZE_MEDIUM,
+                                       CHATTY_COLOR_BLUE,
+                                       FALSE);
+
+  return NULL;
 }
 
 static void

@@ -221,25 +221,6 @@ chatty_avatar_draw (GtkWidget *widget,
     {
       avatar = chatty_item_get_avatar (self->item);
 
-      if (!avatar && CHATTY_IS_CHAT (self->item)) {
-        ChattyPpBuddy *buddy = NULL;
-        ChattyContact *contact = NULL;
-        PurpleBuddy *pp_buddy;
-
-        pp_buddy = chatty_chat_get_purple_buddy (CHATTY_CHAT (self->item));
-
-        if (pp_buddy)
-          buddy = chatty_pp_buddy_get_object (pp_buddy);
-
-        if (buddy)
-          contact = chatty_pp_buddy_get_contact (buddy);
-
-        if (contact)
-          avatar = chatty_item_get_avatar (CHATTY_ITEM (contact));
-        else if (buddy)
-          avatar = chatty_item_get_avatar (CHATTY_ITEM (buddy));
-      }
-
       if (!avatar)
         name = chatty_item_get_name (self->item);
     }
