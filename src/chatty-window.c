@@ -280,6 +280,7 @@ window_chat_name_matches (ChattyItem   *item,
                           ChattyWindow *self)
 {
   PurpleBlistNode *node;
+  ChattyProtocol protocols;
 
   g_assert (CHATTY_IS_CHAT (item));
   g_assert (CHATTY_IS_WINDOW (self));
@@ -292,8 +293,13 @@ window_chat_name_matches (ChattyItem   *item,
   if (node && !purple_blist_node_get_bool (node, "chatty-autojoin"))
     return FALSE;
 
+  protocols = chatty_manager_get_active_protocols (self->manager);
+
+  if (!(protocols & chatty_item_get_protocols (item)))
+    return FALSE;
+
   /* FIXME: Not a good idea */
-  if (node) {
+  if (node && chatty_item_get_protocols (item) != CHATTY_PROTOCOL_SMS) {
     PurpleAccount *account = NULL;
 
     if (PURPLE_BLIST_NODE_IS_CHAT (node))
