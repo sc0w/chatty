@@ -20,6 +20,7 @@
 #include "chatty-settings.h"
 #include "chatty-icons.h"
 #include "users/chatty-pp-buddy.h"
+#include "users/chatty-pp-account.h"
 #include "chatty-chat.h"
 
 #define CHATTY_COLOR_BLUE "4A8FD9"
@@ -121,10 +122,23 @@ static ChattyProtocol
 chatty_chat_get_protocols (ChattyItem *item)
 {
   ChattyChat *self = (ChattyChat *)item;
+  PurpleAccount *pp_account = NULL;
+  ChattyPpAccount *account = NULL;
 
   g_assert (CHATTY_IS_CHAT (self));
 
-  return CHATTY_PROTOCOL_ANY;
+  if (self->buddy)
+    pp_account = self->buddy->account;
+  else if (self->pp_chat)
+    pp_account = self->pp_chat->account;
+  else if (self->conv)
+    pp_account = self->conv->account;
+  else
+    return CHATTY_PROTOCOL_ANY;
+
+  account = chatty_pp_account_get_object (pp_account);
+
+  return chatty_item_get_protocols (CHATTY_ITEM (account));
 }
 
 
