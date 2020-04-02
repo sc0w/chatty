@@ -514,7 +514,7 @@ window_add_chat_button_clicked_cb (ChattyWindow *self)
 
     gtk_popover_popup (GTK_POPOVER(self->header_chat_list_new_msg_popover));
   } else {
-    gtk_widget_show (GTK_WIDGET (self->new_chat_dialog));
+    window_new_message_clicked_cb (self);
   }
 }
 
