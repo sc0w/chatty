@@ -12,6 +12,13 @@
 #include <libebook-contacts/libebook-contacts.h>
 
 
+static const char *avatar_colors[] = {
+  "E57373", "F06292", "BA68C8", "9575CD",
+  "7986CB", "64B5F6", "4FC3F7", "4DD0E1",
+  "4DB6AC", "81C784", "AED581", "DCE775",
+  "FFD54F", "FFB74D", "FF8A65", "A1887F"
+};
+
 char *
 chatty_utils_strip_blanks (const char *string)
 {
@@ -261,4 +268,18 @@ gpointer
 chatty_utils_get_node_object (PurpleBlistNode *node)
 {
   return node->ui_data;
+}
+
+
+const char *
+chatty_utils_get_color_for_str (const char *str)
+{
+  guint hash;
+
+  if (!str)
+    str = "";
+
+  hash = g_str_hash (str);
+
+  return avatar_colors[hash % G_N_ELEMENTS (avatar_colors)];
 }

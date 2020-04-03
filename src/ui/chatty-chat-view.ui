@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <template class="ChattyChatView" parent="GtkBox">
+    <property name="visible">True</property>
+    <property name="expand">True</property>
+    <property name="orientation">vertical</property>
+
+    <!-- Chat message list -->
+    <child>
+      <object class="ChattyMsgList" id="message_list">
+        <property name="visible">True</property>
+        <property name="expand">True</property>
+        <signal name="message-added" handler="chat_view_message_added_cb" swapped="yes"/>
+        <signal name="scroll-top" handler="chat_view_message_list_scroll_top_cb" swapped="yes"/>
+        <style>
+          <class name="box_message"/>
+        </style>
+      </object>
+    </child>
+
+    <child>
+      <object class="HdyColumn">
+        <property name="visible">True</property>
+        <property name="margin">6</property>
+        <property name="maximum-width">600</property>
+        <property name="linear-growth-width">600</property>
+        <child>
+          <object class="GtkBox">
+            <property name="visible">True</property>
+            <property name="orientation">horizontal</property>
+
+            <!-- Send file button -->
+            <child>
+              <object class="GtkButton" id="send_file_button">
+                <property name="visible">False</property>
+                <property name="can-focus">False</property>
+                <property name="valign">end</property>
+                <property name="focus_on_click">False</property>
+                <property name="margin-right">6</property>
+                <signal name="clicked" handler="chat_view_send_file_button_clicked_cb" swapped="yes"/>
+                <style>
+                  <class name="image-button"/>
+                </style>
+                <child>
+                  <object class="GtkImage">
+                    <property name="visible">True</property>
+                    <property name="icon-name">mail-attachment-symbolic</property>
+                    <property name="icon-size">1</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+
+            <!-- Chat text entry -->
+            <child>
+              <object class="GtkBox" id="input_frame">
+                <property name="visible">True</property>
+                <property name="orientation">horizontal</property>
+                <child>
+                  <object class="GtkScrolledWindow" id="scrolled_window">
+                    <property name="visible">True</property>
+                    <property name="max_content_height">96</property>
+                    <property name="propagate_natural_height">True</property>
+                    <child>
+                      <object class="GtkTextView" id="message_input">
+                        <property name="visible">True</property>
+                        <property name="hexpand">True</property>
+                        <property name="valign">center</property>
+                        <property name="wrap-mode">GTK_WRAP_WORD_CHAR</property>
+                        <property name="buffer">message_input_buffer</property>
+                        <signal name="focus-in-event" handler="chat_view_input_focus_in_cb" swapped="yes"/>
+                        <signal name="focus-out-event" handler="chat_view_input_focus_out_cb" swapped="yes"/>
+                        <signal name="key-press-event" handler="chat_view_input_key_pressed_cb" swapped="yes"/>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkImage" id="encrypt_icon">
+                    <property name="visible">False</property>
+                    <property name="valign">end</property>
+                    <property name="margin-right">3</property>
+                    <property name="margin-top">3</property>
+                    <property name="margin-bottom">3</property>
+                    <property name="icon_name">changes-allow-symbolic</property>
+                    <property name="icon-size">1</property>
+                    <style>
+                     <class name="encrypt"/>
+                    </style>
+                  </object>
+                </child>
+              </object>
+            </child>
+
+            <!-- Send message button -->
+            <child>
+              <object class="GtkButton" id="send_message_button">
+                <property name="visible">False</property>
+                <property name="can-focus">False</property>
+                <property name="valign">end</property>
+                <property name="no-show-all">True</property>
+                <property name="visible">False</property>
+                <property name="focus_on_click">False</property>
+                <property name="margin-left">6</property>
+                <signal name="clicked" handler="chat_view_send_message_button_clicked_cb" swapped="yes"/>
+                <child>
+                  <object class="GtkImage">
+                    <property name="icon-name">mail-send-symbolic</property>
+                    <property name="icon-size">1</property>
+                    <property name="visible">True</property>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="pack_type">end</property>
+              </packing>
+            </child>
+
+          </object>
+        </child>
+      </object> <!-- ./HdyColumn -->
+    </child>
+  </template>
+
+  <object class="GtkTextBuffer" id="message_input_buffer">
+    <signal name="changed" handler="chat_view_message_input_changed_cb" swapped="yes"/>
+  </object>
+
+</interface>
