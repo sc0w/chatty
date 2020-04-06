@@ -34,14 +34,6 @@ typedef struct {
 
 
 typedef enum {
-  MSG_LIST_HEADER     = 1 << 0,
-  MSG_LIST_RULER      = 1 << 1,
-  MSG_LIST_TIMESTAMP  = 1 << 2,
-  ALL_FEATURES        = 0x7
-} message_list_features;
-
-
-typedef enum {
   CHATTY_MSG_TYPE_UNKNOWN,
   CHATTY_MSG_TYPE_IM,
   CHATTY_MSG_TYPE_IM_E2EE,

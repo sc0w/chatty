@@ -33,6 +33,7 @@ struct chatty_log {
 struct chatty_conversation {
   PurpleConversation  *conv;
 
+  GtkWidget     *chat_view;
   ChattyMsgList *msg_list;
   GtkWidget     *msg_bubble_footer;
   GtkWidget     *tab_cont;
@@ -41,15 +42,6 @@ struct chatty_conversation {
   guint     unseen_state;
 
   char     *oldest_message_displayed;
-
-  struct {
-    GtkWidget     *entry;
-    GtkTextBuffer *buffer;
-    GtkWidget     *scrolled;
-    GtkWidget     *frame;
-    GtkWidget     *button_send;
-    GtkWidget     *button_file_send;
-  } input;
 
   struct {
     GtkImage   *symbol_encrypt;
