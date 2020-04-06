@@ -29,8 +29,8 @@
   border-color: @theme_selected_bg_color;
 }
 
-.text_input {
-  color: @theme_base_color;
+.input_frame {
+  background-color: @theme_base_color;
 }
 
 .entry_hide {
