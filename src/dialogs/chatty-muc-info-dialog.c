@@ -96,8 +96,16 @@ button_invite_contact_clicked_cb (ChattyMucInfoDialog *self)
   name = gtk_entry_get_text (GTK_ENTRY(self->entry_invite_name));
   invite_msg = gtk_entry_get_text (GTK_ENTRY(self->entry_invite_msg));
 
-  if (name != NULL) {
-    chatty_conv_invite_muc_user (name, invite_msg);
+  if (name && *name && self->chatty_conv) {
+    PurpleConversationType conv_type;
+
+    conv_type = purple_conversation_get_type (self->chatty_conv->conv);
+
+    if (conv_type == PURPLE_CONV_TYPE_CHAT)
+      serv_chat_invite (purple_conversation_get_gc (self->chatty_conv->conv),
+                        purple_conv_chat_get_id (PURPLE_CONV_CHAT (self->chatty_conv->conv)),
+                        invite_msg,
+                        name);
   }
 
   gtk_stack_set_visible_child_name (GTK_STACK(self->stack_panes_muc_info), "view-muc-info");
