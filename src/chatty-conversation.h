@@ -88,11 +88,9 @@ PurpleConversationUiOps *chatty_conversations_get_conv_ui_ops(void);
 void chatty_conv_im_with_buddy (PurpleAccount *account, const char *username);
 void chatty_conv_show_conversation (PurpleConversation *conv);
 void chatty_conv_join_chat (PurpleChat *chat);
-void chatty_conv_invite_muc_user (const char *user_name, const char *invite_msg);
 void *chatty_conversations_get_handle (void);
 void chatty_conversations_init (void);
 void chatty_conversations_uninit (void);
-PurpleConversation * chatty_conv_container_get_active_purple_conv (GtkNotebook *notebook);
 ChattyConversation * chatty_conv_container_get_active_chatty_conv (GtkNotebook *notebook);
 GList *chatty_conv_find_unseen (ChattyUnseenState  state);
 void chatty_conv_set_unseen (ChattyConversation *chatty_conv,

@@ -325,27 +325,6 @@ chatty_conv_container_get_active_chatty_conv (GtkNotebook *notebook)
 
 
 /**
- * chatty_conv_container_get_active_purple_conv:
- * @notebook: a GtkNotebook
- *
- * Returns the purple conversation that is
- * currently set active in the notebook
- *
- * Returns: PurpleConversation
- *
- */
-PurpleConversation *
-chatty_conv_container_get_active_purple_conv (GtkNotebook *notebook)
-{
-  ChattyConversation *chatty_conv;
-
-  chatty_conv = chatty_conv_container_get_active_chatty_conv (notebook);
-
-  return chatty_conv ? chatty_conv->conv : NULL;
-}
-
-
-/**
  * chatty_conv_muc_list_add_columns:
  * @treeview: a GtkTreeView
  *
@@ -861,42 +840,6 @@ chatty_conv_muc_list_update_user (PurpleConversation *conv,
 
   if (cbuddy) {
     chatty_conv_muc_add_user (conv, cbuddy);
-  }
-}
-
-
-/**
- * chatty_conv_invite_muc_user:
- * @user_name:  a const char
- * @invite_msg: a const char
- *
- * Invite a contact to a muc
- *
- * called from cb_button_invite_contact_clicked
- * in chatty-dialogs.c
- *
- */
-void
-chatty_conv_invite_muc_user (const char *user_name,
-                             const char *invite_msg)
-{  
-  ChattyWindow           *window;
-  PurpleConversation     *conv;
-  PurpleConversationType  conv_type;
-  GtkWidget              *convs_notebook;
-
-  window = chatty_utils_get_window ();
-
-  convs_notebook = chatty_window_get_convs_notebook (window);
-
-  conv = chatty_conv_container_get_active_purple_conv (GTK_NOTEBOOK(convs_notebook));
-  conv_type = purple_conversation_get_type (conv);
-
-  if (conv && conv_type == PURPLE_CONV_TYPE_CHAT) {
-    serv_chat_invite (purple_conversation_get_gc (conv),
-                      purple_conv_chat_get_id (PURPLE_CONV_CHAT(conv)),
-                      invite_msg,
-                      user_name);
   }
 }
 
