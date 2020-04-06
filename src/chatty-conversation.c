@@ -27,11 +27,6 @@
 #define LAZY_LOAD_INITIAL_MSGS_LIMIT 20
 #define MAX_TIMESTAMP_SIZE 256
 
-const char *avatar_colors[16] = {"E57373", "F06292", "BA68C8", "9575CD",
-                                 "7986CB", "64B5F6", "4FC3F7", "4DD0E1",
-                                 "4DB6AC", "81C784", "AED581", "DCE775",
-                                 "FFD54F", "FFB74D", "FF8A65", "A1887F"};
-
 static void
 chatty_conv_write_conversation (PurpleConversation *conv,
                                 const char         *who,
@@ -294,27 +289,6 @@ chatty_conv_find_unseen (ChattyUnseenState  state)
   }
 
   return r;
-}
-
-
-/**
- * chatty_conv_muc_get_avatar_color:
- * @user_id: a const char
- *
- * Picks a color for muc user avatars
- *
- */
-static gchar *
-chatty_conv_muc_get_avatar_color (const char *user_id)
-{
-  const char   *color;
-  guint   hash = 0U;
-
-  hash = g_str_hash (user_id);
-
-  color = avatar_colors[hash % G_N_ELEMENTS (avatar_colors)];
-
-  return g_strdup (color);
 }
 
 
@@ -599,7 +573,6 @@ chatty_conv_muc_add_user (PurpleConversation  *conv,
   GtkTreeIter               iter;
   gchar                    *status;
   g_autofree gchar         *text = NULL;
-  g_autofree gchar         *color = NULL;
   const gchar              *name, *alias;
   gchar                    *tmp, *alias_key;
   gchar                    *real_who = NULL;
@@ -634,8 +607,10 @@ chatty_conv_muc_add_user (PurpleConversation  *conv,
     real_who = prpl_info->get_cb_real_name (gc, chat_id, name);
 
     if (real_who) {
+      const char *color;
+
       buddy = purple_find_buddy (account, real_who);
-      color = chatty_conv_muc_get_avatar_color (real_who);
+      color = chatty_utils_get_color_for_str (real_who);
 
       avatar = chatty_icon_get_buddy_icon ((PurpleBlistNode*)buddy,
                                            alias,
@@ -1123,7 +1098,6 @@ chatty_conv_write_conversation (PurpleConversation *conv,
   PurpleAccount            *account;
   PurpleBuddy              *buddy = NULL;
   PurpleBlistNode          *node;
-  g_autofree char          *color = NULL;
   gboolean                  group_chat = TRUE;
   gboolean                  conv_active;
   GdkPixbuf                *avatar = NULL;
@@ -1172,8 +1146,9 @@ chatty_conv_write_conversation (PurpleConversation *conv,
       pcm.who = prpl_info->get_cb_real_name(gc, chat_id, who);
 
       if (pcm.who) {
+        const char *color;
         buddy = purple_find_buddy (account, pcm.who);
-        color = chatty_conv_muc_get_avatar_color (pcm.who);
+        color = chatty_utils_get_color_for_str (pcm.who);
 
         avatar = chatty_icon_get_buddy_icon ((PurpleBlistNode*)buddy,
                                              alias,
