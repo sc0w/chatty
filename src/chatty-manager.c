@@ -21,6 +21,7 @@
 #include "chatty-contact-provider.h"
 #include "chatty-utils.h"
 #include "chatty-window.h"
+#include "chatty-chat-view.h"
 #include "users/chatty-pp-account.h"
 #include "chatty-chat.h"
 #include "chatty-purple-request.h"
@@ -670,6 +671,24 @@ manager_wrote_chat_im_msg_cb (PurpleAccount      *account,
 
 
 static gboolean
+manager_conversation_buddy_leaving_cb (PurpleConversation *conv,
+                                       const char         *user,
+                                       const char         *reason,
+                                       ChattyManager      *self)
+{
+  ChattyChat *chat;
+
+  g_assert (CHATTY_IS_MANAGER (self));
+
+  chat = chatty_manager_find_purple_conv (self, conv);
+  g_return_val_if_fail (chat, TRUE);
+
+  chatty_chat_remove_user (chat, user);
+
+  return TRUE;
+}
+
+static gboolean
 auto_join_chat_cb (gpointer data)
 {
   PurpleBlistNode  *node;
@@ -953,6 +972,10 @@ chatty_manager_intialize_libpurple (ChattyManager *self)
   purple_signal_connect (chatty_conversations_get_handle (),
                          "wrote-chat-msg", self,
                          PURPLE_CALLBACK (manager_wrote_chat_im_msg_cb), self);
+
+  purple_signal_connect (purple_conversations_get_handle (),
+                         "chat-buddy-leaving", self,
+                         PURPLE_CALLBACK (manager_conversation_buddy_leaving_cb), self);
 
   purple_signal_connect_priority (purple_connections_get_handle (),
                                   "autojoin", self,
@@ -1496,6 +1519,11 @@ chatty_manager_delete_conversation (ChattyManager      *self,
   model = G_LIST_MODEL (self->im_list);
   chat  = manager_find_im (model, conv);
 
+  if (!chat) {
+    model = G_LIST_MODEL (self->chat_list);
+    chat  = manager_find_im (model, conv);
+  }
+
   if (!chat)
     return;
 
@@ -1509,8 +1537,10 @@ chatty_manager_delete_conversation (ChattyManager      *self,
       chatty_pp_buddy_set_chat (buddy, NULL);
   }
 
-  if (chat)
-    chatty_utils_remove_list_item (self->im_list, chat);
+  if (chat) {
+    chatty_chat_view_remove_footer (CHATTY_CHAT_VIEW (CHATTY_CONVERSATION (conv)->chat_view));
+    chatty_utils_remove_list_item (G_LIST_STORE (model), chat);
+  }
 }
 
 

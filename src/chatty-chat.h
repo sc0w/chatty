@@ -44,6 +44,13 @@ gboolean            chatty_chat_are_same              (ChattyChat         *a,
                                                        ChattyChat         *b);
 gboolean            chatty_chat_match_purple_conv     (ChattyChat         *self,
                                                        PurpleConversation *conv);
+void                chatty_chat_add_users             (ChattyChat         *self,
+                                                       GList              *users);
+void                chatty_chat_remove_user           (ChattyChat         *self,
+                                                       const char         *user);
+GListModel         *chatty_chat_get_users             (ChattyChat         *self);
+void                chatty_chat_emit_user_changed     (ChattyChat         *self,
+                                                       const char         *user);
 const char         *chatty_chat_get_last_message      (ChattyChat         *self);
 void                chatty_chat_set_last_message      (ChattyChat         *self,
                                                        const char         *message);

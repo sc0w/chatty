@@ -14,6 +14,7 @@
 #define _GNU_SOURCE
 #include <string.h>
 #include <purple.h>
+#include <glib/gi18n.h>
 
 #include "chatty-config.h"
 #include "chatty-settings.h"
@@ -41,6 +42,8 @@ struct _ChattyPpBuddy
   ChattyContact     *contact;
   PurpleConversation *conv;
 
+  PurpleConvChatBuddy *chat_buddy;
+
   PurpleStoredImage *pp_avatar;
   GdkPixbuf         *avatar;
   ChattyProtocol     protocol;
@@ -52,6 +55,7 @@ enum {
   PROP_0,
   PROP_PURPLE_ACCOUNT,
   PROP_PURPLE_BUDDY,
+  PROP_CHAT_BUDDY,
   PROP_USERNAME,
   N_PROPS
 };
@@ -163,12 +167,18 @@ chatty_pp_buddy_matches (ChattyItem     *item,
                          gboolean        match_name)
 {
   ChattyPpBuddy *self = (ChattyPpBuddy *)item;
-  const char *item_id;
+  const char *item_id = NULL;
 
-  if (!self->pp_buddy)
+  if (self->chat_buddy && needle == self->chat_buddy->name)
+    return TRUE;
+
+  if (self->pp_buddy)
+    item_id = purple_buddy_get_name (self->pp_buddy);
+  else if (self->chat_buddy)
+    item_id = self->chat_buddy->name;
+  else
     return FALSE;
 
-  item_id = purple_buddy_get_name (self->pp_buddy);
   return strcasestr (item_id, needle) != NULL;
 }
 
@@ -178,6 +188,18 @@ chatty_pp_buddy_get_name (ChattyItem *item)
   ChattyPpBuddy *self = (ChattyPpBuddy *)item;
 
   g_assert (CHATTY_IS_PP_BUDDY (self));
+
+  if (self->chat_buddy) {
+    const char *name;
+
+    name = self->chat_buddy->alias;
+
+    if (!name)
+      name = self->chat_buddy->name;
+
+    if (name)
+      return name;
+  }
 
   if (!self->pp_buddy && self->name)
     return self->name;
@@ -216,21 +238,52 @@ load_icon (gpointer user_data)
 {
   ChattyPpBuddy *self = user_data;
   PurpleContact *contact;
+  PurpleBuddy *buddy = NULL;
   PurpleStoredImage *img = NULL;
   PurpleBuddyIcon *icon = NULL;
   gconstpointer data = NULL;
   size_t len;
 
-  contact = purple_buddy_get_contact (self->pp_buddy);
+  if (self->chat_buddy) {
+    PurpleConnection         *gc;
+    PurplePluginProtocolInfo *prpl_info;
+    char                     *who;
+    int                       chat_id;
+
+    g_return_val_if_fail (self->conv, G_SOURCE_REMOVE);
+
+    gc = purple_conversation_get_gc (self->conv);
+
+    if (!gc || !(prpl_info = PURPLE_PLUGIN_PROTOCOL_INFO (gc->prpl)))
+      return G_SOURCE_REMOVE;
+
+    prpl_info = PURPLE_PLUGIN_PROTOCOL_INFO (gc->prpl);
+    if (!prpl_info || !prpl_info->get_cb_real_name)
+      return G_SOURCE_REMOVE;
+
+    chat_id = purple_conv_chat_get_id (PURPLE_CONV_CHAT (self->conv));
+    who = prpl_info->get_cb_real_name (gc, chat_id, self->chat_buddy->name);
+
+    if (who && *who)
+      buddy = purple_find_buddy (self->conv->account, who);
+  }
+
+  if (!buddy)
+    buddy = self->pp_buddy;
+
+  if (!buddy)
+    return G_SOURCE_REMOVE;
+
+  contact = purple_buddy_get_contact (buddy);
 
   if (contact)
     img = purple_buddy_icons_node_find_custom_icon ((PurpleBlistNode*)contact);
 
   if (!img) {
-    icon = purple_buddy_get_icon (self->pp_buddy);
+    icon = purple_buddy_get_icon (buddy);
 
     if (!icon)
-      icon = purple_buddy_icons_find (self->pp_buddy->account, self->pp_buddy->name);
+      icon = purple_buddy_icons_find (buddy->account, buddy->name);
 
     if (icon)
       data = purple_buddy_icon_get_data (icon, &len);
@@ -270,9 +323,6 @@ chatty_pp_buddy_get_avatar (ChattyItem *item)
   if (self->avatar)
     return self->avatar;
 
-  if (!self->pp_buddy)
-    return NULL;
-
   return NULL;
 }
 
@@ -295,6 +345,10 @@ chatty_pp_buddy_set_property (GObject      *object,
       self->pp_buddy = g_value_get_pointer (value);
       break;
 
+    case PROP_CHAT_BUDDY:
+      self->chat_buddy = g_value_get_pointer (value);
+      break;
+
     case PROP_USERNAME:
       self->username = g_value_dup_string (value);
       break;
@@ -313,6 +367,9 @@ chatty_pp_buddy_constructed (GObject *object)
   gboolean has_pp_buddy;
 
   G_OBJECT_CLASS (chatty_pp_buddy_parent_class)->constructed (object);
+
+  if (self->chat_buddy)
+    return;
 
   has_pp_buddy = self->pp_buddy != NULL;
 
@@ -372,6 +429,12 @@ chatty_pp_buddy_class_init (ChattyPpBuddyClass *klass)
                           "The PurpleBuddy to be used to create the object",
                           G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY | G_PARAM_STATIC_STRINGS);
 
+  properties[PROP_CHAT_BUDDY] =
+    g_param_spec_pointer ("chat-buddy",
+                          "PurpleConvChatBuddy",
+                          "The PurpleConvChatBuddy to be used to create the object",
+                          G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY | G_PARAM_STATIC_STRINGS);
+
   properties[PROP_USERNAME] =
     g_param_spec_string ("username",
                          "Username",
@@ -415,6 +478,9 @@ PurpleAccount *
 chatty_pp_buddy_get_account (ChattyPpBuddy *self)
 {
   g_return_val_if_fail (CHATTY_IS_PP_BUDDY (self), NULL);
+
+  if (self->chat_buddy && self->conv)
+    return self->conv->account;
 
   return purple_buddy_get_account (self->pp_buddy);
 }
@@ -464,6 +530,9 @@ chatty_pp_buddy_get_id (ChattyPpBuddy *self)
 
   g_return_val_if_fail (CHATTY_IS_PP_BUDDY (self), "");
 
+  if (self->chat_buddy && self->chat_buddy->name)
+    return self->chat_buddy->name;
+
   if (!self->pp_buddy)
     return "";
 
@@ -492,4 +561,23 @@ chatty_pp_buddy_set_contact (ChattyPpBuddy *self,
   g_return_if_fail (!contact || CHATTY_IS_CONTACT (contact));
 
   g_set_object (&self->contact, contact);
+}
+
+
+ChattyUserFlag
+chatty_pp_buddy_get_flags (ChattyPpBuddy *self)
+{
+  if (!self->chat_buddy)
+    return CHATTY_USER_FLAG_NONE;
+
+  if (self->chat_buddy->flags & PURPLE_CBFLAGS_FOUNDER)
+    return CHATTY_USER_FLAG_OWNER;
+
+  if (self->chat_buddy->flags & PURPLE_CBFLAGS_OP)
+    return CHATTY_USER_FLAG_MODERATOR;
+
+  if (self->chat_buddy->flags & PURPLE_CBFLAGS_VOICE)
+    return CHATTY_USER_FLAG_MEMBER;
+
+  return CHATTY_USER_FLAG_NONE;
 }

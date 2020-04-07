@@ -47,11 +47,6 @@ struct chatty_conversation {
     GtkImage   *symbol_encrypt;
     gboolean    enabled;
   } omemo;
-
-  struct {
-    GtkTreeView *treeview;
-    guint        user_count;
-  } muc;
 };
 
 
@@ -69,18 +64,6 @@ typedef enum
   CHATTY_SMS_RECEIPT_MM_ACKN   =  0,
   CHATTY_SMS_RECEIPT_SMSC_ACKN,
 } e_sms_receipt_states;
-
-
-enum
-{
-  MUC_COLUMN_AVATAR,
-  MUC_COLUMN_ENTRY,
-  MUC_COLUMN_NAME,
-  MUC_COLUMN_ALIAS_KEY,
-  MUC_COLUMN_LAST,
-  MUC_COLUMN_FLAGS,
-  MUC_NUM_COLUMNS
-};
 
 
 PurpleConversationUiOps *chatty_conversations_get_conv_ui_ops(void);

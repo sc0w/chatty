@@ -325,325 +325,6 @@ chatty_conv_container_get_active_chatty_conv (GtkNotebook *notebook)
 
 
 /**
- * chatty_conv_muc_list_add_columns:
- * @treeview: a GtkTreeView
- *
- * Setup columns for muc list treeview.
- *
- */
-static void
-chatty_conv_muc_list_add_columns (GtkTreeView *treeview)
-{
-  GtkCellRenderer   *renderer;
-  GtkTreeViewColumn *column;
-
-  renderer = gtk_cell_renderer_pixbuf_new ();
-  column = gtk_tree_view_column_new_with_attributes ("Avatar",
-                                                     renderer,
-                                                     "pixbuf",
-                                                     MUC_COLUMN_AVATAR,
-                                                     NULL);
-
-  gtk_cell_renderer_set_padding (renderer, 12, 12);
-  gtk_tree_view_append_column (treeview, column);
-
-  renderer = gtk_cell_renderer_text_new ();
-  column = gtk_tree_view_column_new_with_attributes ("Name",
-                                                     renderer,
-                                                     "text",
-                                                     MUC_COLUMN_ENTRY,
-                                                     NULL);
-
-  gtk_tree_view_column_set_attributes (column, renderer,
-                                       "markup", MUC_COLUMN_ENTRY,
-                                       NULL);
-
-  g_object_set (renderer,
-                // TODO derive width-chars from screen width
-                "width-chars", 24,
-                "ellipsize", PANGO_ELLIPSIZE_END,
-                NULL);
-
-  gtk_cell_renderer_set_alignment (renderer, 0.0, 0.4);
-  gtk_tree_view_append_column (treeview, column);
-
-  renderer = gtk_cell_renderer_text_new ();
-  column = gtk_tree_view_column_new_with_attributes ("Time",
-                                                     renderer,
-                                                     "text",
-                                                     MUC_COLUMN_LAST,
-                                                     NULL);
-
-  gtk_tree_view_column_set_attributes (column,
-                                       renderer,
-                                       "markup", MUC_COLUMN_LAST,
-                                       NULL);
-
-  g_object_set (renderer,
-                "xalign", 0.95,
-                "yalign", 0.2,
-                NULL);
-
-  gtk_tree_view_append_column (treeview, column);
-}
-
-
-/**
- * chatty_conv_sort_muc_list:
- * @model:    a GtkTreeModel
- * @a, b:     a GtkTreeIter
- * @userdata: a gpointer
- *
- * Sorts the muc list according
- * to user level
- *
- * Function is called from
- * chatty_conv_create_muc_list
- *
- */
-static gint
-chatty_conv_sort_muc_list (GtkTreeModel *model,
-                           GtkTreeIter  *a,
-                           GtkTreeIter  *b,
-                           gpointer userdata)
-{
-  PurpleConvChatBuddyFlags f1 = 0, f2 = 0;
-  char                     *user1 = NULL, *user2 = NULL;
-  gint                     ret = 0;
-
-  gtk_tree_model_get (model, a,
-                      MUC_COLUMN_ALIAS_KEY, &user1,
-                      MUC_COLUMN_FLAGS, &f1,
-                      -1);
-
-  gtk_tree_model_get (model, b,
-                      MUC_COLUMN_ALIAS_KEY, &user2,
-                      MUC_COLUMN_FLAGS, &f2,
-                      -1);
-
-  /* Only sort by membership levels */
-  f1 &= PURPLE_CBFLAGS_VOICE | PURPLE_CBFLAGS_HALFOP |
-        PURPLE_CBFLAGS_OP | PURPLE_CBFLAGS_FOUNDER;
-
-  f2 &= PURPLE_CBFLAGS_VOICE | PURPLE_CBFLAGS_HALFOP |
-        PURPLE_CBFLAGS_OP | PURPLE_CBFLAGS_FOUNDER;
-
-  ret = g_strcmp0 (user1, user2);
-
-  if (user1 != NULL && user2 != NULL) {
-    if (f1 != f2) {
-      ret = (f1 > f2) ? -1 : 1;
-    }
-  }
-
-  g_free (user1);
-  g_free (user2);
-
-  return ret;
-}
-
-
-/**
- * chatty_conv_create_muc_list:
- * @chatty_conv: a ChattyConversation
- *
- * Sets up treeview for muc user list
- * Function is called from chatty_conv_new
- *
- */
-static void
-chatty_conv_create_muc_list (ChattyConversation *chatty_conv)
-{
-  GtkTreeView     *treeview;
-  GtkListStore    *treemodel;
-  GtkStyleContext *sc;
-
-  treemodel = gtk_list_store_new (MUC_NUM_COLUMNS,
-                                  G_TYPE_OBJECT,
-                                  G_TYPE_STRING,
-                                  G_TYPE_STRING,
-                                  G_TYPE_STRING,
-                                  G_TYPE_STRING,
-                                  G_TYPE_INT);
-
-  gtk_tree_sortable_set_sort_func (GTK_TREE_SORTABLE(treemodel),
-                                   MUC_COLUMN_ALIAS_KEY,
-                                   chatty_conv_sort_muc_list,
-                                   NULL, NULL);
-
-  treeview = GTK_TREE_VIEW(gtk_tree_view_new_with_model (GTK_TREE_MODEL(treemodel)));
-
-  gtk_tree_view_set_grid_lines (treeview, GTK_TREE_VIEW_GRID_LINES_HORIZONTAL);
-  gtk_tree_view_set_activate_on_single_click (GTK_TREE_VIEW(treeview), TRUE);
-  sc = gtk_widget_get_style_context (GTK_WIDGET(treeview));
-  gtk_style_context_add_class (sc, "list_no_select");
-
-  gtk_tree_view_set_headers_visible (treeview, FALSE);
-  chatty_conv_muc_list_add_columns (GTK_TREE_VIEW (treeview));
-  gtk_tree_view_columns_autosize (GTK_TREE_VIEW (treeview));
-  chatty_conv->muc.treeview = treeview;
-}
-
-
-/**
- * chatty_conv_muc_get_user_status:
- * @chat:  a PurpleConvChat
- * @name:  a const char
- * @flags  PurpleConvChatBuddyFlags
- *
- * Retrieve user status from buddy flags
- *
- * called from chatty_conv_muc_add_user
- *
- */
-static char *
-chatty_conv_muc_get_user_status (PurpleConvChat          *chat,
-                                 const char              *name,
-                                 PurpleConvChatBuddyFlags flags)
-{
-  const char *color_tag;
-  const char *status;
-  char       *text;
-
-  if (flags & PURPLE_CBFLAGS_FOUNDER) {
-    status = _("Owner");
-    color_tag = "<span color='#4d86ff'>";
-  } else if (flags & PURPLE_CBFLAGS_OP) {
-    status = _("Moderator");
-    color_tag = "<span color='#66e6ff'>";
-  } else if (flags & PURPLE_CBFLAGS_VOICE) {
-    status = _("Member");
-    color_tag = "<span color='#c0c0c0'>";
-  } else {
-    color_tag = "<span color='#000000'>";
-    status = "";
-  }
-
-  text = g_strconcat (color_tag, status, "</span>", NULL);
-
-  return text;
-}
-
-
-/**
- * chatty_conv_muc_add_user:
- * @conv:     a ChattyConversation
- * @cb:       a PurpleConvChatBuddy
- *
- * Add a user to the muc list
- *
- * called from chatty_conv_muc_list_add_users
- *
- */
-static void
-chatty_conv_muc_add_user (PurpleConversation  *conv,
-                          PurpleConvChatBuddy *cb)
-{
-  ChattyConversation       *chatty_conv;
-  PurpleAccount            *account;
-  PurpleBuddy              *buddy;
-  PurpleConvChat           *chat;
-  PurpleConnection         *gc;
-  PurplePluginProtocolInfo *prpl_info;
-  GtkTreeModel             *treemodel;
-  GtkListStore             *liststore;
-  GdkPixbuf                *avatar = NULL;
-  GtkTreePath              *path;
-  GtkTreeIter               iter;
-  gchar                    *status;
-  g_autofree gchar         *text = NULL;
-  const gchar              *name, *alias;
-  gchar                    *tmp, *alias_key;
-  gchar                    *real_who = NULL;
-  PurpleConvChatBuddyFlags  flags;
-  int                       chat_id;
-
-  alias = cb->alias;
-  name  = cb->name;
-  flags = cb->flags;
-
-  chat = PURPLE_CONV_CHAT(conv);
-  chatty_conv = CHATTY_CONVERSATION(conv);
-  gc = purple_conversation_get_gc (conv);
-
-  if (!gc || !(prpl_info = PURPLE_PLUGIN_PROTOCOL_INFO(gc->prpl))) {
-    return;
-  }
-
-  g_debug ("chatty_conv_muc_add_user conv: %s user_name: %s",
-           purple_conversation_get_name (conv), name);
-
-  treemodel = gtk_tree_view_get_model (GTK_TREE_VIEW(chatty_conv->muc.treeview));
-  liststore = GTK_LIST_STORE(treemodel);
-
-  account = purple_conversation_get_account (conv);
-
-  prpl_info = PURPLE_PLUGIN_PROTOCOL_INFO(gc->prpl);
-
-  if (prpl_info && prpl_info->get_cb_real_name) {
-    chat_id = purple_conv_chat_get_id (PURPLE_CONV_CHAT(conv));
-
-    real_who = prpl_info->get_cb_real_name (gc, chat_id, name);
-
-    if (real_who) {
-      const char *color;
-
-      buddy = purple_find_buddy (account, real_who);
-      color = chatty_utils_get_color_for_str (real_who);
-
-      avatar = chatty_icon_get_buddy_icon ((PurpleBlistNode*)buddy,
-                                           alias,
-                                           CHATTY_ICON_SIZE_MEDIUM,
-                                           color,
-                                           FALSE);
-    }
-  }
-
-  status = chatty_conv_muc_get_user_status (chat, name, flags);
-
-  text = g_strconcat ("<span color='#646464'>",
-                      name,
-                      "</span>",
-                      "\n",
-                      "<small>",
-                      status,
-                      "</small>",
-                      NULL);
-
-  tmp = g_utf8_casefold (alias, -1);
-  alias_key = g_utf8_collate_key (tmp, -1);
-  g_free (tmp);
-
-  gtk_list_store_insert_with_values (liststore, &iter,
-                                     -1,
-                                     MUC_COLUMN_AVATAR, avatar,
-                                     MUC_COLUMN_ENTRY, text,
-                                     MUC_COLUMN_NAME, name,
-                                     MUC_COLUMN_ALIAS_KEY, alias_key,
-                                     MUC_COLUMN_LAST, NULL,
-                                     MUC_COLUMN_FLAGS, flags,
-                                     -1);
-
-  if (cb->ui_data) {
-    GtkTreeRowReference *ref = cb->ui_data;
-    gtk_tree_row_reference_free (ref);
-  }
-
-  path = gtk_tree_model_get_path (treemodel, &iter);
-  cb->ui_data = gtk_tree_row_reference_new (treemodel, path);
-  gtk_tree_path_free (path);
-
-  if (avatar) {
-    g_object_unref (avatar);
-  }
-
-  g_free (alias_key);
-  g_free (real_who);
-  g_free (status);
-}
-
-
-/**
  * chatty_conv_muc_list_add_users:
  * @conv:        a ChattyConversation
  * @buddies:     a Glist
@@ -659,133 +340,12 @@ chatty_conv_muc_list_add_users (PurpleConversation *conv,
                                 GList              *users,
                                 gboolean            new_arrivals)
 {
-  PurpleConvChat     *chat;
-  ChattyConversation *chatty_conv;
-  GtkListStore       *ls;
-  GList              *l;
+  ChattyChat *chat;
 
-  chat = PURPLE_CONV_CHAT(conv);
-  chatty_conv = CHATTY_CONVERSATION(conv);
+  chat = chatty_manager_find_purple_conv (chatty_manager_get_default (), conv);
 
-  chatty_conv->muc.user_count = g_list_length (purple_conv_chat_get_users (chat));
-
-  ls = GTK_LIST_STORE(gtk_tree_view_get_model (GTK_TREE_VIEW(chatty_conv->muc.treeview)));
-
-  gtk_tree_sortable_set_sort_column_id (GTK_TREE_SORTABLE(ls),
-                                        GTK_TREE_SORTABLE_UNSORTED_SORT_COLUMN_ID,
-                                        GTK_TREE_SORTABLE_UNSORTED_SORT_COLUMN_ID);
-
-  l = users;
-
-  while (l != NULL) {
-    chatty_conv_muc_add_user (conv, (PurpleConvChatBuddy *)l->data);
-    l = l->next;
-  }
-
-  gtk_tree_sortable_set_sort_column_id (GTK_TREE_SORTABLE(ls),
-                                        MUC_COLUMN_ALIAS_KEY,
-                                        GTK_SORT_ASCENDING);
-}
-
-
-/**
- * chatty_conv_muc_list_remove_users:
- * @conv:        a PurpleConversation
- * @users:       a Glist
- *
- * Remove users from the muc list
- *
- * invoked from PurpleConversationUiOps
- *
- */
-static void
-chatty_conv_muc_list_remove_users (PurpleConversation *conv,
-                                   GList              *users)
-{
-  PurpleConvChat     *chat;
-  ChattyConversation *chatty_conv;
-  GtkTreeIter         iter;
-  GtkTreeModel       *model;
-  GList              *l;
-  gboolean            result;
-
-  chat = PURPLE_CONV_CHAT(conv);
-  chatty_conv = CHATTY_CONVERSATION(conv);
-
-  chatty_conv->muc.user_count = g_list_length (purple_conv_chat_get_users (chat));
-
-  g_debug ("chatty_conv_muc_list_remove_users conv: %s user_count: %i",
-           purple_conversation_get_name (conv),
-           chatty_conv->muc.user_count);
-
-  for (l = users; l != NULL; l = l->next) {
-    model = gtk_tree_view_get_model (GTK_TREE_VIEW(chatty_conv->muc.treeview));
-
-    if (!gtk_tree_model_get_iter_first (GTK_TREE_MODEL(model), &iter)) {
-      continue;
-    }
-
-    do {
-      char *val;
-
-      gtk_tree_model_get (GTK_TREE_MODEL(model),
-                          &iter,
-                          MUC_COLUMN_NAME,
-                          &val,
-                          -1);
-
-      if (!purple_utf8_strcasecmp ((char *)l->data, val)) {
-        result = gtk_list_store_remove (GTK_LIST_STORE(model), &iter);
-      } else {
-        result = gtk_tree_model_iter_next (GTK_TREE_MODEL(model), &iter);
-      }
-
-      g_free (val);
-    } while (result);
-  }
-}
-
-
-/**
- * chatty_conv_muc_get_iter:
- * @cbuddy: a PurpleConvChatBuddy
- * @iter:   a GtkTreeIter
- *
- * Get muc list iter from chat buddy
- *
- * invoked from chatty_conv_muc_list_update_user
- *
- */
-static gboolean chatty_conv_muc_get_iter (PurpleConvChatBuddy *cbuddy,
-                                          GtkTreeIter         *iter)
-{
-  GtkTreeRowReference *ref;
-  GtkTreePath         *path;
-  GtkTreeModel        *model;
-
-  g_return_val_if_fail (cbuddy != NULL, FALSE);
-
-  ref = cbuddy->ui_data;
-
-  if (!ref) {
-    return FALSE;
-  }
-
-  if ((path = gtk_tree_row_reference_get_path (ref)) == NULL) {
-    return FALSE;
-  }
-
-  model = gtk_tree_row_reference_get_model (ref);
-
-  if (!gtk_tree_model_get_iter (GTK_TREE_MODEL(model), iter, path)) {
-    gtk_tree_path_free (path);
-
-    return FALSE;
-  }
-
-  gtk_tree_path_free (path);
-
-  return TRUE;
+  if (chat)
+    chatty_chat_add_users (chat, users);
 }
 
 
@@ -803,44 +363,12 @@ static void
 chatty_conv_muc_list_update_user (PurpleConversation *conv,
                                   const char         *user)
 {
-  PurpleConvChat      *chat;
-  PurpleConvChatBuddy *cbuddy;
-  ChattyConversation  *chatty_conv;
-  GtkTreeIter          iter;
-  GtkTreeModel        *model;
+  ChattyChat *chat;
 
-  chat = PURPLE_CONV_CHAT(conv);
-  chatty_conv = CHATTY_CONVERSATION(conv);
+  chat = chatty_manager_find_purple_conv (chatty_manager_get_default (), conv);
+  g_return_if_fail (chat);
 
-  model = gtk_tree_view_get_model (GTK_TREE_VIEW(chatty_conv->muc.treeview));
-
-  if (!gtk_tree_model_get_iter_first (GTK_TREE_MODEL(model), &iter)) {
-    return;
-  }
-
-  cbuddy = purple_conv_chat_cb_find (chat, user);
-
-  if (!cbuddy) {
-    return;
-  }
-
-  g_debug ("chatty_conv_muc_list_update_user conv: %s user_name: %s",
-           purple_conversation_get_name (conv), user);
-
-  chatty_conv->muc.user_count = g_list_length (purple_conv_chat_get_users (chat));
-
-  if (chatty_conv_muc_get_iter (cbuddy, &iter)) {
-    GtkTreeRowReference *ref = cbuddy->ui_data;
-
-    gtk_list_store_remove (GTK_LIST_STORE(model), &iter);
-    gtk_tree_row_reference_free (ref);
-
-    cbuddy->ui_data = NULL;
-  }
-
-  if (cbuddy) {
-    chatty_conv_muc_add_user (conv, cbuddy);
-  }
+  chatty_chat_emit_user_changed (chat, user);
 }
 
 
@@ -1609,7 +1137,6 @@ chatty_conv_new (PurpleConversation *conv)
   protocol_id = purple_account_get_protocol_id (account);
 
   if (conv_type == PURPLE_CONV_TYPE_CHAT) {
-    chatty_conv_create_muc_list (chatty_conv);
 
     msg_type = CHATTY_MSG_TYPE_MUC;
   } else if (conv_type == PURPLE_CONV_TYPE_IM) {
@@ -1698,8 +1225,6 @@ chatty_conv_destroy (PurpleConversation *conv)
 
   chatty_conv_remove_conv (chatty_conv);
 
-  chatty_chat_view_remove_footer (CHATTY_CHAT_VIEW (chatty_conv->chat_view));
-
   g_debug ("chatty_conv_destroy conv");
 
   g_free (chatty_conv);
@@ -1731,7 +1256,7 @@ static PurpleConversationUiOps conversation_ui_ops =
   chatty_conv_write_conversation,
   chatty_conv_muc_list_add_users,
   NULL,
-  chatty_conv_muc_list_remove_users,
+  NULL,
   chatty_conv_muc_list_update_user,
   chatty_conv_present_conversation,
   NULL,
