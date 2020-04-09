@@ -300,24 +300,6 @@ chatty_contact_get_uid (ChattyContact *self)
 
 
 /**
- * chatty_contact_get_individual:
- * @self: A #ChattyContact
- *
- * Get the #FolksIndividual used to create @self.
- * Use this only for debug purposes.
- *
- * Returns: (transfer none): A #FolksIndividual
- */
-FolksIndividual *
-chatty_contact_get_individual (ChattyContact *self)
-{
-  g_return_val_if_fail (CHATTY_IS_CONTACT (self), NULL);
-
-  return NULL;
-}
-
-
-/**
  * chatty_contact_clear_cache:
  * @self: #ChattyContact
  *

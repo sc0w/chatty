@@ -30,6 +30,5 @@ ChattyContact     *chatty_contact_new                   (EContact          *cont
 const char        *chatty_contact_get_value             (ChattyContact     *self);
 const char        *chatty_contact_get_value_type        (ChattyContact     *self);
 const char        *chatty_contact_get_uid               (ChattyContact     *self);
-FolksIndividual   *chatty_contact_get_individual        (ChattyContact     *self);
 
 G_END_DECLS
