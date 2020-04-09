@@ -816,19 +816,6 @@ chatty_window_show_new_muc_dialog (ChattyWindow *self)
 }
 
 
-static GtkWidget *
-chatty_window_create_new_chat_dialog (ChattyWindow *self)
-{
-  GtkWidget *dialog;
-
-  g_assert (CHATTY_IS_WINDOW (self));
-
-  dialog = chatty_new_chat_dialog_new (GTK_WINDOW (self));
-
-  return dialog;
-}
-
-
 /* Copied from chatty-dialogs.c written by Andrea Schäfer <mosibasu@me.com> */
 static void
 chatty_window_show_about_dialog (ChattyWindow *self)
@@ -1074,7 +1061,7 @@ chatty_window_constructed (GObject *object)
   if (chatty_settings_get_window_maximized (self->settings))
     gtk_window_maximize (window);
 
-  self->new_chat_dialog = chatty_window_create_new_chat_dialog (self);
+  self->new_chat_dialog = chatty_new_chat_dialog_new (GTK_WINDOW (self));
 
   hdy_leaflet_set_visible_child_name (HDY_LEAFLET (self->content_box), "sidebar");
 
