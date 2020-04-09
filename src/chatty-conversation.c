@@ -88,29 +88,6 @@ cb_buddy_typed (PurpleAccount *account,
 
 
 static void
-cb_buddy_typing_stopped (PurpleAccount *account,
-                         const char    *name)
-{
-  PurpleConversation *conv;
-  ChattyConversation *chatty_conv;
-
-  conv = purple_find_conversation_with_account (PURPLE_CONV_TYPE_IM,
-                                                name,
-                                                account);
-
-  if (!conv) {
-    return;
-  }
-
-  chatty_conv = CHATTY_CONVERSATION(conv);
-
-  if (chatty_conv && chatty_conv->conv == conv) {
-    chatty_msg_list_hide_typing_indicator (chatty_conv->msg_list);
-  }
-}
-
-
-static void
 cb_update_buddy_icon (PurpleBuddy *buddy)
 {
   PurpleConversation *conv;
@@ -1802,7 +1779,7 @@ chatty_conversations_init (void)
 
   purple_signal_connect (purple_conversations_get_handle (),
                          "buddy-typing-stopped", &handle,
-                         PURPLE_CALLBACK (cb_buddy_typing_stopped), NULL);
+                         PURPLE_CALLBACK (cb_buddy_typed), NULL);
 
   purple_cmd_register ("chatty",
                        "ww",
