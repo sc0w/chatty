@@ -15,7 +15,6 @@
 #include "chatty-config.h"
 #include "chatty-window.h"
 #include "chatty-contact-row.h"
-#include "chatty-folks.h"
 #include "chatty-dbus.h"
 #include "chatty-history.h"
 #include "chatty-manager.h"
@@ -1253,9 +1252,6 @@ chatty_window_set_uri (ChattyWindow *self,
 
   chat = chatty_chat_new_im_chat (account, buddy);
   item = chatty_manager_add_chat (chatty_manager_get_default (), chat);
-
-  if (!purple_buddy_icons_node_has_custom_icon (PURPLE_BLIST_NODE(buddy)) && contact)
-    chatty_folks_set_purple_buddy_data (contact, account, g_strdup (who));
 
   purple_blist_node_set_bool (PURPLE_BLIST_NODE(buddy), "chatty-autojoin", TRUE);
 

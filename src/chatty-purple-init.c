@@ -22,7 +22,6 @@
 #include "chatty-purple-notify.h"
 #include "chatty-manager.h"
 #include "chatty-conversation.h"
-#include "chatty-folks.h"
 
 static GHashTable *ui_info = NULL;
 

@@ -23,7 +23,6 @@
 #include "chatty-list-row.h"
 #include "chatty-dbus.h"
 #include "chatty-utils.h"
-#include "chatty-folks.h"
 #include "chatty-icons.h"
 #include "chatty-new-chat-dialog.h"
 

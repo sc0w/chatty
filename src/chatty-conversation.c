@@ -17,7 +17,6 @@
 #include "chatty-history.h"
 #include "chatty-utils.h"
 #include "chatty-notify.h"
-#include "chatty-folks.h"
 #include "chatty-chat-view.h"
 
 #define LIBFEEDBACK_USE_UNSTABLE_API
@@ -1610,8 +1609,6 @@ chatty_conv_new (PurpleConversation *conv)
           buddy = purple_buddy_new (account, conv_name, folks_name);
 
           purple_blist_add_buddy (buddy, NULL, NULL, NULL);
-
-          chatty_folks_set_purple_buddy_data (contact, account, conv_name);
         }
       }
 
