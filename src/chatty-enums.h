@@ -42,3 +42,17 @@ typedef enum
   CHATTY_PROTOCOL_THREEPL  = 1 << 7, /* prpl-threepl */
   CHATTY_PROTOCOL_ANY      = ~0
 } ChattyProtocol;
+
+
+/**
+ * ChattyUserFlag:
+ *
+ * Different flags set for user
+ */
+typedef enum
+{
+  CHATTY_USER_FLAG_NONE,
+  CHATTY_USER_FLAG_MEMBER    = 1 << 0,
+  CHATTY_USER_FLAG_MODERATOR = 1 << 1,
+  CHATTY_USER_FLAG_OWNER     = 1 << 2,
+} ChattyUserFlag;

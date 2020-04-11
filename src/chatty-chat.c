@@ -17,6 +17,7 @@
 # include "config.h"
 #endif
 
+#include "contrib/gtk.h"
 #include "chatty-settings.h"
 #include "chatty-icons.h"
 #include "users/chatty-pp-buddy.h"
@@ -44,6 +45,8 @@ struct _ChattyChat
 
   PurpleChat         *pp_chat;
   PurpleConversation *conv;
+  GListStore         *chat_users;
+  GtkSortListModel   *sorted_chat_users;
 
   char               *last_message;
   guint               unread_count;
@@ -66,6 +69,28 @@ enum {
 
 static guint signals[N_SIGNALS];
 static GParamSpec *properties[N_PROPS];
+
+static gint
+sort_chat_buddy (ChattyPpBuddy *a,
+                 ChattyPpBuddy *b)
+{
+  ChattyUserFlag flag_a, flag_b;
+
+  flag_a = chatty_pp_buddy_get_flags (a);
+  flag_b = chatty_pp_buddy_get_flags (b);
+
+  flag_a = flag_a & (CHATTY_USER_FLAG_MEMBER | CHATTY_USER_FLAG_MODERATOR | CHATTY_USER_FLAG_OWNER);
+  flag_b = flag_b & (CHATTY_USER_FLAG_MEMBER | CHATTY_USER_FLAG_MODERATOR | CHATTY_USER_FLAG_OWNER);
+
+  if (flag_a == flag_b)
+    return chatty_item_compare (CHATTY_ITEM (a), CHATTY_ITEM (b));
+
+  if (flag_a > flag_b)
+    return -1;
+
+  /* @a should be after @b */
+  return 1;
+}
 
 static PurpleBlistNode *
 chatty_get_conv_blist_node (PurpleConversation *conv)
@@ -90,6 +115,31 @@ chatty_get_conv_blist_node (PurpleConversation *conv)
     break;
   }
   return node;
+}
+
+static ChattyPpBuddy *
+chatty_chat_find_user (ChattyChat *self,
+                       const char *user,
+                       guint      *index)
+{
+  guint n_items;
+
+  g_assert (CHATTY_IS_CHAT (self));
+
+  n_items = g_list_model_get_n_items (G_LIST_MODEL (self->chat_users));
+  for (guint i = 0; i < n_items; i++) {
+    g_autoptr(ChattyPpBuddy) buddy = NULL;
+
+    buddy = g_list_model_get_item (G_LIST_MODEL (self->chat_users), i);
+    if (chatty_pp_buddy_get_id (buddy) == user) {
+      if (index)
+        *index = i;
+
+      return buddy;
+    }
+  }
+
+  return NULL;
 }
 
 static const char *
@@ -194,6 +244,9 @@ chatty_chat_finalize (GObject *object)
 {
   ChattyChat *self = (ChattyChat *)object;
 
+  g_list_store_remove_all (self->chat_users);
+  g_object_unref (self->chat_users);
+  g_object_unref (self->sorted_chat_users);
   g_free (self->last_message);
 
   G_OBJECT_CLASS (chatty_chat_parent_class)->finalize (object);
@@ -239,6 +292,11 @@ chatty_chat_class_init (ChattyChatClass *klass)
 static void
 chatty_chat_init (ChattyChat *self)
 {
+  g_autoptr(GtkSorter) sorter = NULL;
+
+  sorter = gtk_custom_sorter_new ((GCompareDataFunc)sort_chat_buddy, NULL, NULL);
+  self->chat_users = g_list_store_new (CHATTY_TYPE_PP_BUDDY);
+  self->sorted_chat_users = gtk_sort_list_model_new (G_LIST_MODEL (self->chat_users), sorter);
 }
 
 
@@ -416,6 +474,99 @@ chatty_chat_match_purple_conv (ChattyChat         *self,
   }
 
   return FALSE;
+}
+
+
+/**
+ * chatty_chat_add_users:
+ * @self: a #ChattyChat
+ * @users: A #GList of added users
+ *
+ * Add a #GList of #PurpleConvChatBuddy users to
+ * @self.  This function only adds the items to
+ * the internal list model, so that it can be
+ * used to create widgets.
+ */
+void
+chatty_chat_add_users (ChattyChat *self,
+                       GList      *users)
+{
+  ChattyPpBuddy *buddy;
+  GPtrArray *users_array;
+
+  g_return_if_fail (CHATTY_IS_CHAT (self));
+
+  users_array = g_ptr_array_new_with_free_func (g_object_unref);
+
+  for (GList *node = users; node; node = node->next) {
+    buddy = g_object_new (CHATTY_TYPE_PP_BUDDY,
+                          "chat-buddy", node->data, NULL);
+    chatty_pp_buddy_set_chat (buddy, self->conv);
+    g_ptr_array_add (users_array, buddy);
+  }
+
+  g_list_store_splice (self->chat_users, 0, 0,
+                       users_array->pdata, users_array->len);
+
+  g_ptr_array_free (users_array, TRUE);
+}
+
+
+/**
+ * chatty_chat_remove_users:
+ * @self: a #ChattyChat
+ * @users: A #GList of removed users
+ *
+ * Remove a #GList of `const char*` users to
+ * @self.  This function only remove the items
+ * the internal list model, so that it can be
+ * used to create widgets.
+ */
+void
+chatty_chat_remove_user (ChattyChat *self,
+                         const char *user)
+{
+  PurpleConvChatBuddy *cb = NULL;
+  PurpleConvChat *chat;
+  ChattyPpBuddy *buddy = NULL;
+  guint index;
+
+  g_return_if_fail (CHATTY_IS_CHAT (self));
+
+  chat  = purple_conversation_get_chat_data (self->conv);
+
+  if (chat)
+    cb = purple_conv_chat_cb_find (chat, user);
+
+  if (cb)
+    buddy = chatty_chat_find_user (self, cb->name, &index);
+
+  if (buddy)
+    g_list_store_remove (self->chat_users, index);
+}
+
+GListModel *
+chatty_chat_get_users (ChattyChat *self)
+{
+  g_return_val_if_fail (CHATTY_IS_CHAT (self), NULL);
+
+  return G_LIST_MODEL (self->sorted_chat_users);
+}
+
+
+void
+chatty_chat_emit_user_changed (ChattyChat *self,
+                               const char *user)
+{
+  ChattyPpBuddy *buddy;
+
+  g_return_if_fail (CHATTY_IS_CHAT (self));
+  g_return_if_fail (user);
+
+  buddy = chatty_chat_find_user (self, user, NULL);
+
+  if (buddy)
+    g_signal_emit_by_name (buddy, "changed");
 }
 
 

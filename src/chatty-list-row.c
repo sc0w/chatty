@@ -194,6 +194,29 @@ chatty_time_ago_in_words (time_t time_stamp)
 }
 
 
+static char *
+list_row_user_flag_to_str (ChattyUserFlag flags)
+{
+  const char *color_tag;
+  const char *status;
+
+  if (flags & CHATTY_USER_FLAG_OWNER) {
+    status = _("Owner");
+    color_tag = "<span color='#4d86ff'>";
+  } else if (flags & CHATTY_USER_FLAG_MODERATOR) {
+    status = _("Moderator");
+    color_tag = "<span color='#66e6ff'>";
+  } else if (flags & CHATTY_USER_FLAG_MEMBER) {
+    status = _("Member");
+    color_tag = "<span color='#c0c0c0'>";
+  } else {
+    color_tag = "<span color='#000000'>";
+    status = "";
+  }
+
+  return g_strconcat (color_tag, status, "</span>", NULL);
+}
+
 static void
 chatty_list_row_update (ChattyListRow *self)
 {
@@ -204,8 +227,18 @@ chatty_list_row_update (ChattyListRow *self)
   g_assert (CHATTY_IS_ITEM (self->item));
 
   if (CHATTY_IS_PP_BUDDY (self->item)) {
-    pp_account = chatty_pp_buddy_get_account (CHATTY_PP_BUDDY (self->item));
-    subtitle = purple_account_get_username (pp_account);
+    if (chatty_pp_buddy_get_buddy (CHATTY_PP_BUDDY (self->item))) { /* Buddy in contact list */
+      pp_account = chatty_pp_buddy_get_account (CHATTY_PP_BUDDY (self->item));
+      subtitle = purple_account_get_username (pp_account);
+    } else { /* Buddy in chat list */
+      g_autofree char *markup = NULL;
+      ChattyUserFlag flag;
+
+      flag = chatty_pp_buddy_get_flags (CHATTY_PP_BUDDY (self->item));
+      markup = list_row_user_flag_to_str (flag);
+      gtk_label_set_markup (GTK_LABEL (self->subtitle), markup);
+      gtk_widget_show (self->subtitle);
+    }
   } else if (CHATTY_IS_CONTACT (self->item)) {
     g_autofree gchar *type = NULL;
     const gchar *number;

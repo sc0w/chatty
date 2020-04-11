@@ -14,6 +14,8 @@
 #include "chatty-window.h"
 #include "chatty-conversation.h"
 #include "chatty-icons.h"
+#include "chatty-list-row.h"
+#include "chatty-manager.h"
 #include "purple.h"
 #include "chatty-muc-info-dialog.h"
 
@@ -28,6 +30,7 @@ struct _ChattyMucInfoDialog
   GtkWidget *button_edit_topic;
   GtkWidget *label_chat_id;
   GtkWidget *label_num_user;
+  GtkWidget *user_list_box;
   GtkWidget *label_topic;
   GtkWidget *label_title;
   GtkWidget *switch_prefs_notifications;
@@ -36,7 +39,6 @@ struct _ChattyMucInfoDialog
   GtkWidget *stack_panes_muc_info;
   GtkWidget *box_topic_frame;
   GtkWidget *box_topic_editor;
-  GtkWidget *box_user_list;
   GtkWidget *textview_topic;
   GtkWidget *entry_invite_name;
   GtkWidget *entry_invite_msg;
@@ -68,11 +70,6 @@ static void
 dialog_delete_cb (ChattyMucInfoDialog *self)
 {
   g_assert (CHATTY_IS_MUC_INFO_DIALOG (self));
-
-  g_object_ref (self->chatty_conv->muc.treeview);
-
-  gtk_container_remove (GTK_CONTAINER(self->box_user_list),
-                        GTK_WIDGET(self->chatty_conv->muc.treeview));
 }
 
 
@@ -317,6 +314,8 @@ chatty_muc_info_dialog_get_property (GObject    *object,
 static void
 chatty_muc_info_dialog_constructed (GObject *object)
 {
+  ChattyChat               *chatty_chat;
+  GListModel               *user_list;
   PurpleAccount            *account;
   PurpleConvChat           *chat;
   PurpleConvChatBuddyFlags  flags;
@@ -338,12 +337,9 @@ chatty_muc_info_dialog_constructed (GObject *object)
 
   chat = PURPLE_CONV_CHAT(self->chatty_conv->conv);
   node = PURPLE_BLIST_NODE(purple_blist_find_chat (account, self->chatty_conv->conv->name));
-
   chat_name = purple_conversation_get_title (self->chatty_conv->conv);
-  user_count_str = g_strdup_printf ("%i %s", self->chatty_conv->muc.user_count, _("members"));
 
   gtk_label_set_text (GTK_LABEL(self->label_chat_id), chat_name);
-  gtk_label_set_text (GTK_LABEL(self->label_num_user), user_count_str);
 
   topic = purple_conv_chat_get_topic (PURPLE_CONV_CHAT(self->chatty_conv->conv));
   flags = purple_conv_chat_user_get_flags (chat, chat->nick);
@@ -368,12 +364,17 @@ chatty_muc_info_dialog_constructed (GObject *object)
   gtk_switch_set_state (GTK_SWITCH(self->switch_prefs_status),
                         purple_blist_node_get_bool (node, "chatty-status-msg"));
 
-  // TODO: will be solved by user_list rework
-  gtk_box_pack_start (GTK_BOX(self->box_user_list),
-                      GTK_WIDGET(self->chatty_conv->muc.treeview),
-                      TRUE, TRUE, 0);
+  chatty_chat = chatty_manager_find_purple_conv (chatty_manager_get_default (), self->chatty_conv->conv);
+  g_return_if_fail (chatty_chat);
 
-  gtk_widget_show (GTK_WIDGET(self->chatty_conv->muc.treeview));
+  user_list = chatty_chat_get_users (chatty_chat);
+  user_count_str = g_strdup_printf ("%u %s",
+                                    g_list_model_get_n_items (user_list),
+                                    _("members"));
+  gtk_label_set_text (GTK_LABEL (self->label_num_user), user_count_str);
+  gtk_list_box_bind_model (GTK_LIST_BOX (self->user_list_box), user_list,
+                           (GtkListBoxCreateWidgetFunc)chatty_list_row_new,
+                           NULL, NULL);
 }
 
 
@@ -406,6 +407,7 @@ chatty_muc_info_dialog_class_init (ChattyMucInfoDialogClass *klass)
   gtk_widget_class_bind_template_child (widget_class, ChattyMucInfoDialog, button_edit_topic);
   gtk_widget_class_bind_template_child (widget_class, ChattyMucInfoDialog, label_chat_id);
   gtk_widget_class_bind_template_child (widget_class, ChattyMucInfoDialog, label_num_user);
+  gtk_widget_class_bind_template_child (widget_class, ChattyMucInfoDialog, user_list_box);
   gtk_widget_class_bind_template_child (widget_class, ChattyMucInfoDialog, label_topic);
   gtk_widget_class_bind_template_child (widget_class, ChattyMucInfoDialog, label_title);
   gtk_widget_class_bind_template_child (widget_class, ChattyMucInfoDialog, switch_prefs_notifications);
@@ -414,7 +416,6 @@ chatty_muc_info_dialog_class_init (ChattyMucInfoDialogClass *klass)
   gtk_widget_class_bind_template_child (widget_class, ChattyMucInfoDialog, entry_invite_msg);
   gtk_widget_class_bind_template_child (widget_class, ChattyMucInfoDialog, box_topic_frame);
   gtk_widget_class_bind_template_child (widget_class, ChattyMucInfoDialog, box_topic_editor);
-  gtk_widget_class_bind_template_child (widget_class, ChattyMucInfoDialog, box_user_list);
   gtk_widget_class_bind_template_child (widget_class, ChattyMucInfoDialog, textview_topic);
   gtk_widget_class_bind_template_child (widget_class, ChattyMucInfoDialog, list_muc_settings);
   gtk_widget_class_bind_template_child (widget_class, ChattyMucInfoDialog, stack_panes_muc_info);

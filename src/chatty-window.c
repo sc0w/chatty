@@ -138,6 +138,9 @@ window_chat_changed_cb (ChattyWindow *self)
   gtk_widget_set_visible (self->overlay, !has_child);
   gtk_widget_set_sensitive (self->header_sub_menu_button, has_child);
 
+  if (!CHATTY_IS_CHAT (self->selected_item))
+    self->selected_item = NULL;
+
   /*
    * When the items are re-arranged, the selection will be lost.
    * Re-select it.  In GTK4, A #GtkListView with #GtkSingleSelection
