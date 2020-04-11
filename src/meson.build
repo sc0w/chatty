@@ -46,7 +46,6 @@ chatty_sources = [
   'chatty-history.c',
   'chatty-dbus.c',
   'chatty-utils.c',
-  'chatty-folks.c',
   'chatty-notify.c',
   'chatty-purple-request.c',
   'chatty-purple-notify.c',
