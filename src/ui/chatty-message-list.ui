@@ -8,6 +8,7 @@
         <property name="visible">True</property>
         <property name="can_focus">True</property>
         <property name="hscrollbar_policy">never</property>
+        <property name="vadjustment">vadjustment</property>
         <child>
           <object class="GtkViewport">
             <property name="visible">True</property>
@@ -16,6 +17,8 @@
               <object class="HdyColumn">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
+                <property name="margin-start">12</property>
+                <property name="margin-end">12</property>
                 <property name="maximum-width">640</property>
                 <property name="linear-growth-width">640</property>
                 <child>
@@ -37,4 +40,9 @@
       </packing>
     </child>
   </template>
+
+  <object class="GtkAdjustment" id="vadjustment">
+    <signal name="notify::page-size" handler="list_page_size_changed_cb" swapped="yes"/>
+  </object>
+
 </interface>

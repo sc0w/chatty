@@ -37,6 +37,7 @@ chatty_sources = [
   'dialogs/chatty-user-info-dialog.c',
   'dialogs/chatty-muc-info-dialog.c',
   'chatty-message-list.c',
+  'chatty-message-row.c',
   'chatty-contact-row.c',
   'chatty-conversation.c',
   './xeps/xeps.c',

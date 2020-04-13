@@ -548,7 +548,6 @@ chatty_conv_write_conversation (PurpleConversation *conv,
   gboolean                  group_chat = TRUE;
   gboolean                  conv_active;
   GdkPixbuf                *avatar = NULL;
-  GtkWidget                *icon = NULL;
   ChattyWindow             *window;
   GtkWidget                *convs_notebook;
   int                       chat_id;
@@ -602,10 +601,6 @@ chatty_conv_write_conversation (PurpleConversation *conv,
                                              CHATTY_ICON_SIZE_MEDIUM,
                                              color,
                                              FALSE);
-        if (avatar) {
-          icon = gtk_image_new_from_pixbuf (avatar);
-          g_object_unref (avatar);
-        }
       }
     }
   } else {
@@ -689,8 +684,6 @@ chatty_conv_write_conversation (PurpleConversation *conv,
 
         chatty_notify_show_notification (titel, message, CHATTY_NOTIFY_MESSAGE_RECEIVED, conv, avatar);
 
-        g_object_unref (avatar);
-
         g_free (titel);
       }
 
@@ -698,7 +691,7 @@ chatty_conv_write_conversation (PurpleConversation *conv,
                                    MSG_IS_INCOMING,
                                    message,
                                    group_chat ? who : timestamp,
-                                   icon ? icon : NULL);
+                                   avatar);
 
     } else if (flags & PURPLE_MESSAGE_SEND && pcm.flags & PURPLE_MESSAGE_SEND) {
       // normal send
@@ -727,6 +720,8 @@ chatty_conv_write_conversation (PurpleConversation *conv,
     chatty_conv_set_unseen (chatty_conv, CHATTY_UNSEEN_NONE);
   }
 
+  if (avatar)
+    g_object_unref (avatar);
   g_free (pcm.who);
   g_free (pcm.what);
   g_free (pcm.alias);
