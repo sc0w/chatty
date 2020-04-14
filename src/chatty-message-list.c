@@ -532,7 +532,7 @@ chatty_msg_list_constructed (GObject *object)
                            (gpointer) self, 0);
 
   g_signal_connect (GTK_SCROLLED_WINDOW (priv->scroll),
-                    "edge-reached",
+                    "edge-overshot",
                     G_CALLBACK(cb_scroll_edge_reached),
                     self);
 }
