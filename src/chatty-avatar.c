@@ -321,7 +321,7 @@ chatty_avatar_set_item (ChattyAvatar *self,
 
       settings = chatty_settings_get_default ();
       g_object_connect (settings,
-                        "swapped-object-signal::notify::indicate-unkown-contacts",
+                        "swapped-object-signal::notify::indicate-unknown-contacts",
                         G_CALLBACK (gtk_widget_queue_draw), self,
                         "swapped-object-signal::notify::blur-idle-buddies",
                         G_CALLBACK (gtk_widget_queue_draw), self,
