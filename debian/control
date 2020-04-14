@@ -12,8 +12,6 @@ Build-Depends:
  libebook-contacts1.2-dev,
  libpurple-dev,
  libsqlite3-dev,
- libgee-0.8-dev,
- libfolks-dev,
  libebook1.2-dev,
  meson,
 Standards-Version: 4.2.1
