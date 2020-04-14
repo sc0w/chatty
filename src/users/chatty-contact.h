@@ -12,7 +12,6 @@
 #pragma once
 
 #include <glib-object.h>
-#include <folks/folks.h>
 #include <libebook-contacts/libebook-contacts.h>
 
 #include "users/chatty-item.h"

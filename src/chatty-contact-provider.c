@@ -1,5 +1,5 @@
 /* -*- mode: c; c-basic-offset: 2; indent-tabs-mode: nil; -*- */
-/* chatty-folks.c
+/* chatty-contact-provider.c
  *
  * Copyright 2020 Purism SPC
  *
@@ -15,8 +15,6 @@
 # include "config.h"
 #endif
 
-#include <gee-0.8/gee.h>
-#include <folks/folks.h>
 #include <libebook/libebook.h>
 
 #include "users/chatty-contact.h"

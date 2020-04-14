@@ -1,5 +1,5 @@
 /* -*- mode: c; c-basic-offset: 2; indent-tabs-mode: nil; -*- */
-/* chatty-folks.h
+/* chatty-contact-provider.h
  *
  * Copyright 2020 Purism SPC
  *

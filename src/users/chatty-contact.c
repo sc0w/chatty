@@ -16,8 +16,6 @@
 #endif
 
 #include <glib/gi18n.h>
-#include <gee-0.8/gee.h>
-#include <folks/folks.h>
 #include <gtk/gtk.h>
 #include <libebook-contacts/libebook-contacts.h>
 
