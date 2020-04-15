@@ -20,6 +20,7 @@
 #include "chatty-history.h"
 #include "chatty-message-list.h"
 #include "chatty-conversation.h"
+#include "chatty-manager.h"
 #include "chatty-purple-init.h"
 #include "chatty-settings.h"
 
@@ -889,7 +890,7 @@ chatty_0313_init (void)
                         NULL);
 
   // Intercept history archiving and do it my way
-  purple_signal_connect(chatty_conversations_get_handle(),
+  purple_signal_connect(chatty_manager_get_default (),
                         "conversation-write",
                         handle,
                         PURPLE_CALLBACK(cb_chatty_mam_msg_wrote),
