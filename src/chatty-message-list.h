@@ -56,7 +56,7 @@ GtkWidget *chatty_msg_list_add_message (ChattyMsgList *self,
                                   guint message_dir,
                                   const gchar *message,
                                   const gchar *footer,
-                                  GtkWidget   *icon);
+                                  GdkPixbuf   *avatar);
 
 void chatty_msg_list_clear (ChattyMsgList *self);
 void chatty_msg_list_autoscroll (ChattyMsgList *self);
@@ -73,7 +73,7 @@ GtkWidget *chatty_msg_list_add_message_at (ChattyMsgList *self,
                                      guint          message_dir,
                                      const gchar   *message,
                                      const gchar   *footer,
-                                     GtkWidget     *icon,
+                                     GdkPixbuf     *avatar,
                                      guint position);
 
 G_END_DECLS

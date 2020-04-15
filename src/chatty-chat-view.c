@@ -17,6 +17,7 @@
 #include "chatty-utils.h"
 #include "users/chatty-contact.h"
 #include "users/chatty-pp-buddy.h"
+#include "chatty-message-row.h"
 #include "chatty-chat-view.h"
 
 struct _ChattyChatView
@@ -368,7 +369,6 @@ chatty_conv_get_chat_messages_cb (const guchar *msg,
 {
   ChattyChatView *self = user_data;
   PurpleAccount  *account;
-  GtkWidget      *icon  = NULL;
 
   g_assert (CHATTY_IS_CHAT_VIEW (self));
 
@@ -401,14 +401,11 @@ chatty_conv_get_chat_messages_cb (const guchar *msg,
                                            color,
                                            FALSE);
 
-      if (avatar)
-        icon = gtk_image_new_from_pixbuf (avatar);
-
       chatty_msg_list_add_message_at (CHATTY_MSG_LIST (self->message_list),
                                       MSG_IS_INCOMING,
                                       (const char *)msg,
                                       NULL,
-                                      icon ? icon : NULL,
+                                      avatar,
                                       ADD_MESSAGE_ON_TOP);
 
     } else if (direction == -1) {
@@ -433,16 +430,15 @@ chatty_conv_get_chat_messages_cb (const guchar *msg,
 
 
 static void
-chat_view_message_added_cb (ChattyChatView *self,
-                            GtkBox         *box)
+chat_view_message_added_cb (ChattyChatView   *self,
+                            ChattyMessageRow *row)
 {
   g_assert (CHATTY_IS_CHAT_VIEW (self));
-  g_assert (GTK_IS_BOX (box));
+  g_assert (CHATTY_IS_MESSAGE_ROW (row));
 
   if (self->chatty_conv->msg_bubble_footer)
-    gtk_box_pack_start (box,
-                        self->chatty_conv->msg_bubble_footer,
-                        FALSE, FALSE, 3);
+    chatty_message_row_set_footer (row,
+                                   self->chatty_conv->msg_bubble_footer);
 }
 
 
