@@ -812,11 +812,12 @@ chatty_conv_write_conversation (PurpleConversation *conv,
 
     if (pcm.flags & PURPLE_MESSAGE_SYSTEM) {
       // System is usually also RECV so should be first to catch
-      chatty_msg_list_add_message (chatty_conv->msg_list,
-                                   MSG_IS_SYSTEM,
-                                   message,
-                                   NULL,
-                                   NULL);
+      chatty_chat_view_add_message_at (CHATTY_CHAT_VIEW (chatty_conv->chat_view),
+                                       MSG_IS_SYSTEM,
+                                       message,
+                                       NULL,
+                                       NULL,
+                                       ADD_MESSAGE_ON_BOTTOM);
     } else if (pcm.flags & PURPLE_MESSAGE_RECV) {
 
       window = chatty_utils_get_window ();
@@ -850,30 +851,33 @@ chatty_conv_write_conversation (PurpleConversation *conv,
         g_free (titel);
       }
 
-      chatty_msg_list_add_message (chatty_conv->msg_list,
-                                   MSG_IS_INCOMING,
-                                   message,
-                                   group_chat ? who : timestamp,
-                                   avatar);
+      chatty_chat_view_add_message_at (CHATTY_CHAT_VIEW (chatty_conv->chat_view),
+                                       MSG_IS_INCOMING,
+                                       message,
+                                       group_chat ? who : timestamp,
+                                       avatar,
+                                       ADD_MESSAGE_ON_BOTTOM);
 
     } else if (flags & PURPLE_MESSAGE_SEND && pcm.flags & PURPLE_MESSAGE_SEND) {
       // normal send
-      chatty_msg_list_add_message (chatty_conv->msg_list,
-                                   MSG_IS_OUTGOING,
-                                   message,
-                                   NULL,
-                                   NULL);
+      chatty_chat_view_add_message_at (CHATTY_CHAT_VIEW (chatty_conv->chat_view),
+                                       MSG_IS_OUTGOING,
+                                       message,
+                                       NULL,
+                                       NULL,
+                                       ADD_MESSAGE_ON_BOTTOM);
 
     } else if (pcm.flags & PURPLE_MESSAGE_SEND) {
       // offline send (from MAM)
       // FIXME: current list_box does not allow ordering rows by timestamp
       // TODO: Needs proper sort function and timestamp as user_data for rows
       // FIXME: Alternatively may need to reload history to re-populate rows
-      chatty_msg_list_add_message (chatty_conv->msg_list,
-                                   MSG_IS_OUTGOING,
-                                   message,
-                                   timestamp,
-                                   NULL);
+      chatty_chat_view_add_message_at (CHATTY_CHAT_VIEW (chatty_conv->chat_view),
+                                       MSG_IS_OUTGOING,
+                                       message,
+                                       timestamp,
+                                       NULL,
+                                       ADD_MESSAGE_ON_BOTTOM);
 
     }
 

@@ -20,7 +20,7 @@
 #include "chatty-manager.h"
 #include "chatty-list-row.h"
 #include "chatty-settings.h"
-#include "chatty-message-list.h"
+#include "chatty-chat-view.h"
 #include "chatty-conversation.h"
 #include "chatty-manager.h"
 #include "chatty-purple-init.h"
@@ -246,7 +246,7 @@ window_notebook_before_switch_cb (GtkNotebook  *notebook,
 
   chatty_conv = CHATTY_CONVERSATION (conv);
 
-  chatty_msg_list_hide_typing_indicator (chatty_conv->msg_list);
+  chatty_chat_view_hide_typing_indicator (CHATTY_CHAT_VIEW (chatty_conv->chat_view));
 }
 
 

@@ -71,10 +71,6 @@
 
 
 /* MESSAGE LIST AND BUBBLES */
-.message_list {
-  color: black;
-  background-color: @theme_base_color;
-}
 
 .message_bubble {
   font-size: 16px;
