@@ -468,7 +468,7 @@ window_new_message_clicked_cb (ChattyWindow *self)
 {
   ChattyNewChatDialog *dialog;
   ChattyItem *item;
-  const char *phone_number;
+  const char *phone_number = NULL;
   gint response;
 
   g_assert (CHATTY_IS_WINDOW (self));
@@ -481,15 +481,20 @@ window_new_message_clicked_cb (ChattyWindow *self)
 
   dialog = CHATTY_NEW_CHAT_DIALOG (self->new_chat_dialog);
   item = chatty_new_chat_dialog_get_selected_item (dialog);
-  phone_number = chatty_new_chat_dialog_get_phone_number (dialog);
 
   if (CHATTY_IS_CHAT (item))
     self->selected_item = item;
 
-  if (item)
-    chatty_window_open_item (self, item);
-  else if (phone_number)
+  if (CHATTY_IS_CONTACT (item) &&
+      chatty_contact_is_dummy (CHATTY_CONTACT (item)))
+    phone_number = chatty_contact_get_value (CHATTY_CONTACT (item));
+
+  if (phone_number)
     chatty_window_set_uri (self, phone_number);
+  else if (item)
+    chatty_window_open_item (self, item);
+  else
+    g_return_if_reached ();
 }
 
 
