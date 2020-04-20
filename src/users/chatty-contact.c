@@ -40,6 +40,8 @@ struct _ChattyContact
   EVCardAttribute *attribute;
   ChattyProtocol   protocol;
 
+  char       *name;
+  char       *value;
   GdkPixbuf *avatar;
 };
 
@@ -95,16 +97,22 @@ static const char *
 chatty_contact_get_name (ChattyItem *item)
 {
   ChattyContact *self = (ChattyContact *)item;
-  const char *value;
 
   g_assert (CHATTY_IS_CONTACT (self));
 
-  value = e_contact_get_const (self->e_contact, E_CONTACT_FULL_NAME);
+  if (self->name)
+    return self->name;
 
-  if (!value)
-    value = "";
+  if (self->e_contact) {
+    const char *value;
 
-  return value;
+    value = e_contact_get_const (self->e_contact, E_CONTACT_FULL_NAME);
+
+    if (value)
+      return value;
+  }
+
+  return "";
 }
 
 
@@ -119,6 +127,9 @@ chatty_contact_get_avatar (ChattyItem *item)
 
   if (self->avatar)
     return self->avatar;
+
+  if (!self->e_contact)
+    return NULL;
 
   photo = e_contact_get (self->e_contact, E_CONTACT_PHOTO);
 
@@ -170,7 +181,9 @@ chatty_contact_finalize (GObject *object)
 {
   ChattyContact *self = (ChattyContact *)object;
 
-  g_object_unref (self->avatar);
+  g_clear_object (&self->avatar);
+  g_free (self->name);
+  g_free (self->value);
 
   G_OBJECT_CLASS (chatty_contact_parent_class)->finalize (object);
 }
@@ -227,6 +240,16 @@ chatty_contact_new (EContact        *contact,
   return self;
 }
 
+void
+chatty_contact_set_name (ChattyContact *self,
+                         const char    *name)
+{
+  g_return_if_fail (CHATTY_IS_CONTACT (self));
+
+  g_free (self->name);
+  self->name = g_strdup (name);
+}
+
 /**
  * chatty_contact_get_value:
  * @self: A #ChattyContact
@@ -241,16 +264,30 @@ chatty_contact_new (EContact        *contact,
 const char *
 chatty_contact_get_value (ChattyContact *self)
 {
-  const char *value;
+  const char *value = NULL;
 
   g_return_val_if_fail (CHATTY_IS_CONTACT (self), NULL);
 
-  value = e_vcard_attribute_get_value (self->attribute);
+  if (self->value)
+    return self->value;
 
-  if (!value)
-    value = "";
+  if (self->attribute)
+    value = e_vcard_attribute_get_value (self->attribute);
 
-  return value;
+  if (value)
+    return value;
+
+  return "";
+}
+
+void
+chatty_contact_set_value (ChattyContact *self,
+                          const char    *value)
+{
+  g_return_if_fail (CHATTY_IS_CONTACT (self));
+
+  g_free (self->value);
+  self->value = g_strdup (value);
 }
 
 /**
@@ -267,6 +304,9 @@ const char *
 chatty_contact_get_value_type (ChattyContact *self)
 {
   g_return_val_if_fail (CHATTY_IS_CONTACT (self), NULL);
+
+  if (!self->attribute)
+    return "";
 
   if (e_vcard_attribute_has_type (self->attribute, "cell"))
     return _("Mobile");
@@ -293,7 +333,10 @@ chatty_contact_get_uid (ChattyContact *self)
 {
   g_return_val_if_fail (CHATTY_IS_CONTACT (self), "");
 
-  return e_contact_get_const (self->e_contact, E_CONTACT_UID);
+  if (self->e_contact)
+    return e_contact_get_const (self->e_contact, E_CONTACT_UID);
+
+  return "";
 }
 
 
@@ -310,4 +353,12 @@ chatty_contact_clear_cache (ChattyContact *self)
   g_return_if_fail (CHATTY_IS_CONTACT (self));
 
   g_clear_object (&self->avatar);
+}
+
+gboolean
+chatty_contact_is_dummy (ChattyContact *self)
+{
+  g_return_val_if_fail (CHATTY_IS_CONTACT (self), TRUE);
+
+  return self->e_contact == NULL;
 }
