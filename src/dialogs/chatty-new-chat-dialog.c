@@ -554,7 +554,7 @@ chatty_new_chat_dialog_init (ChattyNewChatDialog *self)
   self->slice_model = gtk_slice_list_model_new (G_LIST_MODEL (self->filter_model), 0, ITEMS_COUNT);
   gtk_list_box_bind_model (GTK_LIST_BOX (self->chats_listbox),
                            G_LIST_MODEL (self->slice_model),
-                           (GtkListBoxCreateWidgetFunc)chatty_list_row_new,
+                           (GtkListBoxCreateWidgetFunc)chatty_list_contact_row_new,
                            NULL, NULL);
 
   chatty_new_chat_dialog_update_new_contact_row (self);
