@@ -157,22 +157,7 @@
                         <property name="fill">True</property>
                       </packing>
                     </child>
-                    <child>
-                      <object class="GtkListBox" id="new_contact_listbox">
-                        <property name="visible" bind-source="chats_listbox" bind-property="visible" bind-flags="bidirectional|sync-create|invert-boolean"/>
-                        <property name="selection-mode">none</property>
-                        <signal name="row-activated" handler="contact_row_activated_cb" swapped="yes"/>
-                        <child>
-                          <object class="ChattyContactRow" id="new_contact_row">
-                            <property name="visible">True</property>
-                            <property name="name" translatable="yes">Send to</property>
-                          </object>
-                        </child>
-                        <style>
-                          <class name="frame"/>
-                        </style>
-                      </object>
-                    </child>
+
                     <child>
                       <object class="GtkListBox" id="chats_listbox">
                         <property name="visible">True</property>
@@ -185,6 +170,21 @@
                         </style>
                       </object>
                     </child>
+
+                    <child>
+                      <object class="GtkListBox" id="new_contact_listbox">
+                        <property name="visible" bind-source="new_contact_row" bind-property="visible"/>
+                        <property name="selection-mode">none</property>
+                        <signal name="row-activated" handler="contact_row_activated_cb" swapped="yes"/>
+                        <child>
+                          <object class="ChattyListRow" id="new_contact_row"/>
+                        </child>
+                        <style>
+                          <class name="frame"/>
+                        </style>
+                      </object>
+                    </child>
+
                   </object>
                   <packing>
                     <property name="name">view-new-chat</property>
