@@ -244,8 +244,12 @@ chatty_list_row_update (ChattyListRow *self)
     const gchar *number;
 
     number = chatty_contact_get_value (CHATTY_CONTACT (self->item));
-    type = g_strconcat (chatty_contact_get_value_type (CHATTY_CONTACT (self->item)),
-                        ": ", number, NULL);
+
+    if (chatty_contact_is_dummy (CHATTY_CONTACT (self->item)))
+      type = g_strdup (number);
+    else
+      type = g_strconcat (chatty_contact_get_value_type (CHATTY_CONTACT (self->item)),
+                          ": ", number, NULL);
     gtk_label_set_label (GTK_LABEL (self->subtitle), type);
     chatty_item_get_avatar (self->item);
   } else if (CHATTY_IS_CHAT (self->item)) {
@@ -337,17 +341,7 @@ chatty_list_row_new (ChattyItem *item)
                         CHATTY_IS_CHAT (item), NULL);
 
   self = g_object_new (CHATTY_TYPE_LIST_ROW, NULL);
-  self->item = g_object_ref (item);
-  chatty_avatar_set_item (CHATTY_AVATAR (self->avatar), item);
-  g_object_bind_property (item, "name",
-                          self->title, "label",
-                          G_BINDING_SYNC_CREATE);
-
-  if (CHATTY_IS_CHAT (item))
-    g_signal_connect_object (item, "changed",
-                             G_CALLBACK (chatty_list_row_update),
-                             self, G_CONNECT_SWAPPED);
-  chatty_list_row_update (self);
+  chatty_list_row_set_item (self, item);
 
   return GTK_WIDGET (self);
 }
@@ -359,4 +353,26 @@ chatty_list_row_get_item (ChattyListRow *self)
   g_return_val_if_fail (CHATTY_IS_LIST_ROW (self), NULL);
 
   return self->item;
+}
+
+void
+chatty_list_row_set_item (ChattyListRow *self,
+                          ChattyItem    *item)
+{
+  g_return_if_fail (CHATTY_IS_LIST_ROW (self));
+  g_return_if_fail (CHATTY_IS_CONTACT (item) ||
+                    CHATTY_IS_PP_BUDDY (item) ||
+                    CHATTY_IS_CHAT (item));
+
+  g_set_object (&self->item, item);
+  chatty_avatar_set_item (CHATTY_AVATAR (self->avatar), item);
+  g_object_bind_property (item, "name",
+                          self->title, "label",
+                          G_BINDING_SYNC_CREATE);
+
+  if (CHATTY_IS_CHAT (item))
+    g_signal_connect_object (item, "changed",
+                             G_CALLBACK (chatty_list_row_update),
+                             self, G_CONNECT_SWAPPED);
+  chatty_list_row_update (self);
 }

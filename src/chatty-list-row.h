@@ -23,5 +23,7 @@ G_DECLARE_FINAL_TYPE (ChattyListRow, chatty_list_row, CHATTY, LIST_ROW, GtkListB
 
 GtkWidget  *chatty_list_row_new      (ChattyItem    *item);
 ChattyItem *chatty_list_row_get_item (ChattyListRow *self);
+void        chatty_list_row_set_item (ChattyListRow *self,
+                                      ChattyItem    *item);
 
 G_END_DECLS
