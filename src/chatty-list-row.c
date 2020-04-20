@@ -37,6 +37,7 @@ struct _ChattyListRow
   GtkWidget     *unread_message_count;
 
   ChattyItem    *item;
+  gboolean       hide_chat_details;
 };
 
 G_DEFINE_TYPE (ChattyListRow, chatty_list_row, GTK_TYPE_LIST_BOX_ROW)
@@ -252,7 +253,7 @@ chatty_list_row_update (ChattyListRow *self)
                           ": ", number, NULL);
     gtk_label_set_label (GTK_LABEL (self->subtitle), type);
     chatty_item_get_avatar (self->item);
-  } else if (CHATTY_IS_CHAT (self->item)) {
+  } else if (CHATTY_IS_CHAT (self->item) && !self->hide_chat_details) {
     g_autofree char *unread = NULL;
     const char *last_message;
     ChattyChat *item;
@@ -346,6 +347,31 @@ chatty_list_row_new (ChattyItem *item)
   return GTK_WIDGET (self);
 }
 
+/**
+ * chatty_list_contact_row_new:
+ * @item: A #ChattyItem
+ *
+ * Create and return a new list row to be used in contact
+ * list.  If the @item is a #ChattyChat no chat details
+ * will be shown (like unread count, time, etc.)
+ *
+ * Returns: (transfer full): A #ChattyListRow
+ */
+GtkWidget *
+chatty_list_contact_row_new (ChattyItem *item)
+{
+  ChattyListRow *self;
+
+  g_return_val_if_fail (CHATTY_IS_CONTACT (item) ||
+                        CHATTY_IS_PP_BUDDY (item) ||
+                        CHATTY_IS_CHAT (item), NULL);
+
+  self = g_object_new (CHATTY_TYPE_LIST_ROW, NULL);
+  self->hide_chat_details = TRUE;
+  chatty_list_row_set_item (self, item);
+
+  return GTK_WIDGET (self);
+}
 
 ChattyItem *
 chatty_list_row_get_item (ChattyListRow *self)

@@ -25,5 +25,7 @@ GtkWidget  *chatty_list_row_new      (ChattyItem    *item);
 ChattyItem *chatty_list_row_get_item (ChattyListRow *self);
 void        chatty_list_row_set_item (ChattyListRow *self,
                                       ChattyItem    *item);
+GtkWidget  *chatty_list_contact_row_new (ChattyItem *item);
+
 
 G_END_DECLS
