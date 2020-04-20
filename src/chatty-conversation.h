@@ -11,7 +11,6 @@
 #include <gtk/gtk.h>
 #include <gtk/gtkwidget.h>
 #include "purple.h"
-#include "chatty-message-list.h"
 
 typedef struct chatty_log                ChattyLog;
 typedef struct chatty_conversation       ChattyConversation;
@@ -30,7 +29,6 @@ struct chatty_conversation {
   PurpleConversation  *conv;
 
   GtkWidget     *chat_view;
-  ChattyMsgList *msg_list;
   GtkWidget     *msg_bubble_footer;
   GtkWidget     *tab_cont;
 

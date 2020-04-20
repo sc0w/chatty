@@ -12,7 +12,7 @@
 #include "chatty-manager.h"
 #include "chatty-icons.h"
 #include "chatty-purple-init.h"
-#include "chatty-message-list.h"
+#include "chatty-chat-view.h"
 #include "chatty-conversation.h"
 #include "chatty-history.h"
 #include "chatty-utils.h"
@@ -41,7 +41,7 @@ cb_buddy_typing (PurpleAccount *account,
   chatty_conv = CHATTY_CONVERSATION(conv);
 
   if (chatty_conv && chatty_conv->conv == conv) {
-    chatty_msg_list_show_typing_indicator (chatty_conv->msg_list);
+    chatty_chat_view_show_typing_indicator (CHATTY_CHAT_VIEW (chatty_conv->chat_view));
   }
 }
 
@@ -63,7 +63,7 @@ cb_buddy_typed (PurpleAccount *account,
   chatty_conv = CHATTY_CONVERSATION(conv);
 
   if (chatty_conv && chatty_conv->conv == conv) {
-    chatty_msg_list_hide_typing_indicator (chatty_conv->msg_list);
+    chatty_chat_view_hide_typing_indicator (CHATTY_CHAT_VIEW (chatty_conv->chat_view));
   }
 }
 

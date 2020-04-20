@@ -18,6 +18,21 @@
 
 G_BEGIN_DECLS
 
+typedef enum {
+  CHATTY_MSG_TYPE_UNKNOWN,
+  CHATTY_MSG_TYPE_IM,
+  CHATTY_MSG_TYPE_IM_E2EE,
+  CHATTY_MSG_TYPE_MUC,
+  CHATTY_MSG_TYPE_SMS,
+  CHATTY_MSG_TYPE_LAST
+} e_msg_type;
+
+typedef enum {
+  ADD_MESSAGE_ON_BOTTOM,
+  ADD_MESSAGE_ON_TOP,
+} e_msg_pos;
+
+
 #define CHATTY_TYPE_CHAT_VIEW (chatty_chat_view_get_type ())
 
 G_DECLARE_FINAL_TYPE (ChattyChatView, chatty_chat_view, CHATTY, CHAT_VIEW, GtkBox)
@@ -35,5 +50,13 @@ void        chatty_chat_view_focus_entry   (ChattyChatView *self);
 void        chatty_chat_view_set_conv      (ChattyChatView *self,
                                             ChattyConversation *chatty_conv);
 ChattyConversation *chatty_chat_view_get_conv (ChattyChatView *self);
+void        chatty_chat_view_show_typing_indicator (ChattyChatView *self);
+void        chatty_chat_view_hide_typing_indicator (ChattyChatView *self);
+void        chatty_chat_view_add_message_at        (ChattyChatView *self,
+                                                    guint           message_dir,
+                                                    const gchar    *html_message,
+                                                    const gchar    *footer,
+                                                    GdkPixbuf      *avatar,
+                                                    guint           position);
 
 G_END_DECLS
