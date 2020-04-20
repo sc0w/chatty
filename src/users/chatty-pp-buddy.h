@@ -14,7 +14,6 @@
 #include <glib-object.h>
 #include <purple.h>
 
-#include "chatty-contact-row.h"
 #include "chatty-contact.h"
 #include "chatty-item.h"
 #include "chatty-enums.h"
