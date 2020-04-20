@@ -65,11 +65,32 @@ struct _ChattyNewChatDialog
 
   ChattyItem *selected_item;
   char       *phone_number;
+
+  ChattyContact *dummy_contact;
 };
 
 
 G_DEFINE_TYPE (ChattyNewChatDialog, chatty_new_chat_dialog, HDY_TYPE_DIALOG)
 
+
+static gboolean
+new_chat_str_is_phone (const char *str)
+{
+  guint length;
+
+  if (!str || !*str)
+    return FALSE;
+
+  if (*str == '+')
+    str++;
+
+  length = strlen (str);
+
+  if (length >= 3 && strspn (str, "0123456789") == length)
+    return TRUE;
+
+  return FALSE;
+}
 
 static void
 dialog_active_protocols_changed_cb (ChattyNewChatDialog *self)
@@ -107,16 +128,10 @@ dialog_filter_item_cb (ChattyItem          *item,
 static void
 chatty_new_chat_dialog_update_new_contact_row (ChattyNewChatDialog *self)
 {
-  GdkPixbuf *avatar;
-
   g_assert (CHATTY_IS_NEW_CHAT_DIALOG (self));
 
-  avatar = chatty_icon_get_buddy_icon (NULL,
-                                       "+",
-                                       CHATTY_ICON_SIZE_MEDIUM,
-                                       CHATTY_COLOR_GREY,
-                                       FALSE);
-  g_object_set (self->new_contact_row, "avatar", avatar, NULL);
+  self->dummy_contact = g_object_new (CHATTY_TYPE_CONTACT, NULL);
+  chatty_contact_set_name (self->dummy_contact, _("Send To"));
 }
 
 static void
@@ -178,10 +193,11 @@ static void
 contact_search_entry_changed_cb (ChattyNewChatDialog *self,
                                  GtkEntry            *entry)
 {
+  PurpleAccount *account;
   g_autofree char *old_needle = NULL;
   const char *str;
   GtkFilterChange change;
-  guint n_items;
+  gboolean valid;
 
   g_assert (CHATTY_IS_NEW_CHAT_DIALOG (self));
   g_assert (GTK_IS_ENTRY (entry));
@@ -207,38 +223,24 @@ contact_search_entry_changed_cb (ChattyNewChatDialog *self,
   gtk_slice_list_model_set_size (self->slice_model, ITEMS_COUNT);
   gtk_filter_changed (self->filter, change);
 
-  n_items = g_list_model_get_n_items (G_LIST_MODEL (self->filter_model));
+  chatty_contact_set_value (self->dummy_contact, self->search_str);
+  chatty_list_row_set_item (CHATTY_LIST_ROW (self->new_contact_row),
+                            CHATTY_ITEM (self->dummy_contact));
 
-  if (n_items == 0) {
-    char *number;
-
-    number = chatty_utils_check_phonenumber (self->search_str);
-
-    gtk_widget_set_visible (self->chats_listbox, number == NULL);
-
-    if (number)
-      g_object_set (self->new_contact_row,
-                    "description", number,
-                    "phone-number", number,
-                    "message-count", NULL,
-                    NULL);
-  } else {
-    gtk_widget_show (self->chats_listbox);
-  }
+  valid = new_chat_str_is_phone (self->search_str);
+  account = purple_accounts_find ("SMS", "prpl-mm-sms");
+  valid = valid && purple_account_is_connected (account);
+  gtk_widget_set_visible (self->new_contact_row, valid);
 }
 
 static void
 contact_row_activated_cb (ChattyNewChatDialog *self,
-                          GtkListBoxRow       *row)
+                          ChattyListRow       *row)
 {
   g_assert (CHATTY_IS_NEW_CHAT_DIALOG (self));
+  g_assert (CHATTY_IS_LIST_ROW (row));
 
-  if (CHATTY_IS_CONTACT_ROW (row))
-    g_object_get (row, "phone_number", &self->phone_number, NULL);
-  else if (CHATTY_IS_LIST_ROW (row))
-    self->selected_item = chatty_list_row_get_item (CHATTY_LIST_ROW (row));
-  else
-    g_warn_if_reached ();
+  self->selected_item = chatty_list_row_get_item (row);
 
   gtk_dialog_response (GTK_DIALOG (self), GTK_RESPONSE_OK);
 }
@@ -577,13 +579,4 @@ chatty_new_chat_dialog_get_selected_item (ChattyNewChatDialog *self)
   g_return_val_if_fail (CHATTY_IS_NEW_CHAT_DIALOG (self), NULL);
 
   return self->selected_item;
-}
-
-
-const char *
-chatty_new_chat_dialog_get_phone_number  (ChattyNewChatDialog *self)
-{
-  g_return_val_if_fail (CHATTY_IS_NEW_CHAT_DIALOG (self), NULL);
-
-  return self->phone_number;
 }

@@ -21,6 +21,5 @@ G_DECLARE_FINAL_TYPE (ChattyNewChatDialog, chatty_new_chat_dialog, CHATTY, NEW_C
 GtkWidget *chatty_new_chat_dialog_new (GtkWindow *parent_window);
 void chatty_new_chat_set_edit_mode (ChattyNewChatDialog *self, gboolean edit);
 ChattyItem *chatty_new_chat_dialog_get_selected_item (ChattyNewChatDialog *self);
-const char *chatty_new_chat_dialog_get_phone_number  (ChattyNewChatDialog *self);
 
 G_END_DECLS

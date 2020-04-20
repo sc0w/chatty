@@ -164,7 +164,16 @@ chatty_avatar_draw_label (ChattyAvatar *self,
 
     if (should_blur && buddy)
       blur = !PURPLE_BUDDY_IS_ONLINE(buddy);
+  } else if (CHATTY_IS_CONTACT (self->item) &&
+             chatty_contact_is_dummy (CHATTY_CONTACT (self->item))) {
+    /*
+     * Dummy contact is used as a placeholder to create new contacts,
+     * So the avatar is always blurred with a ‘+’ symbol on it.
+     */
+    blur = TRUE;
+    label = "+";
   }
+
   width = gtk_widget_get_allocated_width (GTK_WIDGET (self));
   height = gtk_widget_get_allocated_width (GTK_WIDGET (self));
   size = MIN (width, height);
