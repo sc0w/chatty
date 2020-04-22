@@ -1,13 +1,14 @@
 # Josh <josh.public@protonmail.ch>, 2019. #zanata
+# Josh <josh.public@protonmail.ch>, 2020. #zanata
 msgid ""
 msgstr ""
 "Project-Id-Version: purism-chatty\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-01-28 18:10+0100\n"
+"POT-Creation-Date: 2020-03-05 12:35+0100\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2019-12-07 08:45+0000\n"
+"PO-Revision-Date: 2020-03-30 12:54-0400\n"
 "Last-Translator: Josh <josh.public@protonmail.ch>\n"
 "Language-Team: Latin\n"
 "Language: la\n"
@@ -15,7 +16,7 @@ msgstr ""
 "Plural-Forms: nplurals=1; plural=0\n"
 
 #: data/sm.puri.Chatty.appdata.xml.in:6 data/sm.puri.Chatty.desktop.in:3
-#: src/dialogs/chatty-dialogs.c:343 src/ui/chatty-window.ui:210
+#: src/chatty-window.c:483 src/ui/chatty-window.ui:210
 msgid "Chats"
 msgstr "Fabulae"
 
@@ -34,7 +35,7 @@ msgstr "Fabulae fenestra nuntii"
 #: data/sm.puri.Chatty.appdata.xml.in:29
 msgid "Initial development release of chatty with support for xmpp and sms."
 msgstr ""
-"Versio initialis progressionis de chatty cum sustinendo pro xmpp et sms"
+"Versio initialis progressionis de chatty cum sustinendo pro xmpp et sms."
 
 #: data/sm.puri.Chatty.desktop.in:5
 msgid "sm.puri.Chatty"
@@ -50,210 +51,143 @@ msgstr "XMPP;SMS;fabulare;jabber;adnuntiare;transmodulatrum"
 
 #: data/sm.puri.Chatty.gschema.xml:7 data/sm.puri.Chatty.gschema.xml:8
 msgid "Whether the application is launching the first time"
-msgstr ""
+msgstr "Si programma operatur in primis"
 
 #: data/sm.puri.Chatty.gschema.xml:13
 msgid "Send message read receipts"
-msgstr ""
+msgstr "Mittere apochae lectae nuntii"
 
 #: data/sm.puri.Chatty.gschema.xml:14
 msgid "Whether to send the status of the message if read"
-msgstr ""
+msgstr "Si mittere status nuntii si lectum est"
 
 #: data/sm.puri.Chatty.gschema.xml:19
 msgid "Message carbon copies"
-msgstr ""
+msgstr "Exemplares carbone"
 
-#: data/sm.puri.Chatty.gschema.xml:20 src/ui/chatty-settings-dialog.ui:148
+#: data/sm.puri.Chatty.gschema.xml:20 src/ui/chatty-settings-dialog.ui:151
 msgid "Share chat history among devices"
 msgstr "Communicare historiam fabulae inter machinationibus"
 
 #: data/sm.puri.Chatty.gschema.xml:25
 msgid "Enable Message Archive Management"
-msgstr ""
+msgstr "Habilitare Administrationem Tabulini Nuntiorum"
 
 #: data/sm.puri.Chatty.gschema.xml:26
 msgid "Enable MAM archive synchronization from the server"
-msgstr ""
+msgstr "Habilitare synchronizationem tabulini de MAM ab moderatro"
 
 #: data/sm.puri.Chatty.gschema.xml:31
 msgid "Send typing notifications"
-msgstr ""
+msgstr "Mittere notificationes scribentis"
 
 #: data/sm.puri.Chatty.gschema.xml:32
 msgid "Whether to Send typing notifications"
-msgstr ""
+msgstr "Si mittere notificationes scribentis"
 
 #: data/sm.puri.Chatty.gschema.xml:37 data/sm.puri.Chatty.gschema.xml:38
 msgid "Mark offline users differently"
-msgstr ""
+msgstr "Designare actores deteles secus"
 
 #: data/sm.puri.Chatty.gschema.xml:43 data/sm.puri.Chatty.gschema.xml:44
 msgid "Mark Idle users differently"
-msgstr ""
+msgstr "Designare actores resides secus"
 
 #: data/sm.puri.Chatty.gschema.xml:49 data/sm.puri.Chatty.gschema.xml:50
 msgid "Indicate unknown contacts"
-msgstr ""
+msgstr "Indicare socios incognitos"
 
 #: data/sm.puri.Chatty.gschema.xml:55
 msgid "Convert text to emoticons"
-msgstr ""
+msgstr "Convertere litteras in emoticones"
 
 #: data/sm.puri.Chatty.gschema.xml:56
 msgid "Convert text matching emoticons as real emoticons"
-msgstr ""
+msgstr "Convertere litteras conparantes emoticones sicut verae emoticones"
 
 #: data/sm.puri.Chatty.gschema.xml:61
 msgid "Enter key sends the message"
-msgstr ""
+msgstr "Clavis referrendi nuntium mittet."
 
 #: data/sm.puri.Chatty.gschema.xml:62
 msgid "Whether pressing Enter key sends the message"
-msgstr ""
+msgstr "Si clavis referrendi pressare nuntium mittet"
 
-#: src/chatty-application.c:56
+#: src/chatty-application.c:61
 msgid "Show release version"
 msgstr "Significare versio"
 
-#: src/chatty-application.c:57
+#: src/chatty-application.c:62
 msgid "Start in daemon mode"
 msgstr "Pellere in modo daemonis"
 
-#: src/chatty-application.c:58
+#: src/chatty-application.c:63
 msgid "Disable all accounts"
 msgstr "Debilitare omnia breviaria"
 
-#: src/chatty-application.c:59
+#: src/chatty-application.c:64
 msgid "Enable libpurple debug messages"
 msgstr "Habilitare nuntia emendantes de libpurple"
 
-#: src/chatty-application.c:60
+#: src/chatty-application.c:65
 msgid "Enable verbose libpurple debug messages"
 msgstr "Habilitare nuntia emendantes verbosas de libpurple"
 
-#: src/chatty-account.c:56
-msgid "Contact added"
-msgstr "Socius addidit est"
-
-#: src/chatty-account.c:60
-#, c-format
-msgid "User %s has added %s to the contacts"
-msgstr "Actor %s addidit %s ad sociis"
-
-#: src/chatty-account.c:121
-#, c-format
-msgid "Authorize %s?"
-msgstr "Authorizare %s?"
-
-#: src/chatty-account.c:125
-msgid "Reject"
-msgstr "Abnuere"
-
-#: src/chatty-account.c:127
-msgid "Accept"
-msgstr "Accipere"
-
-#: src/chatty-account.c:132
-#, c-format
-msgid "Add %s to contact list"
-msgstr "Addere %s ad inventario sociorum"
-
-#: src/chatty-buddy-list.c:199
-msgid "Send to"
-msgstr "Mittere ad"
-
-#: src/chatty-buddy-list.c:968
+#: src/chatty-buddy-list.c:804
 msgid "Disconnect group chat"
 msgstr "Deiugare fabula classis"
 
-#: src/chatty-buddy-list.c:969
+#: src/chatty-buddy-list.c:805
 msgid "This removes chat from chats list"
 msgstr "Hic amovet fabula ab inventario fabularum"
 
-#: src/chatty-buddy-list.c:973
+#: src/chatty-buddy-list.c:809
 msgid "Delete chat with"
 msgstr "Delere fabula cum"
 
-#: src/chatty-buddy-list.c:974
+#: src/chatty-buddy-list.c:810
 msgid "This deletes the conversation history"
 msgstr "Hic delet historiam colloquii"
 
-#: src/chatty-buddy-list.c:986 src/dialogs/chatty-dialogs.c:371
-#: src/chatty-purple-request.c:187 src/dialogs/chatty-settings-dialog.c:353
-#: src/ui/chatty-dialog-join-muc.ui:16 src/ui/chatty-dialog-muc-info.ui:54
+#: src/chatty-buddy-list.c:821 src/chatty-purple-request.c:190
+#: src/dialogs/chatty-settings-dialog.c:448
+#: src/dialogs/chatty-user-info-dialog.c:76 src/ui/chatty-dialog-join-muc.ui:16
+#: src/ui/chatty-dialog-muc-info.ui:56
 msgid "Cancel"
 msgstr "Retexere"
 
-#: src/chatty-buddy-list.c:988
+#: src/chatty-buddy-list.c:823
 msgid "Delete"
 msgstr "Delere"
 
-#: src/chatty-buddy-list.c:1643
+#: src/chatty-buddy-list.c:1102
 msgid "Me: "
 msgstr "Ego: "
 
-#: src/chatty-connection.c:80
+#: src/chatty-connection.c:76
 msgid "Login failed"
 msgstr "Inire defecit"
 
-#: src/chatty-connection.c:86
+#: src/chatty-connection.c:82
 msgid "Please check ID and password"
 msgstr "Quaesto inspice ID et signum"
 
-#: src/chatty-conversation.c:1411
+#: src/chatty-conversation.c:1458
 msgid "Owner"
 msgstr "Erus"
 
-#: src/chatty-conversation.c:1414
+#: src/chatty-conversation.c:1461
 msgid "Moderator"
 msgstr "Moderator"
 
-#: src/chatty-conversation.c:1417
+#: src/chatty-conversation.c:1464
 msgid "Member"
 msgstr "Membrum"
 
-#: src/chatty-conversation.c:1868
-msgid "members"
-msgstr "membra"
-
-#: src/chatty-conversation.c:2243
+#: src/chatty-conversation.c:2161
 #, c-format
 msgid "New message from %s"
 msgstr "Nova nuntia ab %s"
-
-#: src/dialogs/chatty-dialogs.c:345
-msgid "An SMS and XMPP messaging client"
-msgstr "Cliens adnuntiare via SMS et XMPP"
-
-#: src/dialogs/chatty-dialogs.c:352
-msgid "translator-credits"
-msgstr "interpres-credentiae"
-
-#: src/dialogs/chatty-dialogs.c:367 src/dialogs/chatty-settings-dialog.c:349
-msgid "Set Avatar"
-msgstr ""
-
-#: src/dialogs/chatty-dialogs.c:370 src/chatty-purple-request.c:189
-#: src/dialogs/chatty-settings-dialog.c:352
-msgid "Open"
-msgstr "Aperire"
-
-#: src/chatty-folks.c:622
-msgid "Mobile"
-msgstr ""
-
-#: src/chatty-folks.c:624
-msgid "Work"
-msgstr ""
-
-#: src/chatty-folks.c:626
-msgid "Home"
-msgstr ""
-
-#: src/chatty-folks.c:628
-msgid "Other"
-msgstr ""
 
 #: src/chatty-message-list.c:73 src/chatty-message-list.c:78
 msgid "This is a IM conversation."
@@ -283,100 +217,54 @@ msgstr "Haec est fabula via SMS."
 msgid "and carrier rates may apply."
 msgstr "et aesa cursoris "
 
-#: src/chatty-notify.c:75
+#: src/chatty-notify.c:80
 msgid "Open Message"
 msgstr "Aperire Epistulam"
 
-#: src/chatty-notify.c:80
+#: src/chatty-notify.c:85
 msgid "Message Received"
 msgstr "Epistula Receptus Est"
 
-#: src/chatty-notify.c:86
+#: src/chatty-notify.c:91
 msgid "Message Error"
 msgstr "Erratum Epistulae"
 
-#: src/chatty-notify.c:92
+#: src/chatty-notify.c:97
 msgid "Account Info"
 msgstr "Info. Breviarii"
 
-#: src/chatty-notify.c:98
+#: src/chatty-notify.c:103
 msgid "Account Connected"
 msgstr "Breviarium Coniunctus Est"
 
-#: src/chatty-notify.c:105
+#: src/chatty-notify.c:110
 msgid "Open Account Settings"
 msgstr "Aperire Proprietates Breviarii"
 
-#: src/chatty-notify.c:108
+#: src/chatty-notify.c:113
 msgid "Account Disconnected"
 msgstr "Breviarium Deiugatus Est"
 
-#: src/chatty-purple-notify.c:40
+#: src/chatty-purple-notify.c:41
 msgid "Close"
 msgstr "Cludere"
 
-#: src/chatty-purple-request.c:182
+#: src/chatty-purple-request.c:185
 msgid "Save File..."
 msgstr "Servare Scapum..."
 
-#: src/chatty-purple-request.c:183
+#: src/chatty-purple-request.c:186
 msgid "Open File..."
 msgstr "Aperire Scapum..."
 
-#: src/chatty-purple-request.c:189
+#: src/chatty-purple-request.c:192
 msgid "Save"
 msgstr "Servare"
 
-#: src/dialogs/chatty-settings-dialog.c:224
-msgid "Select Protocol"
-msgstr "Optare Modum"
-
-#: src/dialogs/chatty-settings-dialog.c:229
-msgid "Add XMPP account"
-msgstr ""
-
-#: src/dialogs/chatty-settings-dialog.c:260
-msgid "connected"
-msgstr "coniunctus est"
-
-#: src/dialogs/chatty-settings-dialog.c:262
-msgid "connecting…"
-msgstr "coniungit…"
-
-#: src/dialogs/chatty-settings-dialog.c:264
-msgid "disconnected"
-msgstr "deiunctus est"
-
-#: src/dialogs/chatty-settings-dialog.c:419
-#: src/ui/chatty-settings-dialog.ui:460
-msgid "Delete Account"
-msgstr "Delere Breviarium"
-
-#: src/dialogs/chatty-settings-dialog.c:422
-#, c-format
-msgid "Delete account %s?"
-msgstr "Delere breviarium %s?"
-
-#: src/dialogs/chatty-user-info-dialog.c:176
-msgid "Encryption not available"
-msgstr "Encryptare non praesto"
-
-#: src/dialogs/chatty-user-info-dialog.c:220
-#: src/dialogs/chatty-user-info-dialog.c:226
-msgid "This chat is not encrypted"
-msgstr "Haec fabula non encryptatur"
-
-#: src/dialogs/chatty-user-info-dialog.c:223
-msgid "Encryption is not available"
-msgstr "Encryptare non praesto est"
-
-#: src/dialogs/chatty-user-info-dialog.c:230
-msgid "This chat is encrypted"
-msgstr "Haec fabula encryptatur"
-
-#: src/dialogs/chatty-user-info-dialog.c:438
-msgid "Phone Number:"
-msgstr "Numerus Telephoni:"
+#: src/chatty-purple-request.c:192 src/dialogs/chatty-settings-dialog.c:447
+#: src/dialogs/chatty-user-info-dialog.c:75
+msgid "Open"
+msgstr "Aperire"
 
 #: src/chatty-utils.c:48
 msgid "About "
@@ -466,11 +354,11 @@ msgstr "Amplius"
 msgid "Almost"
 msgstr "Paene"
 
-#: src/chatty-window.c:43 src/chatty-window.c:47 src/chatty-window.c:51
+#: src/chatty-window.c:102 src/chatty-window.c:107 src/chatty-window.c:112
 msgid "Choose a contact"
 msgstr "Opta socium"
 
-#: src/chatty-window.c:44
+#: src/chatty-window.c:103
 msgid ""
 "Select an <b>SMS</b> or <b>Instant Message</b> contact with the <b>\"+\"</b> "
 "button in the titlebar."
@@ -478,17 +366,17 @@ msgstr ""
 "Opta <b>SMS</b> aut <b>Nuntium Instans</b> socium ab <b>\"=\"</b> botone in "
 "regula tituli."
 
-#: src/chatty-window.c:48
+#: src/chatty-window.c:108
 msgid ""
 "Select an <b>Instant Message</b> contact with the \"+\" button in the "
 "titlebar."
 msgstr "Opta <b>Nuntium Instans</b> socium ab \"+\" botone in regula tituli."
 
-#: src/chatty-window.c:52
+#: src/chatty-window.c:113
 msgid "Start a <b>SMS</b> chat with with the \"+\" button in the titlebar."
 msgstr "Incipe <b>SMS</b> fabulam ab \"+\" botone in regula tituli."
 
-#: src/chatty-window.c:53 src/chatty-window.c:56
+#: src/chatty-window.c:114 src/chatty-window.c:118
 msgid ""
 "For <b>Instant Messaging</b> add or activate an account in "
 "<i>\"preferences\"</i>."
@@ -496,9 +384,104 @@ msgstr ""
 "Pro <b>Adnuntiare Instans</b> adde aut habilita breviarium in "
 "<i>\"praepositiones\"</i>."
 
-#: src/chatty-window.c:55
+#: src/chatty-window.c:117
 msgid "Start chatting"
 msgstr "Incipe fabulare"
+
+#: src/chatty-window.c:485
+msgid "An SMS and XMPP messaging client"
+msgstr "Cliens adnuntiare via SMS et XMPP"
+
+#: src/chatty-window.c:492
+msgid "translator-credits"
+msgstr "interpres-credentiae"
+
+#: src/chatty-window.c:627
+#, c-format
+msgid "Authorize %s?"
+msgstr "Authorizare %s?"
+
+#: src/chatty-window.c:631
+msgid "Reject"
+msgstr "Abnuere"
+
+#: src/chatty-window.c:633
+msgid "Accept"
+msgstr "Accipere"
+
+#: src/chatty-window.c:638
+#, c-format
+msgid "Add %s to contact list"
+msgstr "Addere %s ad inventario sociorum"
+
+#: src/chatty-window.c:668
+msgid "Contact added"
+msgstr "Socius addidit est"
+
+#: src/chatty-window.c:671
+#, c-format
+msgid "User %s has added %s to the contacts"
+msgstr "Actor %s addidit %s ad sociis"
+
+#: src/dialogs/chatty-settings-dialog.c:320
+msgid "Select Protocol"
+msgstr "Optare Modum"
+
+#: src/dialogs/chatty-settings-dialog.c:325
+msgid "Add XMPP account"
+msgstr "Addere breviarium de XMPP"
+
+#: src/dialogs/chatty-settings-dialog.c:356
+msgid "connected"
+msgstr "coniunctus est"
+
+#: src/dialogs/chatty-settings-dialog.c:358
+msgid "connecting…"
+msgstr "coniungit…"
+
+#: src/dialogs/chatty-settings-dialog.c:360
+msgid "disconnected"
+msgstr "deiunctus est"
+
+#: src/dialogs/chatty-settings-dialog.c:444
+#: src/dialogs/chatty-user-info-dialog.c:72
+msgid "Set Avatar"
+msgstr "Ponere Avatarum"
+
+#: src/dialogs/chatty-settings-dialog.c:514
+#: src/ui/chatty-settings-dialog.ui:468
+msgid "Delete Account"
+msgstr "Delere Breviarium"
+
+#: src/dialogs/chatty-settings-dialog.c:517
+#, c-format
+msgid "Delete account %s?"
+msgstr "Delere breviarium %s?"
+
+#: src/dialogs/chatty-user-info-dialog.c:206
+msgid "Encryption not available"
+msgstr "Encryptare non praesto"
+
+#: src/dialogs/chatty-user-info-dialog.c:250
+#: src/dialogs/chatty-user-info-dialog.c:256
+msgid "This chat is not encrypted"
+msgstr "Haec fabula non encryptatur"
+
+#: src/dialogs/chatty-user-info-dialog.c:253
+msgid "Encryption is not available"
+msgstr "Encryptare non praesto est"
+
+#: src/dialogs/chatty-user-info-dialog.c:260
+msgid "This chat is encrypted"
+msgstr "Haec fabula encryptatur"
+
+#: src/dialogs/chatty-user-info-dialog.c:470
+msgid "Phone Number:"
+msgstr "Numerus Telephoni:"
+
+#: src/dialogs/chatty-muc-info-dialog.c:335
+msgid "members"
+msgstr "membra"
 
 #: src/ui/chatty-dialog-join-muc.ui:12 src/ui/chatty-window.ui:19
 msgid "New Group Chat"
@@ -508,7 +491,7 @@ msgstr "Nova Fabula Classis"
 msgid "Join Chat"
 msgstr "Iugare Fabulam"
 
-#: src/ui/chatty-dialog-join-muc.ui:81 src/ui/chatty-dialog-new-chat.ui:219
+#: src/ui/chatty-dialog-join-muc.ui:81 src/ui/chatty-dialog-new-chat.ui:236
 msgid "Select chat account"
 msgstr "Opta brevarium fabulae"
 
@@ -516,63 +499,47 @@ msgstr "Opta brevarium fabulae"
 msgid "Password (optional)"
 msgstr "Signum (facultativum)"
 
-#: src/ui/chatty-dialog-muc-info.ui:25
+#: src/ui/chatty-dialog-muc-info.ui:26
 msgid "Group Details"
 msgstr "Acus Classis"
 
-#: src/ui/chatty-dialog-muc-info.ui:50
+#: src/ui/chatty-dialog-muc-info.ui:52
 msgid "Invite Contact"
 msgstr "Invitare Socium"
 
-#: src/ui/chatty-dialog-muc-info.ui:66
+#: src/ui/chatty-dialog-muc-info.ui:69
 msgid "Invite"
 msgstr "Invitare"
 
-#: src/ui/chatty-dialog-muc-info.ui:162
+#: src/ui/chatty-dialog-muc-info.ui:166
 msgid "Room topic"
 msgstr "Materies spatii"
 
-#: src/ui/chatty-dialog-muc-info.ui:219
+#: src/ui/chatty-dialog-muc-info.ui:225
 msgid "Room settings"
 msgstr "Proprietates spatii"
 
-#: src/ui/chatty-dialog-muc-info.ui:242 src/ui/chatty-dialog-user-info.ui:210
+#: src/ui/chatty-dialog-muc-info.ui:248 src/ui/chatty-dialog-user-info.ui:210
 msgid "Notifications"
 msgstr "Notificationes"
 
-#: src/ui/chatty-dialog-muc-info.ui:243
+#: src/ui/chatty-dialog-muc-info.ui:249
 msgid "Show notification badge"
 msgstr "Indicare insigne notificationorum"
 
-#: src/ui/chatty-dialog-muc-info.ui:258
+#: src/ui/chatty-dialog-muc-info.ui:265
 msgid "Status Messages"
 msgstr "Epistulae Status"
 
-#: src/ui/chatty-dialog-muc-info.ui:259
+#: src/ui/chatty-dialog-muc-info.ui:266
 msgid "Show status messages in chat"
 msgstr "Indicare nuntia status in fabula"
 
-#: src/ui/chatty-dialog-muc-info.ui:274
-msgid "Edit topic"
-msgstr "Conrigere materiem"
-
-#: src/ui/chatty-dialog-muc-info.ui:275
-msgid "Users may change the topic"
-msgstr "Usores licent mutare materiem"
-
-#: src/ui/chatty-dialog-muc-info.ui:290
-msgid "Persistent"
-msgstr "Perseverans"
-
-#: src/ui/chatty-dialog-muc-info.ui:291
-msgid "Room persists after the last user left"
-msgstr "Spatium perstat post proxi usor exiverat"
-
-#: src/ui/chatty-dialog-muc-info.ui:313
+#: src/ui/chatty-dialog-muc-info.ui:289
 msgid "0 members"
 msgstr "Nulla socii"
 
-#: src/ui/chatty-dialog-muc-info.ui:409
+#: src/ui/chatty-dialog-muc-info.ui:385
 msgid "Invite Message"
 msgstr "Epistula Invitationis"
 
@@ -588,17 +555,21 @@ msgstr "Novus Socius"
 msgid "Add Contact"
 msgstr "Addere Socium"
 
-#: src/ui/chatty-dialog-new-chat.ui:147
+#: src/ui/chatty-dialog-new-chat.ui:148
 msgid "Send To:"
-msgstr ""
+msgstr "Mittere ad:"
 
-#: src/ui/chatty-dialog-new-chat.ui:270
+#: src/ui/chatty-dialog-new-chat.ui:168
+msgid "Send to"
+msgstr "Mittere ad"
+
+#: src/ui/chatty-dialog-new-chat.ui:287
 msgid "Name (optional)"
 msgstr "Nomen (facultativus)"
 
-#: src/ui/chatty-dialog-new-chat.ui:308 src/ui/chatty-window.ui:138
+#: src/ui/chatty-dialog-new-chat.ui:325 src/ui/chatty-window.ui:138
 msgid "Add to Contacts"
-msgstr ""
+msgstr "Addere in Socios"
 
 #: src/ui/chatty-dialog-user-info.ui:12 src/ui/chatty-window.ui:98
 msgid "Chat Details"
@@ -612,13 +583,13 @@ msgstr "XMPP ID"
 msgid "Encryption"
 msgstr "Encryptare"
 
-#: src/ui/chatty-dialog-user-info.ui:127 src/ui/chatty-settings-dialog.ui:378
+#: src/ui/chatty-dialog-user-info.ui:127 src/ui/chatty-settings-dialog.ui:381
 msgid "Status"
 msgstr "Status"
 
 #: src/ui/chatty-dialog-user-info.ui:227
 msgid "Secure messaging using OMEMO"
-msgstr ""
+msgstr "Nuntiare securus cum OMEMO"
 
 #: src/ui/chatty-dialog-user-info.ui:249
 msgid "Fingerprints"
@@ -638,139 +609,139 @@ msgstr "Praepositiones"
 
 #: src/ui/chatty-settings-dialog.ui:21
 msgid "Back"
-msgstr ""
+msgstr "Retro"
 
 #: src/ui/chatty-settings-dialog.ui:41
 msgid "_Add"
-msgstr ""
+msgstr "_Addere"
 
-#: src/ui/chatty-settings-dialog.ui:54
+#: src/ui/chatty-settings-dialog.ui:57
 msgid "_Save"
-msgstr ""
+msgstr "_Servare"
 
-#: src/ui/chatty-settings-dialog.ui:88
+#: src/ui/chatty-settings-dialog.ui:91
 msgid "Accounts"
 msgstr "Breviaria"
 
-#: src/ui/chatty-settings-dialog.ui:102
+#: src/ui/chatty-settings-dialog.ui:105
 msgid "Add new account…"
 msgstr "Addere breviarium novum..."
 
-#: src/ui/chatty-settings-dialog.ui:114
+#: src/ui/chatty-settings-dialog.ui:117
 msgid "Privacy"
 msgstr "Privatus"
 
-#: src/ui/chatty-settings-dialog.ui:119
+#: src/ui/chatty-settings-dialog.ui:122
 msgid "Message Receipts"
 msgstr "Destinatarii Epistulae"
 
-#: src/ui/chatty-settings-dialog.ui:120
+#: src/ui/chatty-settings-dialog.ui:123
 msgid "Confirm received messages"
 msgstr "Confirmare epistulas receptantes"
 
-#: src/ui/chatty-settings-dialog.ui:133
+#: src/ui/chatty-settings-dialog.ui:136
 msgid "Message Archive Management"
-msgstr ""
+msgstr "Administratio Tabulini Nuntiorum"
 
-#: src/ui/chatty-settings-dialog.ui:134
+#: src/ui/chatty-settings-dialog.ui:137
 msgid "Sync conversations with chat server"
-msgstr ""
+msgstr "Colloquii synchronizare cum moderatro fabulae"
 
-#: src/ui/chatty-settings-dialog.ui:147
+#: src/ui/chatty-settings-dialog.ui:150
 msgid "Message Carbon Copies"
 msgstr "Carboneis Exemplares Epistulae"
 
-#: src/ui/chatty-settings-dialog.ui:161
+#: src/ui/chatty-settings-dialog.ui:164
 msgid "Typing Notification"
 msgstr "Notificatio Scribendi"
 
-#: src/ui/chatty-settings-dialog.ui:162
+#: src/ui/chatty-settings-dialog.ui:165
 msgid "Send typing messages"
 msgstr "Mittere epistulas scribendi"
 
-#: src/ui/chatty-settings-dialog.ui:178
+#: src/ui/chatty-settings-dialog.ui:181
 msgid "Chats List"
 msgstr "Tabula Fabularum"
 
-#: src/ui/chatty-settings-dialog.ui:183
+#: src/ui/chatty-settings-dialog.ui:186
 msgid "Indicate Offline Contacts"
-msgstr "Deprendere Socios Detelas"
+msgstr "Deprendere Socios Detelos"
 
-#: src/ui/chatty-settings-dialog.ui:184
+#: src/ui/chatty-settings-dialog.ui:187
 msgid "Grey out avatars from offline contacts"
 msgstr "Facere canus repraesentativos ab detelis sociis"
 
-#: src/ui/chatty-settings-dialog.ui:197
+#: src/ui/chatty-settings-dialog.ui:200
 msgid "Indicate Idle Contacts"
 msgstr "Deprendere Socios Resides"
 
-#: src/ui/chatty-settings-dialog.ui:198
+#: src/ui/chatty-settings-dialog.ui:201
 msgid "Blur avatars from offline contacts"
 msgstr "Confundere repraesentativos ab detelis sociis"
 
-#: src/ui/chatty-settings-dialog.ui:211
+#: src/ui/chatty-settings-dialog.ui:214
 msgid "Indicate Unknown Contacts"
 msgstr "Deprendere Socios Incognitos"
 
-#: src/ui/chatty-settings-dialog.ui:212
+#: src/ui/chatty-settings-dialog.ui:215
 msgid "Color unknown contact ID red"
 msgstr "Tingere ID socii incogniti ruber"
 
-#: src/ui/chatty-settings-dialog.ui:228
+#: src/ui/chatty-settings-dialog.ui:231
 msgid "Editor"
 msgstr "Editor"
 
-#: src/ui/chatty-settings-dialog.ui:233
+#: src/ui/chatty-settings-dialog.ui:236
 msgid "Graphical Emoticons"
-msgstr ""
+msgstr "Emoticones Graphices"
 
-#: src/ui/chatty-settings-dialog.ui:234
+#: src/ui/chatty-settings-dialog.ui:237
 msgid "Convert ASCII emoticons"
-msgstr ""
+msgstr "Convertere emoticones de ASCII"
 
-#: src/ui/chatty-settings-dialog.ui:247
+#: src/ui/chatty-settings-dialog.ui:250
 msgid "Return = Send Message"
-msgstr ""
+msgstr "Redere = Mittere Nuntium"
 
-#: src/ui/chatty-settings-dialog.ui:248
+#: src/ui/chatty-settings-dialog.ui:251
 msgid "Send message with return key"
-msgstr ""
+msgstr "Mittere nuntium a clave redentis"
 
-#: src/ui/chatty-settings-dialog.ui:316
+#: src/ui/chatty-settings-dialog.ui:319
 msgid "Account ID"
 msgstr "ID Breviarii"
 
-#: src/ui/chatty-settings-dialog.ui:349
+#: src/ui/chatty-settings-dialog.ui:352
 msgid "Protocol"
 msgstr "Modus"
 
-#: src/ui/chatty-settings-dialog.ui:407 src/ui/chatty-settings-dialog.ui:700
+#: src/ui/chatty-settings-dialog.ui:410 src/ui/chatty-settings-dialog.ui:707
 msgid "Password"
 msgstr "Signum"
 
-#: src/ui/chatty-settings-dialog.ui:477
+#: src/ui/chatty-settings-dialog.ui:485
 msgid "Own Fingerprint"
 msgstr "Signum digiti proprium"
 
-#: src/ui/chatty-settings-dialog.ui:503
+#: src/ui/chatty-settings-dialog.ui:511
 msgid "Other Devices"
 msgstr "Alii Machinationes"
 
-#: src/ui/chatty-settings-dialog.ui:587
+#: src/ui/chatty-settings-dialog.ui:595
 msgid "XMPP"
 msgstr "XMPP"
 
-#: src/ui/chatty-settings-dialog.ui:601
+#: src/ui/chatty-settings-dialog.ui:609
 msgid "Matrix"
 msgstr "Matrix"
 
-#: src/ui/chatty-settings-dialog.ui:616
+#: src/ui/chatty-settings-dialog.ui:624
 msgid "Telegram"
 msgstr "Telegram"
 
-#: src/ui/chatty-settings-dialog.ui:674
+#: src/ui/chatty-settings-dialog.ui:682
 msgid "Provider"
-msgstr ""
+msgstr "Provisor"
 
 #: src/ui/chatty-window.ui:32
 msgid "New Direct Chat"
@@ -787,3 +758,19 @@ msgstr "Exire Fabula"
 #: src/ui/chatty-window.ui:176
 msgid "Delete Chat"
 msgstr "Delire Fabulam"
+
+#: src/users/chatty-contact.c:405
+msgid "Mobile"
+msgstr "Mobilis"
+
+#: src/users/chatty-contact.c:407
+msgid "Work"
+msgstr "Laboris"
+
+#: src/users/chatty-contact.c:409
+msgid "Home"
+msgstr "Domus"
+
+#: src/users/chatty-contact.c:411
+msgid "Other"
+msgstr "Alius"
