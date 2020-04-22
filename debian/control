@@ -1,7 +1,7 @@
 Source: chatty
 Section: net
 Priority: optional
-Maintainer: Andrea Schäfer <andrea.schaefer@puri.sm>
+Maintainer: Mohammed Sadiq <sadiq@sadiqpk.org>
 Build-Depends:
  appstream-util,
  debhelper (>= 11),
