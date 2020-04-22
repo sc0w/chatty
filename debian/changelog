@@ -1,3 +1,73 @@
+chatty (0.1.10) amber-phone; urgency=medium
+
+  [ Mohammed Sadiq ]
+  * Re-factor buddy-list
+
+  [ Andrea Schaefer ]
+  * Add popover menu to 'Add Chat' button
+  * Use unicode char for ellipses
+
+  [ Mohammed Sadiq ]
+  * pp-buddy: Get contact name only if available
+  * list-row: Don’t expand unread message count label
+  * avatar: Fix dereferencing invalid pointers
+  * pp-buddy: Fix possible dereferencing of NULL pointer
+  * new-chat-dialog: Show only buddies from connected accounts
+  * manager: Blindly emit “active-protocols” on account changes
+  * window: Update selection on fold change
+  * window: Show sidebar when state changed to fold
+  * manager: Update last message when new message arrives
+  * window: Show chat list on leaving chat if window is folded
+  * manager: Re-order chat list when new message arrives
+  * Update POTFILES
+  * manager: Update chat details when new message arrives
+  * chat: Fix getting avatar
+  * avatar: Simplify getting avatar
+
+  [ Arnaud Ferraris ]
+  * manager: enable notifications on first message
+
+  [ Mohammed Sadiq ]
+  * pp-buddy: Fix a possible dead lock on loading avatar
+  * pp-buddy: Simplify get_name()
+  * window: Fix new chat dialog when only SMS account is present
+  * chat: Implement get_protocols()
+  * window: List chats only from connected accounts
+  * Add chat-view
+
+  [ Andrea Schaefer ]
+  * Add css style to chat-view input_frame
+
+  [ Mohammed Sadiq ]
+  * conversation: Simplify getting colors
+  * muc-info-dialog: Move invite code from chatty-conversation
+  * window: Simplify creating new chat dialog
+  * muc-info-dialog: Use ListBox to list users
+  * conversation: Remove a redundant function
+  * Remove chatty-folks
+  * contact: Remove unused code
+  * Remove libfolks and libgee dependency
+  * avatar: Fix typo in property name
+  * Add message-row and use it
+  * message-list: Fix lazy loading items on scroll-up
+  * Move conversation_ui_ops to manager
+  * Remove chatty-message-list
+  * contact: Add a way to create dummy contacts
+  * avatar: Handle dummy contacts differently
+  * list-row: Handle dummy contacts differently
+  * new-chat-dialog: Use dummy contacts for new contact
+  * window: Adapt to new-chat-dialog changes
+  * Remove chatty-contact-row
+  * list-row: Always align to left
+  * list-row: Add API to create contact row
+  * new-chat-dialog: Hide chat details in contact list
+
+  [ Andrea Schaefer ]
+  * Update translations
+  * Set new maintainer
+
+ -- Andrea Schaefer <andrea.schaefer@puri.sm>  Wed, 22 Apr 2020 10:55:09 +0200
+
 chatty (0.1.9) amber; urgency=medium
 
   [ Mohammed Sadiq ]
