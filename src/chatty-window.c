@@ -910,79 +910,6 @@ chatty_window_update_sub_header_titlebar (ChattyWindow *self,
 }
 
 
-static int
-window_authorize_buddy_cb (ChattyWindow    *self,
-                           ChattyPpAccount *account,
-                           const char      *remote_user,
-                           const char      *name)
-{
-  GtkWidget *dialog;
-  GtkWindow *window;
-  int response;
-
-  g_assert (CHATTY_IS_WINDOW (self));
-  g_assert (CHATTY_IS_PP_ACCOUNT (account));
-
-  window = gtk_application_get_active_window (GTK_APPLICATION (g_application_get_default ()));
-  dialog = gtk_message_dialog_new (window,
-                                   GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
-                                   GTK_MESSAGE_QUESTION,
-                                   GTK_BUTTONS_NONE,
-                                   _("Authorize %s?"),
-                                   name);
-
-  gtk_dialog_add_buttons (GTK_DIALOG(dialog),
-                          _("Reject"),
-                          GTK_RESPONSE_REJECT,
-                          _("Accept"),
-                          GTK_RESPONSE_ACCEPT,
-                          NULL);
-
-  gtk_message_dialog_format_secondary_text (GTK_MESSAGE_DIALOG (dialog),
-                                            _("Add %s to contact list"),
-                                            remote_user);
-
-  gtk_dialog_set_default_response (GTK_DIALOG (dialog), GTK_RESPONSE_CANCEL);
-  gtk_window_set_position (GTK_WINDOW (dialog), GTK_WIN_POS_CENTER_ON_PARENT);
-
-  response = gtk_dialog_run (GTK_DIALOG(dialog));
-
-  gtk_widget_destroy (dialog);
-
-  return response;
-}
-
-static void
-window_buddy_added_cb (ChattyWindow    *self,
-                       ChattyPpAccount *account,
-                       const char      *remote_user,
-                       const char      *id)
-{
-  GtkWindow *window;
-  GtkWidget *dialog;
-
-  g_assert (CHATTY_IS_WINDOW (self));
-  g_assert (CHATTY_IS_ACCOUNT (account));
-
-  window = gtk_application_get_active_window (GTK_APPLICATION (g_application_get_default ()));
-  dialog = gtk_message_dialog_new (window,
-                                   GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
-                                   GTK_MESSAGE_INFO,
-                                   GTK_BUTTONS_OK,
-                                   _("Contact added"));
-
-  gtk_message_dialog_format_secondary_text (GTK_MESSAGE_DIALOG (dialog),
-                                            _("User %s has added %s to the contacts"),
-                                            remote_user, id);
-
-  gtk_dialog_set_default_response (GTK_DIALOG (dialog), GTK_RESPONSE_CANCEL);
-  gtk_window_set_position (GTK_WINDOW (dialog), GTK_WIN_POS_CENTER_ON_PARENT);
-
-  gtk_dialog_run (GTK_DIALOG (dialog));
-
-  gtk_widget_destroy (dialog);
-}
-
 static void
 window_active_protocols_changed_cb (ChattyWindow *self)
 {
@@ -1001,34 +928,6 @@ window_active_protocols_changed_cb (ChattyWindow *self)
   
   gtk_filter_changed (self->chat_filter, GTK_FILTER_CHANGE_DIFFERENT);
   window_chat_changed_cb (self);
-}
-
-
-static void
-window_show_connection_error (ChattyWindow    *self,
-                              ChattyPpAccount *account,
-                              const char      *message)
-{
-  GtkWidget *dialog;
-
-  dialog = gtk_message_dialog_new (NULL,
-                                   GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
-                                   GTK_MESSAGE_ERROR,
-                                   GTK_BUTTONS_OK,
-                                   _("Login failed"));
-
-  gtk_message_dialog_format_secondary_text (GTK_MESSAGE_DIALOG(dialog),
-                                            "%s: %s\n\n%s",
-                                            message,
-                                            chatty_pp_account_get_username (account),
-                                            _("Please check ID and password"));
-
-  gtk_dialog_set_default_response (GTK_DIALOG (dialog), GTK_RESPONSE_CANCEL);
-  gtk_window_set_position (GTK_WINDOW(dialog), GTK_WIN_POS_CENTER_ON_PARENT);
-
-  gtk_dialog_run (GTK_DIALOG(dialog));
-
-  gtk_widget_destroy (dialog);
 }
 
 
@@ -1177,17 +1076,8 @@ chatty_window_init (ChattyWindow *self)
   gtk_widget_init_template (GTK_WIDGET (self));
 
   self->manager = g_object_ref (chatty_manager_get_default ());
-  g_signal_connect_object (self->manager, "authorize-buddy",
-                           G_CALLBACK (window_authorize_buddy_cb), self,
-                           G_CONNECT_SWAPPED);
-  g_signal_connect_object (self->manager, "notify-added",
-                           G_CALLBACK (window_buddy_added_cb), self,
-                           G_CONNECT_SWAPPED);
   g_signal_connect_object (self->manager, "notify::active-protocols",
                            G_CALLBACK (window_active_protocols_changed_cb), self,
-                           G_CONNECT_SWAPPED);
-  g_signal_connect_object (self->manager, "connection-error",
-                           G_CALLBACK (window_show_connection_error), self,
                            G_CONNECT_SWAPPED);
 
   g_signal_connect (G_OBJECT (self->convs_notebook),
