@@ -22,7 +22,6 @@
 #include "chatty-chat-view.h"
 #include "chatty-conversation.h"
 #include "chatty-manager.h"
-#include "chatty-purple-init.h"
 #include "chatty-icons.h"
 #include "chatty-utils.h"
 #include "dialogs/chatty-settings-dialog.h"
@@ -1104,8 +1103,6 @@ static void
 chatty_window_finalize (GObject *object)
 {
   ChattyWindow *self = (ChattyWindow *)object;
-
-  chatty_purple_quit ();
 
   g_object_unref (self->settings);
   g_object_unref (self->manager);

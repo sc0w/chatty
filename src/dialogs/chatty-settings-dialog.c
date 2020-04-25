@@ -28,7 +28,6 @@
 #include <glib/gi18n.h>
 
 #include "chatty-config.h"
-#include "chatty-purple-init.h"
 #include "chatty-utils.h"
 #include "users/chatty-pp-account.h"
 #include "chatty-manager.h"

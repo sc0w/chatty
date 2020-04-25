@@ -11,7 +11,6 @@
 #include "chatty-window.h"
 #include "chatty-manager.h"
 #include "chatty-icons.h"
-#include "chatty-purple-init.h"
 #include "chatty-chat-view.h"
 #include "chatty-conversation.h"
 #include "chatty-history.h"

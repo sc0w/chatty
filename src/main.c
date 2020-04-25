@@ -9,7 +9,7 @@
 #include <glib/gi18n.h>
 #include "chatty-config.h"
 #include "chatty-application.h"
-#include "chatty-purple-init.h"
+#include "chatty-manager.h"
 #include "chatty-history.h"
 #include "chatty-settings.h"
 

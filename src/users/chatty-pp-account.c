@@ -17,7 +17,6 @@
 #include "chatty-settings.h"
 #include "chatty-account.h"
 #include "chatty-window.h"
-#include "chatty-purple-init.h"
 #include "chatty-pp-account.h"
 
 /**
@@ -31,6 +30,7 @@
  */
 
 #define RECONNECT_DELAY 5000 /* milliseconds */
+#define CHATTY_UI       "chatty-ui"
 
 struct _ChattyPpAccount
 {

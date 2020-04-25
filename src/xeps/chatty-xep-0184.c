@@ -18,7 +18,6 @@
 #include "xeps.h"
 #include "chatty-xep-0184.h"
 #include "chatty-conversation.h"
-#include "chatty-purple-init.h"
 #include "chatty-settings.h"
 
 

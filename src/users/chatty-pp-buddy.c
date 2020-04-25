@@ -21,7 +21,6 @@
 #include "chatty-account.h"
 #include "chatty-pp-account.h"
 #include "chatty-window.h"
-#include "chatty-purple-init.h"
 #include "chatty-pp-buddy.h"
 
 /**
