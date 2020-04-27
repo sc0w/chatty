@@ -776,17 +776,23 @@ window_add_in_contacts_clicked_cb (ChattyWindow *self)
 static void
 window_show_chat_info_clicked_cb (ChattyWindow *self)
 {
+  ChattyChat *chat;
   GtkWidget *dialog;
   ChattyConversation *chatty_conv;
 
   g_assert (CHATTY_IS_WINDOW (self));
+  g_return_if_fail (CHATTY_IS_CHAT (self->selected_item));
 
+  chat = CHATTY_CHAT (self->selected_item);
   chatty_conv = winodw_get_active_chatty_conv (GTK_NOTEBOOK (self->convs_notebook));
 
-  if (purple_conversation_get_type (chatty_conv->conv) == PURPLE_CONV_TYPE_IM)
-    dialog = chatty_user_info_dialog_new (GTK_WINDOW (self), (gpointer)chatty_conv);
-  else if (purple_conversation_get_type (chatty_conv->conv) == PURPLE_CONV_TYPE_CHAT)
-    dialog = chatty_muc_info_dialog_new (GTK_WINDOW (self), (gpointer)chatty_conv);
+  if (purple_conversation_get_type (chatty_conv->conv) == PURPLE_CONV_TYPE_IM) {
+    dialog = chatty_user_info_dialog_new (GTK_WINDOW (self));
+    chatty_user_info_dialog_set_chat (CHATTY_USER_INFO_DIALOG (dialog), chat);
+  } else if (purple_conversation_get_type (chatty_conv->conv) == PURPLE_CONV_TYPE_CHAT) {
+    dialog = chatty_muc_info_dialog_new (GTK_WINDOW (self));
+    chatty_muc_info_dialog_set_chat (CHATTY_MUC_INFO_DIALOG (dialog), chat);
+  }
 
   gtk_dialog_run (GTK_DIALOG (dialog));
 

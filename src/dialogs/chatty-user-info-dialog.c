@@ -37,19 +37,12 @@ struct _ChattyUserInfoDialog
   GtkWidget *label_encrypt_status;
   GtkWidget *listbox_fps;
 
+  ChattyChat *chat;
   ChattyConversation *chatty_conv;
   PurpleBuddy        *buddy;
   const char         *alias;
 };
 
-
-enum {
-  PROP_0,
-  PROP_CHATTY_CONV,
-  PROP_LAST
-};
-
-static GParamSpec *props[PROP_LAST];
 
 G_DEFINE_TYPE (ChattyUserInfoDialog, chatty_user_info_dialog, HDY_TYPE_DIALOG)
 
@@ -391,47 +384,7 @@ chatty_user_info_dialog_update_avatar (ChattyUserInfoDialog *self,
 
 
 static void
-chatty_user_info_dialog_set_property (GObject      *object,
-                                      guint         property_id,
-                                      const GValue *value,
-                                      GParamSpec   *pspec)
-{
-  ChattyUserInfoDialog *self = (ChattyUserInfoDialog *)object;
-
-  switch (property_id) {
-    case PROP_CHATTY_CONV:
-      self->chatty_conv = g_value_get_pointer (value);
-      break;
-
-    default:
-      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
-      break;
-  }
-}
-
-
-static void
-chatty_user_info_dialog_get_property (GObject      *object,
-                                      guint         property_id,
-                                      GValue       *value,
-                                      GParamSpec   *pspec)
-{
-  ChattyUserInfoDialog *self = (ChattyUserInfoDialog *)object;
-
-  switch (property_id) {
-    case PROP_CHATTY_CONV:
-      g_value_set_pointer (value, self->chatty_conv);
-      break;
-
-    default:
-      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
-      break;
-  }
-}
-
-
-static void
-chatty_user_info_dialog_constructed (GObject *object)
+chatty_user_info_dialog_update_chat (ChattyUserInfoDialog *self)
 {
   ChattyManager  *manager;
   PurpleAccount  *account;
@@ -439,9 +392,7 @@ chatty_user_info_dialog_constructed (GObject *object)
   PurpleStatus   *status;
   const char     *protocol_id;
 
-  ChattyUserInfoDialog *self = (ChattyUserInfoDialog *)object;
-
-  G_OBJECT_CLASS (chatty_user_info_dialog_parent_class)->constructed (object);
+  g_assert (CHATTY_IS_USER_INFO_DIALOG (self));
 
   account = purple_conversation_get_account (self->chatty_conv->conv);
   protocol_id = purple_account_get_protocol_id (account);
@@ -494,21 +445,7 @@ chatty_user_info_dialog_constructed (GObject *object)
 static void
 chatty_user_info_dialog_class_init (ChattyUserInfoDialogClass *klass)
 {
-  GObjectClass *object_class = G_OBJECT_CLASS(klass);
   GtkWidgetClass *widget_class = GTK_WIDGET_CLASS(klass);
-
-  object_class->constructed  = chatty_user_info_dialog_constructed;
-
-  object_class->set_property = chatty_user_info_dialog_set_property;
-  object_class->get_property = chatty_user_info_dialog_get_property;
-
-  props[PROP_CHATTY_CONV] =
-    g_param_spec_pointer ("chatty-conv",
-                          "CHATTY_CONVERSATION",
-                          "A Chatty conversation",
-                          G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY | G_PARAM_STATIC_STRINGS);
-
-  g_object_class_install_properties (object_class, PROP_LAST, props);
 
   gtk_widget_class_set_template_from_resource (widget_class,
                                                "/sm/puri/chatty/"
@@ -550,14 +487,28 @@ chatty_user_info_dialog_init (ChattyUserInfoDialog *self)
 
 
 GtkWidget *
-chatty_user_info_dialog_new (GtkWindow *parent_window,
-                             gpointer   chatty_conv)
+chatty_user_info_dialog_new (GtkWindow *parent_window)
 {
-  g_return_val_if_fail (chatty_conv != NULL, NULL);
+  g_return_val_if_fail (GTK_IS_WINDOW (parent_window), NULL);
 
   return g_object_new (CHATTY_TYPE_USER_INFO_DIALOG,
                        "transient-for", parent_window,
-                       "chatty-conv", chatty_conv,
                        "use-header-bar", 1,
                        NULL);
+}
+
+void
+chatty_user_info_dialog_set_chat (ChattyUserInfoDialog *self,
+                                  ChattyChat           *chat)
+{
+  PurpleConversation *conv;
+
+  g_return_if_fail (CHATTY_IS_USER_INFO_DIALOG (self));
+  g_return_if_fail (CHATTY_IS_CHAT (chat));
+
+  conv = chatty_chat_get_purple_conv (chat);
+  self->chat = chat;
+  self->chatty_conv = conv->ui_data;
+
+  chatty_user_info_dialog_update_chat (self);
 }
