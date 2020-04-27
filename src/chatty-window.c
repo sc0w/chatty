@@ -1000,6 +1000,7 @@ window_active_protocols_changed_cb (ChattyWindow *self)
   gtk_widget_set_sensitive (self->menu_new_bulk_sms_button, has_sms);
   
   gtk_filter_changed (self->chat_filter, GTK_FILTER_CHANGE_DIFFERENT);
+  window_chat_changed_cb (self);
 }
 
 
