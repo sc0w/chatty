@@ -290,9 +290,6 @@ window_chat_name_matches (ChattyItem   *item,
   if (!node)
     node = (PurpleBlistNode *)chatty_chat_get_purple_buddy (CHATTY_CHAT (item));
 
-  if (node && !purple_blist_node_get_bool (node, "chatty-autojoin"))
-    return FALSE;
-
   protocols = chatty_manager_get_active_protocols (self->manager);
 
   if (!(protocols & chatty_item_get_protocols (item)))
@@ -301,6 +298,9 @@ window_chat_name_matches (ChattyItem   *item,
   /* FIXME: Not a good idea */
   if (node && chatty_item_get_protocols (item) != CHATTY_PROTOCOL_SMS) {
     PurpleAccount *account = NULL;
+
+    if (node && !purple_blist_node_get_bool (node, "chatty-autojoin"))
+      return FALSE;
 
     if (PURPLE_BLIST_NODE_IS_CHAT (node))
       account = PURPLE_CHAT (node)->account;
@@ -1089,7 +1089,7 @@ chatty_window_constructed (GObject *object)
                            (GtkListBoxCreateWidgetFunc)chatty_list_row_new,
                            NULL, NULL);
 
-  g_signal_connect_object (self->filter_model,
+  g_signal_connect_object (gtk_filter_list_model_get_model (self->filter_model),
                            "items-changed",
                            G_CALLBACK (window_chat_changed_cb), self,
                            G_CONNECT_SWAPPED);
