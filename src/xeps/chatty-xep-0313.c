@@ -20,7 +20,6 @@
 #include "chatty-history.h"
 #include "chatty-conversation.h"
 #include "chatty-manager.h"
-#include "chatty-purple-init.h"
 #include "chatty-settings.h"
 
 #define NS_FWDv0 "urn:xmpp:forward:0"

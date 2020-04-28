@@ -31,7 +31,6 @@
 #include "chatty-notify.h"
 #include "chatty-purple-request.h"
 #include "chatty-purple-notify.h"
-#include "chatty-purple-init.h"
 #include "chatty-conversation.h"
 #include "chatty-history.h"
 #include "chatty-manager.h"
@@ -106,7 +105,10 @@ enum {
 
 static GParamSpec *properties[N_PROPS];
 static guint signals[N_SIGNALS];
+static GHashTable *ui_info = NULL;
 
+#define PURPLE_GLIB_READ_COND  (G_IO_IN | G_IO_HUP | G_IO_ERR)
+#define PURPLE_GLIB_WRITE_COND (G_IO_OUT | G_IO_HUP | G_IO_ERR | G_IO_NVAL)
 
 static int
 manager_sort_chat_item (ChattyChat *a,
@@ -165,6 +167,160 @@ manager_eds_is_ready (ChattyManager *self)
     }
   }
 }
+
+typedef struct _PurpleGLibIOClosure
+{
+  PurpleInputFunction function;
+  guint               result;
+  gpointer            data;
+} PurpleGLibIOClosure;
+
+
+static void
+purple_glib_io_destroy (gpointer data)
+{
+  g_free (data);
+}
+
+
+static gboolean
+purple_glib_io_invoke (GIOChannel   *source,
+                       GIOCondition  condition,
+                       gpointer      data)
+{
+  PurpleGLibIOClosure *closure = data;
+  PurpleInputCondition purple_cond = 0;
+
+  if (condition & PURPLE_GLIB_READ_COND) {
+    purple_cond |= PURPLE_INPUT_READ;
+  }
+
+  if (condition & PURPLE_GLIB_WRITE_COND) {
+    purple_cond |= PURPLE_INPUT_WRITE;
+  }
+
+  closure->function (closure->data, g_io_channel_unix_get_fd (source),
+                     purple_cond);
+
+  return TRUE;
+}
+
+
+static guint
+glib_input_add (gint                 fd,
+                PurpleInputCondition condition,
+                PurpleInputFunction  function,
+                gpointer             data)
+{
+
+  PurpleGLibIOClosure *closure;
+  GIOChannel          *channel;
+  GIOCondition         cond = 0;
+
+  closure = g_new0 (PurpleGLibIOClosure, 1);
+
+  closure->function = function;
+  closure->data = data;
+
+  if (condition & PURPLE_INPUT_READ) {
+    cond |= PURPLE_GLIB_READ_COND;
+  }
+
+  if (condition & PURPLE_INPUT_WRITE) {
+    cond |= PURPLE_GLIB_WRITE_COND;
+  }
+
+  channel = g_io_channel_unix_new (fd);
+
+  closure->result = g_io_add_watch_full (channel,
+                                         G_PRIORITY_DEFAULT,
+                                         cond,
+                                         purple_glib_io_invoke,
+                                         closure,
+                                         purple_glib_io_destroy);
+
+  g_io_channel_unref (channel);
+  return closure->result;
+}
+
+
+static
+PurpleEventLoopUiOps eventloop_ui_ops =
+{
+  g_timeout_add,
+  g_source_remove,
+  glib_input_add,
+  g_source_remove,
+  NULL,
+  g_timeout_add_seconds,
+};
+
+
+static void
+chatty_purple_quit (void)
+{
+  chatty_conversations_uninit ();
+
+  purple_conversations_set_ui_ops (NULL);
+  purple_connections_set_ui_ops (NULL);
+  purple_blist_set_ui_ops (NULL);
+  purple_accounts_set_ui_ops (NULL);
+
+  if (NULL != ui_info)
+    g_hash_table_destroy (ui_info);
+
+  chatty_xeps_close ();
+}
+
+
+static void
+chatty_purple_ui_init (void)
+{
+  chatty_conversations_init ();
+  chatty_manager_purple_init (chatty_manager_get_default ());
+}
+
+
+static void
+chatty_purple_prefs_init (void)
+{
+  purple_prefs_add_none (CHATTY_PREFS_ROOT "");
+  purple_prefs_add_none ("/plugins/chatty");
+
+  purple_prefs_add_none (CHATTY_PREFS_ROOT "/plugins");
+  purple_prefs_add_path_list (CHATTY_PREFS_ROOT "/plugins/loaded", NULL);
+
+  purple_prefs_add_none (CHATTY_PREFS_ROOT "/filelocations");
+  purple_prefs_add_path (CHATTY_PREFS_ROOT "/filelocations/last_save_folder", "");
+  purple_prefs_add_path (CHATTY_PREFS_ROOT "/filelocations/last_open_folder", "");
+  purple_prefs_add_path (CHATTY_PREFS_ROOT "/filelocations/last_icon_folder", "");
+}
+
+
+static GHashTable *
+chatty_purple_ui_get_info (void)
+{
+  if (NULL == ui_info) {
+    ui_info = g_hash_table_new (g_str_hash, g_str_equal);
+
+    g_hash_table_insert (ui_info, "name", CHATTY_APP_NAME);
+    g_hash_table_insert (ui_info, "version", CHATTY_VERSION);
+    g_hash_table_insert (ui_info, "dev_website", "https://source.puri.sm/Librem5/chatty");
+    g_hash_table_insert (ui_info, "client_type", "phone");
+  }
+
+  return ui_info;
+}
+
+static
+PurpleCoreUiOps core_ui_ops =
+{
+  chatty_purple_prefs_init,
+  NULL,
+  chatty_purple_ui_init,
+  chatty_purple_quit,
+  chatty_purple_ui_get_info,
+};
 
 static void
 chatty_manager_account_notify_added (PurpleAccount *pp_account,
@@ -1748,12 +1904,21 @@ chatty_manager_dispose (GObject *object)
 }
 
 static void
+chatty_manager_finalize (GObject *object)
+{
+  chatty_purple_quit ();
+
+  G_OBJECT_CLASS (chatty_manager_parent_class)->finalize (object);
+}
+
+static void
 chatty_manager_class_init (ChattyManagerClass *klass)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
 
   object_class->get_property = chatty_manager_get_property;
   object_class->dispose = chatty_manager_dispose;
+  object_class->finalize = chatty_manager_finalize;
 
   /**
    * ChattyUser:active-protocols:
@@ -1905,6 +2070,51 @@ chatty_manager_purple_init (ChattyManager *self)
                        "For a list of commands use the 'help' argument.",
                        self);
 
+}
+
+void
+chatty_manager_purple (ChattyManager *self)
+{
+  g_autofree char *search_path = NULL;
+
+  g_return_if_fail (CHATTY_IS_MANAGER (self));
+
+  signal (SIGCHLD, SIG_IGN);
+  signal (SIGPIPE, SIG_IGN);
+
+  purple_core_set_ui_ops (&core_ui_ops);
+  purple_eventloop_set_ui_ops (&eventloop_ui_ops);
+
+  search_path = g_build_filename (purple_user_dir (), "plugins", NULL);
+  purple_plugins_add_search_path (search_path);
+
+  if (!purple_core_init (CHATTY_UI)) {
+    g_printerr ("libpurple initialization failed\n");
+
+    g_application_quit (g_application_get_default ());
+  }
+
+  if (!purple_core_ensure_single_instance ()) {
+    g_printerr ("Another libpurple client is already running\n");
+
+    g_application_quit (g_application_get_default ());
+  }
+
+  purple_set_blist (purple_blist_new ());
+  purple_prefs_load ();
+  purple_blist_load ();
+  purple_plugins_load_saved (CHATTY_PREFS_ROOT "/plugins/loaded");
+
+  chatty_manager_load_plugins (self);
+  chatty_manager_load_buddies (self);
+
+  purple_savedstatus_activate (purple_savedstatus_get_startup());
+  purple_accounts_restore_current_statuses ();
+
+  purple_blist_show ();
+
+  g_debug ("libpurple initialized. Running version %s.",
+           purple_core_get_version ());
 }
 
 GListModel *

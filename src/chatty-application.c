@@ -31,7 +31,6 @@
 #include "users/chatty-pp-account.h"
 #include "chatty-manager.h"
 #include "chatty-application.h"
-#include "chatty-purple-init.h"
 #include "chatty-settings.h"
 
 /**
@@ -172,6 +171,7 @@ chatty_application_startup (GApplication *application)
   gtk_style_context_add_provider_for_screen (gdk_screen_get_default(),
                                              GTK_STYLE_PROVIDER (self->css_provider),
                                              GTK_STYLE_PROVIDER_PRIORITY_USER);
+  chatty_manager_purple (chatty_manager_get_default ());
 }
 
 
@@ -195,8 +195,6 @@ chatty_application_activate (GApplication *application)
 
     g_object_add_weak_pointer (G_OBJECT (self->main_window), (gpointer *)&self->main_window);
     show_win = !self->daemon;
-
-    libpurple_init ();
 
     if (self->daemon)
       g_signal_connect (G_OBJECT (self->main_window),

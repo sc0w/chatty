@@ -19,12 +19,19 @@
 
 G_BEGIN_DECLS
 
+#define CHATTY_APP_NAME     "Chats"
+#define CHATTY_APP_ID       "sm.puri.Chatty"
+#define CHATTY_VERSION      "v0.1.10"
+#define CHATTY_UI           "chatty-ui"
+#define CHATTY_PREFS_ROOT   "/chatty"
+
 #define CHATTY_TYPE_MANAGER (chatty_manager_get_type ())
 
 G_DECLARE_FINAL_TYPE (ChattyManager, chatty_manager, CHATTY, MANAGER, GObject)
 
 ChattyManager  *chatty_manager_get_default        (void);
 void            chatty_manager_purple_init        (ChattyManager *self);
+void            chatty_manager_purple             (ChattyManager *self);
 GListModel     *chatty_manager_get_accounts       (ChattyManager *self);
 GListModel     *chatty_manager_get_contact_list      (ChattyManager *self);
 GListModel     *chatty_manager_get_chat_list         (ChattyManager *self);
