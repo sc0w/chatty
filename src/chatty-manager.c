@@ -247,7 +247,7 @@ static void
 chatty_blist_remove (PurpleBuddyList *list,
                      PurpleBlistNode *node)
 {
-  if (CHATTY_PP_BUDDY (node->ui_data))
+  if (CHATTY_IS_PP_BUDDY (node->ui_data))
     g_signal_emit_by_name (node->ui_data, "deleted");
 
   purple_request_close_with_handle (node);
