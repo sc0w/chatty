@@ -859,24 +859,23 @@ chatty_conv_write_conversation (PurpleConversation *conv,
                                 PurpleMessageFlags  flags,
                                 time_t              mtime)
 {
+  ChattyChat               *chat;
+  g_autoptr(ChattyMessage)  chat_message = NULL;
   ChattyConversation       *chatty_conv;
   ChattyConversation       *active_chatty_conv;
+  ChattyManager            *self;
   PurpleConversationType    type;
   PurpleConnection         *gc;
-  PurplePluginProtocolInfo *prpl_info = NULL;
   PurpleAccount            *account;
   PurpleBuddy              *buddy = NULL;
   PurpleBlistNode          *node;
-  gboolean                  group_chat = TRUE;
   gboolean                  conv_active;
   GdkPixbuf                *avatar = NULL;
   ChattyWindow             *window;
   GtkWidget                *convs_notebook;
-  int                       chat_id;
   const char               *buddy_name;
   gchar                    *titel;
   g_autofree char          *uuid = NULL;
-  g_autofree char          *timestamp = NULL;
   PurpleConvMessage        pcm = {
                                    NULL,
                                    NULL,
@@ -896,6 +895,8 @@ chatty_conv_write_conversation (PurpleConversation *conv,
   }
 
   node = chatty_get_conv_blist_node (conv);
+  chat = chatty_manager_find_purple_conv (chatty_manager_get_default (), conv);
+  self = chatty_manager_get_default ();
 
   account = purple_conversation_get_account (conv);
   g_return_if_fail (account != NULL);
@@ -904,28 +905,7 @@ chatty_conv_write_conversation (PurpleConversation *conv,
 
   type = purple_conversation_get_type (conv);
 
-  if (type == PURPLE_CONV_TYPE_CHAT)
-    {
-      prpl_info = PURPLE_PLUGIN_PROTOCOL_INFO(gc->prpl);
-
-      if (prpl_info && prpl_info->get_cb_real_name) {
-        chat_id = purple_conv_chat_get_id (PURPLE_CONV_CHAT(conv));
-
-        pcm.who = prpl_info->get_cb_real_name(gc, chat_id, who);
-
-        if (pcm.who) {
-          const char *color;
-          buddy = purple_find_buddy (account, pcm.who);
-          color = chatty_utils_get_color_for_str (pcm.who);
-
-          avatar = chatty_icon_get_buddy_icon ((PurpleBlistNode*)buddy,
-                                               alias,
-                                               CHATTY_ICON_SIZE_MEDIUM,
-                                               color,
-                                               FALSE);
-        }
-      }
-    } else {
+  if (type != PURPLE_CONV_TYPE_CHAT) {
     buddy = purple_find_buddy (account, who);
     node = (PurpleBlistNode*)buddy;
 
@@ -933,7 +913,6 @@ chatty_conv_write_conversation (PurpleConversation *conv,
       purple_blist_node_set_bool (node, "chatty-autojoin", TRUE);
     }
 
-    group_chat = FALSE;
     pcm.who = chatty_utils_jabber_id_strip(who);
   }
 
@@ -944,18 +923,8 @@ chatty_conv_write_conversation (PurpleConversation *conv,
     {
       g_debug("Skipping status[%d] message[%s] for %s <> %s", flags,
               message, purple_account_get_username(account), pcm.who);
-      // FIXME: Dunno why but without that it segfaults on first skip :(
-      chatty_conv_set_unseen (chatty_conv, CHATTY_UNSEEN_NONE);
       g_free(pcm.who);
       return;
-    }
-
-  timestamp  = g_malloc0 (MAX_TIMESTAMP_SIZE * sizeof(char));
-  if (!strftime (timestamp, MAX_TIMESTAMP_SIZE * sizeof(char),
-                 (time(NULL) - mtime < 86400) ? "%R" : "%c",
-                 localtime(&mtime)))
-    {
-      timestamp = g_strdup("00:00");
     }
 
   pcm.what = g_strdup(message);
@@ -971,12 +940,8 @@ chatty_conv_write_conversation (PurpleConversation *conv,
 
     if (pcm.flags & PURPLE_MESSAGE_SYSTEM) {
       // System is usually also RECV so should be first to catch
-      chatty_chat_view_add_message_at (CHATTY_CHAT_VIEW (chatty_conv->chat_view),
-                                       MSG_IS_SYSTEM,
-                                       message,
-                                       NULL,
-                                       NULL,
-                                       ADD_MESSAGE_ON_BOTTOM);
+      chat_message = chatty_message_new (NULL, NULL, message, 0, CHATTY_DIRECTION_SYSTEM, 0);
+      chatty_chat_append_message (chat, chat_message);
     } else if (pcm.flags & PURPLE_MESSAGE_RECV) {
 
       window = chatty_utils_get_window ();
@@ -1010,40 +975,30 @@ chatty_conv_write_conversation (PurpleConversation *conv,
         g_free (titel);
       }
 
-      chatty_chat_view_add_message_at (CHATTY_CHAT_VIEW (chatty_conv->chat_view),
-                                       MSG_IS_INCOMING,
-                                       message,
-                                       group_chat ? who : timestamp,
-                                       avatar,
-                                       ADD_MESSAGE_ON_BOTTOM);
-
+      chat_message = chatty_message_new (NULL, who, message, mtime, CHATTY_DIRECTION_IN, 0);
+      chatty_chat_append_message (chat, chat_message);
     } else if (flags & PURPLE_MESSAGE_SEND && pcm.flags & PURPLE_MESSAGE_SEND) {
       // normal send
-      chatty_chat_view_add_message_at (CHATTY_CHAT_VIEW (chatty_conv->chat_view),
-                                       MSG_IS_OUTGOING,
-                                       message,
-                                       NULL,
-                                       NULL,
-                                       ADD_MESSAGE_ON_BOTTOM);
-
+      chat_message = chatty_message_new (NULL, NULL, message, 0, CHATTY_DIRECTION_OUT, 0);
+      chatty_message_set_status (chat_message, CHATTY_STATUS_SENT, 0);
+      chatty_chat_append_message (chat, chat_message);
     } else if (pcm.flags & PURPLE_MESSAGE_SEND) {
       // offline send (from MAM)
       // FIXME: current list_box does not allow ordering rows by timestamp
       // TODO: Needs proper sort function and timestamp as user_data for rows
       // FIXME: Alternatively may need to reload history to re-populate rows
-      chatty_chat_view_add_message_at (CHATTY_CHAT_VIEW (chatty_conv->chat_view),
-                                       MSG_IS_OUTGOING,
-                                       message,
-                                       timestamp,
-                                       NULL,
-                                       ADD_MESSAGE_ON_BOTTOM);
-
+      chat_message = chatty_message_new (NULL, NULL, message, mtime, CHATTY_DIRECTION_OUT, 0);
+      chatty_message_set_status (chat_message, CHATTY_STATUS_SENT, 0);
+      chatty_chat_append_message (chat, chat_message);
     }
 
     if (chatty_conv->oldest_message_displayed == NULL)
       chatty_conv->oldest_message_displayed = g_steal_pointer(&uuid);
 
-    chatty_conv_set_unseen (chatty_conv, CHATTY_UNSEEN_NONE);
+    chatty_chat_set_unread_count (chat, chatty_chat_get_unread_count (chat) + 1);
+    chatty_chat_set_last_msg_time (chat, time (NULL));
+    chatty_chat_set_last_message (chat, message);
+    gtk_sorter_changed (self->chat_sorter, GTK_SORTER_ORDER_TOTAL);
   }
 
   if (avatar)
