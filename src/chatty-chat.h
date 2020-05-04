@@ -36,6 +36,7 @@ ChattyChat         *chatty_chat_new_purple_chat       (PurpleChat         *pp_ch
 ChattyChat         *chatty_chat_new_purple_conv       (PurpleConversation *conv);
 void                chatty_chat_set_purple_conv       (ChattyChat         *self,
                                                        PurpleConversation *conv);
+ChattyProtocol      chatty_chat_get_protocol          (ChattyChat         *self);
 PurpleChat         *chatty_chat_get_purple_chat       (ChattyChat         *self);
 PurpleBuddy        *chatty_chat_get_purple_buddy      (ChattyChat         *self);
 PurpleConversation *chatty_chat_get_purple_conv       (ChattyChat         *self);

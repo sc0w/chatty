@@ -370,6 +370,30 @@ chatty_chat_set_purple_conv (ChattyChat         *self,
     self->buddy = PURPLE_BUDDY (node);
 }
 
+ChattyProtocol
+chatty_chat_get_protocol (ChattyChat *self)
+{
+  ChattyPpAccount *account;
+  PurpleAccount *pp_account;
+
+  g_return_val_if_fail (CHATTY_IS_CHAT (self), CHATTY_PROTOCOL_NONE);
+
+  if (self->account)
+    pp_account = self->account;
+  else if (self->conv)
+    pp_account = self->conv->account;
+  else if (self->pp_chat)
+    pp_account = self->pp_chat->account;
+  else
+    return CHATTY_PROTOCOL_NONE;
+
+  account = chatty_pp_account_get_object (pp_account);
+
+  if (account)
+    return chatty_item_get_protocols (CHATTY_ITEM (account));
+
+  return CHATTY_PROTOCOL_NONE;
+}
 
 PurpleChat *
 chatty_chat_get_purple_chat (ChattyChat *self)
