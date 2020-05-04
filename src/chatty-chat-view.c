@@ -108,6 +108,28 @@ chatty_conv_init_emoticon_translations (void)
 
 
 static gboolean
+chat_view_time_is_same_day (time_t time_a,
+                            time_t time_b)
+{
+  struct tm *tm;
+  int day_a, day_b;
+
+  if (difftime (time_a, time_b) > SECONDS_PER_DAY)
+    return FALSE;
+
+  tm = localtime (&time_a);
+  day_a = tm->tm_yday;
+
+  tm = localtime (&time_b);
+  day_b = tm->tm_yday;
+
+  if (day_a == day_b)
+    return TRUE;
+
+  return FALSE;
+}
+
+static gboolean
 chat_view_hash_table_match_item (gpointer key,
                                  gpointer value,
                                  gpointer user_data)
@@ -455,36 +477,27 @@ chatty_conv_get_im_messages_cb (const guchar *msg,
                                 int           last_message)
 {
   ChattyChatView *self = user_data;
-  g_autofree gchar *iso_timestamp = NULL;
-  guint             msg_dir;
+  ChattyMsgDirection msg_direction;
 
   g_assert (CHATTY_IS_CHAT_VIEW (self));
-
-  iso_timestamp = g_malloc0 (MAX_GMT_ISO_SIZE * sizeof(char));
 
   // TODO: @LELAND: Check this memory management, don't like it
   free (self->chatty_conv->oldest_message_displayed);
   self->chatty_conv->oldest_message_displayed = g_strdup ((const gchar *)uuid);
 
   if (direction == 1)
-    msg_dir = MSG_IS_INCOMING;
+    msg_direction = CHATTY_DIRECTION_IN;
   else if (direction == -1)
-    msg_dir = MSG_IS_OUTGOING;
+    msg_direction = CHATTY_DIRECTION_OUT;
   else
-    msg_dir = MSG_IS_SYSTEM; // TODO: LELAND: Do we have this case for IMs?
-
-  strftime (iso_timestamp,
-            MAX_GMT_ISO_SIZE * sizeof(char),
-            "%b %d",
-            localtime (&time_stamp));
+    msg_direction = CHATTY_DIRECTION_SYSTEM; /* TODO: LELAND: Do we have this case for IMs? */
 
   if (msg && *msg) {
-    chatty_chat_view_add_message_at (self,
-                                     msg_dir,
-                                     (const gchar *) msg,
-                                     last_message ? iso_timestamp : NULL,
-                                     NULL,
-                                     ADD_MESSAGE_ON_TOP);
+    g_autoptr(ChattyMessage) message = NULL;
+
+    message = chatty_message_new (NULL, NULL, (const char *)msg,
+                                  time_stamp, msg_direction, 0);
+    chatty_chat_prepend_message (self->chat, message);
   }
 }
 
@@ -499,7 +512,7 @@ chatty_conv_get_chat_messages_cb (const guchar *msg,
                                   gpointer      user_data)
 {
   ChattyChatView *self = user_data;
-  PurpleAccount  *account;
+  g_autoptr(ChattyMessage) message = NULL;
 
   g_assert (CHATTY_IS_CHAT_VIEW (self));
 
@@ -509,53 +522,34 @@ chatty_conv_get_chat_messages_cb (const guchar *msg,
 
   if (msg && *msg) {
     if (direction == 1) {
-      g_autoptr(GdkPixbuf)  avatar = NULL;
-      g_auto(GStrv)         line_split = NULL;
-      PurpleBuddy          *buddy;
-      g_autofree gchar     *alias = NULL;
-      const char           *color;
+      ChattyPpBuddy *buddy = NULL;
+      const char    *alias = NULL;
 
-      account = purple_conversation_get_account (self->chatty_conv->conv);
-      buddy = purple_find_buddy (account, room);
-      color = chatty_utils_get_color_for_str (room);
+      if (who)
+        alias = strchr ((const char *)who, '/');
 
-      /* Extract the alias from 'who' (full_room_address/alias) */
-      line_split = g_strsplit ((const char *)who, "/", -1);
-      if (line_split)
-        alias = g_strdup (line_split[1]);
+      /* Skip ‘/’ */
+      if (alias)
+        alias++;
       else
-        alias = g_strdup ((const char *)who);
+        alias = (const char *)who;
 
-      avatar = chatty_icon_get_buddy_icon ((PurpleBlistNode *)buddy,
-                                           (const char *)alias,
-                                           CHATTY_ICON_SIZE_MEDIUM,
-                                           color,
-                                           FALSE);
+      if (alias)
+        buddy = chatty_chat_find_user (self->chat, alias);
 
-      chatty_chat_view_add_message_at (self,
-                                       MSG_IS_INCOMING,
-                                       (const char *)msg,
-                                       NULL,
-                                       avatar,
-                                       ADD_MESSAGE_ON_TOP);
-
+      message = chatty_message_new ((ChattyItem *)buddy, alias,
+                                    (const char *)msg, time_stamp,
+                                    CHATTY_DIRECTION_IN, 0);
+      chatty_chat_prepend_message (self->chat, message);
     } else if (direction == -1) {
-      chatty_chat_view_add_message_at (self,
-                                       MSG_IS_OUTGOING,
-                                       (const char *)msg,
-                                       NULL,
-                                       NULL,
-                                       ADD_MESSAGE_ON_TOP);
+      message = chatty_message_new (NULL, NULL, (const char *)msg, 0,
+                                    CHATTY_DIRECTION_OUT, 0);
+      chatty_chat_prepend_message (self->chat, message);
     } else {
-      chatty_chat_view_add_message_at (self,
-                                       MSG_IS_SYSTEM,
-                                       (const char *)msg,
-                                       NULL,
-                                       NULL,
-                                       ADD_MESSAGE_ON_TOP);
+      message = chatty_message_new (NULL, NULL, (const char *)msg, time_stamp,
+                                    CHATTY_DIRECTION_SYSTEM, 0);
+      chatty_chat_prepend_message (self->chat, message);
     }
-
-    chatty_conv_set_unseen (self->chatty_conv, CHATTY_UNSEEN_NONE);
   }
 }
 
@@ -570,6 +564,72 @@ chat_view_edge_overshot_cb (ChattyChatView  *self,
     chatty_chat_view_load (self, LAZY_LOAD_INITIAL_MSGS_LIMIT);
 }
 
+
+static GtkWidget *
+chat_view_message_row_new (ChattyMessage  *message,
+                           ChattyChatView *self)
+{
+  GtkWidget *row;
+  ChattyProtocol protocol;
+  gboolean is_im = TRUE;
+
+  g_assert (CHATTY_IS_MESSAGE (message));
+  g_assert (CHATTY_IS_CHAT_VIEW (self));
+
+  if (self->message_type == CHATTY_MSG_TYPE_MUC)
+    is_im = FALSE;
+
+  protocol = chatty_chat_get_protocol (self->chat);
+  row = chatty_message_row_new (message, protocol, is_im);
+  chatty_message_row_set_alias (CHATTY_MESSAGE_ROW (row),
+                                chatty_message_get_user_alias (message));
+
+  return GTK_WIDGET (row);
+}
+
+static void
+messages_items_changed_cb (ChattyChatView *self,
+                           guint           position,
+                           guint           removed,
+                           guint           added)
+{
+  ChattyMessage *next_msg, *msg;
+  GtkListBoxRow *row, *next_row;
+  GtkListBox *list;
+  time_t next_time, time;
+
+  g_assert (CHATTY_IS_CHAT_VIEW (self));
+
+  if (added == 0)
+    return;
+
+  /* Don't hide footers in group chats */
+  if (self->message_type == CHATTY_MSG_TYPE_MUC)
+    return;
+
+  list = GTK_LIST_BOX (self->message_list);
+
+  for (gint i = position; i < position + added; i++) {
+    next_row = gtk_list_box_get_row_at_index (list, i + 1);
+
+    if (!next_row)
+      break;
+
+    row = gtk_list_box_get_row_at_index (list, i);
+    msg = chatty_message_row_get_item (CHATTY_MESSAGE_ROW (row));
+    time = chatty_message_get_time (msg);
+
+    next_msg = chatty_message_row_get_item (CHATTY_MESSAGE_ROW (next_row));
+    next_time = chatty_message_get_time (next_msg);
+
+    /*
+     * Hide time if the message following the current one belong to the same
+     * day
+     */
+    if (chat_view_time_is_same_day (time, next_time))
+      chatty_message_row_hide_footer (CHATTY_MESSAGE_ROW (row));
+  }
+}
 
 static gboolean
 chat_view_input_focus_in_cb (ChattyChatView *self)
@@ -1079,14 +1139,29 @@ void
 chatty_chat_view_set_chat (ChattyChatView *self,
                            ChattyChat     *chat)
 {
+  PurpleConversation *conv;
+
   g_return_if_fail (CHATTY_IS_CHAT_VIEW (self));
   g_return_if_fail (CHATTY_IS_CHAT (chat));
 
-  /* TODO */
-  g_return_if_reached ();
-
   if (!g_set_object (&self->chat, chat))
     return;
+
+  if (!chat)
+    return;
+
+  conv = chatty_chat_get_purple_conv (chat);
+  self->chatty_conv = CHATTY_CONVERSATION (conv);
+
+  gtk_list_box_bind_model (GTK_LIST_BOX (self->message_list),
+                           chatty_chat_get_messages (self->chat),
+                           (GtkListBoxCreateWidgetFunc)chat_view_message_row_new,
+                           self, NULL);
+  g_signal_connect_object (chatty_chat_get_messages (self->chat),
+                           "items-changed",
+                           G_CALLBACK (messages_items_changed_cb),
+                           self,
+                           G_CONNECT_SWAPPED | G_CONNECT_AFTER);
 
   chatty_chat_view_update (self);
 }
