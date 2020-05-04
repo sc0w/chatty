@@ -84,42 +84,6 @@ cb_update_buddy_icon (PurpleBuddy *buddy)
 // *** end callbacks
 
 /**
- * chatty_conv_set_unseen:
- * @chatty_conv: a ChattyConversation
- * @state: a ChattyUnseenState
- *
- * Sets the seen/unseen state of a conversation
- *
- */
-void
-chatty_conv_set_unseen (ChattyConversation *chatty_conv,
-                        ChattyUnseenState   state)
-{
-  if (state == CHATTY_UNSEEN_NONE)
-  {
-    chatty_conv->unseen_count = 0;
-    chatty_conv->unseen_state = CHATTY_UNSEEN_NONE;
-  }
-  else
-  {
-    if (state >= CHATTY_UNSEEN_TEXT)
-      chatty_conv->unseen_count++;
-
-    if (state > chatty_conv->unseen_state)
-      chatty_conv->unseen_state = state;
-  }
-
-  purple_conversation_set_data (chatty_conv->conv, "unseen-count",
-                                GINT_TO_POINTER(chatty_conv->unseen_count));
-
-  purple_conversation_set_data (chatty_conv->conv, "unseen-state",
-                                GINT_TO_POINTER(chatty_conv->unseen_state));
-
-  purple_conversation_update (chatty_conv->conv, PURPLE_CONV_UPDATE_UNSEEN);
-}
-
-
-/**
  * chatty_conv_container_get_active_chatty_conv:
  * @notebook: a GtkNotebook
  *
