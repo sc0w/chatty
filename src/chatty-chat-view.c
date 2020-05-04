@@ -1215,7 +1215,8 @@ chatty_chat_view_add_message_at (ChattyChatView *self,
     avatar = NULL;
 
   message = chatty_msg_list_escape_message (html_message);
-  row = chatty_message_row_new ();
+  row = chatty_message_row_new (NULL, chatty_item_get_protocols (CHATTY_ITEM (self->chat)),
+                                self->message_type == CHATTY_MSG_TYPE_IM || self->message_type == CHATTY_MSG_TYPE_SMS);
 
   if (position == ADD_MESSAGE_ON_BOTTOM)
     gtk_container_add (GTK_CONTAINER (self->message_list), row);
