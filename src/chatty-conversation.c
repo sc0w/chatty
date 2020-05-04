@@ -306,7 +306,6 @@ void
 chatty_conv_show_conversation (PurpleConversation *conv)
 {
   ChattyWindow       *window;
-  ChattyConversation *chatty_conv;
 
   if (!conv) {
     return;
@@ -314,11 +313,7 @@ chatty_conv_show_conversation (PurpleConversation *conv)
 
   window = chatty_utils_get_window ();
 
-  chatty_conv = CHATTY_CONVERSATION (conv);
-
   chatty_conv_present_conversation (conv);
-  chatty_conv_set_unseen (chatty_conv, CHATTY_UNSEEN_NONE);
-
   chatty_conv_conversation_update (conv);
 
   chatty_window_change_view (window, CHATTY_VIEW_MESSAGE_LIST);
@@ -368,8 +363,6 @@ chatty_conv_join_chat (PurpleChat *chat)
   const char               *name;
   char                     *chat_name;
 
-  ChattyConversation *chatty_conv;
-
   account = purple_chat_get_account(chat);
   prpl_info = PURPLE_PLUGIN_PROTOCOL_INFO(purple_find_prpl (purple_account_get_protocol_id (account)));
 
@@ -396,10 +389,6 @@ chatty_conv_join_chat (PurpleChat *chat)
     serv_join_chat (purple_account_get_connection (account), components);
   } else if (conv) {
     purple_conversation_present(conv);
-
-    chatty_conv = CHATTY_CONVERSATION (conv);
-
-    chatty_conv_set_unseen (chatty_conv, CHATTY_UNSEEN_NONE);
   }
 
   g_free (chat_name);
