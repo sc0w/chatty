@@ -614,11 +614,14 @@ static GtkWidget *
 chatty_conv_setup_pane (ChattyConversation *chatty_conv,
                         guint               msg_type)
 {
+  ChattyChat *chat;
+
   gtk_icon_theme_add_resource_path (gtk_icon_theme_get_default (),
                                     "/sm/puri/chatty/icons/ui/");
 
   chatty_conv->chat_view = chatty_chat_view_new ();
-  chatty_chat_view_set_conv (CHATTY_CHAT_VIEW (chatty_conv->chat_view), chatty_conv);
+  chat = chatty_manager_add_conversation (chatty_manager_get_default (), chatty_conv->conv);
+  chatty_chat_view_set_chat (CHATTY_CHAT_VIEW (chatty_conv->chat_view), chat);
 
   return chatty_conv->chat_view;
 }
