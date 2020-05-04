@@ -45,6 +45,7 @@ struct _ChattyChatView
 
   ChattyChat *chat;
   ChattyConversation *chatty_conv;
+  char       *last_message_id;  /* id of last sent message, currently used only for SMS */
   guint       message_type;
   guint       refresh_typing_id;
   gboolean    first_scroll_to_bottom;
@@ -814,9 +815,7 @@ chat_view_send_message_button_clicked_cb (ChattyChatView *self)
   PurpleConversation  *conv;
   PurpleAccount *account;
   GtkTextIter    start, end;
-  GDateTime     *time;
   gchar         *message = NULL;
-  gchar         *footer_str = NULL;
   const gchar   *protocol_id;
   gchar         *sms_id_str;
   guint          sms_id;
@@ -845,24 +844,6 @@ chat_view_send_message_button_clicked_cb (ChattyChatView *self)
 
   message = gtk_text_buffer_get_text (self->message_input_buffer, &start, &end, FALSE);
 
-  time = g_date_time_new_now_local ();
-  footer_str = g_date_time_format (time, "%R");
-  g_date_time_unref (time);
-
-  footer_str = g_strconcat ("<small>",
-                            "<span color='grey'>",
-                            footer_str,
-                            "</span>",
-                            "<span color='grey'>",
-                            " ✓",
-                            "</span></small>",
-                            NULL);
-
-  self->chatty_conv->msg_bubble_footer = gtk_label_new (NULL);
-  gtk_widget_show (self->chatty_conv->msg_bubble_footer);
-  gtk_label_set_markup (GTK_LABEL (self->chatty_conv->msg_bubble_footer), footer_str);
-  gtk_label_set_xalign (GTK_LABEL (self->chatty_conv->msg_bubble_footer), 1);
-
   if (gtk_text_buffer_get_char_count (self->message_input_buffer)) {
     /* provide a msg-id to the sms-plugin for send-receipts */
     if (g_strcmp0 (protocol_id, "prpl-mm-sms") == 0) {
@@ -870,8 +851,7 @@ chat_view_send_message_button_clicked_cb (ChattyChatView *self)
 
       sms_id_str = g_strdup_printf ("%i", sms_id);
 
-      g_hash_table_insert (ht_sms_id,
-                           sms_id_str, self->chatty_conv->msg_bubble_footer);
+      g_hash_table_insert (ht_sms_id, sms_id_str, g_object_ref (self->chat));
 
       g_debug ("hash table insert sms_id_str: %s  ht_size: %i\n",
                sms_id_str, g_hash_table_size (ht_sms_id));
@@ -895,7 +875,6 @@ chat_view_send_message_button_clicked_cb (ChattyChatView *self)
   gtk_text_buffer_delete (self->message_input_buffer, &start, &end);
 
   g_free (message);
-  g_free (footer_str);
 }
 
 static gboolean
@@ -995,54 +974,50 @@ static void
 chat_view_sms_sent_cb (const char *sms_id,
                        int         status)
 {
-  GtkWidget   *bubble_footer;
-  GDateTime   *time;
-  gchar       *footer_str = NULL;
-  const gchar *color;
-  const gchar *symbol;
+  ChattyChat    *chat;
+  ChattyMessage *message;
+  GListModel    *message_list;
+  const gchar *message_id;
+  ChattyMsgStatus sent_status;
+  time_t       time_now;
+  guint        n_items;
 
   if (sms_id == NULL)
     return;
 
-  switch (status) {
-    case CHATTY_SMS_RECEIPT_NONE:
-      color = "<span color='red'>";
-      symbol = " x";
-      break;
-    case CHATTY_SMS_RECEIPT_MM_ACKN:
-      color = "<span color='grey'>";
-      symbol = " ✓";
-      break;
-    case CHATTY_SMS_RECEIPT_SMSC_ACKN:
-      color = "<span color='#6cba3d'>";
-      symbol = " ✓";
-      break;
-    default:
-      return;
+  if (status == CHATTY_SMS_RECEIPT_NONE)
+    sent_status = CHATTY_STATUS_SENDING_FAILED;
+  else if (status == CHATTY_SMS_RECEIPT_MM_ACKN)
+    sent_status = CHATTY_STATUS_SENT;
+  else if (status == CHATTY_SMS_RECEIPT_SMSC_ACKN)
+    sent_status = CHATTY_STATUS_DELIVERED;
+  else
+    return;
+
+  chat = g_hash_table_lookup (ht_sms_id, sms_id);
+
+  if (!chat)
+    return;
+
+  message_list = chatty_chat_get_messages (chat);
+  n_items = g_list_model_get_n_items (message_list);
+  message = g_list_model_get_item (message_list, n_items - 1);
+  message_id = chatty_message_get_id (message);
+  time_now = time (NULL);
+
+  if (message_id == NULL)
+    chatty_message_set_id (message, sms_id);
+
+  if (g_strcmp0 (message_id, sms_id) == 0) {
+    chatty_message_set_status (message, sent_status, time_now);
+    g_object_unref (message);
+    return;
   }
 
-  time = g_date_time_new_now_local ();
-  footer_str = g_date_time_format (time, "%R");
-  g_date_time_unref (time);
+  message = chatty_chat_find_message_with_id (chat, sms_id);
 
-  bubble_footer = (GtkWidget*) g_hash_table_lookup (ht_sms_id, sms_id);
-
-  footer_str = g_strconcat ("<small>",
-                            "<span color='grey'>",
-                            footer_str,
-                            "</span>",
-                            color,
-                            symbol,
-                            "</span></small>",
-                            NULL);
-
-  if (bubble_footer != NULL) {
-    gtk_label_set_markup (GTK_LABEL(bubble_footer), footer_str);
-
-    g_hash_table_remove (ht_sms_id, sms_id);
-  }
-
-  g_free (footer_str);
+  if (message)
+    chatty_message_set_status (message, sent_status, time_now);
 }
 
 static void
@@ -1118,7 +1093,7 @@ chatty_chat_view_new (void)
 void
 chatty_chat_view_purple_init (void)
 {
-  ht_sms_id = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
+  ht_sms_id = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_object_unref);
   chatty_conv_init_emoticon_translations ();
 
   purple_signal_connect (purple_conversations_get_handle (),
@@ -1221,7 +1196,7 @@ chatty_chat_view_remove_footer (ChattyChatView *self)
 
   g_hash_table_foreach_remove (ht_sms_id,
                                chat_view_hash_table_match_item,
-                               self->chatty_conv->msg_bubble_footer);
+                               self);
 }
 
 void
