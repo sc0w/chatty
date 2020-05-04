@@ -271,7 +271,7 @@ window_notebook_after_switch_cb (GtkNotebook  *notebook,
   g_debug ("cb_stack_cont_switch_conv conv: chatty_conv->conv: %s",
            purple_conversation_get_name (conv));
 
-  chatty_conv_set_unseen (chatty_conv, CHATTY_UNSEEN_NONE);
+  chatty_chat_set_unread_count (chat, 0);
 }
 
 
