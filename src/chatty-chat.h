@@ -15,6 +15,7 @@
 #include <purple.h>
 
 #include "users/chatty-item.h"
+#include "users/chatty-pp-buddy.h"
 #include "chatty-enums.h"
 
 G_BEGIN_DECLS
@@ -50,6 +51,8 @@ void                chatty_chat_add_users             (ChattyChat         *self,
 void                chatty_chat_remove_user           (ChattyChat         *self,
                                                        const char         *user);
 GListModel         *chatty_chat_get_users             (ChattyChat         *self);
+ChattyPpBuddy      *chatty_chat_find_user             (ChattyChat         *self,
+                                                       const char         *username);
 void                chatty_chat_emit_user_changed     (ChattyChat         *self,
                                                        const char         *user);
 const char         *chatty_chat_get_last_message      (ChattyChat         *self);

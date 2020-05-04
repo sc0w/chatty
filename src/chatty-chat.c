@@ -47,6 +47,7 @@ struct _ChattyChat
   PurpleConversation *conv;
   GListStore         *chat_users;
   GtkSortListModel   *sorted_chat_users;
+  GListStore         *message_store;
 
   char               *last_message;
   guint               unread_count;
@@ -118,9 +119,9 @@ chatty_get_conv_blist_node (PurpleConversation *conv)
 }
 
 static ChattyPpBuddy *
-chatty_chat_find_user (ChattyChat *self,
-                       const char *user,
-                       guint      *index)
+chat_find_user (ChattyChat *self,
+                const char *user,
+                guint      *index)
 {
   guint n_items;
 
@@ -563,7 +564,7 @@ chatty_chat_remove_user (ChattyChat *self,
     cb = purple_conv_chat_cb_find (chat, user);
 
   if (cb)
-    buddy = chatty_chat_find_user (self, cb->name, &index);
+    buddy = chat_find_user (self, cb->name, &index);
 
   if (buddy)
     g_list_store_remove (self->chat_users, index);
@@ -578,6 +579,17 @@ chatty_chat_get_users (ChattyChat *self)
 }
 
 
+ChattyPpBuddy *
+chatty_chat_find_user (ChattyChat *self,
+                       const char *username)
+{
+  g_return_val_if_fail (CHATTY_IS_CHAT (self), NULL);
+  g_return_val_if_fail (username, NULL);
+
+  return chat_find_user (self, username, NULL);
+}
+
+
 void
 chatty_chat_emit_user_changed (ChattyChat *self,
                                const char *user)
@@ -587,7 +599,7 @@ chatty_chat_emit_user_changed (ChattyChat *self,
   g_return_if_fail (CHATTY_IS_CHAT (self));
   g_return_if_fail (user);
 
-  buddy = chatty_chat_find_user (self, user, NULL);
+  buddy = chat_find_user (self, user, NULL);
 
   if (buddy)
     g_signal_emit_by_name (buddy, "changed");
