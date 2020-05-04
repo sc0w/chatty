@@ -29,6 +29,8 @@ src/chatty-manager.c
 src/chatty-manager.h
 src/chatty-message-list.c
 src/chatty-message-list.h
+src/chatty-message.c
+src/chatty-message.h
 src/chatty-notify.c
 src/chatty-notify.h
 src/chatty-purple-init.c
