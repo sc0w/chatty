@@ -28,6 +28,7 @@ GtkWidget     *chatty_message_row_new              (ChattyMessage  *message,
 ChattyMessage *chatty_message_row_get_item         (ChattyMessageRow *self);
 void           chatty_message_row_set_footer       (ChattyMessageRow *self,
                                                     GtkWidget        *footer);
+void           chatty_message_row_hide_footer      (ChattyMessageRow *self);
 void           chatty_message_row_set_alias        (ChattyMessageRow *self,
                                                     const char       *alias);
 void           chatty_message_row_show_user_detail (ChattyMessageRow *self);

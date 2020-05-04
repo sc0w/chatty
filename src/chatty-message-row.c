@@ -297,6 +297,14 @@ chatty_message_row_set_footer (ChattyMessageRow *self,
 }
 
 void
+chatty_message_row_hide_footer (ChattyMessageRow *self)
+{
+  g_return_if_fail (CHATTY_IS_MESSAGE_ROW (self));
+
+  gtk_widget_hide (self->footer_label);
+}
+
+void
 chatty_message_row_set_alias (ChattyMessageRow *self,
                               const char       *alias)
 {
