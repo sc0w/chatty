@@ -283,3 +283,38 @@ chatty_utils_get_color_for_str (const char *str)
 
   return avatar_colors[hash % G_N_ELEMENTS (avatar_colors)];
 }
+
+char *
+chatty_utils_get_human_time (time_t unix_time)
+{
+  g_autoptr(GDateTime) now = NULL;
+  g_autoptr(GDateTime) utc_time = NULL;
+  g_autoptr(GDateTime) local_time = NULL;
+  gint year_now, month_now, day_now;
+  gint year, month, day;
+
+  g_return_val_if_fail (unix_time >= 0, g_strdup (""));
+
+  now = g_date_time_new_now_local ();
+  utc_time = g_date_time_new_from_unix_utc (unix_time);
+  local_time = g_date_time_to_local (utc_time);
+
+  g_date_time_get_ymd (now, &year_now, &month_now, &day_now);
+  g_date_time_get_ymd (local_time, &year, &month, &day);
+
+  if (year  == year_now &&
+      month == month_now)
+    {
+      /* Time in the format HH:MM */
+      if (day == day_now)
+        return g_date_time_format (local_time, "%R");
+
+      /* Localized day name */
+      if (day_now - day <= 7)
+        /* TRANSLATORS: Time format as supported by g_date_time_format() */
+        return g_date_time_format (local_time, _("%A %R"));
+    }
+
+  /* TRANSLATORS: Year format as supported by g_date_time_format() */
+  return g_date_time_format (local_time, _("%Y-%m-%d"));
+}

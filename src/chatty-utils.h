@@ -28,5 +28,6 @@ gboolean chatty_utils_remove_list_item  (GListStore *store,
 GtkWidget* chatty_utils_create_fingerprint_row (const char *fp, guint id);
 gpointer   chatty_utils_get_node_object (PurpleBlistNode *node);
 const char *chatty_utils_get_color_for_str (const char *str);
+char       *chatty_utils_get_human_time (time_t unix_time);
 
 #endif
