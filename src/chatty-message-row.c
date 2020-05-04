@@ -12,6 +12,7 @@
 
 #include <glib/gi18n.h>
 
+#include "chatty-avatar.h"
 #include "chatty-message-row.h"
 
 
@@ -148,6 +149,16 @@ chatty_message_row_set_footer (ChattyMessageRow *self,
   gtk_widget_show (footer);
   self->footer_label = footer;
 }
+
+void
+chatty_message_row_set_alias (ChattyMessageRow *self,
+                              const char       *alias)
+{
+  g_return_if_fail (CHATTY_IS_MESSAGE_ROW (self));
+
+  chatty_avatar_set_title (CHATTY_AVATAR (self->avatar_image), alias);
+}
+
 
 void
 chatty_message_row_set_item (ChattyMessageRow *self,

@@ -24,6 +24,8 @@ G_DECLARE_FINAL_TYPE (ChattyMessageRow, chatty_message_row, CHATTY, MESSAGE_ROW,
 GtkWidget     *chatty_message_row_new              (void);
 void           chatty_message_row_set_footer       (ChattyMessageRow *self,
                                                     GtkWidget        *footer);
+void           chatty_message_row_set_alias        (ChattyMessageRow *self,
+                                                    const char       *alias);
 void           chatty_message_row_show_user_detail (ChattyMessageRow *self);
 void           chatty_message_row_hide_user_detail (ChattyMessageRow *self);
 void           chatty_message_row_set_item (ChattyMessageRow *self,
