@@ -56,3 +56,33 @@ typedef enum
   CHATTY_USER_FLAG_MODERATOR = 1 << 1,
   CHATTY_USER_FLAG_OWNER     = 1 << 2,
 } ChattyUserFlag;
+
+/**
+ * ChattyMsgDirection:
+ *
+ * The Direction of a #ChattyMessage
+ */
+typedef enum
+{
+  CHATTY_DIRECTION_UNKNOWN,
+  CHATTY_DIRECTION_IN,
+  CHATTY_DIRECTION_OUT,
+  CHATTY_DIRECTION_SYSTEM
+} ChattyMsgDirection;
+
+/**
+ * ChattyMsgStatus:
+ *
+ * The Status of a #ChattyMessage.
+ */
+typedef enum
+{
+  CHATTY_STATUS_UNKNOWN,
+  CHATTY_STATUS_RECIEVED,
+  CHATTY_STATUS_SENDING,
+  CHATTY_STATUS_SENT,
+  CHATTY_STATUS_DELIVERED,
+  CHATTY_STATUS_READ,
+  CHATTY_STATUS_SENDING_FAILED,
+  CHATTY_STATUS_DELIVERY_FAILED
+} ChattyMsgStatus;
