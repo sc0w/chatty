@@ -246,6 +246,8 @@ chatty_chat_finalize (GObject *object)
   ChattyChat *self = (ChattyChat *)object;
 
   g_list_store_remove_all (self->chat_users);
+  g_list_store_remove_all (self->message_store);
+  g_object_unref (self->message_store);
   g_object_unref (self->chat_users);
   g_object_unref (self->sorted_chat_users);
   g_free (self->last_message);
@@ -298,6 +300,8 @@ chatty_chat_init (ChattyChat *self)
   sorter = gtk_custom_sorter_new ((GCompareDataFunc)sort_chat_buddy, NULL, NULL);
   self->chat_users = g_list_store_new (CHATTY_TYPE_PP_BUDDY);
   self->sorted_chat_users = gtk_sort_list_model_new (G_LIST_MODEL (self->chat_users), sorter);
+
+  self->message_store = g_list_store_new (CHATTY_TYPE_MESSAGE);
 }
 
 
@@ -501,6 +505,70 @@ chatty_chat_match_purple_conv (ChattyChat         *self,
   return FALSE;
 }
 
+GListModel *
+chatty_chat_get_messages (ChattyChat *self)
+{
+  g_return_val_if_fail (CHATTY_IS_CHAT (self), NULL);
+
+  return G_LIST_MODEL (self->message_store);
+}
+
+
+ChattyMessage *
+chatty_chat_find_message_with_id (ChattyChat *self,
+                                  const char *id)
+{
+  guint n_items;
+
+  g_return_val_if_fail (CHATTY_IS_CHAT (self), NULL);
+  g_return_val_if_fail (id, NULL);
+
+  n_items = g_list_model_get_n_items (G_LIST_MODEL (self->message_store));
+
+  if (n_items == 0)
+    return NULL;
+
+  /* Search from end, the item is more likely to be at the end */
+  for (guint i = n_items; i > 0; i--) {
+    g_autoptr(ChattyMessage) message = NULL;
+    const char *message_id;
+
+    message = g_list_model_get_item (G_LIST_MODEL (self->message_store), i - 1);
+    message_id = chatty_message_get_id (message);
+
+    /*
+     * Once we have a message with no id, all preceding items shall likely
+     * have loaded from database, and thus no id, so don’t bother searching.
+     */
+    if (!message_id)
+      break;
+
+    if (g_str_equal (id, message_id))
+      return message;
+  }
+
+  return NULL;
+}
+
+void
+chatty_chat_append_message (ChattyChat    *self,
+                            ChattyMessage *message)
+{
+  g_return_if_fail (CHATTY_IS_CHAT (self));
+  g_return_if_fail (CHATTY_IS_MESSAGE (message));
+
+  g_list_store_append (self->message_store, message);
+}
+
+void
+chatty_chat_prepend_message (ChattyChat    *self,
+                             ChattyMessage *message)
+{
+  g_return_if_fail (CHATTY_IS_CHAT (self));
+  g_return_if_fail (CHATTY_IS_MESSAGE (message));
+
+  g_list_store_insert (self->message_store, 0, message);
+}
 
 /**
  * chatty_chat_add_users:
