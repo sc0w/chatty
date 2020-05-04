@@ -1321,61 +1321,10 @@ manager_conversation_created_cb (PurpleConversation *conv,
 
 
 static void
-manager_conversation_updated_cb (PurpleConversation   *conv,
-                                 PurpleConvUpdateType  type,
-                                 ChattyManager        *self)
-{
-  ChattyChat  *chat;
-  PurpleBuddy *buddy;
-
-  if (type != PURPLE_CONV_UPDATE_UNSEEN || !conv->name)
-    return;
-
-  buddy = purple_find_buddy (conv->account, conv->name);
-  chat  = chatty_manager_find_purple_conv (self, conv);
-
-  if(buddy) {
-    chatty_blist_update (NULL, (PurpleBlistNode *)buddy);
-  } else if (chat) {
-    chatty_chat_set_last_msg_time (chat, time (NULL));
-    chatty_chat_set_unread_count (chat, chatty_chat_get_unread_count (chat) + 1);
-    gtk_sorter_changed (self->chat_sorter, GTK_SORTER_ORDER_TOTAL);
-  }
-}
-
-
-static void
 manager_deleting_conversation_cb (PurpleConversation *conv,
                                   ChattyManager      *self)
 {
   chatty_manager_delete_conversation (self, conv);
-}
-
-
-static void
-manager_wrote_chat_im_msg_cb (PurpleAccount      *account,
-                              const char         *who,
-                              const char         *message,
-                              PurpleConversation *conv,
-                              PurpleMessageFlags  flag,
-                              ChattyManager      *self)
-{
-  PurpleBlistNode *node = NULL;
-  ChattyChat *chat;
-
-  chat = chatty_manager_find_purple_conv (self, conv);
-
-  if (chat && (flag & PURPLE_MESSAGE_RECV))
-    chatty_chat_set_unread_count (chat, chatty_chat_get_unread_count (chat) + 1);
-
-  if (chat)
-    node = (PurpleBlistNode *)chatty_chat_get_purple_buddy (chat);
-
-  if (node)
-    chatty_chat_set_last_message (chat, message);
-
-  chatty_chat_set_last_msg_time (chat, time (NULL));
-  gtk_sorter_changed (self->chat_sorter, GTK_SORTER_ORDER_TOTAL);
 }
 
 
@@ -1774,17 +1723,8 @@ chatty_manager_intialize_libpurple (ChattyManager *self)
                          "chat-joined", self,
                          PURPLE_CALLBACK (manager_conversation_created_cb), self);
   purple_signal_connect (purple_conversations_get_handle (),
-                         "conversation-updated", self,
-                         PURPLE_CALLBACK (manager_conversation_updated_cb), self);
-  purple_signal_connect (purple_conversations_get_handle (),
                          "deleting-conversation", self,
                          PURPLE_CALLBACK (manager_deleting_conversation_cb), self);
-  purple_signal_connect (purple_conversations_get_handle(),
-                         "wrote-im-msg", self,
-                         PURPLE_CALLBACK (manager_wrote_chat_im_msg_cb), self);
-  purple_signal_connect (purple_conversations_get_handle (),
-                         "wrote-chat-msg", self,
-                         PURPLE_CALLBACK (manager_wrote_chat_im_msg_cb), self);
 
   /**
    * This is default fallback history handler which is called last,
