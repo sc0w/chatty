@@ -138,25 +138,6 @@ chat_view_hash_table_match_item (gpointer key,
   return value == user_data;
 }
 
-static gchar *
-chatty_msg_list_escape_message (const gchar *message)
-{
-  g_autofree gchar  *nl_2_br;
-  g_autofree gchar  *striped;
-  g_autofree gchar  *escaped;
-  g_autofree gchar  *linkified;
-  gchar *result;
-
-  nl_2_br = purple_strdup_withhtml (message);
-  striped = purple_markup_strip_html (nl_2_br);
-  escaped = purple_markup_escape_text (striped, -1);
-  linkified = purple_markup_linkify (escaped);
-  // convert all tags to lowercase for GtkLabel markup parser
-  purple_markup_html_to_xhtml (linkified, &result, NULL);
-
-  return result;
-}
-
 static void
 chatty_draw_typing_indicator (cairo_t *cr)
 {
@@ -1207,26 +1188,6 @@ chatty_chat_view_focus_entry (ChattyChatView *self)
   gtk_widget_grab_focus (self->message_input);
 }
 
-
-void
-chatty_chat_view_set_conv (ChattyChatView     *self,
-                           ChattyConversation *chatty_conv)
-{
-  g_return_if_fail (CHATTY_IS_CHAT_VIEW (self));
-
-  self->chatty_conv = chatty_conv;
-
-  chatty_chat_view_update (self);
-}
-
-ChattyConversation *
-chatty_chat_view_get_conv (ChattyChatView *self)
-{
-  g_return_val_if_fail (CHATTY_IS_CHAT_VIEW (self), NULL);
-
-  return self->chatty_conv;
-}
-
 void
 chatty_chat_view_show_typing_indicator (ChattyChatView *self)
 {
@@ -1246,38 +1207,4 @@ chatty_chat_view_hide_typing_indicator (ChattyChatView *self)
 
   gtk_revealer_set_reveal_child (GTK_REVEALER (self->typing_revealer), FALSE);
   g_clear_handle_id (&self->refresh_typing_id, g_source_remove);
-}
-
-void
-chatty_chat_view_add_message_at (ChattyChatView *self,
-                                 guint           message_dir,
-                                 const gchar    *html_message,
-                                 const gchar    *footer,
-                                 GdkPixbuf      *avatar,
-                                 guint           position)
-{
-  GtkWidget *row;
-  g_autofree char *message = NULL;
-
-  /* Don’t set avatar for IM chats */
-  if (self->message_type == CHATTY_MSG_TYPE_IM ||
-      self->message_type == CHATTY_MSG_TYPE_SMS)
-    avatar = NULL;
-
-  message = chatty_msg_list_escape_message (html_message);
-  row = chatty_message_row_new (NULL, chatty_item_get_protocols (CHATTY_ITEM (self->chat)),
-                                self->message_type == CHATTY_MSG_TYPE_IM || self->message_type == CHATTY_MSG_TYPE_SMS);
-
-  if (position == ADD_MESSAGE_ON_BOTTOM)
-    gtk_container_add (GTK_CONTAINER (self->message_list), row);
-  else
-    gtk_list_box_prepend (GTK_LIST_BOX (self->message_list), row);
-
-  chatty_message_row_set_item (CHATTY_MESSAGE_ROW (row), message_dir,
-                               self->message_type, message,
-                               footer, avatar);
-
-  if (message_dir == MSG_IS_OUTGOING && self->chatty_conv->msg_bubble_footer)
-    chatty_message_row_set_footer (CHATTY_MESSAGE_ROW (row),
-                                   self->chatty_conv->msg_bubble_footer);
 }
