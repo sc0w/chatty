@@ -244,7 +244,7 @@ chatty_item_class_init (ChattyItemClass *klass)
                       "Protocols",
                       "Protocols supported by item",
                       CHATTY_PROTOCOL_NONE,
-                      CHATTY_PROTOCOL_TELEGRAM,
+                      CHATTY_PROTOCOL_LAST,
                       CHATTY_PROTOCOL_NONE,
                       G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY | G_PARAM_STATIC_STRINGS);
 
