@@ -236,7 +236,8 @@ chatty_item_class_init (ChattyItemClass *klass)
    * ChattyItem:protocols:
    *
    * Protocols supported by the Item.  An item may
-   * support more than one protocol.
+   * support more than one protocol.  Currently only
+   * #ChattyContact supports more than one protocol.
    */
   properties[PROP_PROTOCOLS] =
     g_param_spec_int ("protocols",
@@ -289,7 +290,8 @@ chatty_item_init (ChattyItem *self)
  *
  * Get the protocols supported/implemented by @self.
  * There can be more than one protocol supported by
- * @self.
+ * @self.  Currently only #ChattyContact supports
+ * more than one protocol.
  *
  * Returns: %ChattyProtocol flag
  */
