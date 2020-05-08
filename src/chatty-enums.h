@@ -40,6 +40,7 @@ typedef enum
   CHATTY_PROTOCOL_TELEGRAM = 1 << 5,
   CHATTY_PROTOCOL_DELTA    = 1 << 6, /* prpl-delta */
   CHATTY_PROTOCOL_THREEPL  = 1 << 7, /* prpl-threepl */
+  CHATTY_PROTOCOL_LAST     = 1 << 7,
   CHATTY_PROTOCOL_ANY      = ~0
 } ChattyProtocol;
 
