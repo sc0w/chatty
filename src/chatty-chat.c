@@ -143,6 +143,14 @@ chat_find_user (ChattyChat *self,
   return NULL;
 }
 
+static void
+emit_avatar_changed (ChattyChat *self)
+{
+  g_assert (CHATTY_IS_CHAT (self));
+
+  g_signal_emit_by_name (self, "avatar-changed");
+}
+
 static const char *
 chatty_chat_get_name (ChattyItem *item)
 {
@@ -318,6 +326,18 @@ chatty_chat_new_im_chat (PurpleAccount *account,
   self->account = account;
   self->buddy = buddy;
 
+  if (self->buddy) {
+    ChattyPpBuddy *pp_buddy;
+
+    pp_buddy = chatty_pp_buddy_get_object (self->buddy);
+
+    if (pp_buddy)
+      g_signal_connect_object (pp_buddy, "avatar-changed",
+                               G_CALLBACK (emit_avatar_changed),
+                               self,
+                               G_CONNECT_SWAPPED);
+  }
+
   return self;
 }
 
@@ -347,6 +367,18 @@ chatty_chat_new_purple_conv (PurpleConversation *conv)
   else if (node && PURPLE_BLIST_NODE_IS_BUDDY (node))
     self->buddy = PURPLE_BUDDY (node);
 
+  if (self->buddy) {
+    ChattyPpBuddy *buddy;
+
+    buddy = chatty_pp_buddy_get_object (self->buddy);
+
+    if (buddy)
+      g_signal_connect_object (buddy, "avatar-changed",
+                               G_CALLBACK (emit_avatar_changed),
+                               self,
+                               G_CONNECT_SWAPPED);
+  }
+
   return self;
 }
 
@@ -373,6 +405,18 @@ chatty_chat_set_purple_conv (ChattyChat         *self,
     self->pp_chat = PURPLE_CHAT (node);
   else if (node && PURPLE_BLIST_NODE_IS_BUDDY (node))
     self->buddy = PURPLE_BUDDY (node);
+
+  if (self->buddy) {
+    ChattyPpBuddy *buddy;
+
+    buddy = chatty_pp_buddy_get_object (self->buddy);
+
+    if (buddy)
+      g_signal_connect_object (buddy, "avatar-changed",
+                               G_CALLBACK (emit_avatar_changed),
+                               self,
+                               G_CONNECT_SWAPPED);
+  }
 }
 
 ChattyProtocol
