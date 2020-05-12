@@ -11,6 +11,9 @@
 #include "chatty-utils.h"
 #include <libebook-contacts/libebook-contacts.h>
 
+/* https://gitlab.gnome.org/GNOME/gtk/-/blob/gtk-3-24/gtk/org.gtk.Settings.FileChooser.gschema.xml#L42 */
+#define CLOCK_FORMAT_24H 0
+#define CLOCK_FORMAT_12H 1
 
 static const char *avatar_colors[] = {
   "E57373", "F06292", "BA68C8", "9575CD",
@@ -305,14 +308,26 @@ chatty_utils_get_human_time (time_t unix_time)
   if (year  == year_now &&
       month == month_now)
     {
-      /* Time in the format HH:MM */
-      if (day == day_now)
+      g_autoptr(GSettings) gtk_settings = NULL;
+      gint clock_format;
+
+      gtk_settings = g_settings_new ("org.gnome.desktop.interface");
+      clock_format = g_settings_get_enum (gtk_settings, "clock-format");
+
+      /* Time Format */
+      if (day == day_now && clock_format == CLOCK_FORMAT_24H)
         return g_date_time_format (local_time, "%R");
+      else if (day == day_now)
+        /* TRANSLATORS: Time format with time in AM/PM format */
+        return g_date_time_format (local_time, _("%I:%M %p"));
 
       /* Localized day name */
-      if (day_now - day <= 7)
+      if (day_now - day <= 7 && clock_format == CLOCK_FORMAT_24H)
         /* TRANSLATORS: Time format as supported by g_date_time_format() */
         return g_date_time_format (local_time, _("%A %R"));
+      else if (day_now - day <= 7)
+        /* TRANSLATORS: Time format with day and time in AM/PM format */
+        return g_date_time_format (local_time, _("%A %I:%M %p"));
     }
 
   /* TRANSLATORS: Year format as supported by g_date_time_format() */
