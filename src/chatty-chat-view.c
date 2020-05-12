@@ -335,7 +335,6 @@ chatty_chat_view_update (ChattyChatView *self)
     gtk_label_set_label (GTK_LABEL (self->empty_label2), disclaimer_strings[index][2]);
   }
 
-  self->chatty_conv->omemo.symbol_encrypt = GTK_IMAGE (self->encrypt_icon);
   context = gtk_widget_get_style_context (self->send_message_button);
 
   if (self->message_type == CHATTY_MSG_TYPE_SMS)

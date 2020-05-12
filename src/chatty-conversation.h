@@ -31,11 +31,6 @@ struct chatty_conversation {
   GtkWidget     *chat_view;
 
   char     *oldest_message_displayed;
-
-  struct {
-    GtkImage   *symbol_encrypt;
-    gboolean    enabled;
-  } omemo;
 };
 
 

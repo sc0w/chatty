@@ -33,14 +33,6 @@ typedef enum {
 
 
 typedef enum {
-  LURCH_STATUS_DISABLED = 0,  // manually disabled
-  LURCH_STATUS_NOT_SUPPORTED, // no OMEMO support, i.e. there is no devicelist node
-  LURCH_STATUS_NO_SESSION,    // OMEMO is supported, but there is no libsignal session yet
-  LURCH_STATUS_OK             // OMEMO is supported and session exists
-} e_lurch_status;
-
-
-typedef enum {
   CHATTY_VIEW_CHAT_LIST,
   CHATTY_VIEW_MESSAGE_LIST,
   CHATTY_VIEW_SETTINGS,
