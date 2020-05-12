@@ -46,6 +46,19 @@ typedef enum
 
 
 /**
+ * ChattyEncryption:
+ *
+ * Encryption status of a #ChattyChat
+ */
+typedef enum
+{
+  CHATTY_ENCRYPTION_UNKNOWN,
+  CHATTY_ENCRYPTION_ENABLED,
+  CHATTY_ENCRYPTION_DISABLED,
+  CHATTY_ENCRYPTION_UNSUPPORTED
+} ChattyEncryption;
+
+/**
  * ChattyUserFlag:
  *
  * Different flags set for user
