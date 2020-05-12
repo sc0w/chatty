@@ -26,6 +26,13 @@
 
 #define CHATTY_COLOR_BLUE "4A8FD9"
 
+enum {
+  LURCH_STATUS_DISABLED = 0,  /* manually disabled */
+  LURCH_STATUS_NOT_SUPPORTED, /* no OMEMO support, i.e. there is no devicelist node */
+  LURCH_STATUS_NO_SESSION,    /* OMEMO is supported, but there is no libsignal session yet */
+  LURCH_STATUS_OK             /* OMEMO is supported and session exists */
+};
+
 /**
  * SECTION: chatty-chat
  * @title: ChattyChat
@@ -53,12 +60,14 @@ struct _ChattyChat
   guint               unread_count;
   guint               last_msg_time;
   e_msg_dir           last_msg_direction;
+  ChattyEncryption    encrypt;
 };
 
 G_DEFINE_TYPE (ChattyChat, chatty_chat, CHATTY_TYPE_ITEM)
 
 enum {
   PROP_0,
+  PROP_ENCRYPT,
   PROP_PURPLE_CHAT,
   N_PROPS
 };
@@ -70,6 +79,37 @@ enum {
 
 static guint signals[N_SIGNALS];
 static GParamSpec *properties[N_PROPS];
+
+static char *
+jabber_id_strip_resource (const char *name)
+{
+  g_auto(GStrv) split = NULL;
+  char *stripped;
+
+  split = g_strsplit (name, "/", -1);
+  stripped = g_strdup (split[0]);
+
+  return stripped;
+}
+
+static gboolean
+chatty_chat_has_encryption_support (ChattyChat *self)
+{
+  PurpleConversationType type = PURPLE_CONV_TYPE_UNKNOWN;
+
+  g_assert (CHATTY_IS_CHAT (self));
+
+  if (self->conv)
+    type = purple_conversation_get_type (self->conv);
+
+  /* Currently we support only XMPP IM chats */
+  if (self->conv &&
+      type == PURPLE_CONV_TYPE_IM &&
+      chatty_item_get_protocols (CHATTY_ITEM (self)) == CHATTY_PROTOCOL_XMPP)
+    return TRUE;
+
+  return FALSE;
+}
 
 static gint
 sort_chat_buddy (ChattyPpBuddy *a,
@@ -116,6 +156,54 @@ chatty_get_conv_blist_node (PurpleConversation *conv)
     break;
   }
   return node;
+}
+
+static void
+chatty_chat_lurch_changed_cb (int      err,
+                              gpointer user_data)
+{
+  g_autoptr(ChattyChat) self = user_data;
+
+  g_assert (CHATTY_IS_CHAT (self));
+
+  if (err) {
+    g_warning ("Failed to change OMEMO encryption.");
+    return;
+  }
+
+  chatty_chat_load_encryption_status (self);
+}
+
+static void
+lurch_status_changed_cb (int      err,
+                         int      status,
+                         gpointer user_data)
+{
+  g_autoptr(ChattyChat) self = user_data;
+
+  g_assert (CHATTY_IS_CHAT (self));
+
+  if (err) {
+    g_debug ("Failed to get the OMEMO status.");
+    return;
+  }
+
+  switch (status) {
+  case LURCH_STATUS_OK:
+    self->encrypt = CHATTY_ENCRYPTION_ENABLED;
+    break;
+
+  case LURCH_STATUS_DISABLED:
+  case LURCH_STATUS_NO_SESSION:
+    self->encrypt = CHATTY_ENCRYPTION_DISABLED;
+    break;
+
+  default:
+    self->encrypt = CHATTY_ENCRYPTION_UNSUPPORTED;
+    break;
+  }
+
+  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_ENCRYPT]);
 }
 
 static ChattyPpBuddy *
@@ -230,6 +318,26 @@ chatty_chat_get_avatar (ChattyItem *item)
 }
 
 static void
+chatty_chat_get_property (GObject    *object,
+                          guint       prop_id,
+                          GValue     *value,
+                          GParamSpec *pspec)
+{
+  ChattyChat *self = (ChattyChat *)object;
+
+  switch (prop_id)
+    {
+    case PROP_ENCRYPT:
+      g_value_set_boolean (value, self->encrypt == CHATTY_ENCRYPTION_ENABLED);
+      break;
+
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+      break;
+    }
+}
+
+static void
 chatty_chat_set_property (GObject      *object,
                           guint         prop_id,
                           const GValue *value,
@@ -239,6 +347,10 @@ chatty_chat_set_property (GObject      *object,
 
   switch (prop_id)
     {
+    case PROP_ENCRYPT:
+      chatty_chat_set_encryption (self, g_value_get_boolean (value));
+      break;
+
     case PROP_PURPLE_CHAT:
       self->pp_chat = g_value_get_pointer (value);
       break;
@@ -270,12 +382,20 @@ chatty_chat_class_init (ChattyChatClass *klass)
   GObjectClass *object_class  = G_OBJECT_CLASS (klass);
   ChattyItemClass *item_class = CHATTY_ITEM_CLASS (klass);
 
+  object_class->get_property = chatty_chat_get_property;
   object_class->set_property = chatty_chat_set_property;
   object_class->finalize = chatty_chat_finalize;
 
   item_class->get_name = chatty_chat_get_name;
   item_class->get_protocols = chatty_chat_get_protocols;
   item_class->get_avatar = chatty_chat_get_avatar;
+
+  properties[PROP_ENCRYPT] =
+    g_param_spec_boolean ("encrypt",
+                          "Encrypt",
+                          "Whether the chat is encrypted or not",
+                          FALSE,
+                          G_PARAM_READWRITE | G_PARAM_EXPLICIT_NOTIFY | G_PARAM_STATIC_STRINGS);
 
   properties[PROP_PURPLE_CHAT] =
     g_param_spec_pointer ("purple-chat",
@@ -803,4 +923,74 @@ chatty_chat_set_last_msg_time (ChattyChat *self,
 
   self->last_msg_time = msg_time;
   g_signal_emit (self, signals[CHANGED], 0);
+}
+
+ChattyEncryption
+chatty_chat_get_encryption_status (ChattyChat *self)
+{
+  g_return_val_if_fail (CHATTY_IS_CHAT (self), FALSE);
+
+  return self->encrypt;
+}
+
+/**
+ * chatty_chat_load_encryption_status:
+ * @self: A #ChattyChat
+ *
+ * Load encryption status of the chat @self.
+ * Once the status is loaded, notify::encrypt
+ * is emitted.
+ *
+ * Currently only XMPP IM conversations are supported.
+ * Otherwise, the function simply returns.
+ */
+void
+chatty_chat_load_encryption_status (ChattyChat *self)
+{
+  PurpleAccount   *pp_account;
+  const char      *name;
+  g_autofree char *stripped = NULL;
+
+  g_return_if_fail (CHATTY_IS_CHAT (self));
+
+  if (!chatty_chat_has_encryption_support (self))
+    return;
+
+  name = purple_conversation_get_name (self->conv);
+  pp_account = purple_conversation_get_account (self->conv);
+  stripped = jabber_id_strip_resource (name);
+
+  purple_signal_emit (purple_plugins_get_handle(),
+                      "lurch-status-im",
+                      pp_account,
+                      stripped,
+                      lurch_status_changed_cb,
+                      g_object_ref (self));
+
+}
+
+void
+chatty_chat_set_encryption (ChattyChat *self,
+                            gboolean    enable)
+{
+  PurpleAccount   *pp_account;
+  const char      *name;
+  g_autofree char *stripped = NULL;
+
+  if (!chatty_chat_has_encryption_support (self)) {
+    g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_ENCRYPT]);
+
+    return;
+  }
+
+  name = purple_conversation_get_name (self->conv);
+  pp_account = purple_conversation_get_account (self->conv);
+  stripped = jabber_id_strip_resource (name);
+
+  purple_signal_emit (purple_plugins_get_handle (),
+                      enable ? "lurch-enable-im" : "lurch-disable-im",
+                      pp_account,
+                      stripped,
+                      chatty_chat_lurch_changed_cb,
+                      g_object_ref (self));
 }

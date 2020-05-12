@@ -75,6 +75,9 @@ void                chatty_chat_set_last_msg_direction (ChattyChat        *self,
 time_t              chatty_chat_get_last_msg_time      (ChattyChat        *self);
 void                chatty_chat_set_last_msg_time      (ChattyChat        *self,
                                                         time_t             msg_time);
-
+ChattyEncryption    chatty_chat_get_encryption_status  (ChattyChat        *self);
+void                chatty_chat_load_encryption_status (ChattyChat        *self);
+void                chatty_chat_set_encryption         (ChattyChat        *self,
+                                                        gboolean           enable);
 
 G_END_DECLS
