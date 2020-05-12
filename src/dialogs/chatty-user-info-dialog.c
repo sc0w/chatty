@@ -293,7 +293,6 @@ chatty_user_info_dialog_update_chat (ChattyUserInfoDialog *self)
 
     chatty_chat_load_encryption_status (self->chat);
     chatty_user_info_dialog_request_fps (self);
-    gtk_switch_set_state (GTK_SWITCH(self->switch_encrypt), self->chatty_conv->omemo.enabled);
   }
 
   self->buddy = purple_find_buddy (self->chatty_conv->conv->account, self->chatty_conv->conv->name);
