@@ -234,7 +234,6 @@
                                     <property name="can_focus">True</property>
                                     <property name="valign">center</property>
                                     <property name="visible">True</property>
-                                    <signal name="notify::active" handler="switch_encryption_changed_cb" swapped="yes"/>
                                   </object>
                                 </child>
                               </object>

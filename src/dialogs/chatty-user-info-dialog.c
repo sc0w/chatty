@@ -17,6 +17,8 @@
 #include "chatty-utils.h"
 #include "chatty-conversation.h"
 #include "chatty-icons.h"
+#include "chatty-enums.h"
+#include "chatty-chat.h"
 #include "chatty-user-info-dialog.h"
 
 
@@ -48,7 +50,6 @@ G_DEFINE_TYPE (ChattyUserInfoDialog, chatty_user_info_dialog, HDY_TYPE_DIALOG)
 
 
 static void chatty_user_info_dialog_update_avatar (ChattyUserInfoDialog *self, const char *color);
-static void chatty_user_info_dialog_set_encrypt (ChattyUserInfoDialog *self, gboolean active);
 static void chatty_info_dialog_get_encrypt_status (ChattyUserInfoDialog *self);
 
 
@@ -129,56 +130,6 @@ list_fps_changed_cb (ChattyUserInfoDialog *self)
     gtk_widget_hide (GTK_WIDGET(self->listbox_fps));
   }
 }
-
-
-static void
-switch_encryption_changed_cb (ChattyUserInfoDialog *self)
-{
-  gboolean active;
-
-  g_assert (CHATTY_IS_USER_INFO_DIALOG (self));
-
-  active = gtk_switch_get_active (GTK_SWITCH(self->switch_encrypt));
-
-  chatty_user_info_dialog_set_encrypt (self, active ? TRUE : FALSE);
-
-  chatty_info_dialog_get_encrypt_status (self);
-}
-
-
-static void
-encrypt_set_enable_cb (int      err,
-                       gpointer user_data)
-{
-  ChattyUserInfoDialog *self = (ChattyUserInfoDialog *)user_data;
-
-  if (err) {
-    g_debug ("Failed to enable OMEMO for this conversation.");
-    return;
-  }
-
-  gtk_switch_set_state (GTK_SWITCH(self->switch_encrypt), TRUE);
-
-  self->chatty_conv->omemo.enabled = TRUE;
-}
-
-
-static void
-encrypt_set_disable_cb (int      err,
-                        gpointer user_data)
-{
-  ChattyUserInfoDialog *self = (ChattyUserInfoDialog *)user_data;
-
-  if (err) {
-    g_debug ("Failed to disable OMEMO for this conversation.");
-    return;
-  }
-
-  gtk_switch_set_state (GTK_SWITCH(self->switch_encrypt), FALSE);
-  
-  self->chatty_conv->omemo.enabled = FALSE;
-}
-
 
 static void
 encrypt_fp_list_cb (int         err,
@@ -266,30 +217,6 @@ encrypt_status_cb (int      err,
 
   gtk_label_set_text (GTK_LABEL(self->label_encrypt_status), status_msg);
 }
-
-
-static void
-chatty_user_info_dialog_set_encrypt (ChattyUserInfoDialog *self,
-                                     gboolean              active)
-{
-  PurpleAccount          *account;
-  PurpleConversationType  type;
-  const char             *name;
-
-  account = purple_conversation_get_account (self->chatty_conv->conv);
-  type = purple_conversation_get_type (self->chatty_conv->conv);
-  name = purple_conversation_get_name (self->chatty_conv->conv);
-
-  if (type == PURPLE_CONV_TYPE_IM) {
-    purple_signal_emit (purple_plugins_get_handle(),
-                        active ? "lurch-enable-im" : "lurch-disable-im",
-                        account,
-                        chatty_utils_jabber_id_strip (name),
-                        active ? encrypt_set_enable_cb : encrypt_set_disable_cb,
-                        self);
-  }
-}
-
 
 static void
 chatty_user_info_dialog_request_fps (ChattyUserInfoDialog *self)
@@ -399,6 +326,10 @@ chatty_user_info_dialog_update_chat (ChattyUserInfoDialog *self)
 
   manager = chatty_manager_get_default ();
 
+  g_object_bind_property (self->chat, "encrypt",
+                          self->switch_encrypt, "active",
+                          G_BINDING_BIDIRECTIONAL | G_BINDING_SYNC_CREATE);
+
   if (chatty_manager_lurch_plugin_is_loaded (manager) && (!g_strcmp0 (protocol_id, "prpl-jabber"))) {
 
     gtk_widget_show (GTK_WIDGET(self->label_status_msg));
@@ -466,7 +397,6 @@ chatty_user_info_dialog_class_init (ChattyUserInfoDialogClass *klass)
 
   gtk_widget_class_bind_template_callback (widget_class, button_avatar_clicked_cb);
   gtk_widget_class_bind_template_callback (widget_class, switch_notify_changed_cb);
-  gtk_widget_class_bind_template_callback (widget_class, switch_encryption_changed_cb);
   gtk_widget_class_bind_template_callback (widget_class, list_fps_changed_cb);
 }
 
