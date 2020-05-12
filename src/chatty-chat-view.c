@@ -233,64 +233,6 @@ chatty_check_for_emoticon (ChattyChatView *self)
     }
 }
 
-
-static void
-chat_view_lurch_status_changed_cb (int      err,
-                                   int      status,
-                                   gpointer user_data)
-{
-  ChattyChatView *self = user_data;
-  GtkStyleContext *context;
-  const char      *icon_name;
-
-  g_assert (CHATTY_IS_CHAT_VIEW (self));
-
-  if (err) {
-    g_debug ("Failed to get the OMEMO status.");
-    return;
-  }
-
-  context = gtk_widget_get_style_context (self->encrypt_icon);
-
-  if (status == LURCH_STATUS_OK) {
-    icon_name = "changes-prevent-symbolic";
-    self->chatty_conv->omemo.enabled = TRUE;
-    gtk_style_context_add_class (context, "encrypt");
-  } else {
-    icon_name = "changes-allow-symbolic";
-    self->chatty_conv->omemo.enabled = FALSE;
-    gtk_style_context_add_class (context, "unencrypt");
-  }
-
-  gtk_image_set_from_icon_name (GTK_IMAGE (self->encrypt_icon), icon_name, 1);
-}
-
-
-static void
-chat_view_update_encrypt_status (ChattyChatView *self)
-{
-  PurpleConversation *conv;
-  PurpleAccount      *account;
-  const char         *name;
-  g_autofree char    *stripped = NULL;
-
-  g_assert (CHATTY_IS_CHAT_VIEW (self));
-
-  conv = self->chatty_conv->conv;
-  name = purple_conversation_get_name (conv);
-  account  = purple_conversation_get_account (conv);
-  stripped = chatty_utils_jabber_id_strip (name);
-
-  gtk_widget_show (self->encrypt_icon);
-  purple_signal_emit (purple_plugins_get_handle(),
-                      "lurch-status-im",
-                      account,
-                      stripped,
-                      chat_view_lurch_status_changed_cb,
-                      self);
-}
-
-
 static PurpleBlistNode *
 chatty_get_conv_blist_node (PurpleConversation *conv)
 {
@@ -372,8 +314,10 @@ chatty_chat_view_update (ChattyChatView *self)
   else
     self->message_type = CHATTY_MSG_TYPE_IM;
 
+  gtk_widget_show (self->encrypt_icon);
+
   if (conv_type == PURPLE_CONV_TYPE_IM)
-    chat_view_update_encrypt_status (self);
+    chatty_chat_load_encryption_status (self->chat);
 
   if (chatty_manager_has_file_upload_plugin (chatty_manager_get_default ()) &&
       g_strcmp0 (protocol_id, "prpl-jabber") == 0)
@@ -611,6 +555,29 @@ messages_items_changed_cb (ChattyChatView *self,
     if (chat_view_time_is_same_day (time, next_time))
       chatty_message_row_hide_footer (CHATTY_MESSAGE_ROW (row));
   }
+}
+
+static void
+chat_encrypt_changed_cb (ChattyChatView *self)
+{
+  GtkStyleContext *context;
+  const char *icon_name;
+  ChattyEncryption encryption;
+
+  g_assert (CHATTY_IS_CHAT_VIEW (self));
+
+  context = gtk_widget_get_style_context (self->encrypt_icon);
+  encryption = chatty_chat_get_encryption_status (self->chat);
+
+  if (encryption == CHATTY_ENCRYPTION_ENABLED) {
+    icon_name = "changes-prevent-symbolic";
+    gtk_style_context_add_class (context, "encrypt");
+  } else {
+    icon_name = "changes-allow-symbolic";
+    gtk_style_context_add_class (context, "unencrypt");
+  }
+
+  gtk_image_set_from_icon_name (GTK_IMAGE (self->encrypt_icon), icon_name, 1);
 }
 
 static gboolean
@@ -1118,7 +1085,12 @@ chatty_chat_view_set_chat (ChattyChatView *self,
                            G_CALLBACK (messages_items_changed_cb),
                            self,
                            G_CONNECT_SWAPPED | G_CONNECT_AFTER);
+  g_signal_connect_object (self->chat, "notify::encrypt",
+                           G_CALLBACK (chat_encrypt_changed_cb),
+                           self,
+                           G_CONNECT_SWAPPED);
 
+  chat_encrypt_changed_cb (self);
   chatty_chat_view_update (self);
 }
 
