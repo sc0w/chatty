@@ -50,7 +50,6 @@ G_DEFINE_TYPE (ChattyUserInfoDialog, chatty_user_info_dialog, HDY_TYPE_DIALOG)
 
 
 static void chatty_user_info_dialog_update_avatar (ChattyUserInfoDialog *self, const char *color);
-static void chatty_info_dialog_get_encrypt_status (ChattyUserInfoDialog *self);
 
 
 /* Copied from chatty-dialogs.c written by Andrea Schäfer <mosibasu@me.com> */
@@ -172,48 +171,24 @@ encrypt_fp_list_cb (int         err,
 
 
 static void
-encrypt_status_cb (int      err,
-                   int      status,
-                   gpointer user_data)
+user_info_dialog_encrypt_changed_cb (ChattyUserInfoDialog *self)
 {
-  ChattyUserInfoDialog *self = (ChattyUserInfoDialog *)user_data;
-  GtkStyleContext      *sc;
-  const char           *status_msg;
+  const char *status_msg;
+  ChattyEncryption encryption;
 
-  if (err) {
-    g_debug ("Failed to get the OMEMO status.");
-    return;
-  }
+  g_assert (CHATTY_IS_USER_INFO_DIALOG (self));
 
-  sc = gtk_widget_get_style_context (GTK_WIDGET(self->chatty_conv->omemo.symbol_encrypt));
+  encryption = chatty_chat_get_encryption_status (self->chat);
 
-  switch (status) {
-    case LURCH_STATUS_DISABLED:
-      status_msg = _("This chat is not encrypted");
-      break;
-    case LURCH_STATUS_NOT_SUPPORTED:
-      status_msg = _("Encryption is not available");
-      break;
-    case LURCH_STATUS_NO_SESSION:
-      status_msg = _("This chat is not encrypted");
-      self->chatty_conv->omemo.enabled = FALSE;
-      break;
-    case LURCH_STATUS_OK:
-      status_msg = _("This chat is encrypted");
-      self->chatty_conv->omemo.enabled = TRUE;
-      break;
-    default:
-      g_warning ("Received unknown status code.");
-      return;
-  }
-
-  gtk_image_set_from_icon_name (self->chatty_conv->omemo.symbol_encrypt,
-                                self->chatty_conv->omemo.enabled ? "changes-prevent-symbolic" :
-                                                             "changes-allow-symbolic",
-                                1);
-
-  gtk_style_context_remove_class (sc, self->chatty_conv->omemo.enabled ? "unencrypt" : "encrypt");
-  gtk_style_context_add_class (sc, self->chatty_conv->omemo.enabled ? "encrypt" : "unencrypt");
+  if (encryption == CHATTY_ENCRYPTION_UNSUPPORTED ||
+      encryption == CHATTY_ENCRYPTION_UNKNOWN)
+    status_msg = _("Encryption is not available");
+  else if (encryption == CHATTY_ENCRYPTION_ENABLED)
+    status_msg = _("This chat is encrypted");
+  else if (encryption == CHATTY_ENCRYPTION_DISABLED)
+    status_msg = _("This chat is not encrypted");
+  else
+    g_return_if_reached ();
 
   gtk_label_set_text (GTK_LABEL(self->label_encrypt_status), status_msg);
 }
@@ -240,30 +215,6 @@ chatty_user_info_dialog_request_fps (ChattyUserInfoDialog *self)
                         self);
   }
 }
-
-
-static void
-chatty_info_dialog_get_encrypt_status (ChattyUserInfoDialog *self)
-{
-  PurpleAccount          *account;
-  PurpleConversationType  type;
-  const char             *name;
-
-  account = purple_conversation_get_account (self->chatty_conv->conv);
-  type = purple_conversation_get_type (self->chatty_conv->conv);
-  name = purple_conversation_get_name (self->chatty_conv->conv);
-
-  if (type == PURPLE_CONV_TYPE_IM) {
-    g_autofree char *stripped = chatty_utils_jabber_id_strip (name);
-    purple_signal_emit (purple_plugins_get_handle(),
-                        "lurch-status-im",
-                        account,
-                        stripped,
-                        encrypt_status_cb,
-                        self);
-  }
-}
-
 
 static void 
 chatty_user_info_dialog_update_avatar (ChattyUserInfoDialog *self,
@@ -329,6 +280,10 @@ chatty_user_info_dialog_update_chat (ChattyUserInfoDialog *self)
   g_object_bind_property (self->chat, "encrypt",
                           self->switch_encrypt, "active",
                           G_BINDING_BIDIRECTIONAL | G_BINDING_SYNC_CREATE);
+  g_signal_connect_object (self->chat, "notify::encrypt",
+                           G_CALLBACK (user_info_dialog_encrypt_changed_cb),
+                           self,
+                           G_CONNECT_SWAPPED);
 
   if (chatty_manager_lurch_plugin_is_loaded (manager) && (!g_strcmp0 (protocol_id, "prpl-jabber"))) {
 
@@ -336,7 +291,7 @@ chatty_user_info_dialog_update_chat (ChattyUserInfoDialog *self)
     gtk_widget_show (GTK_WIDGET(self->label_encrypt));
     gtk_widget_show (GTK_WIDGET(self->label_encrypt_status));
 
-    chatty_info_dialog_get_encrypt_status (self);
+    chatty_chat_load_encryption_status (self->chat);
     chatty_user_info_dialog_request_fps (self);
     gtk_switch_set_state (GTK_SWITCH(self->switch_encrypt), self->chatty_conv->omemo.enabled);
   }
