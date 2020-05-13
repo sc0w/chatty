@@ -3,6 +3,7 @@ Section: net
 Priority: optional
 Maintainer: Mohammed Sadiq <sadiq@sadiqpk.org>
 Build-Depends:
+ appstream,
  appstream-util,
  debhelper (>= 11),
  desktop-file-utils,
