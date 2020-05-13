@@ -118,6 +118,23 @@ overlay_content_t OverlayContent[6] = {
 };
 
 
+static GtkWidget *
+window_chat_list_row_new (ChattyItem   *item,
+                          ChattyWindow *self)
+{
+  GtkWidget *row;
+
+  g_assert (CHATTY_IS_ITEM (item));
+  g_assert (CHATTY_IS_WINDOW (self));
+
+  row = chatty_list_row_new (item);
+
+  if (self->selected_item == item)
+    gtk_widget_set_state_flags (row, GTK_STATE_FLAG_SELECTED, FALSE);
+
+  return row;
+}
+
 static void
 window_chat_changed_cb (ChattyWindow *self)
 {
@@ -992,8 +1009,8 @@ chatty_window_constructed (GObject *object)
                                                   self->chat_filter);
   gtk_list_box_bind_model (GTK_LIST_BOX (self->chats_listbox),
                            G_LIST_MODEL (self->filter_model),
-                           (GtkListBoxCreateWidgetFunc)chatty_list_row_new,
-                           NULL, NULL);
+                           (GtkListBoxCreateWidgetFunc)window_chat_list_row_new,
+                           g_object_ref(self), g_object_unref);
 
   g_signal_connect_object (gtk_filter_list_model_get_model (self->filter_model),
                            "items-changed",
