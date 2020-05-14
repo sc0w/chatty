@@ -322,10 +322,11 @@
                     <property name="halign">center</property>
                     <property name="valign">center</property>
                     <child>
-                      <object class="GtkImage" id="sub_header_icon">
+                      <object class="ChattyAvatar" id="sub_header_icon">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="halign">center</property>
+                        <property name="pixel-size">28</property>
                       </object>
                     </child>
                     <child>
