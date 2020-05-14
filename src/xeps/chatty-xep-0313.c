@@ -653,6 +653,8 @@ cb_chatty_mam_msg_received (PurpleConnection *pc,
     return FALSE;
   }
 
+  user = purple_account_get_username (pa);
+
   if(node_result != NULL || node_sid != NULL) {
     int dts;
     const char *msg_type;
@@ -661,7 +663,6 @@ cb_chatty_mam_msg_received (PurpleConnection *pc,
       xmlnode    *node_delay;
       query_id = xmlnode_get_attrib (node_result, "queryid");
       stanza_id = xmlnode_get_attrib (node_result, "id");
-      user = purple_account_get_username(pa);
 
       // Check result and query-id are valid
       if(query_id == NULL) {
