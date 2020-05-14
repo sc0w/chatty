@@ -1286,6 +1286,22 @@ manager_conversation_created_cb (PurpleConversation *conv,
   chatty_manager_add_conversation (self, conv);
 }
 
+static void
+manager_conversation_updated_cb (PurpleConversation   *conv,
+                                 PurpleConvUpdateType  type,
+                                 ChattyManager        *self)
+{
+  if (type == PURPLE_CONV_UPDATE_ICON) {
+    ChattyChat *chat;
+
+    chat = chatty_manager_find_purple_conv (self, conv);
+
+    if (chat)
+      g_signal_emit_by_name (chat, "avatar-changed");
+    else
+      g_warn_if_reached ();
+  }
+}
 
 static void
 manager_deleting_conversation_cb (PurpleConversation *conv,
@@ -1686,6 +1702,9 @@ chatty_manager_initialize_libpurple (ChattyManager *self)
   purple_signal_connect (purple_conversations_get_handle (),
                          "conversation-created", self,
                          PURPLE_CALLBACK (manager_conversation_created_cb), self);
+  purple_signal_connect (purple_conversations_get_handle (),
+                         "conversation-updated", self,
+                         PURPLE_CALLBACK (manager_conversation_updated_cb), self);
   purple_signal_connect (purple_conversations_get_handle (),
                          "chat-joined", self,
                          PURPLE_CALLBACK (manager_conversation_created_cb), self);
