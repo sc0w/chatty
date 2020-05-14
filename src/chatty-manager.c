@@ -1187,7 +1187,15 @@ manager_buddy_privacy_chaged_cb (PurpleBuddy *buddy)
 static void
 manager_buddy_signed_on_off_cb (PurpleBuddy *buddy)
 {
+  ChattyPpBuddy *pp_buddy;
+
   chatty_blist_update (purple_get_blist(), (PurpleBlistNode*)buddy);
+
+  pp_buddy = chatty_pp_buddy_get_object (buddy);
+
+  /* As avatar depends on online status, emit ::avatar-changed */
+  if (pp_buddy)
+    g_signal_emit_by_name (pp_buddy, "avatar-changed");
 
   g_debug ("Buddy \"%s\" (%s) signed on/off", purple_buddy_get_name (buddy),
            purple_account_get_protocol_id (purple_buddy_get_account(buddy)));
