@@ -58,6 +58,7 @@ struct _ChattyChat
   GListStore         *message_store;
 
   char               *last_message;
+  char               *chat_name;
   guint               unread_count;
   guint               last_msg_time;
   e_msg_dir           last_msg_direction;
@@ -228,10 +229,29 @@ chatty_chat_get_name (ChattyItem *item)
   else if (self->buddy)
     name = purple_buddy_get_alias_only (self->buddy);
 
-  if (!name && self->buddy)
-    name = purple_buddy_get_name (self->buddy);
+  if (name)
+    return name;
 
-  if (!name && self->conv)
+  /* If we have a cached name, return that */
+  if (self->chat_name)
+    return self->chat_name;
+
+  if (self->buddy) {
+    const char *name_end;
+
+    name = purple_buddy_get_name (self->buddy);
+    name_end = strchr (name, '/');
+
+    /* Strip ‘/’ and following string from the username, if found */
+    if (name_end)
+      self->chat_name = g_strndup (name, name_end - name);
+    else
+      self->chat_name = g_strdup (name);
+
+    return self->chat_name;
+  }
+
+  if (self->conv)
     name = purple_conversation_get_title (self->conv);
 
   if (!name)
@@ -347,6 +367,7 @@ chatty_chat_finalize (GObject *object)
   g_object_unref (self->chat_users);
   g_object_unref (self->sorted_chat_users);
   g_free (self->last_message);
+  g_free (self->chat_name);
 
   G_OBJECT_CLASS (chatty_chat_parent_class)->finalize (object);
 }
