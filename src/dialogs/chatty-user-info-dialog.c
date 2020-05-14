@@ -51,9 +51,6 @@ struct _ChattyUserInfoDialog
 G_DEFINE_TYPE (ChattyUserInfoDialog, chatty_user_info_dialog, HDY_TYPE_DIALOG)
 
 
-static void chatty_user_info_dialog_update_avatar (ChattyUserInfoDialog *self, const char *color);
-
-
 /* Copied from chatty-dialogs.c written by Andrea Schäfer <mosibasu@me.com> */
 static char *
 show_select_avatar_dialog (ChattyUserInfoDialog *self)
@@ -98,8 +95,6 @@ button_avatar_clicked_cb (ChattyUserInfoDialog *self)
     contact = purple_buddy_get_contact (self->buddy);
 
     purple_buddy_icons_node_set_custom_icon_from_file ((PurpleBlistNode*)contact, file_name);
-
-    chatty_user_info_dialog_update_avatar (self, CHATTY_COLOR_BLUE);
   }
 
   g_free (file_name);
@@ -221,36 +216,6 @@ chatty_user_info_dialog_request_fps (ChattyUserInfoDialog *self)
 }
 
 static void
-chatty_user_info_dialog_update_avatar (ChattyUserInfoDialog *self,
-                                       const char           *color)
-{
-  GtkWindow     *window;
-  PurpleContact *contact;
-  GdkPixbuf     *icon;
-  const char    *buddy_alias;
-  const char    *contact_alias;
-
-  contact = purple_buddy_get_contact (self->buddy);
-  buddy_alias = purple_buddy_get_alias (self->buddy);
-  contact_alias = purple_contact_get_alias (contact);
-
-  icon = chatty_icon_get_buddy_icon (PURPLE_BLIST_NODE(self->buddy),
-                                     self->alias,
-                                     CHATTY_ICON_SIZE_SMALL,
-                                     color,
-                                     FALSE);
-
-  window = gtk_window_get_transient_for (GTK_WINDOW (self));
-
-  chatty_window_update_sub_header_titlebar ((ChattyWindow *)window,
-                                            icon,
-                                            contact_alias ? contact_alias : buddy_alias);
-
-  g_object_unref (icon);
-}
-
-
-static void
 chatty_user_info_dialog_update_chat (ChattyUserInfoDialog *self)
 {
   ChattyManager    *manager;
@@ -290,11 +255,7 @@ chatty_user_info_dialog_update_chat (ChattyUserInfoDialog *self)
   self->alias = purple_buddy_get_alias (self->buddy);
 
   if (chatty_blist_protocol_is_sms (account)) {
-    chatty_user_info_dialog_update_avatar (self, CHATTY_COLOR_GREEN);
-
     gtk_label_set_text (GTK_LABEL(self->label_user_id), _("Phone Number:"));
-  } else {
-    chatty_user_info_dialog_update_avatar (self, CHATTY_COLOR_BLUE);
   }
 
   if (!g_strcmp0 (protocol_id, "prpl-jabber")) {
