@@ -947,23 +947,6 @@ chatty_window_change_view (ChattyWindow      *self,
   }
 }
 
-
-void
-chatty_window_update_sub_header_titlebar (ChattyWindow *self,
-                                          GdkPixbuf    *icon,
-                                          const char   *title)
-{
-  g_assert (CHATTY_IS_WINDOW (self));
-
-  if (icon != NULL)
-    gtk_image_set_from_pixbuf (GTK_IMAGE (self->sub_header_icon), icon);
-  else
-    gtk_image_clear (GTK_IMAGE (self->sub_header_icon));
-
-  gtk_label_set_label (GTK_LABEL (self->sub_header_label), title);
-}
-
-
 static void
 window_active_protocols_changed_cb (ChattyWindow *self)
 {

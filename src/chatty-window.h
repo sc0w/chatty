@@ -44,7 +44,6 @@ void       chatty_window_set_uri (ChattyWindow *self,
                                  const char   *uri);
 
 void chatty_window_change_view (ChattyWindow *self, guint state);
-void chatty_window_update_sub_header_titlebar (ChattyWindow *self, GdkPixbuf *icon, const char *title);
 
 GtkWidget *chatty_window_get_convs_notebook (ChattyWindow *self);
 
