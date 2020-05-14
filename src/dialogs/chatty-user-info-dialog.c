@@ -11,6 +11,7 @@
 #include <glib.h>
 #include <glib/gi18n.h>
 #include <glib-object.h>
+#include "chatty-avatar.h"
 #include "chatty-window.h"
 #include "chatty-manager.h"
 #include "users/chatty-pp-account.h"
@@ -34,6 +35,7 @@ struct _ChattyUserInfoDialog
   GtkWidget *switch_notify;
   GtkWidget *listbox_prefs;
   GtkWidget *button_avatar;
+  GtkWidget *avatar;
   GtkWidget *switch_encrypt;
   GtkWidget *label_encrypt;
   GtkWidget *label_encrypt_status;
@@ -225,23 +227,8 @@ chatty_user_info_dialog_update_avatar (ChattyUserInfoDialog *self,
   GtkWindow     *window;
   PurpleContact *contact;
   GdkPixbuf     *icon;
-  GtkWidget     *avatar;
   const char    *buddy_alias;
   const char    *contact_alias;
-
-  icon = chatty_icon_get_buddy_icon (PURPLE_BLIST_NODE(self->buddy),
-                                     self->alias,
-                                     CHATTY_ICON_SIZE_LARGE,
-                                     color,
-                                     FALSE);
-
-  if (icon != NULL) {
-    avatar = gtk_image_new ();
-    gtk_image_set_from_pixbuf (GTK_IMAGE(avatar), icon);
-    gtk_button_set_image (GTK_BUTTON(self->button_avatar), GTK_WIDGET(avatar));
-  }
-
-  g_object_unref (icon);
 
   contact = purple_buddy_get_contact (self->buddy);
   buddy_alias = purple_buddy_get_alias (self->buddy);
@@ -279,6 +266,7 @@ chatty_user_info_dialog_update_chat (ChattyUserInfoDialog *self)
   protocol_id = purple_account_get_protocol_id (account);
 
   manager = chatty_manager_get_default ();
+  chatty_avatar_set_item (CHATTY_AVATAR (self->avatar), CHATTY_ITEM (self->chat));
 
   g_object_bind_property (self->chat, "encrypt",
                           self->switch_encrypt, "active",
@@ -341,6 +329,7 @@ chatty_user_info_dialog_class_init (ChattyUserInfoDialogClass *klass)
                                                "ui/chatty-dialog-user-info.ui");
 
   gtk_widget_class_bind_template_child (widget_class, ChattyUserInfoDialog, button_avatar);
+  gtk_widget_class_bind_template_child (widget_class, ChattyUserInfoDialog, avatar);
   gtk_widget_class_bind_template_child (widget_class, ChattyUserInfoDialog, label_user_id);
   gtk_widget_class_bind_template_child (widget_class, ChattyUserInfoDialog, label_alias);
   gtk_widget_class_bind_template_child (widget_class, ChattyUserInfoDialog, label_jid);
