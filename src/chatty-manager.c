@@ -423,7 +423,7 @@ chatty_blist_update_buddy (PurpleBuddyList *list,
   g_autofree ChattyLog    *log_data = NULL;
   PurpleAccount           *account;
   const char              *username;
-  g_autofree char         *who;
+  g_autofree char         *who = NULL;
   char                     message_exists;
 
   g_return_if_fail (PURPLE_BLIST_NODE_IS_BUDDY(node));
