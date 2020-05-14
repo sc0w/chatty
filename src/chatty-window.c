@@ -600,8 +600,8 @@ window_delete_buddy_clicked_cb (ChattyWindow *self)
 {
   PurpleConversation *conv;
   PurpleBlistNode *node;
-  PurpleBuddy     *buddy;
-  PurpleChat      *chat;
+  PurpleBuddy     *buddy = NULL;
+  PurpleChat      *chat = NULL;
   GtkWidget       *dialog;
   GHashTable      *components;
   const char      *name;
@@ -803,12 +803,23 @@ window_show_chat_info_clicked_cb (ChattyWindow *self)
   chat = CHATTY_CHAT (self->selected_item);
   chatty_conv = winodw_get_active_chatty_conv (GTK_NOTEBOOK (self->convs_notebook));
 
-  if (purple_conversation_get_type (chatty_conv->conv) == PURPLE_CONV_TYPE_IM) {
+  switch (purple_conversation_get_type (chatty_conv->conv)) {
+  case PURPLE_CONV_TYPE_IM:
     dialog = chatty_user_info_dialog_new (GTK_WINDOW (self));
     chatty_user_info_dialog_set_chat (CHATTY_USER_INFO_DIALOG (dialog), chat);
-  } else if (purple_conversation_get_type (chatty_conv->conv) == PURPLE_CONV_TYPE_CHAT) {
+    break;
+
+  case PURPLE_CONV_TYPE_CHAT:
     dialog = chatty_muc_info_dialog_new (GTK_WINDOW (self));
     chatty_muc_info_dialog_set_chat (CHATTY_MUC_INFO_DIALOG (dialog), chat);
+    break;
+
+  case PURPLE_CONV_TYPE_UNKNOWN: /* fallthrough */
+  case PURPLE_CONV_TYPE_MISC:    /* fallthrough */
+  case PURPLE_CONV_TYPE_ANY:     /* fallthrough */
+  default:
+    g_assert_not_reached();
+    break;
   }
 
   gtk_dialog_run (GTK_DIALOG (dialog));
