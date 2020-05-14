@@ -19,8 +19,6 @@
 #include "chatty-notify.h"
 #include "chatty-chat-view.h"
 
-static void chatty_conv_conversation_update (PurpleConversation *conv);
-
 
 // *** callbacks
 
@@ -84,8 +82,6 @@ cb_update_buddy_icon (PurpleBuddy *buddy)
 
     if (chat)
       g_signal_emit_by_name (G_OBJECT (chat), "avatar-changed");
-
-    chatty_conv_conversation_update (conv);
   }
 }
 
@@ -217,55 +213,6 @@ chatty_conv_im_with_buddy (PurpleAccount *account,
 
 
 /**
- * chatty_conv_conversation_update:
- * @conv: a PurpleConversation
- *
- * Update conversation UI
- *
- */
-static void
-chatty_conv_conversation_update (PurpleConversation *conv)
-{
-  ChattyWindow    *window;
-  PurpleAccount   *account;
-  PurpleBuddy     *buddy;
-  PurpleContact   *contact;
-  GdkPixbuf       *avatar;
-  g_autofree char *name = NULL;
-  const char      *buddy_alias;
-  const char      *contact_alias;
-
-  if (!conv) {
-    return;
-  }
-
-  window = chatty_application_get_main_window (CHATTY_APPLICATION_DEFAULT ());
-
-  account = purple_conversation_get_account (conv);
-  name = chatty_utils_jabber_id_strip (purple_conversation_get_name (conv));
-  buddy = purple_find_buddy (account, name);
-  buddy_alias = purple_buddy_get_alias (buddy);
-
-  avatar = chatty_icon_get_buddy_icon (PURPLE_BLIST_NODE(buddy),
-                                       name,
-                                       CHATTY_ICON_SIZE_SMALL,
-                                       chatty_blist_protocol_is_sms (account) ?
-                                       CHATTY_COLOR_GREEN : CHATTY_COLOR_BLUE,
-                                       FALSE);
-
-  contact = purple_buddy_get_contact (buddy);
-  contact_alias = purple_contact_get_alias (contact);
-
-  chatty_window_update_sub_header_titlebar (window,
-                                            avatar, 
-                                            contact_alias ? contact_alias : buddy_alias);
-
-  g_object_unref (avatar);
-}
-
-
-
-/**
  * chatty_conv_show_conversation:
  * @conv: a PurpleConversation
  *
@@ -286,7 +233,6 @@ chatty_conv_show_conversation (PurpleConversation *conv)
   window = chatty_application_get_main_window (CHATTY_APPLICATION_DEFAULT ());
 
   chatty_conv_present_conversation (conv);
-  chatty_conv_conversation_update (conv);
 
   chatty_window_change_view (window, CHATTY_VIEW_MESSAGE_LIST);
 
