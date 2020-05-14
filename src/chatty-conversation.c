@@ -78,6 +78,13 @@ cb_update_buddy_icon (PurpleBuddy *buddy)
                                                 buddy->account);
 
   if (conv) {
+    ChattyChat *chat;
+
+    chat = chatty_manager_find_purple_conv (chatty_manager_get_default (), conv);
+
+    if (chat)
+      g_signal_emit_by_name (G_OBJECT (chat), "avatar-changed");
+
     chatty_conv_conversation_update (conv);
   }
 }
