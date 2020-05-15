@@ -20,9 +20,21 @@ before_script:
   - apt-get -y update
   - apt-get -y build-dep .
 
-build-debian-gcc:
+build-debian-gcc-buster:
   <<: *tags
   image: debian:buster
+  stage: build
+  script:
+    - export LC_ALL=C.UTF-8
+    - meson . _build --werror
+    - ninja -C _build
+  artifacts:
+    paths:
+      - _build
+
+build-debian-gcc-bullseye:
+  <<: *tags
+  image: debian:bullseye
   stage: build
   script:
     - export LC_ALL=C.UTF-8
@@ -36,7 +48,7 @@ test:debian-gcc:
   <<: *tags
   stage: test
   dependencies:
-    - build-debian-gcc
+    - build-debian-gcc-buster
   script:
     - export G_DEBUG=fatal-warnings
     - export LC_ALL=C.UTF-8
