@@ -43,6 +43,7 @@ struct _ChattyPpBuddy
 
   PurpleConvChatBuddy *chat_buddy;
 
+  gpointer          *avatar_data; /* purple icon data */
   PurpleStoredImage *pp_avatar;
   GdkPixbuf         *avatar;
   ChattyProtocol     protocol;
@@ -296,7 +297,12 @@ load_icon (gpointer user_data)
     len = purple_imgstore_get_size (img);
   }
 
+  /* If Icon hasn’t changed, don’t update */
+  if (data == self->avatar_data)
+    return G_SOURCE_REMOVE;
+
   g_clear_object (&self->avatar);
+  self->avatar_data = (gpointer)data;
   self->avatar = chatty_icon_from_data (data, len);
   g_signal_emit_by_name (self, "avatar-changed");
 
