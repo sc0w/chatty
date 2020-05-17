@@ -37,12 +37,6 @@ src/chatty-utils.c
 src/chatty-utils.h
 src/chatty-window.c
 src/chatty-window.h
-src/contrib/gtkfilter.c
-src/contrib/gtkfilterlistmodel.c
-src/contrib/gtkflattenlistmodel.c
-src/contrib/gtkslicelistmodel.c
-src/contrib/gtksorter.c
-src/contrib/gtksortlistmodel.c
 src/dialogs/chatty-muc-info-dialog.c
 src/dialogs/chatty-muc-info-dialog.h
 src/dialogs/chatty-new-chat-dialog.c
