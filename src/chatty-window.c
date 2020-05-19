@@ -883,9 +883,13 @@ chatty_window_show_about_dialog (ChattyWindow *self)
     NULL
   };
 
+  /*
+   * “program-name” defaults to g_get_application_name().
+   * Don’t set it explicitly so that there is one less
+   * string to translate.
+   */
   gtk_show_about_dialog (GTK_WINDOW (self),
                          "logo-icon-name", CHATTY_APP_ID,
-                         "program-name", _("Chats"),
                          "version", GIT_VERSION,
                          "comments", _("An SMS and XMPP messaging client"),
                          "website", "https://source.puri.sm/Librem5/chatty",
