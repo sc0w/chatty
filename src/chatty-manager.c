@@ -48,6 +48,7 @@
 #define LAZY_LOAD_MSGS_LIMIT 12
 #define LAZY_LOAD_INITIAL_MSGS_LIMIT 20
 #define MAX_TIMESTAMP_SIZE 256
+#define CHATTY_UI          "chatty-ui"
 
 struct _ChattyManager
 {

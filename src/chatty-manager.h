@@ -22,7 +22,6 @@ G_BEGIN_DECLS
 #define CHATTY_APP_NAME     "Chats"
 #define CHATTY_APP_ID       "sm.puri.Chatty"
 #define CHATTY_VERSION      "v0.1.10"
-#define CHATTY_UI           "chatty-ui"
 #define CHATTY_PREFS_ROOT   "/chatty"
 
 #define CHATTY_TYPE_MANAGER (chatty_manager_get_type ())
