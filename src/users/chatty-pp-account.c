@@ -30,7 +30,6 @@
  */
 
 #define RECONNECT_DELAY 5000 /* milliseconds */
-#define CHATTY_UI       "chatty-ui"
 
 struct _ChattyPpAccount
 {
@@ -209,7 +208,8 @@ chatty_pp_account_get_enabled (ChattyAccount *account)
 
   g_assert (CHATTY_IS_PP_ACCOUNT (self));
 
-  return purple_account_get_enabled (self->pp_account, CHATTY_UI);
+  return purple_account_get_enabled (self->pp_account,
+                                     purple_core_get_ui ());
 }
 
 static void
@@ -220,7 +220,8 @@ chatty_pp_account_set_enabled (ChattyAccount *account,
 
   g_assert (CHATTY_IS_PP_ACCOUNT (self));
 
-  purple_account_set_enabled (self->pp_account, CHATTY_UI, !!enable);
+  purple_account_set_enabled (self->pp_account,
+                              purple_core_get_ui (), !!enable);
 }
 
 static const char *
