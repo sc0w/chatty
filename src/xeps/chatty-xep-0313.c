@@ -206,7 +206,8 @@ chatty_mam_get_chat_prefs(PurpleAccount *pa, const char *room, const char *def)
     return def;
   } else
     // Get per-account setting
-    return purple_account_get_ui_string(pa, CHATTY_UI, MAM_PREFS_DEF, def);
+    return purple_account_get_ui_string(pa, purple_core_get_ui (),
+                                        MAM_PREFS_DEF, def);
 
 }
 
