@@ -305,7 +305,7 @@ chatty_purple_ui_get_info (void)
     ui_info = g_hash_table_new (g_str_hash, g_str_equal);
 
     g_hash_table_insert (ui_info, "name", (char *)g_get_application_name ());
-    g_hash_table_insert (ui_info, "version", CHATTY_VERSION);
+    g_hash_table_insert (ui_info, "version", PACKAGE_VERSION);
     g_hash_table_insert (ui_info, "dev_website", "https://source.puri.sm/Librem5/chatty");
     g_hash_table_insert (ui_info, "client_type", "phone");
   }
