@@ -479,13 +479,17 @@ chatty_new_chat_dialog_show (GtkWidget *widget)
 }
 
 static void
-chatty_new_chat_dialog_finalize (GObject *object)
+chatty_new_chat_dialog_dispose (GObject *object)
 {
   ChattyNewChatDialog *self = (ChattyNewChatDialog *)object;
 
   g_clear_object (&self->manager);
+  g_clear_object (&self->slice_model);
+  g_clear_object (&self->filter_model);
+  g_clear_object (&self->filter);
+  g_clear_pointer (&self->phone_number, g_free);
 
-  G_OBJECT_CLASS (chatty_new_chat_dialog_parent_class)->finalize (object);
+  G_OBJECT_CLASS (chatty_new_chat_dialog_parent_class)->dispose (object);
 }
 
 static void
@@ -494,7 +498,7 @@ chatty_new_chat_dialog_class_init (ChattyNewChatDialogClass *klass)
   GObjectClass   *object_class = G_OBJECT_CLASS (klass);
   GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
 
-  object_class->finalize = chatty_new_chat_dialog_finalize;
+  object_class->dispose = chatty_new_chat_dialog_dispose;
 
   widget_class->show = chatty_new_chat_dialog_show;
 
