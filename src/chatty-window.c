@@ -70,6 +70,7 @@ struct _ChattyWindow
   GtkWidget *overlay_label_2;
   GtkWidget *overlay_label_3;
 
+
   ChattyItem    *selected_item;
   ChattyManager *manager;
 
@@ -1042,10 +1043,22 @@ chatty_window_finalize (GObject *object)
 {
   ChattyWindow *self = (ChattyWindow *)object;
 
-  g_object_unref (self->settings);
-  g_object_unref (self->manager);
+  g_clear_object (&self->settings);
 
   G_OBJECT_CLASS (chatty_window_parent_class)->finalize (object);
+}
+
+static void
+chatty_window_dispose (GObject *object)
+{
+  ChattyWindow *self = (ChattyWindow *)object;
+
+  g_clear_object (&self->filter_model);
+  g_clear_object (&self->chat_filter);
+  g_clear_object (&self->manager);
+  g_clear_pointer (&self->chat_needle, g_free);
+
+  G_OBJECT_CLASS (chatty_window_parent_class)->dispose (object);
 }
 
 
@@ -1057,6 +1070,7 @@ chatty_window_class_init (ChattyWindowClass *klass)
 
   object_class->constructed  = chatty_window_constructed;
   object_class->finalize     = chatty_window_finalize;
+  object_class->dispose      = chatty_window_dispose;
 
   widget_class->unmap = chatty_window_unmap;
 
