@@ -138,7 +138,7 @@ chatty_conv_switch_conv (ChattyConversation *chatty_conv)
   conv_type = purple_conversation_get_type (chatty_conv->conv);
 
   page_num = gtk_notebook_page_num (GTK_NOTEBOOK(convs_notebook),
-                                    chatty_conv->tab_cont);
+                                    chatty_conv->chat_view);
 
   gtk_notebook_set_current_page (GTK_NOTEBOOK(convs_notebook),
                                  page_num);
