@@ -177,15 +177,16 @@ chatty_contact_get_avatar_async (ChattyItem          *item,
 }
 
 static void
-chatty_contact_finalize (GObject *object)
+chatty_contact_dispose (GObject *object)
 {
   ChattyContact *self = (ChattyContact *)object;
 
   g_clear_object (&self->avatar);
-  g_free (self->name);
-  g_free (self->value);
+  g_clear_pointer (&self->attribute, e_vcard_attribute_free);
+  g_clear_pointer (&self->name, g_free);
+  g_clear_pointer (&self->value, g_free);
 
-  G_OBJECT_CLASS (chatty_contact_parent_class)->finalize (object);
+  G_OBJECT_CLASS (chatty_contact_parent_class)->dispose (object);
 }
 
 
@@ -195,7 +196,7 @@ chatty_contact_class_init (ChattyContactClass *klass)
   GObjectClass *object_class  = G_OBJECT_CLASS (klass);
   ChattyItemClass *item_class = CHATTY_ITEM_CLASS (klass);
 
-  object_class->finalize = chatty_contact_finalize;
+  object_class->dispose = chatty_contact_dispose;
 
   item_class->get_protocols = chatty_contact_get_protocols;
   item_class->matches  = chatty_contact_matches;
