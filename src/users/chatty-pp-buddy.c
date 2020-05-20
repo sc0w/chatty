@@ -390,14 +390,15 @@ chatty_pp_buddy_constructed (GObject *object)
 }
 
 static void
-chatty_pp_buddy_finalize (GObject *object)
+chatty_pp_buddy_dispose (GObject *object)
 {
   ChattyPpBuddy *self = (ChattyPpBuddy *)object;
 
-  g_free (self->username);
-  g_free (self->name);
+  g_clear_object (&self->avatar);
+  g_clear_pointer (&self->username, g_free);
+  g_clear_pointer (&self->name, g_free);
 
-  G_OBJECT_CLASS (chatty_pp_buddy_parent_class)->finalize (object);
+  G_OBJECT_CLASS (chatty_pp_buddy_parent_class)->dispose (object);
 }
 
 static void
@@ -408,7 +409,7 @@ chatty_pp_buddy_class_init (ChattyPpBuddyClass *klass)
 
   object_class->set_property = chatty_pp_buddy_set_property;
   object_class->constructed  = chatty_pp_buddy_constructed;
-  object_class->finalize = chatty_pp_buddy_finalize;
+  object_class->dispose = chatty_pp_buddy_dispose;
 
   item_class->get_protocols = chatty_pp_buddy_get_protocols;
   item_class->matches  = chatty_pp_buddy_matches;
