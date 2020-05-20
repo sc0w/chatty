@@ -168,14 +168,15 @@ message_row_show_revealer (ChattyMessageRow *self)
 }
 
 static void
-chatty_message_row_finalize (GObject *object)
+chatty_message_row_dispose (GObject *object)
 {
   ChattyMessageRow *self = (ChattyMessageRow *)object;
 
+  g_clear_object (&self->message);
   g_clear_object (&self->multipress_gesture);
   g_clear_object (&self->longpress_gesture);
 
-  G_OBJECT_CLASS (chatty_message_row_parent_class)->finalize (object);
+  G_OBJECT_CLASS (chatty_message_row_parent_class)->dispose (object);
 }
 
 static void
@@ -184,7 +185,7 @@ chatty_message_row_class_init (ChattyMessageRowClass *klass)
   GObjectClass   *object_class = G_OBJECT_CLASS (klass);
   GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
 
-  object_class->finalize = chatty_message_row_finalize;
+  object_class->dispose = chatty_message_row_dispose;
 
   gtk_widget_class_set_template_from_resource (widget_class,
                                                "/sm/puri/chatty/"
