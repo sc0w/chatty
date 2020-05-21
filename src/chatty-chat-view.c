@@ -570,10 +570,12 @@ chat_encrypt_changed_cb (ChattyChatView *self)
 
   if (encryption == CHATTY_ENCRYPTION_ENABLED) {
     icon_name = "changes-prevent-symbolic";
+    gtk_style_context_remove_class (context, "dim-label");
     gtk_style_context_add_class (context, "encrypt");
   } else {
     icon_name = "changes-allow-symbolic";
-    gtk_style_context_add_class (context, "unencrypt");
+    gtk_style_context_add_class (context, "dim-label");
+    gtk_style_context_remove_class (context, "encrypt");
   }
 
   gtk_image_set_from_icon_name (GTK_IMAGE (self->encrypt_icon), icon_name, 1);
