@@ -43,10 +43,6 @@
   color: @theme_selected_bg_color;
 }
 
-.unencrypt {
-  color: grey;
-}
-
 .button_send_green {
   background: #6cba3d;
   border-color: #6cba3d;
