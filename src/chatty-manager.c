@@ -23,6 +23,7 @@
 #include "contrib/gtk.h"
 #include "chatty-contact-provider.h"
 #include "chatty-utils.h"
+#include "chatty-application.h"
 #include "chatty-window.h"
 #include "chatty-chat-view.h"
 #include "users/chatty-pp-account.h"
@@ -546,7 +547,7 @@ chatty_conv_switch_conv (ChattyConversation *chatty_conv)
   GtkWidget              *convs_notebook;
   gint                    page_num;
 
-  window = chatty_utils_get_window ();
+  window = chatty_application_get_main_window (CHATTY_APPLICATION_DEFAULT ());
 
   convs_notebook = chatty_window_get_convs_notebook (window);
 
@@ -579,7 +580,7 @@ chatty_conv_stack_add_conv (ChattyConversation *chatty_conv)
   gchar                   *text;
   gchar                   **name_split;
 
-  window = chatty_utils_get_window ();
+  window = chatty_application_get_main_window (CHATTY_APPLICATION_DEFAULT ());
 
   convs_notebook = chatty_window_get_convs_notebook (window);
 
@@ -633,7 +634,7 @@ chatty_conv_remove_conv (ChattyConversation *chatty_conv)
   GtkWidget     *convs_notebook;
   guint          index;
 
-  window = chatty_utils_get_window ();
+  window = chatty_application_get_main_window (CHATTY_APPLICATION_DEFAULT ());
 
   convs_notebook = chatty_window_get_convs_notebook (window);
 
@@ -937,7 +938,7 @@ chatty_conv_write_conversation (PurpleConversation *conv,
       chatty_chat_append_message (chat, chat_message);
     } else if (pcm.flags & PURPLE_MESSAGE_RECV) {
 
-      window = chatty_utils_get_window ();
+      window = chatty_application_get_main_window (CHATTY_APPLICATION_DEFAULT ());
 
       convs_notebook = chatty_window_get_convs_notebook (window);
 

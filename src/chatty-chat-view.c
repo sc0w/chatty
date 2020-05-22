@@ -17,6 +17,7 @@
 #include "chatty-icons.h"
 #include "chatty-manager.h"
 #include "chatty-utils.h"
+#include "chatty-window.h"
 #include "users/chatty-contact.h"
 #include "users/chatty-pp-buddy.h"
 #include "chatty-message-row.h"

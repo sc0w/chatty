@@ -8,6 +8,7 @@
 #define G_LOG_DOMAIN "chatty-conversation"
 
 #include <glib/gi18n.h>
+#include "chatty-application.h"
 #include "chatty-window.h"
 #include "chatty-manager.h"
 #include "chatty-icons.h"
@@ -131,7 +132,7 @@ chatty_conv_switch_conv (ChattyConversation *chatty_conv)
   GtkWidget              *convs_notebook;
   gint                    page_num;
 
-  window = chatty_utils_get_window ();
+  window = chatty_application_get_main_window (CHATTY_APPLICATION_DEFAULT ());
 
   convs_notebook = chatty_window_get_convs_notebook (window);
 
@@ -231,7 +232,7 @@ chatty_conv_conversation_update (PurpleConversation *conv)
     return;
   }
 
-  window = chatty_utils_get_window ();
+  window = chatty_application_get_main_window (CHATTY_APPLICATION_DEFAULT ());
 
   account = purple_conversation_get_account (conv);
   name = chatty_utils_jabber_id_strip (purple_conversation_get_name (conv));
@@ -275,7 +276,7 @@ chatty_conv_show_conversation (PurpleConversation *conv)
     return;
   }
 
-  window = chatty_utils_get_window ();
+  window = chatty_application_get_main_window (CHATTY_APPLICATION_DEFAULT ());
 
   chatty_conv_present_conversation (conv);
   chatty_conv_conversation_update (conv);
