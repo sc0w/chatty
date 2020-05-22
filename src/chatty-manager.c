@@ -817,6 +817,48 @@ chatty_conv_write_im (PurpleConversation *conv,
 }
 
 
+static GdkPixbuf *
+chatty_manager_round_pixbuf (GdkPixbuf *pixbuf)
+{
+  g_autoptr(GdkPixbuf) image = NULL;
+  cairo_surface_t *surface;
+  GdkPixbuf *round;
+  cairo_t *cr;
+  int width, height, size;
+
+  if (!pixbuf)
+    return NULL;
+
+  g_assert (GDK_IS_PIXBUF (pixbuf));
+
+  width  = gdk_pixbuf_get_width (pixbuf);
+  height = gdk_pixbuf_get_height (pixbuf);
+  size   = MIN (width, height);
+  image  = gdk_pixbuf_new (GDK_COLORSPACE_RGB, TRUE, 8, size, size);
+
+  gdk_pixbuf_scale (pixbuf, image, 0, 0,
+                    size, size,
+                    0, 0,
+                    (double)size / width,
+                    (double)size / height,
+                    GDK_INTERP_BILINEAR);
+
+  surface = cairo_image_surface_create (CAIRO_FORMAT_ARGB32, size, size);
+  cr = cairo_create (surface);
+  gdk_cairo_set_source_pixbuf (cr, image, 0, 0);
+
+  cairo_arc (cr, size / 2.0, size / 2.0, size / 2.0, 0, 2 * G_PI);
+  cairo_clip (cr);
+  cairo_paint (cr);
+
+  round = gdk_pixbuf_get_from_surface (surface, 0, 0, size, size);
+
+  cairo_surface_destroy (surface);
+  cairo_destroy (cr);
+
+  return round;
+}
+
 static void
 chatty_conv_write_conversation (PurpleConversation *conv,
                                 const char         *who,
@@ -919,24 +961,22 @@ chatty_conv_write_conversation (PurpleConversation *conv,
       conv_active = (chatty_conv == active_chatty_conv && gtk_widget_is_drawable (convs_notebook));
 
       if (buddy && purple_blist_node_get_bool (node, "chatty-notifications") && !conv_active) {
+        g_autoptr(GdkPixbuf) image = NULL;
+        ChattyPpBuddy *pp_buddy;
 
         event = lfb_event_new ("message-new-instant");
         lfb_event_trigger_feedback_async (event, NULL,
                                           (GAsyncReadyCallback)on_feedback_triggered,
                                           NULL);
 
+        pp_buddy = chatty_pp_buddy_get_object (buddy);
         buddy_name = purple_buddy_get_alias (buddy);
 
         titel = g_strdup_printf (_("New message from %s"), buddy_name);
+        avatar = chatty_item_get_avatar (CHATTY_ITEM (pp_buddy));
+        image = chatty_manager_round_pixbuf (avatar);
 
-        avatar = chatty_icon_get_buddy_icon ((PurpleBlistNode*)buddy,
-                                             alias,
-                                             CHATTY_ICON_SIZE_SMALL,
-                                             chatty_blist_protocol_is_sms (account) ?
-                                             CHATTY_COLOR_GREEN : CHATTY_COLOR_BLUE,
-                                             FALSE);
-
-        chatty_notify_show_notification (titel, message, CHATTY_NOTIFY_MESSAGE_RECEIVED, conv, avatar);
+        chatty_notify_show_notification (titel, message, CHATTY_NOTIFY_MESSAGE_RECEIVED, conv, image);
 
         g_free (titel);
       }
@@ -966,9 +1006,6 @@ chatty_conv_write_conversation (PurpleConversation *conv,
     chatty_chat_set_last_message (chat, message);
     gtk_sorter_changed (self->chat_sorter, GTK_SORTER_ORDER_TOTAL);
   }
-
-  if (avatar)
-    g_object_unref (avatar);
 
   g_free (pcm.who);
   g_free (pcm.what);
