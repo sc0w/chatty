@@ -682,33 +682,6 @@ chatty_conv_find_conv (PurpleConversation * conv)
   return NULL;
 }
 
-
-static PurpleBlistNode *
-chatty_get_conv_blist_node (PurpleConversation *conv)
-{
-  PurpleBlistNode *node = NULL;
-
-  switch (purple_conversation_get_type (conv)) {
-  case PURPLE_CONV_TYPE_IM:
-    node = PURPLE_BLIST_NODE (purple_find_buddy (conv->account,
-                                                 conv->name));
-    break;
-  case PURPLE_CONV_TYPE_CHAT:
-    node = PURPLE_BLIST_NODE (purple_blist_find_chat (conv->account,
-                                                      conv->name));
-    break;
-  case PURPLE_CONV_TYPE_UNKNOWN:
-  case PURPLE_CONV_TYPE_MISC:
-  case PURPLE_CONV_TYPE_ANY:
-  default:
-    g_warning ("Unhandled conversation type %d",
-               purple_conversation_get_type (conv));
-    break;
-  }
-  return node;
-}
-
-
 static void
 chatty_conv_new (PurpleConversation *conv)
 {
@@ -787,7 +760,7 @@ chatty_conv_new (PurpleConversation *conv)
 
   chatty_conv_stack_add_conv (chatty_conv);
 
-  conv_node = chatty_get_conv_blist_node (conv);
+  conv_node = chatty_utils_get_conv_blist_node (conv);
 
   if (conv_node != NULL &&
       (value = g_hash_table_lookup (conv_node->settings, "enable-logging")) &&
@@ -888,7 +861,7 @@ chatty_conv_write_conversation (PurpleConversation *conv,
     flags &= ~(PURPLE_MESSAGE_SEND | PURPLE_MESSAGE_RECV);
   }
 
-  node = chatty_get_conv_blist_node (conv);
+  node = chatty_utils_get_conv_blist_node (conv);
   chat = chatty_manager_find_purple_conv (chatty_manager_get_default (), conv);
   self = chatty_manager_get_default ();
 

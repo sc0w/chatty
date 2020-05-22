@@ -20,6 +20,7 @@
 #include "contrib/gtk.h"
 #include "chatty-settings.h"
 #include "chatty-icons.h"
+#include "chatty-utils.h"
 #include "users/chatty-pp-buddy.h"
 #include "users/chatty-pp-account.h"
 #include "chatty-chat.h"
@@ -131,31 +132,6 @@ sort_chat_buddy (ChattyPpBuddy *a,
 
   /* @a should be after @b */
   return 1;
-}
-
-static PurpleBlistNode *
-chatty_get_conv_blist_node (PurpleConversation *conv)
-{
-  PurpleBlistNode *node = NULL;
-
-  switch (purple_conversation_get_type (conv)) {
-  case PURPLE_CONV_TYPE_IM:
-    node = PURPLE_BLIST_NODE (purple_find_buddy (conv->account,
-                                                 conv->name));
-    break;
-  case PURPLE_CONV_TYPE_CHAT:
-    node = PURPLE_BLIST_NODE (purple_blist_find_chat (conv->account,
-                                                      conv->name));
-    break;
-  case PURPLE_CONV_TYPE_UNKNOWN:
-  case PURPLE_CONV_TYPE_MISC:
-  case PURPLE_CONV_TYPE_ANY:
-  default:
-    g_warning ("Unhandled conversation type %d",
-               purple_conversation_get_type (conv));
-    break;
-  }
-  return node;
 }
 
 static void
@@ -480,7 +456,7 @@ chatty_chat_new_purple_conv (PurpleConversation *conv)
   self = g_object_new (CHATTY_TYPE_CHAT, NULL);
   self->conv = conv;
 
-  node = chatty_get_conv_blist_node (conv);
+  node = chatty_utils_get_conv_blist_node (conv);
 
   if (node && PURPLE_BLIST_NODE_IS_CHAT (node))
     self->pp_chat = PURPLE_CHAT (node);
@@ -519,7 +495,7 @@ chatty_chat_set_purple_conv (ChattyChat         *self,
   if (!conv)
     return;
 
-  node = chatty_get_conv_blist_node (conv);
+  node = chatty_utils_get_conv_blist_node (conv);
 
   if (node && PURPLE_BLIST_NODE_IS_CHAT (node))
     self->pp_chat = PURPLE_CHAT (node);
@@ -654,7 +630,7 @@ chatty_chat_match_purple_conv (ChattyChat         *self,
   if (self->account && self->account != conv->account)
     return FALSE;
 
-  node = chatty_get_conv_blist_node (conv);
+  node = chatty_utils_get_conv_blist_node (conv);
 
   if (!node)
     return FALSE;

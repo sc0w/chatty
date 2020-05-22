@@ -311,3 +311,28 @@ chatty_utils_get_human_time (time_t unix_time)
   /* TRANSLATORS: Year format as supported by g_date_time_format() */
   return g_date_time_format (local_time, _("%Y-%m-%d"));
 }
+
+PurpleBlistNode *
+chatty_utils_get_conv_blist_node (PurpleConversation *conv)
+{
+  PurpleBlistNode *node = NULL;
+
+  switch (purple_conversation_get_type (conv)) {
+  case PURPLE_CONV_TYPE_IM:
+    node = PURPLE_BLIST_NODE (purple_find_buddy (conv->account,
+                                                 conv->name));
+    break;
+  case PURPLE_CONV_TYPE_CHAT:
+    node = PURPLE_BLIST_NODE (purple_blist_find_chat (conv->account,
+                                                      conv->name));
+    break;
+  case PURPLE_CONV_TYPE_UNKNOWN:
+  case PURPLE_CONV_TYPE_MISC:
+  case PURPLE_CONV_TYPE_ANY:
+  default:
+    g_warning ("Unhandled conversation type %d",
+               purple_conversation_get_type (conv));
+    break;
+  }
+  return node;
+}

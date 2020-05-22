@@ -234,31 +234,6 @@ chatty_check_for_emoticon (ChattyChatView *self)
     }
 }
 
-static PurpleBlistNode *
-chatty_get_conv_blist_node (PurpleConversation *conv)
-{
-  PurpleBlistNode *node = NULL;
-
-  switch (purple_conversation_get_type (conv)) {
-  case PURPLE_CONV_TYPE_IM:
-    node = PURPLE_BLIST_NODE (purple_find_buddy (conv->account,
-                                                 conv->name));
-    break;
-  case PURPLE_CONV_TYPE_CHAT:
-    node = PURPLE_BLIST_NODE (purple_blist_find_chat (conv->account,
-                                                      conv->name));
-    break;
-  case PURPLE_CONV_TYPE_UNKNOWN:
-  case PURPLE_CONV_TYPE_MISC:
-  case PURPLE_CONV_TYPE_ANY:
-  default:
-    g_warning ("Unhandled conversation type %d",
-               purple_conversation_get_type (conv));
-    break;
-  }
-  return node;
-}
-
 static void
 chat_view_setup_file_upload (ChattyChatView *self)
 {
@@ -272,7 +247,7 @@ chat_view_setup_file_upload (ChattyChatView *self)
   gtk_widget_show (self->send_file_button);
 
   gc = purple_conversation_get_gc (self->chatty_conv->conv);
-  node = chatty_get_conv_blist_node (self->chatty_conv->conv);
+  node = chatty_utils_get_conv_blist_node (self->chatty_conv->conv);
   prpl_info = PURPLE_PLUGIN_PROTOCOL_INFO (gc->prpl);
 
   if (prpl_info->blist_node_menu)
@@ -753,7 +728,7 @@ chat_view_send_file_button_clicked_cb (ChattyChatView *self,
 
   callback = g_object_get_data (G_OBJECT (button), "callback");
   data = g_object_get_data (G_OBJECT (button), "callback-data");
-  node = chatty_get_conv_blist_node (self->chatty_conv->conv);
+  node = chatty_utils_get_conv_blist_node (self->chatty_conv->conv);
 
   if (callback)
     callback (node, data);
