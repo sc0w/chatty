@@ -374,7 +374,11 @@ chatty_item_compare (ChattyItem *a,
  * @self: a #ChattyItem
  *
  * Get the name of Item.  In purple/pidgin it’s
- * termed as ‘alias.’
+ * termed as ‘alias.’ If real name is empty,
+ * it fallbacks to the user id.  The user id
+ * may have the resource stripped (eg: For the
+ * user id xmpp@example.com/someclient.6 you shall
+ * get xmpp@example.com)
  *
  * Returns: (transfer none): the name of Item.
  */
