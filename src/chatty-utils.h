@@ -10,14 +10,13 @@
 
 #include <stdio.h>
 #include <gio/gio.h>
+#include <gtk/gtk.h>
 
-#include "chatty-window.h"
 #include "users/chatty-pp-account.h"
 
 #define MAX_GMT_ISO_SIZE 256
 #define SECONDS_PER_DAY    86400.0
 
-ChattyWindow *chatty_utils_get_window (void);
 char *chatty_utils_jabber_id_strip (const char *name);
 char *chatty_utils_strip_blanks (const char *string);
 char *chatty_utils_check_phonenumber (const char *phone_number);
