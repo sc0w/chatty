@@ -905,7 +905,7 @@ chatty_conv_write_conversation (PurpleConversation *conv,
 
   if (*message != '\0') {
 
-    if (pcm.flags & PURPLE_MESSAGE_SYSTEM) {
+    if (pcm.flags & (PURPLE_MESSAGE_SYSTEM | PURPLE_MESSAGE_ERROR)) {
       // System is usually also RECV so should be first to catch
       chat_message = chatty_message_new (NULL, NULL, message, 0, CHATTY_DIRECTION_SYSTEM, 0);
       chatty_chat_append_message (chat, chat_message);
