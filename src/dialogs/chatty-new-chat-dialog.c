@@ -463,6 +463,7 @@ chatty_new_chat_dialog_update (ChattyNewChatDialog *self)
 
   gtk_entry_set_text (GTK_ENTRY (self->contact_name_entry), "");
   gtk_entry_set_text (GTK_ENTRY (self->contact_alias_entry), "");
+  gtk_widget_grab_focus (self->contact_name_entry);
 
   chatty_new_chat_populate_account_list (self);
 }
