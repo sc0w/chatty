@@ -295,6 +295,7 @@
                                   <object class="GtkEntry" id="contact_name_entry">
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
+                                    <property name="has_focus">True</property>
                                     <signal name="changed" handler="contact_name_text_changed_cb" after="yes" swapped="yes" />
                                   </object>
                                   <packing>
