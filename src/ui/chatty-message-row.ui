@@ -2,6 +2,7 @@
 <interface>
   <template class="ChattyMessageRow" parent="GtkListBoxRow">
     <property name="visible">True</property>
+    <property name="can-focus">False</property>
     <property name="selectable">False</property>
     <property name="activatable">False</property>
 
