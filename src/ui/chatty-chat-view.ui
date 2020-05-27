@@ -107,7 +107,8 @@
                 <property name="visible">True</property>
                 <property name="orientation">horizontal</property>
                 <style>
-                  <class name="input_frame"/>
+                  <class name="view"/>
+                  <class name="msg_entry_defocused"/>
                 </style>
                 <child>
                   <object class="GtkScrolledWindow" id="scrolled_window">
