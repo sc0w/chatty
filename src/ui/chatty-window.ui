@@ -543,8 +543,6 @@
                         <property name="expand">True</property>
                         <property name="selection-mode">single</property>
                         <signal name="row-activated" handler="window_chat_row_activated_cb" swapped="no"/>
-                        <!-- <signal name="add" handler="window_chat_changed_cb" swapped="yes"/>
-                             <signal name="remove" handler="window_chat_changed_cb" swapped="yes"/> -->
                       </object>
                     </child>
                   </object>
