@@ -476,6 +476,7 @@ chatty_new_chat_dialog_show (GtkWidget *widget)
   /* Reset selection list */
   g_clear_pointer (&self->phone_number, g_free);
   self->selected_item = NULL;
+  gtk_entry_set_text (GTK_ENTRY (self->contacts_search_entry), "");
 
   GTK_WIDGET_CLASS (chatty_new_chat_dialog_parent_class)->show (widget);
 }
