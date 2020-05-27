@@ -11,6 +11,9 @@
         <property name="hscrollbar-policy">never</property>
         <property name="vadjustment">vadjustment</property>
         <signal name="edge-overshot" handler="chat_view_edge_overshot_cb" swapped="yes"/>
+        <style>
+         <class name="view"/>
+        </style>
         <child>
           <object class="HdyColumn">
             <property name="visible">True</property>
@@ -53,6 +56,15 @@
             </child>
           </object>
         </child>
+      </object>
+    </child>
+
+    <child>
+      <object class="GtkSeparator">
+        <property name="visible">True</property>
+        <style>
+          <class name="sidebar"/>
+        </style>
       </object>
     </child>
 
