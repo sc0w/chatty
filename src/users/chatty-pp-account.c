@@ -25,7 +25,7 @@
  * @short_description: An abstraction over #PurpleAccount
  * @include: "chatty-pp-account.h"
  *
- * libpurple doesn’t have a nice OOP interface for managing anthing.
+ * libpurple doesn’t have a nice OOP interface for managing anything.
  * This class hides all the complexities surrounding it.
  */
 

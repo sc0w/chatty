@@ -285,7 +285,7 @@ static void chatty_mam_query_archive (MAMQuery *mamq);
  * @res: the response xmlnode
  *
  * The callback for mam archive query set in chatty_mam_query_archive
- * Parses reponse and either finalizes it or pages through
+ * Parses response and either finalizes it or pages through
  * remaining set.
  */
 static void
@@ -559,7 +559,7 @@ cb_chatty_mam_enabled_notify (GObject *obj,
  *
  * The callback for message archive signal "conversation-write", the cb is
  * supposed to populate inflight message with body and flags, give back uuid
- * and have NO_LOG flag set to suppress archiving for incomin messages.
+ * and have NO_LOG flag set to suppress archiving for incoming messages.
  *
  */
 static void

@@ -42,7 +42,7 @@
  * @short_description: A class to manage various providers and accounts
  * @include: "chatty-manager.h"
  *
- * libpurple doesn’t have a nice OOP interface for managing anthing.
+ * libpurple doesn’t have a nice OOP interface for managing anything.
  * This class hides all the complexities surrounding it.
  */
 
@@ -1640,7 +1640,7 @@ manager_handle_chatty_cmd (PurpleConversation  *conv,
 
 
 static void
-chatty_manager_intialize_libpurple (ChattyManager *self)
+chatty_manager_initialize_libpurple (ChattyManager *self)
 {
   GNetworkMonitor *network_monitor;
 
@@ -1918,7 +1918,7 @@ chatty_manager_purple_init (ChattyManager *self)
   if (!self->disable_auto_login)
     purple_savedstatus_activate (purple_savedstatus_new (NULL, PURPLE_STATUS_AVAILABLE));
 
-  chatty_manager_intialize_libpurple (self);
+  chatty_manager_initialize_libpurple (self);
   purple_accounts_set_ui_ops (&ui_ops);
   purple_request_set_ui_ops (chatty_request_get_ui_ops ());
   purple_notify_set_ui_ops (chatty_notify_get_ui_ops ());

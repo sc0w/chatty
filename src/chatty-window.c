@@ -107,7 +107,7 @@ overlay_content_t OverlayContent[6] = {
    .text_2 = NULL,
   },
   {.title  = N_("Choose a contact"),
-   .text_1 = N_("Start a <b>SMS</b> chat with with the \"+\" button in the titlebar."),
+   .text_1 = N_("Start a <b>SMS</b> chat with the \"+\" button in the titlebar."),
    .text_2 = N_("For <b>Instant Messaging</b> add or activate "
                 "an account in <i>\"preferences\"</i>."),
   },

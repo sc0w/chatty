@@ -40,7 +40,7 @@ enum {
  * @short_description: An abstraction over #PurpleConversation
  * @include: "chatty-chat.h"
  *
- * libpurple doesn’t have a nice OOP interface for managing anthing.
+ * libpurple doesn’t have a nice OOP interface for managing anything.
  * This class hides all the complexities surrounding it.
  */
 
