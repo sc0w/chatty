@@ -254,6 +254,9 @@ add_contact_button_clicked_cb (ChattyNewChatDialog *self)
 
   g_assert (CHATTY_IS_NEW_CHAT_DIALOG (self));
 
+  if (!gtk_widget_get_sensitive (self->add_contact_button))
+    return;
+
   account = chatty_pp_account_get_account (self->selected_account);
 
   who = g_strdup (gtk_entry_get_text (GTK_ENTRY (self->contact_name_entry)));
