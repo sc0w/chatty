@@ -164,6 +164,7 @@
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="activates-default">True</property>
+                                <property name="has_focus">True</property>
                                 <property name="input_purpose">email</property>
                                 <signal name="changed" handler="chat_name_changed_cb" after="yes" swapped="yes"/>
                               </object>
