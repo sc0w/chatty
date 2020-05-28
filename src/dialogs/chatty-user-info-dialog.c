@@ -325,7 +325,7 @@ chatty_user_info_dialog_update_chat (ChattyUserInfoDialog *self)
                         purple_blist_node_get_bool (PURPLE_BLIST_NODE(self->buddy),
                         "chatty-notifications"));
 
-  alias = chatty_utils_jabber_id_strip (self->alias);
+  alias = self->alias ? chatty_utils_jabber_id_strip (self->alias) : g_strdup ("");
   gtk_label_set_text (GTK_LABEL(self->label_alias), alias);
   gtk_label_set_text (GTK_LABEL(self->label_jid), self->chatty_conv->conv->name);
 }
