@@ -1,3 +1,138 @@
+chatty (0.1.11) amber-phone; urgency=medium
+
+  [ Mohammed Sadiq ]
+  * manager: Fix a check
+  * Move more purple code to manager
+
+  [ Arnaud Ferraris ]
+  * window: ensure received SMS is displayed
+  * window: update overlay when active protocols change
+
+  [ Mohammed Sadiq ]
+  * avatar: Add API to set custom titles
+  * utils: Add API to get human time from time_t
+  * enums: Add ChattyMsgDirection and ChattyMsgStatus enums
+  * utils: Move some macros from list-row
+  * Add chatty-message class
+  * chat: Add API to get the protocol used for chat
+  * chat: Add API to find buddy by username
+  * chat: Add APIs to manager chat messages
+  * message-row: Add API to set custom alias
+  * message-row: Update APIs to create row from chatty-message
+  * message-row: Add API to hide footer
+  * chat-view: Implement set_chat()
+  * chat-view: Keep track of SMS messages with message object
+  * window: Reset unread count when chat view is shown
+  * xep-0184: Track messages using chat object
+  * manager: Use set_chat() to set currently shown chat
+  * manager: Use chatty-message for creating messages
+  * manager: Remove code no longer required
+  * conversation: Remove code no longer required
+  * chat-view: Remove unused code
+  * conversation: Remove unused code
+  * Update POTFILES
+  * item: Update doc
+  * enums: Add a CHATTY_PROTOCOL_LAST
+  * item: Fix 'protocols' property
+  * Move some error dialogs to application
+  * info-dialogs: Use chatty-chat to populate data
+  * window: Fix selection flicker when chat is updated
+  * chat: Emit 'avatar-changed' if associated buddy avatar changes
+  * list-row: Limit subtitle to a single line
+  * window: Silence some compiler warnings
+  * new-muc-dialog: Silence a compiler warning
+  * manager: Fix a possible invalid free
+  * icons: Silence compiler warnings
+  * xep-0313: Set a variable before being used
+
+  [ Guido Günther ]
+  * gitlab-ci: Build against Debian bullseye too
+
+  [ Mohammed Sadiq ]
+  * tests: Don’t set MALLOC_PERTURB_
+  * utils: Format time as per the current user settings
+
+  [ Guido Günther ]
+  * po: Update POTFILES
+  * po: Use POTFILES.in
+  * po: Update file list
+  * gitlab-ci: Check for necessary po changes
+
+  [ Mohammed Sadiq ]
+  * pp-account: Use purple_core_get_ui() to get ui string
+  * xep-0313: Use purple_core_get_ui() to get ui string
+  * manager: Move CHATTY_UI macro private
+  * application: Set the application name as translatable
+  * window: Don’t explicitly set ‘program-name’
+  * manager: Use g_get_application_name() to get app name
+  * manager: Use PACKAGE_VERSION to get version string
+  * manager: Remove unused macros
+  * manager: Remove a redundant variable
+  * enums: Add ChattyEncryption enum
+  * chat: Add API to get/set encryption status
+  * chat-view: Use the new chat API to load encryption status
+  * user-info-dialog: Bind encrypt switch with chat 'encrypt' property
+  * user-info-dialog: bind to chat 'encrypt' property to update on change
+  * user-info-dialog: Don't update encrypt switch manually
+  * various: Remove unused code
+  * chat-view: Use the right css classes for encrypt icon
+  * style.css: Remove unused code
+  * chat-view: Don't apply encrypt icon style by default
+  * new-chat-dialog: Fix some memory leaks
+  * window: Fix memory leaks
+  * pp-buddy: Fix a memory leak
+  * contact: Fix a memory leak
+  * message-row: Fix a memory leak
+  * new-chat-dialog: Move GtkFilterModel as local variable
+  * pp-buddy: Avoid updating avatar often
+
+  [ Guido Günther ]
+  * contact-dialog: Set focus to first input field
+
+  [ Mohammed Sadiq ]
+  * muc-join-dialog: Let pressing ‘Enter’ activates join chat
+  * new-chat-dialog: Let pressing ‘Enter’ save new contact
+  * new-chat-dialog: Reset search text when showing dialog
+  * application: Add API to get main window
+  * Use chatty_application_get_main_window() to get main window
+  * utils: Remove get_window() API
+  * meson.build: Move chatty-utils.c to libsrc
+  * Move method to find node from conv to chatty-utils
+
+  [ Guido Günther ]
+  * join-muc-dialog: Set focus to first input field
+
+  [ Mohammed Sadiq ]
+  * chat-view: Add border and fix background
+  * window: Remove double frame
+  * window: Remove unused code
+  * chat-view: Fix message entry backdrop background
+  * message-row: Don't allow focus
+
+  [ Yuri Chornoivan ]
+  * Update Ukrainian translation
+  * Fix minor typos
+
+  [ Guido Günther ]
+  * new-chat: Set focus to search field
+  * new-chat: Grab input when switching to 'Add contact'
+
+  [ Mohammed Sadiq ]
+  * window: Update copyright year
+
+  [ Guido Günther ]
+  * Avoid newline in debug messages
+
+  [ Mohammed Sadiq ]
+  * manager: Handle error messages
+
+  [ Guido Günther ]
+  * user-info-dialog: Strip trailing whitespace
+  * user-info-dialog: Don't leak from chatty_utils_jabber_id_strip
+  * user-info-dialog: Don't assume alias is non-null (Closes: #340)
+
+ -- Mohammed Sadiq <sadiq@sadiqpk.org>  Thu, 28 May 2020 19:50:01 +0530
+
 chatty (0.1.10) amber-phone; urgency=medium
 
   [ Mohammed Sadiq ]
