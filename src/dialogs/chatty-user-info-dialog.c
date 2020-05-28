@@ -207,10 +207,12 @@ chatty_user_info_dialog_request_fps (ChattyUserInfoDialog *self)
   name = purple_conversation_get_name (self->chatty_conv->conv);
 
   if (type == PURPLE_CONV_TYPE_IM) {
+    g_autofree gchar *stripped = chatty_utils_jabber_id_strip (name);
+
     purple_signal_emit (plugins_handle,
                         "lurch-fp-other",
                         account,
-                        chatty_utils_jabber_id_strip (name),
+                        stripped,
                         encrypt_fp_list_cb,
                         self);
   }
@@ -264,11 +266,12 @@ chatty_user_info_dialog_update_avatar (ChattyUserInfoDialog *self,
 static void
 chatty_user_info_dialog_update_chat (ChattyUserInfoDialog *self)
 {
-  ChattyManager  *manager;
-  PurpleAccount  *account;
-  PurplePresence *presence;
-  PurpleStatus   *status;
-  const char     *protocol_id;
+  ChattyManager    *manager;
+  PurpleAccount    *account;
+  PurplePresence   *presence;
+  PurpleStatus     *status;
+  const char       *protocol_id;
+  g_autofree gchar *alias = NULL;
 
   g_assert (CHATTY_IS_USER_INFO_DIALOG (self));
 
@@ -322,7 +325,8 @@ chatty_user_info_dialog_update_chat (ChattyUserInfoDialog *self)
                         purple_blist_node_get_bool (PURPLE_BLIST_NODE(self->buddy),
                         "chatty-notifications"));
 
-  gtk_label_set_text (GTK_LABEL(self->label_alias), chatty_utils_jabber_id_strip (self->alias));
+  alias = chatty_utils_jabber_id_strip (self->alias);
+  gtk_label_set_text (GTK_LABEL(self->label_alias), alias);
   gtk_label_set_text (GTK_LABEL(self->label_jid), self->chatty_conv->conv->name);
 }
 
