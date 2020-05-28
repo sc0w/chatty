@@ -89,7 +89,7 @@ button_avatar_clicked_cb (ChattyUserInfoDialog *self)
 {
   PurpleContact *contact;
   char          *file_name = NULL;
-  
+
   file_name = show_select_avatar_dialog (self);
 
   if (file_name) {
@@ -113,8 +113,8 @@ switch_notify_changed_cb (ChattyUserInfoDialog *self)
 
   active = gtk_switch_get_active (GTK_SWITCH(self->switch_notify));
 
-  purple_blist_node_set_bool (PURPLE_BLIST_NODE(self->buddy), 
-                              "chatty-notifications", 
+  purple_blist_node_set_bool (PURPLE_BLIST_NODE(self->buddy),
+                              "chatty-notifications",
                               active);
 }
 
@@ -216,7 +216,7 @@ chatty_user_info_dialog_request_fps (ChattyUserInfoDialog *self)
   }
 }
 
-static void 
+static void
 chatty_user_info_dialog_update_avatar (ChattyUserInfoDialog *self,
                                        const char           *color)
 {
@@ -232,7 +232,7 @@ chatty_user_info_dialog_update_avatar (ChattyUserInfoDialog *self,
                                      CHATTY_ICON_SIZE_LARGE,
                                      color,
                                      FALSE);
-  
+
   if (icon != NULL) {
     avatar = gtk_image_new ();
     gtk_image_set_from_pixbuf (GTK_IMAGE(avatar), icon);
@@ -254,7 +254,7 @@ chatty_user_info_dialog_update_avatar (ChattyUserInfoDialog *self,
   window = gtk_window_get_transient_for (GTK_WINDOW (self));
 
   chatty_window_update_sub_header_titlebar ((ChattyWindow *)window,
-                                            icon, 
+                                            icon,
                                             contact_alias ? contact_alias : buddy_alias);
 
   g_object_unref (icon);
