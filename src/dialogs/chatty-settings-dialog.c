@@ -133,7 +133,7 @@ get_fp_list_own_cb (int         err,
     for (curr_p = filtered_list; curr_p; curr_p = curr_p->next) {
       fp = (char *) g_hash_table_lookup(id_fp_table, curr_p->data);
 
-      g_debug ("DeviceId: %i fingerprint:\n%s\n", *((guint32 *) curr_p->data),
+      g_debug ("DeviceId: %i fingerprint: %s", *((guint32 *) curr_p->data),
                fp ? fp : "(no session)");
 
       row = chatty_utils_create_fingerprint_row (fp, *((guint32 *) curr_p->data));

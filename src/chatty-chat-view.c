@@ -778,7 +778,7 @@ chat_view_send_message_button_clicked_cb (ChattyChatView *self)
 
       g_hash_table_insert (ht_sms_id, sms_id_str, g_object_ref (self->chat));
 
-      g_debug ("hash table insert sms_id_str: %s  ht_size: %i\n",
+      g_debug ("hash table insert sms_id_str: %s  ht_size: %i",
                sms_id_str, g_hash_table_size (ht_sms_id));
 
       purple_conv_im_send_with_flags (PURPLE_CONV_IM (conv),

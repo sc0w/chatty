@@ -1189,7 +1189,7 @@ manager_buddy_signed_on_off_cb (PurpleBuddy *buddy)
 {
   chatty_blist_update (purple_get_blist(), (PurpleBlistNode*)buddy);
 
-  g_debug ("Buddy \"%s\"\n (%s) signed on/off", purple_buddy_get_name (buddy),
+  g_debug ("Buddy \"%s\" (%s) signed on/off", purple_buddy_get_name (buddy),
            purple_account_get_protocol_id (purple_buddy_get_account(buddy)));
 }
 

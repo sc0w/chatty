@@ -53,7 +53,7 @@ chatty_utils_check_phonenumber (const char *phone_number)
   number = e_phone_number_from_string (stripped, NULL, &err);
 
   if (!number || !e_phone_number_is_supported ()) {
-    g_debug ("%s %s: %s\n", __func__, phone_number, err->message);
+    g_debug ("%s %s: %s", __func__, phone_number, err->message);
 
     result = NULL;
   } else {
