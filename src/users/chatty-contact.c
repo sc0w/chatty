@@ -265,18 +265,13 @@ chatty_contact_set_name (ChattyContact *self,
 const char *
 chatty_contact_get_value (ChattyContact *self)
 {
-  const char *value = NULL;
-
   g_return_val_if_fail (CHATTY_IS_CONTACT (self), NULL);
+
+  if (!self->value && self->attribute)
+    self->value = e_vcard_attribute_get_value (self->attribute);
 
   if (self->value)
     return self->value;
-
-  if (self->attribute)
-    value = e_vcard_attribute_get_value (self->attribute);
-
-  if (value)
-    return value;
 
   return "";
 }
