@@ -32,6 +32,10 @@
 #include "chatty-manager.h"
 #include "chatty-application.h"
 #include "chatty-settings.h"
+#include "chatty-history.h"
+
+#define LIBFEEDBACK_USE_UNSTABLE_API
+#include <libfeedback.h>
 
 /**
  * SECTION: chatty-application
@@ -263,6 +267,9 @@ chatty_application_startup (GApplication *application)
 
   g_set_application_name (_("Chats"));
 
+  lfb_init (CHATTY_APP_ID, NULL);
+  chatty_history_open ();
+
   self->settings = chatty_settings_get_default ();
 
   self->css_provider = gtk_css_provider_new ();
@@ -326,6 +333,15 @@ chatty_application_activate (GApplication *application)
                                        self);
 }
 
+static void
+chatty_application_shutdown (GApplication *application)
+{
+  g_object_unref (chatty_settings_get_default ());
+  chatty_history_close ();
+  lfb_uninit ();
+
+  G_APPLICATION_CLASS (chatty_application_parent_class)->shutdown (application);
+}
 
 static void
 chatty_application_class_init (ChattyApplicationClass *klass)
@@ -339,6 +355,7 @@ chatty_application_class_init (ChattyApplicationClass *klass)
   application_class->command_line = chatty_application_command_line;
   application_class->startup = chatty_application_startup;
   application_class->activate = chatty_application_activate;
+  application_class->shutdown = chatty_application_shutdown;
 }
 
 
