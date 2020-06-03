@@ -341,7 +341,7 @@ chatty_history_get_chat_last_message_time (const char* account,
   sqlite3_stmt *stmt;
   int time_stamp  = 0;
 
-  rc = sqlite3_prepare_v2(db, "SELECT max(timestamp) FROM chatty_chat WHERE room=(?)", -1, &stmt, NULL);
+  rc = sqlite3_prepare_v2(db, "SELECT max(timestamp),max(id)  FROM chatty_chat WHERE room=(?)", -1, &stmt, NULL);
   if (rc != SQLITE_OK)
       g_debug("Error preparing when getting chat last message. errno: %d, desc: %s", rc, sqlite3_errmsg(db));
 
@@ -369,7 +369,7 @@ chatty_history_get_im_last_message (const char *account,
   int           rc;
   sqlite3_stmt *stmt;
 
-  rc = sqlite3_prepare_v2(db, "SELECT message,direction,max(timestamp) FROM chatty_im WHERE account=(?) AND who=(?)", -1, &stmt, NULL);
+  rc = sqlite3_prepare_v2(db, "SELECT message,direction,max(timestamp),max(id) FROM chatty_im WHERE account=(?) AND who=(?)", -1, &stmt, NULL);
   if (rc != SQLITE_OK)
     g_debug("Error preparing when getting chat last message. errno: %d, desc: %s", rc, sqlite3_errmsg(db));
 
