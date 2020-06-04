@@ -405,8 +405,8 @@ chatty_conv_get_im_messages_cb (const guchar *msg,
 
 static void
 chatty_conv_get_chat_messages_cb (const guchar *msg,
-                                  int           time_stamp,
                                   int           direction,
+                                  int           time_stamp,
                                   const char   *room,
                                   const guchar *who,
                                   const guchar *uuid,

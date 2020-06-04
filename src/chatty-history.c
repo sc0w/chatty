@@ -456,7 +456,7 @@ chatty_history_get_chat_messages (const char *account,
       if (skip){
         skip = g_strcmp0(oldest_message_displayed, (const char *)uuid);
       } else {
-        cb(msg, time_stamp, direction, room, who, uuid, data);
+        cb(msg, direction, time_stamp, room, who, uuid, data);
       }
 
   }
