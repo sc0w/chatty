@@ -11,6 +11,7 @@ env.set('MALLOC_CHECK_', '2')
 
 test_items = [
   'account',
+  'history',
   'settings',
 ]
 
