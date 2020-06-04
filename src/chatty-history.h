@@ -8,12 +8,24 @@
 #ifndef __HISTORY_H_INCLUDE__
 #define __HISTORY_H_INCLUDE__
 
-#include "time.h"
-#include "chatty-conversation.h"
+#include <glib.h>
+#include <purple.h>
+#include <time.h>
+
+/* #include "chatty-conversation.h" */
+
+typedef struct chatty_log ChattyLog;
+
+struct chatty_log {
+  time_t   epoch;  // TODO: @LELAND: Once log-parsing functions are cleaned, review this
+  char    *msg;
+  int      dir;
+};
 
 //TODO:LELAND: Document methods!
 
-int chatty_history_open (void);
+int chatty_history_open (const char *dir,
+                         const char *file_name);
 
 void chatty_history_close (void);
 

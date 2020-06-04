@@ -12,18 +12,11 @@
 #include <gtk/gtkwidget.h>
 #include "purple.h"
 
-typedef struct chatty_log                ChattyLog;
 typedef struct chatty_conversation       ChattyConversation;
 
 
 #define CHATTY_CONVERSATION(conv) \
   ((ChattyConversation *)(conv)->ui_data)
-
-struct chatty_log {
-  time_t   epoch;  // TODO: @LELAND: Once log-parsing functions are cleaned, review this
-  char    *msg;
-  int      dir;
-};
 
 struct chatty_conversation {
   PurpleConversation  *conv;

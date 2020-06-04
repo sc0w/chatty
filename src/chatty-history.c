@@ -181,16 +181,18 @@ chatty_history_create_schemas (void)
 
 
 int
-chatty_history_open (void)
+chatty_history_open (const char *dir,
+                     const char *file_name)
 {
   int rc;
-  g_autofree char *db_dir = NULL;
   g_autofree char *db_path = NULL;
 
+  g_assert (dir && *dir);
+  g_assert (file_name && *file_name);
+
   if(db == NULL){
-    db_dir =  g_build_filename (purple_user_dir(), "chatty", "db", NULL);
-    g_mkdir_with_parents (db_dir, S_IRWXU);
-    db_path = g_build_filename (db_dir, "chatty-history.db", NULL);
+    g_mkdir_with_parents (dir, S_IRWXU);
+    db_path = g_build_filename (dir, file_name, NULL);
     rc = sqlite3_open(db_path, &db);
 
     if (rc != SQLITE_OK){

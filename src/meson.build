@@ -22,6 +22,7 @@ libsrc = [
   'chatty-contact-provider.c',
   'chatty-settings.c',
   'chatty-icons.c',
+  'chatty-history.c',
   'chatty-utils.c',
 ]
 
@@ -43,7 +44,6 @@ chatty_sources = [
   './xeps/xeps.c',
   './xeps/chatty-xep-0184.c',
   './xeps/chatty-xep-0313.c',
-  'chatty-history.c',
   'chatty-dbus.c',
   'chatty-notify.c',
   'chatty-purple-request.c',

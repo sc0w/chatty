@@ -259,6 +259,7 @@ static void
 chatty_application_startup (GApplication *application)
 {
   ChattyApplication *self = (ChattyApplication *)application;
+  g_autofree char *db_path = NULL;
 
   self->daemon = FALSE;
   self->manager = g_object_ref (chatty_manager_get_default ());
@@ -268,7 +269,8 @@ chatty_application_startup (GApplication *application)
   g_set_application_name (_("Chats"));
 
   lfb_init (CHATTY_APP_ID, NULL);
-  chatty_history_open ();
+  db_path =  g_build_filename (purple_user_dir(), "chatty", "db", NULL);
+  chatty_history_open (db_path, "chatty-history.db");
 
   self->settings = chatty_settings_get_default ();
 
