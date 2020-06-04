@@ -224,6 +224,7 @@ chatty_history_close (void)
     }
   }
 
+  db = NULL;
 }
 
 
