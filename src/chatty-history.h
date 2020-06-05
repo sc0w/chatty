@@ -18,6 +18,7 @@ typedef struct chatty_log ChattyLog;
 
 struct chatty_log {
   time_t   epoch;  // TODO: @LELAND: Once log-parsing functions are cleaned, review this
+  char    *uid;
   char    *msg;
   int      dir;
 };
