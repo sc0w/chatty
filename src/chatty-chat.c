@@ -857,19 +857,6 @@ chatty_chat_get_last_message (ChattyChat *self)
   return chatty_message_get_text (message);
 }
 
-
-void
-chatty_chat_set_last_message (ChattyChat *self,
-                              const char *message)
-{
-  g_return_if_fail (CHATTY_IS_CHAT (self));
-
-  g_free (self->last_message);
-  self->last_message = g_strdup (message);
-
-  g_signal_emit (self, signals[CHANGED], 0);
-}
-
 guint
 chatty_chat_get_unread_count (ChattyChat *self)
 {
@@ -891,27 +878,6 @@ chatty_chat_set_unread_count (ChattyChat *self,
   g_signal_emit (self, signals[CHANGED], 0);
 }
 
-e_msg_dir
-chatty_chat_get_last_msg_direction (ChattyChat *self)
-{
-  g_return_val_if_fail (CHATTY_IS_CHAT (self), MSG_IS_SYSTEM);
-
-  return self->last_msg_direction;
-}
-
-void
-chatty_chat_set_last_msg_direction (ChattyChat *self,
-                                    e_msg_dir   direction)
-{
-  g_return_if_fail (CHATTY_IS_CHAT (self));
-
-  if (self->last_msg_direction == direction)
-    return;
-
-  self->last_msg_direction = direction;
-  g_signal_emit (self, signals[CHANGED], 0);
-}
-
 time_t
 chatty_chat_get_last_msg_time (ChattyChat *self)
 {
@@ -930,19 +896,6 @@ chatty_chat_get_last_msg_time (ChattyChat *self)
   message = g_list_model_get_item (model, n_items - 1);
 
   return chatty_message_get_time (message);
-}
-
-void
-chatty_chat_set_last_msg_time (ChattyChat *self,
-                               time_t      msg_time)
-{
-  g_return_if_fail (CHATTY_IS_CHAT (self));
-
-  if (self->last_msg_time == msg_time)
-    return;
-
-  self->last_msg_time = msg_time;
-  g_signal_emit (self, signals[CHANGED], 0);
 }
 
 ChattyEncryption

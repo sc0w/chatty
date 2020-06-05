@@ -64,17 +64,10 @@ ChattyPpBuddy      *chatty_chat_find_user             (ChattyChat         *self,
 void                chatty_chat_emit_user_changed     (ChattyChat         *self,
                                                        const char         *user);
 const char         *chatty_chat_get_last_message      (ChattyChat         *self);
-void                chatty_chat_set_last_message      (ChattyChat         *self,
-                                                       const char         *message);
 guint               chatty_chat_get_unread_count      (ChattyChat         *self);
 void                chatty_chat_set_unread_count      (ChattyChat         *self,
                                                        guint               unread_count);
-e_msg_dir           chatty_chat_get_last_msg_direction (ChattyChat        *self);
-void                chatty_chat_set_last_msg_direction (ChattyChat        *self,
-                                                        e_msg_dir          direction);
 time_t              chatty_chat_get_last_msg_time      (ChattyChat        *self);
-void                chatty_chat_set_last_msg_time      (ChattyChat        *self,
-                                                        time_t             msg_time);
 ChattyEncryption    chatty_chat_get_encryption_status  (ChattyChat        *self);
 void                chatty_chat_load_encryption_status (ChattyChat        *self);
 void                chatty_chat_set_encryption         (ChattyChat        *self,
