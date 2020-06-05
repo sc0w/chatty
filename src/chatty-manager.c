@@ -445,14 +445,30 @@ chatty_blist_update_buddy (PurpleBuddyList *list,
   if (purple_blist_node_get_bool (node, "chatty-autojoin") &&
       purple_account_is_connected (buddy->account) &&
       message_exists) {
+    g_autoptr(ChattyMessage) message = NULL;
     g_autoptr(ChattyChat) chat = NULL;
+    GListModel *model;
     ChattyChat *item;
+    ChattyMsgDirection direction;
+
+    if (log_data->dir == 1)
+      direction = CHATTY_DIRECTION_IN;
+      else if (log_data->dir == -1)
+      direction = CHATTY_DIRECTION_OUT;
+    else
+      direction = CHATTY_DIRECTION_SYSTEM;
 
     chat = chatty_chat_new_im_chat (account, buddy);
     item = chatty_manager_add_chat (chatty_manager_get_default (), chat);
-    chatty_chat_set_last_message (item, log_data->msg);
-    chatty_chat_set_last_msg_direction (item, log_data->dir);
-    chatty_chat_set_last_msg_time (item, log_data->epoch);
+    model = chatty_chat_get_messages (item);
+
+    /* If at least one message is loaded, don’t add again. */
+    if (g_list_model_get_n_items (model) > 0)
+      return;
+
+    message = chatty_message_new (NULL, NULL, log_data->msg, log_data->uid,
+                                  log_data->epoch, direction, 0);
+    chatty_chat_append_message (item, message);
   }
 }
 
@@ -948,7 +964,7 @@ chatty_conv_write_conversation (PurpleConversation *conv,
 
     if (pcm.flags & (PURPLE_MESSAGE_SYSTEM | PURPLE_MESSAGE_ERROR)) {
       // System is usually also RECV so should be first to catch
-      chat_message = chatty_message_new (NULL, NULL, message, 0, CHATTY_DIRECTION_SYSTEM, 0);
+      chat_message = chatty_message_new (NULL, NULL, message, uuid, 0, CHATTY_DIRECTION_SYSTEM, 0);
       chatty_chat_append_message (chat, chat_message);
     } else if (pcm.flags & PURPLE_MESSAGE_RECV) {
 
@@ -981,11 +997,11 @@ chatty_conv_write_conversation (PurpleConversation *conv,
         g_free (titel);
       }
 
-      chat_message = chatty_message_new (NULL, who, message, mtime, CHATTY_DIRECTION_IN, 0);
+      chat_message = chatty_message_new (NULL, who, message, uuid, mtime, CHATTY_DIRECTION_IN, 0);
       chatty_chat_append_message (chat, chat_message);
     } else if (flags & PURPLE_MESSAGE_SEND && pcm.flags & PURPLE_MESSAGE_SEND) {
       // normal send
-      chat_message = chatty_message_new (NULL, NULL, message, 0, CHATTY_DIRECTION_OUT, 0);
+      chat_message = chatty_message_new (NULL, NULL, message, uuid, 0, CHATTY_DIRECTION_OUT, 0);
       chatty_message_set_status (chat_message, CHATTY_STATUS_SENT, 0);
       chatty_chat_append_message (chat, chat_message);
     } else if (pcm.flags & PURPLE_MESSAGE_SEND) {
@@ -993,17 +1009,12 @@ chatty_conv_write_conversation (PurpleConversation *conv,
       // FIXME: current list_box does not allow ordering rows by timestamp
       // TODO: Needs proper sort function and timestamp as user_data for rows
       // FIXME: Alternatively may need to reload history to re-populate rows
-      chat_message = chatty_message_new (NULL, NULL, message, mtime, CHATTY_DIRECTION_OUT, 0);
+      chat_message = chatty_message_new (NULL, NULL, message, uuid, mtime, CHATTY_DIRECTION_OUT, 0);
       chatty_message_set_status (chat_message, CHATTY_STATUS_SENT, 0);
       chatty_chat_append_message (chat, chat_message);
     }
 
-    if (chatty_conv->oldest_message_displayed == NULL)
-      chatty_conv->oldest_message_displayed = g_steal_pointer(&uuid);
-
     chatty_chat_set_unread_count (chat, chatty_chat_get_unread_count (chat) + 1);
-    chatty_chat_set_last_msg_time (chat, time (NULL));
-    chatty_chat_set_last_message (chat, message);
     gtk_sorter_changed (self->chat_sorter, GTK_SORTER_ORDER_TOTAL);
   }
 

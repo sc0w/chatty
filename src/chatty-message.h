@@ -25,11 +25,13 @@ G_DECLARE_FINAL_TYPE (ChattyMessage, chatty_message, CHATTY, MESSAGE, GObject)
 ChattyMessage      *chatty_message_new             (ChattyItem         *user,
                                                     const char         *user_alias,
                                                     const char         *message,
+                                                    const char         *uid,
                                                     time_t              time,
                                                     ChattyMsgDirection  direction,
                                                     ChattyMsgStatus     status);
 ChattyMessage      *chatty_message_new_purple      (ChattyPpBuddy      *buddy,
                                                     PurpleConvMessage  *message);
+const char         *chatty_message_get_uid         (ChattyMessage      *self);
 const char         *chatty_message_get_id          (ChattyMessage      *self);
 void                chatty_message_set_id          (ChattyMessage      *self,
                                                     const char         *id);

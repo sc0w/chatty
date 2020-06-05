@@ -382,10 +382,6 @@ chatty_conv_get_im_messages_cb (const guchar *msg,
 
   g_assert (CHATTY_IS_CHAT_VIEW (self));
 
-  // TODO: @LELAND: Check this memory management, don't like it
-  free (self->chatty_conv->oldest_message_displayed);
-  self->chatty_conv->oldest_message_displayed = g_strdup ((const gchar *)uuid);
-
   if (direction == 1)
     msg_direction = CHATTY_DIRECTION_IN;
   else if (direction == -1)
@@ -396,7 +392,7 @@ chatty_conv_get_im_messages_cb (const guchar *msg,
   if (msg && *msg) {
     g_autoptr(ChattyMessage) message = NULL;
 
-    message = chatty_message_new (NULL, NULL, (const char *)msg,
+    message = chatty_message_new (NULL, NULL, (const char *)msg, (const char *)uuid,
                                   time_stamp, msg_direction, 0);
     chatty_chat_prepend_message (self->chat, message);
   }
@@ -417,10 +413,6 @@ chatty_conv_get_chat_messages_cb (const guchar *msg,
 
   g_assert (CHATTY_IS_CHAT_VIEW (self));
 
-  /* TODO: @LELAND: Check this memory management, don't like it */
-  free (self->chatty_conv->oldest_message_displayed);
-  self->chatty_conv->oldest_message_displayed = g_strdup ((const gchar *)uuid);
-
   if (msg && *msg) {
     if (direction == 1) {
       ChattyPpBuddy *buddy = NULL;
@@ -439,16 +431,16 @@ chatty_conv_get_chat_messages_cb (const guchar *msg,
         buddy = chatty_chat_find_user (self->chat, alias);
 
       message = chatty_message_new ((ChattyItem *)buddy, alias,
-                                    (const char *)msg, time_stamp,
-                                    CHATTY_DIRECTION_IN, 0);
+                                    (const char *)msg, (const char *)uuid,
+                                    time_stamp, CHATTY_DIRECTION_IN, 0);
       chatty_chat_prepend_message (self->chat, message);
     } else if (direction == -1) {
-      message = chatty_message_new (NULL, NULL, (const char *)msg, 0,
-                                    CHATTY_DIRECTION_OUT, 0);
+      message = chatty_message_new (NULL, NULL, (const char *)msg, (const char *)uuid,
+                                    0, CHATTY_DIRECTION_OUT, 0);
       chatty_chat_prepend_message (self->chat, message);
     } else {
-      message = chatty_message_new (NULL, NULL, (const char *)msg, time_stamp,
-                                    CHATTY_DIRECTION_SYSTEM, 0);
+      message = chatty_message_new (NULL, NULL, (const char *)msg, (const char *)uuid,
+                                    time_stamp, CHATTY_DIRECTION_SYSTEM, 0);
       chatty_chat_prepend_message (self->chat, message);
     }
   }
@@ -1084,8 +1076,11 @@ void
 chatty_chat_view_load (ChattyChatView *self,
                        guint           limit)
 {
+  g_autoptr(ChattyMessage) message = NULL;
+  GListModel *message_list;
   PurpleAccount *account;
   const gchar   *conv_name;
+  const char    *uid = NULL;
   gboolean       im;
 
   g_return_if_fail (CHATTY_IS_CHAT_VIEW (self));
@@ -1095,6 +1090,12 @@ chatty_chat_view_load (ChattyChatView *self,
 
   conv_name = purple_conversation_get_name (self->chatty_conv->conv);
   account = purple_conversation_get_account (self->chatty_conv->conv);
+
+  /* Get the uid of the first message */
+  message_list = chatty_chat_get_messages (self->chat);
+  message = g_list_model_get_item (message_list, 0);
+  if (message)
+    uid = chatty_message_get_uid (message);
 
   if (im) {
     g_autofree char *who = NULL;
@@ -1107,14 +1108,14 @@ chatty_chat_view_load (ChattyChatView *self,
                                     chatty_conv_get_im_messages_cb,
                                     self,
                                     limit,
-                                    self->chatty_conv->oldest_message_displayed);
+                                    uid);
   } else {
     chatty_history_get_chat_messages (account->username,
                                       conv_name,
                                       chatty_conv_get_chat_messages_cb,
                                       self,
                                       limit,
-                                      self->chatty_conv->oldest_message_displayed);
+                                      uid);
   }
 }
 

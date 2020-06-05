@@ -719,6 +719,7 @@ chatty_chat_append_message (ChattyChat    *self,
   g_return_if_fail (CHATTY_IS_MESSAGE (message));
 
   g_list_store_append (self->message_store, message);
+  g_signal_emit (self, signals[CHANGED], 0);
 }
 
 void
@@ -729,6 +730,7 @@ chatty_chat_prepend_message (ChattyChat    *self,
   g_return_if_fail (CHATTY_IS_MESSAGE (message));
 
   g_list_store_insert (self->message_store, 0, message);
+  g_signal_emit (self, signals[CHANGED], 0);
 }
 
 /**
@@ -838,12 +840,21 @@ chatty_chat_emit_user_changed (ChattyChat *self,
 const char *
 chatty_chat_get_last_message (ChattyChat *self)
 {
+  g_autoptr(ChattyMessage) message = NULL;
+  GListModel *model;
+  guint n_items;
+
   g_return_val_if_fail (CHATTY_IS_CHAT (self), "");
 
-  if (self->last_message)
-    return self->last_message;
+  model = G_LIST_MODEL (self->message_store);
+  n_items = g_list_model_get_n_items (model);
 
-  return "";
+  if (n_items == 0)
+    return "";
+
+  message = g_list_model_get_item (model, n_items - 1);
+
+  return chatty_message_get_text (message);
 }
 
 
@@ -904,9 +915,21 @@ chatty_chat_set_last_msg_direction (ChattyChat *self,
 time_t
 chatty_chat_get_last_msg_time (ChattyChat *self)
 {
+  g_autoptr(ChattyMessage) message = NULL;
+  GListModel *model;
+  guint n_items;
+
   g_return_val_if_fail (CHATTY_IS_CHAT (self), 0);
 
-  return self->last_msg_time;
+  model = G_LIST_MODEL (self->message_store);
+  n_items = g_list_model_get_n_items (model);
+
+  if (n_items == 0)
+    return 0;
+
+  message = g_list_model_get_item (model, n_items - 1);
+
+  return chatty_message_get_time (message);
 }
 
 void

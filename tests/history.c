@@ -184,6 +184,7 @@ add_im (GPtrArray          *msg_array,
   g_assert_cmpint (log_data->epoch, ==, msg->when);
   g_assert_cmpint (log_data->dir, ==, dir);
   g_assert_cmpstr (log_data->msg, ==, msg->what);
+  g_assert_cmpstr (log_data->uid, ==, message->uuid);
   g_free (log_data->msg);
   g_free (log_data);
 }

@@ -31,6 +31,7 @@ struct _ChattyMessage
   ChattyItem      *user;
   char            *user_alias;
   char            *message;
+  char            *uid;
   char            *id;
   ChattyMsgStatus  status;
   ChattyMsgDirection direction;
@@ -53,6 +54,7 @@ chatty_message_finalize (GObject *object)
 
   g_clear_object (&self->user);
   g_free (self->message);
+  g_free (self->uid);
   g_free (self->user_alias);
   g_free (self->id);
 
@@ -91,6 +93,7 @@ ChattyMessage *
 chatty_message_new (ChattyItem         *user,
                     const char         *user_alias,
                     const char         *message,
+                    const char         *uid,
                     time_t              timestamp,
                     ChattyMsgDirection  direction,
                     ChattyMsgStatus     status)
@@ -104,11 +107,20 @@ chatty_message_new (ChattyItem         *user,
   g_set_object (&self->user, user);
   self->user_alias = g_strdup (user_alias);
   self->message = g_strdup (message);
+  self->uid = g_strdup (uid);
   self->status = status;
   self->direction = direction;
   self->time = timestamp;
 
   return self;
+}
+
+const char *
+chatty_message_get_uid (ChattyMessage *self)
+{
+  g_return_val_if_fail (CHATTY_IS_MESSAGE (self), NULL);
+
+  return self->uid;
 }
 
 const char *
