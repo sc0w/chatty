@@ -414,7 +414,7 @@ chatty_history_get_chat_messages (const char *account,
                                               gpointer data),
                                   gpointer    data,
                                   guint       limit,
-                                  char        *oldest_message_displayed)
+                                  const char *oldest_message_displayed)
 {
 
   int                  rc;
@@ -483,7 +483,7 @@ chatty_history_get_im_messages (const char* account,
                                            int                  last_message),
                                 gpointer   data,
                                 guint      limit,
-                                char       *oldest_message_displayed)
+                                const char *oldest_message_displayed)
 {
 
   int rc;
