@@ -22,8 +22,6 @@ struct chatty_conversation {
   PurpleConversation  *conv;
 
   GtkWidget     *chat_view;
-
-  char     *oldest_message_displayed;
 };
 
 
