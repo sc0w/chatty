@@ -44,6 +44,7 @@ chatty_sources = [
   './xeps/xeps.c',
   './xeps/chatty-xep-0184.c',
   './xeps/chatty-xep-0313.c',
+  './xeps/chatty-xep-0352.c',
   'chatty-dbus.c',
   'chatty-notify.c',
   'chatty-purple-request.c',
