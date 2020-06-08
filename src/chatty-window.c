@@ -618,7 +618,6 @@ window_delete_buddy_clicked_cb (ChattyWindow *self)
   const char      *text;
   const char      *sub_text;
   int              response;
-  const char      *conv_name;
 
   g_assert (CHATTY_IS_WINDOW (self));
 
@@ -669,9 +668,8 @@ window_delete_buddy_clicked_cb (ChattyWindow *self)
   response = gtk_dialog_run (GTK_DIALOG (dialog));
 
   if (response == GTK_RESPONSE_OK) {
+    chatty_history_delete_chat (CHATTY_CHAT (self->selected_item));
     if (PURPLE_BLIST_NODE_IS_BUDDY (node)) {
-      chatty_history_delete_im (buddy->account->username, buddy->name);
-
       conv = chatty_chat_get_purple_conv (CHATTY_CHAT (self->selected_item));
       self->selected_item = NULL;
       chatty_avatar_set_item (CHATTY_AVATAR (self->sub_header_icon), NULL);
@@ -682,13 +680,10 @@ window_delete_buddy_clicked_cb (ChattyWindow *self)
       purple_blist_remove_buddy (buddy);
 
     } else if (PURPLE_BLIST_NODE_IS_CHAT (node)) {
-      conv = chatty_chat_get_purple_conv (CHATTY_CHAT (self->selected_item));
       self->selected_item = NULL;
       chatty_avatar_set_item (CHATTY_AVATAR (self->sub_header_icon), NULL);
       gtk_label_set_label (GTK_LABEL (self->sub_header_label), "");
 
-      conv_name = purple_conversation_get_name (conv);
-      chatty_history_delete_chat (conv->account->username, conv_name);
       // TODO: LELAND: Is this the right place? After recreating a recently
       // deleted chat (same session), the conversation is still in memory
       // somewhere and when re-joining the same chat, the db is not re-populated

@@ -55,6 +55,9 @@ void            chatty_manager_delete_conversation    (ChattyManager      *self,
                                                        PurpleConversation *conv);
 ChattyChat     *chatty_manager_add_chat               (ChattyManager      *self,
                                                        ChattyChat         *chat);
+void            chatty_manager_load_more_chat         (ChattyManager      *self,
+                                                       ChattyChat         *chat,
+                                                       guint               limit);
 ChattyChat     *chatty_manager_find_purple_conv       (ChattyManager      *self,
                                                        PurpleConversation *conv);
 gboolean        chatty_blist_protocol_is_sms          (PurpleAccount      *account);

@@ -89,7 +89,7 @@ chatty_xeps_display_received (const char* node_id)
 
     if (message)
       chatty_message_set_status (message, CHATTY_STATUS_DELIVERED, time (NULL));
-    else
+    else if (n_items)
       g_warn_if_reached ();
 
     g_hash_table_remove (ht_bubble_node, node_id);

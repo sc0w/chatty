@@ -129,6 +129,73 @@ manager_sort_chat_item (ChattyChat *a,
 }
 
 static void
+manager_get_messages_cb (GObject      *object,
+                         GAsyncResult *result,
+                         gpointer      user_data)
+{
+  ChattyHistory *history = (ChattyHistory *)object;
+  g_autoptr(ChattyManager) self = user_data;
+  g_autoptr(GPtrArray) messages = NULL;
+  g_autoptr(GError) error = NULL;
+  ChattyChat *chat;
+
+  g_assert (CHATTY_IS_MANAGER (self));
+  g_assert (CHATTY_IS_HISTORY (history));
+
+  messages = chatty_history_get_messages_finish (history, result, &error);
+
+  if (messages) {
+    chat = g_object_get_data (G_OBJECT (result), "chat");
+    g_assert (CHATTY_IS_CHAT (chat));
+
+    chatty_chat_prepend_messages (chat, messages);
+  } else if (error && !g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED)) {
+    g_warning ("Error fetching messages: %s,", error->message);
+  }
+}
+
+static void
+manager_load_messages_cb (GObject      *object,
+                          GAsyncResult *result,
+                          gpointer      user_data)
+{
+  ChattyHistory *history = (ChattyHistory *)object;
+  g_autoptr(ChattyManager) self = user_data;
+  g_autoptr(GPtrArray) messages = NULL;
+  g_autoptr(GError) error = NULL;
+  ChattyChat *chat;
+
+  g_assert (CHATTY_IS_MANAGER (self));
+  g_assert (CHATTY_IS_HISTORY (history));
+
+  messages = chatty_history_get_messages_finish (history, result, &error);
+
+  chat = g_object_get_data (G_OBJECT (result), "chat");
+  g_assert (CHATTY_IS_CHAT (chat));
+
+  if (!messages)
+    chatty_chat_set_show_notifications (chat, TRUE);
+
+  if (messages) {
+    if (chatty_chat_get_auto_join (chat)) {
+      GListModel *model;
+      ChattyChat *item;
+
+      item = chatty_manager_add_chat (chatty_manager_get_default (), chat);
+      model = chatty_chat_get_messages (item);
+
+      /* If at least one message is loaded, don’t add again. */
+      if (g_list_model_get_n_items (model) == 0)
+        chatty_chat_prepend_messages (item, messages);
+    }
+
+  } else if (error && !g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED)) {
+    g_warning ("Error fetching messages: %s,", error->message);
+  }
+}
+
+
+static void
 manager_eds_is_ready (ChattyManager *self)
 {
   GListModel *accounts, *model;
@@ -416,63 +483,6 @@ chatty_blist_remove (PurpleBuddyList *list,
   chatty_manager_remove_node (chatty_manager_get_default (), node);
 }
 
-
-static void
-chatty_blist_update_buddy (PurpleBuddyList *list,
-                           PurpleBlistNode *node)
-{
-  PurpleBuddy             *buddy;
-  g_autofree ChattyLog    *log_data = NULL;
-  PurpleAccount           *account;
-  const char              *username;
-  g_autofree char         *who = NULL;
-  char                     message_exists;
-
-  g_return_if_fail (PURPLE_BLIST_NODE_IS_BUDDY(node));
-
-  buddy = (PurpleBuddy*)node;
-
-  account = purple_buddy_get_account (buddy);
-
-  username = purple_account_get_username (account);
-  who = chatty_utils_jabber_id_strip (purple_buddy_get_name (buddy));
-  log_data = g_new0(ChattyLog, 1);
-
-  message_exists = chatty_history_get_im_last_message (username, who, log_data);
-  if (!message_exists && !purple_blist_node_get_bool (node, "chatty-notifications"))
-    purple_blist_node_set_bool (node, "chatty-notifications", TRUE);
-
-  if (purple_blist_node_get_bool (node, "chatty-autojoin") &&
-      purple_account_is_connected (buddy->account) &&
-      message_exists) {
-    g_autoptr(ChattyMessage) message = NULL;
-    g_autoptr(ChattyChat) chat = NULL;
-    GListModel *model;
-    ChattyChat *item;
-    ChattyMsgDirection direction;
-
-    if (log_data->dir == 1)
-      direction = CHATTY_DIRECTION_IN;
-      else if (log_data->dir == -1)
-      direction = CHATTY_DIRECTION_OUT;
-    else
-      direction = CHATTY_DIRECTION_SYSTEM;
-
-    chat = chatty_chat_new_im_chat (account, buddy);
-    item = chatty_manager_add_chat (chatty_manager_get_default (), chat);
-    model = chatty_chat_get_messages (item);
-
-    /* If at least one message is loaded, don’t add again. */
-    if (g_list_model_get_n_items (model) > 0)
-      return;
-
-    message = chatty_message_new (NULL, NULL, log_data->msg, log_data->uid,
-                                  log_data->epoch, direction, 0);
-    chatty_chat_append_message (item, message);
-  }
-}
-
-
 static void
 chatty_blist_update (PurpleBuddyList *list,
                      PurpleBlistNode *node)
@@ -481,14 +491,11 @@ chatty_blist_update (PurpleBuddyList *list,
     return;
 
   switch (node->type) {
-  case PURPLE_BLIST_BUDDY_NODE:
-    chatty_blist_update_buddy (list, node);
-
-    break;
   case PURPLE_BLIST_CHAT_NODE:
     chatty_manager_update_node (chatty_manager_get_default (), node);
     break;
 
+  case PURPLE_BLIST_BUDDY_NODE:
   case PURPLE_BLIST_CONTACT_NODE:
   case PURPLE_BLIST_GROUP_NODE:
   case PURPLE_BLIST_OTHER_NODE:
@@ -626,22 +633,6 @@ chatty_conv_stack_add_conv (ChattyConversation *chatty_conv)
   chatty_chat_view_focus_entry (CHATTY_CHAT_VIEW (chatty_conv->chat_view));
 }
 
-
-static void
-chatty_conv_setup_pane (ChattyConversation *chatty_conv,
-                        guint               msg_type)
-{
-  ChattyChat *chat;
-
-  gtk_icon_theme_add_resource_path (gtk_icon_theme_get_default (),
-                                    "/sm/puri/chatty/icons/ui/");
-
-  chatty_conv->chat_view = chatty_chat_view_new ();
-  chat = chatty_manager_add_conversation (chatty_manager_get_default (), chatty_conv->conv);
-  chatty_chat_view_set_chat (CHATTY_CHAT_VIEW (chatty_conv->chat_view), chat);
-}
-
-
 static void
 chatty_conv_remove_conv (ChattyConversation *chatty_conv)
 {
@@ -700,6 +691,7 @@ chatty_conv_find_conv (PurpleConversation * conv)
 static void
 chatty_conv_new (PurpleConversation *conv)
 {
+  ChattyChat         *chat;
   PurpleAccount      *account;
   PurpleBuddy        *buddy;
   PurpleValue        *value;
@@ -708,7 +700,6 @@ chatty_conv_new (PurpleConversation *conv)
   const gchar        *protocol_id;
   const gchar        *conv_name;
   const gchar        *folks_name;
-  guint               msg_type;
 
   PurpleConversationType conv_type = purple_conversation_get_type (conv);
 
@@ -724,10 +715,7 @@ chatty_conv_new (PurpleConversation *conv)
   account = purple_conversation_get_account (conv);
   protocol_id = purple_account_get_protocol_id (account);
 
-  if (conv_type == PURPLE_CONV_TYPE_CHAT) {
-
-    msg_type = CHATTY_MSG_TYPE_MUC;
-  } else if (conv_type == PURPLE_CONV_TYPE_IM) {
+  if (conv_type == PURPLE_CONV_TYPE_IM) {
     // Add SMS and IMs from unknown contacts to the chats-list,
     // but do not add them to the contacts-list and in case of
     // instant messages do not sync contacts with the server
@@ -750,10 +738,6 @@ chatty_conv_new (PurpleConversation *conv)
           purple_blist_add_buddy (buddy, NULL, NULL, NULL);
         }
       }
-
-      msg_type = CHATTY_MSG_TYPE_SMS;
-    } else {
-      msg_type = CHATTY_MSG_TYPE_IM;
     }
 
     if (buddy == NULL) {
@@ -766,7 +750,9 @@ chatty_conv_new (PurpleConversation *conv)
     }
   }
 
-  chatty_conv_setup_pane (chatty_conv, msg_type);
+  chatty_conv->chat_view = chatty_chat_view_new ();
+  chat = chatty_manager_add_conversation (chatty_manager_get_default (), chatty_conv->conv);
+  chatty_chat_view_set_chat (CHATTY_CHAT_VIEW (chatty_conv->chat_view), chat);
   g_object_set_data (G_OBJECT (chatty_conv->chat_view),
                      "ChattyConversation",
                      chatty_conv);
@@ -784,7 +770,7 @@ chatty_conv_new (PurpleConversation *conv)
       purple_conversation_set_logging (conv, purple_value_get_boolean (value));
     }
 
-  chatty_chat_view_load (CHATTY_CHAT_VIEW (chatty_conv->chat_view), LAZY_LOAD_INITIAL_MSGS_LIMIT);
+  chatty_manager_load_more_chat (chatty_manager_get_default (), chat, LAZY_LOAD_INITIAL_MSGS_LIMIT);
 }
 
 
@@ -959,6 +945,24 @@ chatty_conv_write_conversation (PurpleConversation *conv,
                       "conversation-write", account, &pcm, &uuid, type);
   g_debug("Posting mesage id:%s flags:%d type:%d from:%s",
           uuid, pcm.flags, type, pcm.who);
+
+  /*
+   * This is default fallback history handler.  Other plugins may
+   * intercept “conversation-write” and suppress it if they handle
+   * history on their own (eg. MAM).  If %PURPLE_MESSAGE_NO_LOG is
+   * set in @flags, it won't be saved to database.
+   */
+  if (!(pcm.flags & PURPLE_MESSAGE_NO_LOG)) {
+    const char *chat_name;
+
+    chat_name = pcm.who;
+
+    if (chatty_chat_is_im (chat))
+      chat_name = chatty_chat_get_chat_name (chat);
+
+    chatty_history_add_message (account->username, pcm.alias, chat_name,
+                                pcm.what, &uuid, pcm.flags, pcm.when, type);
+    }
 
   if (*message != '\0') {
 
@@ -1166,6 +1170,7 @@ static void
 manager_buddy_added_cb (PurpleBuddy   *pp_buddy,
                         ChattyManager *self)
 {
+  g_autoptr(ChattyChat) chat = NULL;
   ChattyPpAccount *account;
   ChattyPpBuddy *buddy;
   ChattyContact *contact;
@@ -1188,6 +1193,11 @@ manager_buddy_added_cb (PurpleBuddy   *pp_buddy,
   id = chatty_pp_buddy_get_id (buddy);
   contact = chatty_eds_find_by_number (self->chatty_eds, id);
   chatty_pp_buddy_set_contact (buddy, contact);
+
+  chat = chatty_chat_new_im_chat (pp_account, pp_buddy);
+  chatty_history_get_messages_async (chatty_history_get_default (), chat, NULL, 1,
+                                     manager_load_messages_cb,
+                                     g_object_ref (self));
 }
 
 static void
@@ -1785,10 +1795,6 @@ chatty_manager_initialize_libpurple (ChattyManager *self)
    * other plugins may intercept and suppress it if they handle history
    * on their own (eg. MAM)
    */
-  purple_signal_connect_priority (self,
-                                  "conversation-write", self,
-                                  PURPLE_CALLBACK (chatty_history_add_message),
-                                  NULL, PURPLE_SIGNAL_PRIORITY_HIGHEST);
 
   purple_signal_connect (purple_conversations_get_handle (),
                          "chat-buddy-leaving", self,
@@ -2422,6 +2428,27 @@ chatty_manager_add_chat (ChattyManager *self,
   return item ? item : chat;
 }
 
+void
+chatty_manager_load_more_chat (ChattyManager *self,
+                               ChattyChat    *chat,
+                               guint          limit)
+{
+  ChattyMessage *since;
+  GListModel *model;
+
+  g_return_if_fail (CHATTY_IS_MANAGER (self));
+  g_return_if_fail (CHATTY_IS_CHAT (chat));
+  g_return_if_fail (limit != 0);
+
+  model = chatty_chat_get_messages (chat);
+  since = g_list_model_get_item (model, 0);
+  if (since)
+    g_object_unref (since);
+
+  chatty_history_get_messages_async (chatty_history_get_default (), chat, since, limit,
+                                     manager_get_messages_cb,
+                                     g_object_ref (self));
+}
 
 ChattyChat *
 chatty_manager_find_purple_conv (ChattyManager      *self,

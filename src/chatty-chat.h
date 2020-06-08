@@ -79,5 +79,8 @@ ChattyEncryption    chatty_chat_get_encryption_status  (ChattyChat        *self)
 void                chatty_chat_load_encryption_status (ChattyChat        *self);
 void                chatty_chat_set_encryption         (ChattyChat        *self,
                                                         gboolean           enable);
+void                chatty_chat_set_show_notifications (ChattyChat        *self,
+                                                        gboolean           show);
+gboolean            chatty_chat_get_auto_join          (ChattyChat        *self);
 
 G_END_DECLS

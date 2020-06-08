@@ -1056,3 +1056,38 @@ chatty_chat_set_encryption (ChattyChat *self,
                       chatty_chat_lurch_changed_cb,
                       g_object_ref (self));
 }
+
+void
+chatty_chat_set_show_notifications (ChattyChat *self,
+                                    gboolean    show)
+{
+  PurpleBlistNode *node = NULL;
+
+  g_return_if_fail (CHATTY_IS_CHAT (self));
+
+  if (self->buddy)
+    node = (PurpleBlistNode *)self->buddy;
+  else if (self->pp_chat)
+    node = (PurpleBlistNode *)self->pp_chat;
+  else
+    return;
+
+  purple_blist_node_set_bool (node, "chatty-notifications", !!show);
+}
+
+gboolean
+chatty_chat_get_auto_join (ChattyChat *self)
+{
+  PurpleBlistNode *node = NULL;
+
+  g_return_val_if_fail (CHATTY_IS_CHAT (self), FALSE);
+
+  if (self->buddy)
+    node = (PurpleBlistNode *)self->buddy;
+  else if (self->pp_chat)
+    node = (PurpleBlistNode *)self->pp_chat;
+  else
+    return FALSE;
+
+  return purple_blist_node_get_bool (node, "chatty-autojoin");
+}

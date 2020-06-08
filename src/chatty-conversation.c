@@ -188,7 +188,7 @@ chatty_conv_add_history_since_component (GHashTable *components,
 
   g_autofree gchar *iso_timestamp = g_malloc0(MAX_GMT_ISO_SIZE * sizeof(char));
 
-  mtime = chatty_history_get_chat_last_message_time(account, room);
+  mtime = chatty_history_get_last_message_time (account, room);
   mtime += 1; // Use the next epoch to exclude the last stored message(s)
   timeinfo = gmtime (&mtime);
   g_return_if_fail (strftime (iso_timestamp,

@@ -285,7 +285,6 @@ chatty_application_startup (GApplication *application)
   gtk_style_context_add_provider_for_screen (gdk_screen_get_default(),
                                              GTK_STYLE_PROVIDER (self->css_provider),
                                              GTK_STYLE_PROVIDER_PRIORITY_USER);
-  chatty_manager_purple (self->manager);
   g_signal_connect_object (self->manager, "authorize-buddy",
                            G_CALLBACK (application_authorize_buddy_cb), self,
                            G_CONNECT_SWAPPED);
@@ -309,6 +308,7 @@ chatty_application_activate (GApplication *application)
   if (!self->main_window) {
     self->main_window = chatty_window_new (app);
 
+    chatty_manager_purple (self->manager);
     g_object_add_weak_pointer (G_OBJECT (self->main_window), (gpointer *)&self->main_window);
   }
 

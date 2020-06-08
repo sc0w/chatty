@@ -370,91 +370,13 @@ chatty_update_typing_status (ChattyChatView *self)
 }
 
 static void
-chatty_conv_get_im_messages_cb (const guchar *msg,
-                                int           direction,
-                                time_t        time_stamp,
-                                const guchar *uuid,
-                                gpointer      user_data,
-                                int           last_message)
-{
-  ChattyChatView *self = user_data;
-  ChattyMsgDirection msg_direction;
-
-  g_assert (CHATTY_IS_CHAT_VIEW (self));
-
-  if (direction == 1)
-    msg_direction = CHATTY_DIRECTION_IN;
-  else if (direction == -1)
-    msg_direction = CHATTY_DIRECTION_OUT;
-  else
-    msg_direction = CHATTY_DIRECTION_SYSTEM; /* TODO: LELAND: Do we have this case for IMs? */
-
-  if (msg && *msg) {
-    g_autoptr(ChattyMessage) message = NULL;
-
-    message = chatty_message_new (NULL, NULL, (const char *)msg, (const char *)uuid,
-                                  time_stamp, msg_direction, 0);
-    chatty_chat_prepend_message (self->chat, message);
-  }
-}
-
-
-static void
-chatty_conv_get_chat_messages_cb (const guchar *msg,
-                                  int           direction,
-                                  int           time_stamp,
-                                  const char   *room,
-                                  const guchar *who,
-                                  const guchar *uuid,
-                                  gpointer      user_data)
-{
-  ChattyChatView *self = user_data;
-  g_autoptr(ChattyMessage) message = NULL;
-
-  g_assert (CHATTY_IS_CHAT_VIEW (self));
-
-  if (msg && *msg) {
-    if (direction == 1) {
-      ChattyPpBuddy *buddy = NULL;
-      const char    *alias = NULL;
-
-      if (who)
-        alias = strchr ((const char *)who, '/');
-
-      /* Skip ‘/’ */
-      if (alias)
-        alias++;
-      else
-        alias = (const char *)who;
-
-      if (alias)
-        buddy = chatty_chat_find_user (self->chat, alias);
-
-      message = chatty_message_new ((ChattyItem *)buddy, alias,
-                                    (const char *)msg, (const char *)uuid,
-                                    time_stamp, CHATTY_DIRECTION_IN, 0);
-      chatty_chat_prepend_message (self->chat, message);
-    } else if (direction == -1) {
-      message = chatty_message_new (NULL, NULL, (const char *)msg, (const char *)uuid,
-                                    0, CHATTY_DIRECTION_OUT, 0);
-      chatty_chat_prepend_message (self->chat, message);
-    } else {
-      message = chatty_message_new (NULL, NULL, (const char *)msg, (const char *)uuid,
-                                    time_stamp, CHATTY_DIRECTION_SYSTEM, 0);
-      chatty_chat_prepend_message (self->chat, message);
-    }
-  }
-}
-
-
-static void
 chat_view_edge_overshot_cb (ChattyChatView  *self,
                             GtkPositionType  pos)
 {
   g_assert (CHATTY_IS_CHAT_VIEW (self));
 
   if (pos == GTK_POS_TOP)
-    chatty_chat_view_load (self, LAZY_LOAD_INITIAL_MSGS_LIMIT);
+    chatty_manager_load_more_chat (chatty_manager_get_default (), self->chat, LAZY_LOAD_INITIAL_MSGS_LIMIT);
 }
 
 
@@ -1069,54 +991,6 @@ chatty_chat_view_get_chat (ChattyChatView *self)
   g_return_val_if_fail (CHATTY_IS_CHAT_VIEW (self), NULL);
 
   return self->chat;
-}
-
-
-void
-chatty_chat_view_load (ChattyChatView *self,
-                       guint           limit)
-{
-  g_autoptr(ChattyMessage) message = NULL;
-  GListModel *message_list;
-  PurpleAccount *account;
-  const gchar   *conv_name;
-  const char    *uid = NULL;
-  gboolean       im;
-
-  g_return_if_fail (CHATTY_IS_CHAT_VIEW (self));
-  g_return_if_fail (self->chatty_conv);
-
-  im = (self->chatty_conv->conv->type == PURPLE_CONV_TYPE_IM);
-
-  conv_name = purple_conversation_get_name (self->chatty_conv->conv);
-  account = purple_conversation_get_account (self->chatty_conv->conv);
-
-  /* Get the uid of the first message */
-  message_list = chatty_chat_get_messages (self->chat);
-  message = g_list_model_get_item (message_list, 0);
-  if (message)
-    uid = chatty_message_get_uid (message);
-
-  if (im) {
-    g_autofree char *who = NULL;
-
-    /* Remove resource (user could be connecting from different devices/applications) */
-    who = chatty_utils_jabber_id_strip (conv_name);
-
-    chatty_history_get_im_messages (account->username,
-                                    who,
-                                    chatty_conv_get_im_messages_cb,
-                                    self,
-                                    limit,
-                                    uid);
-  } else {
-    chatty_history_get_chat_messages (account->username,
-                                      conv_name,
-                                      chatty_conv_get_chat_messages_cb,
-                                      self,
-                                      limit,
-                                      uid);
-  }
 }
 
 
