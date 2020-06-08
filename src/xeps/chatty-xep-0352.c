@@ -8,6 +8,7 @@
 
 #define G_LOG_DOMAIN "chatty-xep-0352"
 
+#include "chatty-manager.h"
 #include "users/chatty-pp-account.h"
 #include "chatty-xep-0352.h"
 #include "xeps.h"
@@ -18,7 +19,7 @@
 #include "jabber.h"
 
 #include <glib.h>
-
+#include <gtk/gtk.h>
 
 /*
  * Client state indication as per xep-0352
@@ -26,6 +27,7 @@
 
 static PurpleCmdId csi_cmd_handle_id;
 static guint handle;
+static guint notify_id;
 
 static void
 csi_set_active (PurpleConnection *pc, gboolean active)
@@ -38,6 +40,47 @@ csi_set_active (PurpleConnection *pc, gboolean active)
   state = xmlnode_new(active ? "active" : "inactive");
   xmlnode_set_namespace(state, CHATTY_XEPS_NS_CSI);
   purple_signal_emit(purple_connection_get_prpl(pc), "jabber-sending-xmlnode", pc, &state);
+}
+
+static void
+on_screensaver_active_changed (GtkApplication *app)
+{
+  gboolean blank;
+  int n_items;
+  GListModel *model;
+
+  g_return_if_fail (GTK_IS_APPLICATION (app));
+
+  g_object_get (app, "screensaver-active", &blank, NULL);
+
+  model = chatty_manager_get_accounts (chatty_manager_get_default ());
+  n_items = g_list_model_get_n_items (model);
+
+  for (guint i = 0; i < n_items; i++)
+    {
+      g_autoptr(ChattyPpAccount) ca = NULL;
+      PurpleAccount *pa;
+      PurpleConnection *conn;
+
+      ca = g_list_model_get_item (model, i);
+
+      if (chatty_pp_account_is_sms (ca))
+        continue;
+
+      if (!chatty_pp_account_has_features (ca, CHATTY_PP_ACCOUNT_FEATURES_CSI))
+	continue;
+
+      pa = chatty_pp_account_get_account (ca);
+      conn = purple_account_get_connection (pa);
+
+      if (!conn)
+	continue;
+
+      g_debug ("Setting csi for %s to %sactive",
+	       purple_account_get_username (pa),
+	       blank ? "in" : "");
+      csi_set_active (conn, !blank);
+    }
 }
 
 static void
@@ -67,6 +110,9 @@ on_xmlnode_received (PurpleConnection  *gc,
 	g_return_if_fail (ca);
 	g_debug ("Server of %s supports CSI", purple_account_get_username (pa));
 	chatty_pp_account_update_features (ca, CHATTY_PP_ACCOUNT_FEATURES_CSI);
+
+	/* Sync status with screen blank */
+	on_screensaver_active_changed (GTK_APPLICATION (g_application_get_default ()));
       }
     }
   }
@@ -114,6 +160,7 @@ csi_cmd_func (PurpleConversation *conv,
 void
 chatty_0352_close (void)
 {
+  g_signal_handler_disconnect (g_application_get_default (), notify_id);
   purple_cmd_unregister (csi_cmd_handle_id);
   purple_signals_disconnect_by_handle ((gpointer)&handle);
 }
@@ -141,4 +188,9 @@ chatty_0352_init (void)
                          &handle,
                          PURPLE_CALLBACK(on_xmlnode_received),
                          NULL);
+
+  notify_id = g_signal_connect (g_application_get_default (),
+				"notify::screensaver-active",
+				(GCallback)on_screensaver_active_changed,
+				NULL);
 }
