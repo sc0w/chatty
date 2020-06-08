@@ -44,6 +44,8 @@ struct _ChattyPpAccount
   GdkPixbuf         *avatar;
   guint           connect_id;
   ChattyProtocol  protocol;
+
+  ChattyPpAccountFeatures features;
 };
 
 G_DEFINE_TYPE (ChattyPpAccount, chatty_pp_account, CHATTY_TYPE_ACCOUNT)
@@ -755,4 +757,40 @@ chatty_pp_account_disconnect (ChattyPpAccount *self)
   password = g_strdup (chatty_account_get_password (CHATTY_ACCOUNT (self)));
   purple_account_disconnect (self->pp_account);
   chatty_account_set_password (CHATTY_ACCOUNT (self), password);
+}
+
+void
+chatty_pp_account_set_features (ChattyPpAccount *self,
+                                ChattyPpAccountFeatures features)
+{
+  g_return_if_fail (CHATTY_IS_PP_ACCOUNT (self));
+
+  self->features = features;
+}
+
+void
+chatty_pp_account_update_features (ChattyPpAccount *self,
+                                   ChattyPpAccountFeatures features)
+
+{
+  g_return_if_fail (CHATTY_IS_PP_ACCOUNT (self));
+
+  self->features |= features;
+}
+
+gboolean
+chatty_pp_account_has_features (ChattyPpAccount *self,
+                                ChattyPpAccountFeatures features)
+{
+  g_return_val_if_fail (CHATTY_IS_PP_ACCOUNT (self), CHATTY_PP_ACCOUNT_FEATURES_NONE);
+
+  return !!(self->features & features);
+}
+
+ChattyPpAccountFeatures
+chatty_pp_account_get_features (ChattyPpAccount *self)
+{
+  g_return_val_if_fail (CHATTY_IS_PP_ACCOUNT (self), CHATTY_PP_ACCOUNT_FEATURES_NONE);
+
+  return self->features;
 }
