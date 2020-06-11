@@ -18,6 +18,7 @@
 #define MESSAGE_LIMIT 20
 
 #include <glib/gstdio.h>
+#include <sqlite3.h>
 
 #include "purple-init.h"
 #include "chatty-history.h"
@@ -431,6 +432,92 @@ test_history_message (void)
   chatty_history_close ();
 }
 
+static void
+test_value (sqlite3    *db,
+            const char *statement,
+            int         statement_status,
+            int         id,
+            int         direction,
+            const char *account,
+            const char *who,
+            const char *message,
+            const char *room)
+{
+  g_autofree char *uuid = NULL;
+  sqlite3_stmt *stmt;
+  int status, time_stamp;
+
+  status = sqlite3_prepare_v2 (db, statement, -1, &stmt, NULL);
+  g_assert_cmpint (status, ==, SQLITE_OK);
+
+  uuid = g_uuid_string_random ();
+  time_stamp = time (NULL) + g_random_int_range (1, 1000);
+
+  if (room)
+    chatty_history_add_chat_message (message, -1, account, who, uuid, time_stamp, room);
+  else if (account)
+    chatty_history_add_im_message (message, -1, account, who, uuid, time_stamp);
+  else
+    g_assert_cmpint (statement_status, ==, SQLITE_DONE);
+
+  status = sqlite3_step (stmt);
+  g_assert_cmpint (status, ==, statement_status);
+
+  if (statement_status != SQLITE_ROW)
+    return;
+
+  g_assert_cmpint (id, ==, sqlite3_column_int (stmt, 0));
+  g_assert_cmpint (time_stamp, ==, sqlite3_column_int (stmt, 1));
+  g_assert_cmpint (direction, ==, sqlite3_column_int (stmt, 2));
+  g_assert_cmpstr (account, ==, (char *)sqlite3_column_text (stmt, 3));
+  g_assert_cmpstr (who, ==, (char *)sqlite3_column_text (stmt, 4));
+  g_assert_cmpstr (uuid, ==, (char *)sqlite3_column_text (stmt, 5));
+  g_assert_cmpstr (message, ==, (char *)sqlite3_column_text (stmt, 6));
+  if (room)
+    g_assert_cmpstr (room, ==, (char *)sqlite3_column_text (stmt, 7));
+
+  sqlite3_finalize (stmt);
+}
+
+static void
+test_history_db (void)
+{
+  const char *file_name, *account, *who, *message, *room;
+  sqlite3 *db;
+  int status;
+
+  file_name = g_test_get_filename (G_TEST_BUILT, "test-history.db", NULL);
+  g_remove (file_name);
+  g_assert_false (g_file_test (file_name, G_FILE_TEST_IS_REGULAR));
+  chatty_history_open (g_test_get_dir (G_TEST_BUILT), "test-history.db");
+  g_assert_true (g_file_test (file_name, G_FILE_TEST_IS_REGULAR));
+
+  status = sqlite3_open (file_name, &db);
+  g_assert_cmpint (status, ==, SQLITE_OK);
+
+  account = "account@test";
+  who = "buddy@test";
+  message = "Random messsage";
+  room = "room@test";
+
+  test_value (db, "SELECT id,timestamp,direction,account,who,uid,message FROM chatty_im LIMIT 1",
+              SQLITE_DONE, 0, 0, NULL, NULL, NULL, NULL);
+  test_value (db, "SELECT id,timestamp,direction,account,who,uid,message FROM chatty_chat LIMIT 1",
+              SQLITE_DONE, 0, 0, NULL, NULL, NULL, NULL);
+  test_value (db, "SELECT max(id),timestamp,direction,account,who,uid,message FROM chatty_im LIMIT 1",
+              SQLITE_ROW, 1, -1, account, who, message, NULL);
+  test_value (db, "SELECT id,timestamp,direction,account,who,uid,message FROM chatty_chat LIMIT 1",
+              SQLITE_DONE, 0, 0, NULL, NULL, NULL, NULL);
+  test_value (db, "SELECT max(id),timestamp,direction,account,who,uid,message FROM chatty_im LIMIT 1",
+              SQLITE_ROW, 2, -1, account, who, message, NULL);
+  test_value (db, "SELECT max(id),timestamp,direction,account,who,uid,message,room FROM chatty_chat LIMIT 1",
+              SQLITE_ROW, 1, -1, account, who, message, room);
+  test_value (db, "SELECT max(id),timestamp,direction,account,who,uid,message,room FROM chatty_chat LIMIT 1",
+              SQLITE_ROW, 2, -1, account, who, message, room);
+
+  chatty_history_close ();
+}
+
 int
 main (int   argc,
       char *argv[])
@@ -444,6 +531,7 @@ main (int   argc,
   g_test_add_func ("/history/im", test_history_im);
   g_test_add_func ("/history/chat", test_history_chat);
   g_test_add_func ("/history/message", test_history_message);
+  g_test_add_func ("/history/db", test_history_db);
 
   ret = g_test_run ();
 
