@@ -757,6 +757,21 @@ chatty_chat_prepend_message (ChattyChat    *self,
   g_signal_emit (self, signals[CHANGED], 0);
 }
 
+void
+chatty_chat_prepend_messages (ChattyChat *self,
+                              GPtrArray  *messages)
+{
+  g_return_if_fail (CHATTY_IS_CHAT (self));
+
+  if (!messages || messages->len == 0)
+    return;
+
+  g_return_if_fail (CHATTY_IS_MESSAGE (messages->pdata[0]));
+
+  g_list_store_splice (self->message_store, 0, 0, messages->pdata, messages->len);
+  g_signal_emit (self, signals[CHANGED], 0);
+}
+
 /**
  * chatty_chat_add_users:
  * @self: a #ChattyChat

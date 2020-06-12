@@ -55,6 +55,8 @@ void                chatty_chat_append_message       (ChattyChat         *self,
                                                        ChattyMessage      *message);
 void                chatty_chat_prepend_message       (ChattyChat         *self,
                                                        ChattyMessage      *message);
+void                chatty_chat_prepend_messages      (ChattyChat         *self,
+                                                       GPtrArray          *messages);
 void                chatty_chat_add_users             (ChattyChat         *self,
                                                        GList              *users);
 void                chatty_chat_remove_user           (ChattyChat         *self,
