@@ -43,6 +43,7 @@ PurpleChat         *chatty_chat_get_purple_chat       (ChattyChat         *self)
 PurpleBuddy        *chatty_chat_get_purple_buddy      (ChattyChat         *self);
 PurpleConversation *chatty_chat_get_purple_conv       (ChattyChat         *self);
 const char         *chatty_chat_get_username          (ChattyChat         *self);
+const char         *chatty_chat_get_chat_name         (ChattyChat         *self);
 gboolean            chatty_chat_are_same              (ChattyChat         *a,
                                                        ChattyChat         *b);
 gboolean            chatty_chat_match_purple_conv     (ChattyChat         *self,

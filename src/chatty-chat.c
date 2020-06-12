@@ -604,6 +604,30 @@ chatty_chat_get_username (ChattyChat *self)
   return "";
 }
 
+const char *
+chatty_chat_get_chat_name (ChattyChat *self)
+{
+  const char *chat_name = NULL;
+
+  g_return_val_if_fail (CHATTY_IS_CHAT (self), "");
+
+  if (self->chat_name)
+    return self->chat_name;
+
+  if (self->conv)
+    chat_name = purple_conversation_get_name (self->conv);
+  else if (self->buddy)
+    chat_name = purple_buddy_get_name (self->buddy);
+
+  if (chat_name)
+    self->chat_name = chatty_utils_jabber_id_strip (chat_name);
+
+  if (self->chat_name)
+    return self->chat_name;
+
+  return "";
+}
+
 gboolean
 chatty_chat_are_same (ChattyChat *a,
                       ChattyChat *b)
