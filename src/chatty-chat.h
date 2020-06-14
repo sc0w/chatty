@@ -32,12 +32,16 @@ typedef enum {
 } e_msg_dir;
 
 
+ChattyChat         *chatty_chat_new                   (const char         *account_username,
+                                                       const char         *chat_name,
+                                                       gboolean            is_im);
 ChattyChat         *chatty_chat_new_im_chat           (PurpleAccount      *account,
                                                        PurpleBuddy        *buddy);
 ChattyChat         *chatty_chat_new_purple_chat       (PurpleChat         *pp_chat);
 ChattyChat         *chatty_chat_new_purple_conv       (PurpleConversation *conv);
 void                chatty_chat_set_purple_conv       (ChattyChat         *self,
                                                        PurpleConversation *conv);
+gboolean            chatty_chat_is_im                 (ChattyChat         *self);
 ChattyProtocol      chatty_chat_get_protocol          (ChattyChat         *self);
 PurpleChat         *chatty_chat_get_purple_chat       (ChattyChat         *self);
 PurpleBuddy        *chatty_chat_get_purple_buddy      (ChattyChat         *self);

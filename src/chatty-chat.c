@@ -59,10 +59,12 @@ struct _ChattyChat
 
   char               *last_message;
   char               *chat_name;
+  char               *account_username;
   guint               unread_count;
   guint               last_msg_time;
   e_msg_dir           last_msg_direction;
   ChattyEncryption    encrypt;
+  gboolean            is_im;
 };
 
 G_DEFINE_TYPE (ChattyChat, chatty_chat, CHATTY_TYPE_ITEM)
@@ -430,6 +432,23 @@ chatty_chat_init (ChattyChat *self)
 }
 
 
+
+ChattyChat *
+chatty_chat_new (const char *account_username,
+                 const char *chat_name,
+                 gboolean    is_im)
+{
+  ChattyChat *self;
+
+  self = g_object_new (CHATTY_TYPE_CHAT, NULL);
+
+  self->chat_name = g_strdup (chat_name);
+  self->account_username = g_strdup (account_username);
+  self->is_im = !!is_im;
+
+  return self;
+}
+
 ChattyChat *
 chatty_chat_new_im_chat (PurpleAccount *account,
                          PurpleBuddy   *buddy)
@@ -536,6 +555,34 @@ chatty_chat_set_purple_conv (ChattyChat         *self,
   }
 }
 
+/**
+ * chatty_chat_is_im:
+ * @self: A #ChattyChat
+ *
+ * Get if @self is an instant message or not.
+ *
+ * Returns: %TRUE if @self is an instant message.
+ * %FALSE if @self is a multiuser chat.
+ */
+gboolean
+chatty_chat_is_im (ChattyChat *self)
+{
+  PurpleConversationType type = PURPLE_CONV_TYPE_UNKNOWN;
+
+  g_return_val_if_fail (CHATTY_IS_CHAT (self), FALSE);
+
+  if (self->buddy)
+    return TRUE;
+
+  if (self->conv)
+    type = purple_conversation_get_type (self->conv);
+
+  if (type == PURPLE_CONV_TYPE_IM)
+    return TRUE;
+
+  return self->is_im;
+}
+
 ChattyProtocol
 chatty_chat_get_protocol (ChattyChat *self)
 {
@@ -600,6 +647,9 @@ chatty_chat_get_username (ChattyChat *self)
 
   if (self->conv)
     return purple_account_get_username (self->conv->account);
+
+  if (self->account_username)
+    return self->account_username;
 
   return "";
 }
