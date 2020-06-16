@@ -1322,7 +1322,8 @@ manager_account_connection_failed_cb (PurpleAccount         *pp_account,
   g_return_if_fail (account);
 
   if (error == PURPLE_CONNECTION_ERROR_NETWORK_ERROR &&
-      self->network_available)
+      self->network_available &&
+      chatty_item_get_protocols (CHATTY_ITEM (account)) != CHATTY_PROTOCOL_SMS)
     chatty_pp_account_connect (account, TRUE);
 
   if (purple_connection_error_is_fatal (error))
