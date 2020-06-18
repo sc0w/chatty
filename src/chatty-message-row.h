@@ -33,11 +33,5 @@ void           chatty_message_row_set_alias        (ChattyMessageRow *self,
                                                     const char       *alias);
 void           chatty_message_row_show_user_detail (ChattyMessageRow *self);
 void           chatty_message_row_hide_user_detail (ChattyMessageRow *self);
-void           chatty_message_row_set_item (ChattyMessageRow *self,
-                                            guint             message_dir,
-                                            e_msg_type        message_type,
-                                            const char       *message,
-                                            const char       *footer,
-                                            GdkPixbuf        *avatar);
 
 G_END_DECLS
