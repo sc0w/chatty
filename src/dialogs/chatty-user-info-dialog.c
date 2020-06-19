@@ -219,16 +219,14 @@ static void
 chatty_user_info_dialog_update_chat (ChattyUserInfoDialog *self)
 {
   ChattyManager    *manager;
-  PurpleAccount    *account;
   PurplePresence   *presence;
   PurpleStatus     *status;
-  const char       *protocol_id;
   g_autofree gchar *alias = NULL;
+  ChattyProtocol    protocol;
 
   g_assert (CHATTY_IS_USER_INFO_DIALOG (self));
 
-  account = purple_conversation_get_account (self->chatty_conv->conv);
-  protocol_id = purple_account_get_protocol_id (account);
+  protocol = chatty_item_get_protocols (CHATTY_ITEM (self->chat));
 
   manager = chatty_manager_get_default ();
   chatty_avatar_set_item (CHATTY_AVATAR (self->avatar), CHATTY_ITEM (self->chat));
@@ -241,7 +239,7 @@ chatty_user_info_dialog_update_chat (ChattyUserInfoDialog *self)
                            self,
                            G_CONNECT_SWAPPED);
 
-  if (chatty_manager_lurch_plugin_is_loaded (manager) && (!g_strcmp0 (protocol_id, "prpl-jabber"))) {
+  if (chatty_manager_lurch_plugin_is_loaded (manager) && protocol == CHATTY_PROTOCOL_XMPP) {
 
     gtk_widget_show (GTK_WIDGET(self->label_status_msg));
     gtk_widget_show (GTK_WIDGET(self->label_encrypt));
@@ -254,12 +252,11 @@ chatty_user_info_dialog_update_chat (ChattyUserInfoDialog *self)
   self->buddy = purple_find_buddy (self->chatty_conv->conv->account, self->chatty_conv->conv->name);
   self->alias = purple_buddy_get_alias (self->buddy);
 
-  if (chatty_blist_protocol_is_sms (account)) {
+  if (protocol == CHATTY_PROTOCOL_SMS) {
     gtk_label_set_text (GTK_LABEL(self->label_user_id), _("Phone Number:"));
   }
 
-  if (!g_strcmp0 (protocol_id, "prpl-jabber")) {
-
+  if (protocol == CHATTY_PROTOCOL_XMPP) {
     gtk_widget_show (GTK_WIDGET(self->label_user_status));
     gtk_widget_show (GTK_WIDGET(self->label_status_msg));
 
