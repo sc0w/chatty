@@ -66,6 +66,7 @@ struct _ChattyNewChatDialog
   char       *phone_number;
 
   ChattyContact *dummy_contact;
+  GCancellable  *cancellable;
 };
 
 
@@ -152,6 +153,33 @@ edit_contact_button_clicked_cb (ChattyNewChatDialog *self)
   gtk_stack_set_visible_child_name (GTK_STACK (self->new_chat_stack), "view-new-contact");
 }
 
+static void
+open_contacts_finish_cb (GObject      *object,
+                         GAsyncResult *result,
+                         gpointer      user_data)
+{
+  ChattyNewChatDialog *self = user_data;
+  ChattyEds *chatty_eds = (ChattyEds *)object;
+  GtkWidget *dialog;
+  g_autoptr(GError) error = NULL;
+
+  g_assert (CHATTY_IS_NEW_CHAT_DIALOG (self));
+  g_assert (CHATTY_IS_EDS (chatty_eds));
+
+  chatty_eds_open_contacts_app_finish (chatty_eds, result, &error);
+
+  if (!error)
+    return;
+
+  dialog = gtk_message_dialog_new (GTK_WINDOW (self),
+                                   GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+                                   GTK_MESSAGE_WARNING,
+                                   GTK_BUTTONS_CLOSE,
+                                   _("Error opening GNOME Contacts: %s"),
+                                   error->message);
+  gtk_dialog_run (GTK_DIALOG (dialog));
+  gtk_widget_destroy (dialog);
+}
 
 static void
 add_in_contacts_button_clicked_cb (ChattyNewChatDialog *self)
@@ -161,7 +189,9 @@ add_in_contacts_button_clicked_cb (ChattyNewChatDialog *self)
   g_assert (CHATTY_IS_NEW_CHAT_DIALOG (self));
 
   chatty_eds = chatty_manager_get_eds (self->manager);
-  chatty_eds_open_contacts_app (chatty_eds);
+  chatty_eds_open_contacts_app (chatty_eds,
+                                self->cancellable,
+                                open_contacts_finish_cb, self);
 
   gtk_stack_set_visible_child_name (GTK_STACK (self->new_chat_stack), "view-new-chat");
 }
@@ -487,6 +517,10 @@ chatty_new_chat_dialog_dispose (GObject *object)
 {
   ChattyNewChatDialog *self = (ChattyNewChatDialog *)object;
 
+  if (self->cancellable)
+    g_cancellable_cancel (self->cancellable);
+
+  g_clear_object (&self->cancellable);
   g_clear_object (&self->manager);
   g_clear_object (&self->slice_model);
   g_clear_object (&self->filter);
@@ -542,6 +576,7 @@ chatty_new_chat_dialog_init (ChattyNewChatDialog *self)
   g_autoptr(GtkSorter) sorter = NULL;
 
   gtk_widget_init_template (GTK_WIDGET (self));
+  self->cancellable = g_cancellable_new ();
 
   gtk_list_box_set_header_func (GTK_LIST_BOX (self->accounts_list),
                                 hdy_list_box_separator_header,
