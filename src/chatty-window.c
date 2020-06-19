@@ -1178,7 +1178,7 @@ chatty_window_set_uri (ChattyWindow *self,
   if (contact)
     alias = chatty_item_get_name (CHATTY_ITEM (contact));
   else
-    alias = uri;
+    alias = who;
 
   g_return_if_fail (who != NULL);
 
