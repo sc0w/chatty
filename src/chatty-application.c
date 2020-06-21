@@ -57,6 +57,7 @@ struct _ChattyApplication
   guint open_uri_id;
 
   gboolean daemon;
+  gboolean show_window;
   gboolean enable_debug;
   gboolean enable_verbose;
 };
@@ -220,13 +221,16 @@ chatty_application_command_line (GApplication            *application,
 
   options = g_application_command_line_get_options_dict (command_line);
 
+  self->show_window = TRUE;
   if (g_variant_dict_contains (options, "daemon")) {
-    if (!g_application_command_line_get_is_remote (command_line)) {
-      self->daemon = TRUE;
+    /* Hold application only the first time daemon mode is set */
+    if (!self->daemon)
       g_application_hold (application);
-    } else {
-      g_debug ("Daemon mode not possible, application is already running");
-    }
+
+    self->show_window = FALSE;
+    self->daemon = TRUE;
+
+    g_debug ("Enable daemon mode");
   }
 
   if (g_variant_dict_contains (options, "nologin")) {
@@ -298,38 +302,27 @@ static void
 chatty_application_activate (GApplication *application)
 {
   GtkApplication *app = (GtkApplication *)application;
-  GtkWindow      *window;
-  gboolean        show_win;
-
   ChattyApplication *self = (ChattyApplication *)application;
 
   g_assert (GTK_IS_APPLICATION (app));
 
-  window = gtk_application_get_active_window (app);
-
-  if (window) {
-    show_win = TRUE;
-  } else {
+  if (!self->main_window) {
     self->main_window = chatty_window_new (app);
 
     g_object_add_weak_pointer (G_OBJECT (self->main_window), (gpointer *)&self->main_window);
-    show_win = !self->daemon;
-
-    if (self->daemon)
-      g_signal_connect (G_OBJECT (self->main_window),
-                        "delete-event",
-                        G_CALLBACK (gtk_widget_hide_on_delete),
-                        NULL);
   }
 
-  if (show_win) {
-    window = gtk_application_get_active_window (app);
+  if (self->daemon)
+    g_signal_connect (G_OBJECT (self->main_window),
+                      "delete-event",
+                      G_CALLBACK (gtk_widget_hide_on_delete),
+                      NULL);
 
-    gtk_window_present (window);
-  }
+  if (self->show_window)
+    gtk_window_present (GTK_WINDOW (self->main_window));
 
   /* Open with some delay so that the modem is ready when not in daemon mode */
-  if (self->main_window && self->uri)
+  if (self->uri)
     self->open_uri_id = g_timeout_add (100,
                                        G_SOURCE_FUNC (application_open_uri),
                                        self);
