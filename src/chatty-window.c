@@ -159,6 +159,9 @@ window_chat_changed_cb (ChattyWindow *self)
 
     chatty_avatar_set_item (CHATTY_AVATAR (self->sub_header_icon), NULL);
     gtk_label_set_label (GTK_LABEL (self->sub_header_label), "");
+
+    if (hdy_leaflet_get_fold (HDY_LEAFLET (self->header_box)) == HDY_FOLD_UNFOLDED)
+      chatty_window_chat_list_select_first (self);
   }
 
   /*
