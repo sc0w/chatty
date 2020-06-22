@@ -232,7 +232,7 @@ chatty_conv_show_conversation (PurpleConversation *conv)
 
   window = chatty_application_get_main_window (CHATTY_APPLICATION_DEFAULT ());
 
-  chatty_conv_present_conversation (conv);
+  purple_conversation_present (conv);
 
   chatty_window_change_view (window, CHATTY_VIEW_MESSAGE_LIST);
 
