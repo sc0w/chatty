@@ -14,7 +14,7 @@ stages:
 before_script:
   - export DEBIAN_FRONTEND=noninteractive
   - apt-get -y update
-  - apt-get -y install build-essential wget ca-certificates gnupg
+  - apt-get -y install build-essential wget ca-certificates gnupg lcov
   - echo "deb http://ci.puri.sm/ scratch librem5" > /etc/apt/sources.list.d/ci.list
   - wget -O- https://ci.puri.sm/ci-repo.key | apt-key add -
   - apt-get -y update
@@ -26,7 +26,7 @@ build-debian-gcc-buster:
   stage: build
   script:
     - export LC_ALL=C.UTF-8
-    - meson . _build --werror
+    - meson . _build -Db_coverage=true --werror
     - ninja -C _build
   artifacts:
     paths:
@@ -38,7 +38,7 @@ build-debian-gcc-bullseye:
   stage: build
   script:
     - export LC_ALL=C.UTF-8
-    - meson . _build --werror
+    - meson . _build -Db_coverage=true --werror
     - ninja -C _build
   artifacts:
     paths:
@@ -53,6 +53,8 @@ test:debian-gcc:
     - export G_DEBUG=fatal-warnings
     - export LC_ALL=C.UTF-8
     - ninja -C _build test
+    - ninja -C _build coverage
+  coverage: '/^\s+lines\.+:\s+([\d.]+\%)\s+/'
 
 check-po:
   <<: *tags
