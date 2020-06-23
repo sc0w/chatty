@@ -294,7 +294,7 @@ chatty_contact_set_value (ChattyContact *self,
  * Eg: “Mobile”, “Work”, etc. translated to
  * the current locale.
  *
- * Returns: (transfer none) (nullable): The value type of @self.
+ * Returns: (transfer none): The value type of @self.
  */
 const char *
 chatty_contact_get_value_type (ChattyContact *self)
@@ -305,13 +305,13 @@ chatty_contact_get_value_type (ChattyContact *self)
     return "";
 
   if (e_vcard_attribute_has_type (self->attribute, "cell"))
-    return _("Mobile");
+    return _("Mobile: ");
   if (e_vcard_attribute_has_type (self->attribute, "work"))
-    return _("Work");
+    return _("Work: ");
   if (e_vcard_attribute_has_type (self->attribute, "other"))
-    return _("Other");
+    return _("Other: ");
 
-  return NULL;
+  return "";
 }
 
 
