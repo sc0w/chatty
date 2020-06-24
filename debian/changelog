@@ -1,3 +1,64 @@
+chatty (0.1.12) amber-phone; urgency=medium
+
+  [ Mohammed Sadiq ]
+  * manager: Emit “avatar-changed” if chat icon changes
+  * dialog-user-info: Use ChattyAvatar for avatar
+  * window: Use ChattyAvatar for chat avatars
+  * user-info-dialog: Don’t update main window avatar on change
+  * conversation: Emit ‘avatar-changed’ for IM on buddy avatar change
+  * conversation: Don’t update main window avatar on change
+  * window: Remove unused function
+  * manager: Emit ‘avatar-changed’ if buddy sign on/off
+  * manager: Remove a hack
+  * manager: Use ChattyItem API to get notification avatar
+  * contact: Fix a memory leak
+  * settings-dialog: Fix a string
+  * application: Move some functions from main.c
+  * chat: Strip resource information from get_name()
+  * item: Update doc for get_name()
+  * history: Fix a function signature
+  * history: Sort by id after timestamp sort
+  * history: Fix getting last message on duplicate timestamp
+  * Move chatty-history.c to libsrc
+  * history: Fix a dangling pointer
+  * tests: Add chatty-history tests
+  * history: Load uid when loading last message
+  * history: Fix a function signature
+  * Set uid when creating message
+  * conversation: Remove an unused struct member
+  * chat: Remove unused code
+  * manager: Don’t reconnect to SMS account on network error
+  * message-row: Remove unused code
+  * contact-provider: Avoid creating contacts with empty value
+  * window: Use stripped string for alias
+  * application: Fix setting daemon mode
+  * user-info-dialog: Fix label for SMS chat
+  * message-row: Align the message label depending on the direction
+  * gbp.conf: Set multimaint-merge as default when generating changelog
+  * conversation: Use purple API to present the conversation
+  * conversation: Remove unused code
+  * ci: Enable coverage report
+  * window: Select the first chat if in non-folded mode
+  * Fix showing contact numbers of unknown type
+
+  [ Rafael Fontenelle ]
+  * Update Brazilian Portuguese translation
+  * Add doap file
+
+  [ Daniel Șerbănescu ]
+  * Add Romanian translation
+
+  [ Guido Günther ]
+  * po: Fix incorrect translations
+  * pp-account: Add feature flags
+  * xeps: Support xep-0352: Client state indication
+  * xep-0352: Trigger (in)activity on screen blank/unblank
+
+  [ Yuri Chornoivan ]
+  * po: Update Ukrainian translation
+
+ -- Mohammed Sadiq <sadiq@sadiqpk.org>  Wed, 24 Jun 2020 19:00:14 +0530
+
 chatty (0.1.11) amber-phone; urgency=medium
 
   [ Mohammed Sadiq ]
