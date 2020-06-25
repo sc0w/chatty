@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: purism-chatty\n"
 "Report-Msgid-Bugs-To: https://source.puri.sm/Librem5/phosh/issues\n"
-"POT-Creation-Date: 2020-06-03 15:24+0000\n"
-"PO-Revision-Date: 2020-06-03 18:44+0300\n"
+"POT-Creation-Date: 2020-06-24 03:24+0000\n"
+"PO-Revision-Date: 2020-06-25 08:23+0300\n"
 "Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian <kde-i18n-uk@kde.org>\n"
 "Language: uk\n"
@@ -20,7 +20,7 @@ msgstr ""
 "=4 && (n%100<10 || n%100>=20) ? 1 : 2)\n"
 
 #: data/sm.puri.Chatty.appdata.xml.in:6 data/sm.puri.Chatty.desktop.in:3
-#: src/chatty-application.c:264 src/ui/chatty-window.ui:224
+#: src/chatty-application.c:273 src/ui/chatty-window.ui:224
 msgid "Chats"
 msgstr "Спілкування"
 
@@ -131,58 +131,58 @@ msgstr "Розмір вікна"
 msgid "Window size (width, height)."
 msgstr "Розмір вікна (ширина, висота)."
 
-#: src/chatty-application.c:63
+#: src/chatty-application.c:68
 msgid "Show release version"
 msgstr "Показати версію випуску"
 
-#: src/chatty-application.c:64
+#: src/chatty-application.c:69
 msgid "Start in daemon mode"
 msgstr "Запускати у режимі служби"
 
-#: src/chatty-application.c:65
+#: src/chatty-application.c:70
 msgid "Disable all accounts"
 msgstr "Вимкнути усі облікові записи"
 
-#: src/chatty-application.c:66
+#: src/chatty-application.c:71
 msgid "Enable libpurple debug messages"
 msgstr "Увімкнути діагностичні повідомлення libpurple"
 
-#: src/chatty-application.c:67
+#: src/chatty-application.c:72
 msgid "Enable verbose libpurple debug messages"
 msgstr "Увімкнути докладні діагностичні повідомлення libpurple"
 
-#: src/chatty-application.c:103
+#: src/chatty-application.c:108
 #, c-format
 msgid "Authorize %s?"
 msgstr "Уповноважити %s?"
 
-#: src/chatty-application.c:107
+#: src/chatty-application.c:112
 msgid "Reject"
 msgstr "Відмовити"
 
-#: src/chatty-application.c:109
+#: src/chatty-application.c:114
 msgid "Accept"
 msgstr "Прийняти"
 
-#: src/chatty-application.c:114
+#: src/chatty-application.c:119
 #, c-format
 msgid "Add %s to contact list"
 msgstr "Додати %s до списку контактів"
 
-#: src/chatty-application.c:137
+#: src/chatty-application.c:142
 msgid "Contact added"
 msgstr "Контакт додано"
 
-#: src/chatty-application.c:140
+#: src/chatty-application.c:145
 #, c-format
 msgid "User %s has added %s to the contacts"
 msgstr "Користувач %s додав %s до контактів"
 
-#: src/chatty-application.c:160
+#: src/chatty-application.c:165
 msgid "Login failed"
 msgstr "Невдала спроба увійти"
 
-#: src/chatty-application.c:166
+#: src/chatty-application.c:171
 msgid "Please check ID and password"
 msgstr "Будь ласка, перевірте ідентифікатор і пароль"
 
@@ -262,7 +262,7 @@ msgstr "Модератор"
 msgid "Member"
 msgstr "Член"
 
-#: src/chatty-manager.c:975
+#: src/chatty-manager.c:991
 #, c-format
 msgid "New message from %s"
 msgstr "Нове повідомлення від %s"
@@ -311,7 +311,7 @@ msgstr "Зберегти файл…"
 msgid "Open File..."
 msgstr "Відкрити файл…"
 
-#: src/chatty-purple-request.c:191 src/chatty-window.c:656
+#: src/chatty-purple-request.c:191 src/chatty-window.c:659
 #: src/dialogs/chatty-settings-dialog.c:447
 #: src/dialogs/chatty-user-info-dialog.c:66 src/ui/chatty-dialog-join-muc.ui:16
 #: src/ui/chatty-dialog-muc-info.ui:56
@@ -384,31 +384,31 @@ msgstr ""
 msgid "Start chatting"
 msgstr "Почати спілкування"
 
-#: src/chatty-window.c:639
+#: src/chatty-window.c:642
 msgid "Disconnect group chat"
 msgstr "Від'єднатися від групового спілкування"
 
-#: src/chatty-window.c:640
+#: src/chatty-window.c:643
 msgid "This removes chat from chats list"
 msgstr "У результаті спілкування буде вилучено зі списку спілкувань"
 
-#: src/chatty-window.c:644
+#: src/chatty-window.c:647
 msgid "Delete chat with"
 msgstr "Вилучити спілкування з"
 
-#: src/chatty-window.c:645
+#: src/chatty-window.c:648
 msgid "This deletes the conversation history"
 msgstr "У результаті буде вилучено журнал спілкування"
 
-#: src/chatty-window.c:658
+#: src/chatty-window.c:661
 msgid "Delete"
 msgstr "Вилучити"
 
-#: src/chatty-window.c:910
+#: src/chatty-window.c:913
 msgid "An SMS and XMPP messaging client"
 msgstr "Клієнт обміну повідомленнями SMS і XMPP"
 
-#: src/chatty-window.c:917
+#: src/chatty-window.c:920
 msgid "translator-credits"
 msgstr "Юрій Чорноіван <yurchor@ukr.net>, 2020"
 
@@ -471,7 +471,7 @@ msgstr "Це спілкування зашифровано"
 msgid "This chat is not encrypted"
 msgstr "Це спілкування не зашифровано"
 
-#: src/dialogs/chatty-user-info-dialog.c:258
+#: src/dialogs/chatty-user-info-dialog.c:256
 msgid "Phone Number:"
 msgstr "Номер телефону:"
 
@@ -656,7 +656,6 @@ msgid "Indicate Idle Contacts"
 msgstr "Позначати бездіяльні контакти"
 
 #: src/ui/chatty-settings-dialog.ui:201
-#| msgid "Blur avatars from offline contacts"
 msgid "Blur avatars from idle contacts"
 msgstr "Розмивати аватари бездіяльних контактів"
 
@@ -749,13 +748,16 @@ msgid "Delete Chat"
 msgstr "Вилучити спілкування"
 
 #: src/users/chatty-contact.c:308
-msgid "Mobile"
-msgstr "Мобільний"
+#| msgid "Mobile"
+msgid "Mobile: "
+msgstr "Мобільний: "
 
 #: src/users/chatty-contact.c:310
-msgid "Work"
-msgstr "Робота"
+#| msgid "Work"
+msgid "Work: "
+msgstr "Робочий: "
 
 #: src/users/chatty-contact.c:312
-msgid "Other"
-msgstr "Інше"
+#| msgid "Other"
+msgid "Other: "
+msgstr "Інший: "
