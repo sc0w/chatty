@@ -38,6 +38,9 @@ struct _ChattyWindow
 
   ChattySettings *settings;
 
+  GtkWidget *sidebar_stack;
+  GtkWidget *empty_view;
+  GtkWidget *chat_list_view;
   GtkWidget *chats_listbox;
 
   GtkWidget *content_box;
@@ -49,6 +52,7 @@ struct _ChattyWindow
 
   GtkWidget *new_chat_dialog;
 
+  GtkWidget *search_button;
   GtkWidget *chats_search_bar;
   GtkWidget *chats_search_entry;
 
@@ -65,7 +69,6 @@ struct _ChattyWindow
 
   GtkWidget *convs_notebook;
 
-  GtkWidget *overlay;
   GtkWidget *overlay_icon;
   GtkWidget *overlay_label_1;
   GtkWidget *overlay_label_2;
@@ -138,6 +141,30 @@ window_chat_list_row_new (ChattyItem   *item,
 }
 
 static void
+chatty_window_update_sidebar_view (ChattyWindow *self)
+{
+  GtkWidget *current_view;
+  GListModel *model;
+  gboolean has_child;
+
+  g_assert (CHATTY_IS_WINDOW (self));
+
+  model = chatty_manager_get_chat_list (self->manager);
+  has_child = g_list_model_get_n_items (model) > 0;
+
+  if (has_child)
+    current_view = self->chat_list_view;
+  else
+    current_view = self->empty_view;
+
+  gtk_widget_set_sensitive (self->search_button, has_child);
+  gtk_stack_set_visible_child (GTK_STACK (self->sidebar_stack), current_view);
+
+  if (!has_child)
+    hdy_search_bar_set_search_mode (HDY_SEARCH_BAR (self->chats_search_bar), FALSE);
+}
+
+static void
 window_chat_changed_cb (ChattyWindow *self)
 {
   GListModel *model;
@@ -151,7 +178,6 @@ window_chat_changed_cb (ChattyWindow *self)
   model = chatty_manager_get_chat_list (self->manager);
   has_child = g_list_model_get_n_items (model) > 0;
 
-  gtk_widget_set_visible (self->overlay, !has_child);
   gtk_widget_set_sensitive (self->header_sub_menu_button, has_child);
 
   if (!CHATTY_IS_CHAT (self->selected_item)) {
@@ -178,6 +204,8 @@ window_chat_changed_cb (ChattyWindow *self)
       gtk_list_box_select_row (GTK_LIST_BOX (self->chats_listbox), row);
     }
   }
+
+  chatty_window_update_sidebar_view (self);
 
   if (has_child)
     return;
@@ -1081,14 +1109,21 @@ chatty_window_class_init (ChattyWindowClass *klass)
   gtk_widget_class_bind_template_child (widget_class, ChattyWindow, header_chat_info_button);
   gtk_widget_class_bind_template_child (widget_class, ChattyWindow, header_add_chat_button);
   gtk_widget_class_bind_template_child (widget_class, ChattyWindow, header_sub_menu_button);
+
+  gtk_widget_class_bind_template_child (widget_class, ChattyWindow, search_button);
   gtk_widget_class_bind_template_child (widget_class, ChattyWindow, chats_search_bar);
   gtk_widget_class_bind_template_child (widget_class, ChattyWindow, chats_search_entry);
+
   gtk_widget_class_bind_template_child (widget_class, ChattyWindow, content_box);
   gtk_widget_class_bind_template_child (widget_class, ChattyWindow, header_box);
   gtk_widget_class_bind_template_child (widget_class, ChattyWindow, header_group);
+
+  gtk_widget_class_bind_template_child (widget_class, ChattyWindow, sidebar_stack);
+  gtk_widget_class_bind_template_child (widget_class, ChattyWindow, empty_view);
+  gtk_widget_class_bind_template_child (widget_class, ChattyWindow, chat_list_view);
   gtk_widget_class_bind_template_child (widget_class, ChattyWindow, chats_listbox);
+
   gtk_widget_class_bind_template_child (widget_class, ChattyWindow, convs_notebook);
-  gtk_widget_class_bind_template_child (widget_class, ChattyWindow, overlay);
   gtk_widget_class_bind_template_child (widget_class, ChattyWindow, overlay_icon);
   gtk_widget_class_bind_template_child (widget_class, ChattyWindow, overlay_label_1);
   gtk_widget_class_bind_template_child (widget_class, ChattyWindow, overlay_label_2);
