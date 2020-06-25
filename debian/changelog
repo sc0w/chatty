@@ -1,3 +1,14 @@
+chatty (0.1.13) amber-phone; urgency=high
+
+  [ Mohammed Sadiq ]
+  * Remove obsolete files
+  * Revert "window: Select the first chat if in non-folded mode"
+
+  [ David Heidelberg ]
+  * Rename appdata to metainfo and install into metainfo directory
+
+ -- Mohammed Sadiq <sadiq@sadiqpk.org>  Thu, 25 Jun 2020 20:01:42 +0530
+
 chatty (0.1.12) amber-phone; urgency=medium
 
   [ Mohammed Sadiq ]
