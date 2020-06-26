@@ -8,6 +8,7 @@
 #include <glib.h>
 #include <glib/gi18n.h>
 #include "chatty-manager.h"
+#include "chatty-settings.h"
 #include "chatty-utils.h"
 #include <libebook-contacts/libebook-contacts.h>
 
@@ -43,6 +44,7 @@ chatty_utils_strip_blanks (const char *string)
 char* 
 chatty_utils_check_phonenumber (const char *phone_number)
 {
+  ChattySettings *settings;
   EPhoneNumber      *number;
   g_autofree char   *stripped = NULL;
   char              *result;
@@ -50,7 +52,10 @@ chatty_utils_check_phonenumber (const char *phone_number)
 
   stripped = chatty_utils_strip_blanks (phone_number);
 
-  number = e_phone_number_from_string (stripped, NULL, &err);
+  settings = chatty_settings_get_default ();
+  number = e_phone_number_from_string (stripped,
+                                       chatty_settings_get_country_iso_code (settings),
+                                       &err);
 
   if (!number || !e_phone_number_is_supported ()) {
     g_debug ("%s %s: %s", __func__, phone_number, err->message);
