@@ -54,6 +54,10 @@ struct _ChattyNewChatDialog
   GtkWidget *add_in_contacts_button;
   GtkWidget *dummy_prefix_radio;
 
+  GtkWidget *contact_list_stack;
+  GtkWidget *contact_list_view;
+  GtkWidget *empty_search_view;
+
   GtkSliceListModel  *slice_model;
   GtkFilter *filter;
   char      *search_str;
@@ -274,6 +278,11 @@ contact_search_entry_changed_cb (ChattyNewChatDialog *self,
   account = purple_accounts_find ("SMS", "prpl-mm-sms");
   valid = valid && purple_account_is_connected (account);
   gtk_widget_set_visible (self->new_contact_row, valid);
+
+  if (valid || g_list_model_get_n_items (G_LIST_MODEL (self->slice_model)) > 0)
+    gtk_stack_set_visible_child (GTK_STACK (self->contact_list_stack), self->contact_list_view);
+  else
+    gtk_stack_set_visible_child (GTK_STACK (self->contact_list_stack), self->empty_search_view);
 }
 
 static void
@@ -569,6 +578,10 @@ chatty_new_chat_dialog_class_init (ChattyNewChatDialogClass *klass)
   gtk_widget_class_bind_template_child (widget_class, ChattyNewChatDialog, edit_contact_button);
   gtk_widget_class_bind_template_child (widget_class, ChattyNewChatDialog, add_contact_button);
   gtk_widget_class_bind_template_child (widget_class, ChattyNewChatDialog, add_in_contacts_button);
+
+  gtk_widget_class_bind_template_child (widget_class, ChattyNewChatDialog, contact_list_stack);
+  gtk_widget_class_bind_template_child (widget_class, ChattyNewChatDialog, contact_list_view);
+  gtk_widget_class_bind_template_child (widget_class, ChattyNewChatDialog, empty_search_view);
 
   gtk_widget_class_bind_template_callback (widget_class, back_button_clicked_cb);
   gtk_widget_class_bind_template_callback (widget_class, edit_contact_button_clicked_cb);
