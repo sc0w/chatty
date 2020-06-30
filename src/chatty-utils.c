@@ -23,23 +23,6 @@ static const char *avatar_colors[] = {
   "FFD54F", "FFB74D", "FF8A65", "A1887F"
 };
 
-char *
-chatty_utils_strip_blanks (const char *string)
-{
-  char *result;
-  char **chunks;
-
-  chunks = g_strsplit (string, "%20", 0);
-
-  result = g_strjoinv(NULL, chunks);
-  
-  g_strstrip (result);
-
-  g_strfreev (chunks);
-
-  return result;
-}
-
 
 char* 
 chatty_utils_check_phonenumber (const char *phone_number)
@@ -50,7 +33,10 @@ chatty_utils_check_phonenumber (const char *phone_number)
   char              *result;
   g_autoptr(GError)  err = NULL;
 
-  stripped = chatty_utils_strip_blanks (phone_number);
+  if (!phone_number || !*phone_number)
+    return NULL;
+
+  stripped = g_uri_unescape_string (phone_number, NULL);
 
   settings = chatty_settings_get_default ();
   number = e_phone_number_from_string (stripped,
