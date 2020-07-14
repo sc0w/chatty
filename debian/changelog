@@ -1,3 +1,32 @@
+chatty (0.1.14) amber-phone; urgency=medium
+
+  [ louib ]
+  * Add a missing comma in the Flatpak build file.
+
+  [ Mohammed Sadiq ]
+  * Add bash completion support
+  * Use SIM provider country code for parsing phone number
+  * utils: Use g_uri_unescape_string to parse URI
+  * pp-buddy: Return contact value if available
+  * settings-dialog: Allow toggling switch by activating the row
+
+  [ Daniel Șerbănescu ]
+  * po: Update Romanian Translation
+
+  [ Balázs Meskó ]
+  * po: Update Hungarian Translation
+
+  [ Emin Tufan Çetin ]
+  * po: Update Turkish translation
+
+  [ Yuri Chornoivan ]
+  * po: Update Ukrainian translation
+
+  [ scootergrisen ]
+  * Add Danish translation
+
+ -- Mohammed Sadiq <sadiq@sadiqpk.org>  Tue, 14 Jul 2020 14:34:00 +0530
+
 chatty (0.1.13) amber-phone; urgency=high
 
   [ Mohammed Sadiq ]
