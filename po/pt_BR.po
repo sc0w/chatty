@@ -5,6 +5,7 @@
 # Luís Fernando Stürmer da Rosa <luisfsr@dismail.de>, 2019. #zanata
 # Luís Fernando Stürmer da Rosa <luisfsr@dismail.de>, 2020. #zanata
 # Rafael Fontenelle <rafaelff@gnome.org>, 2020.
+# Luís Fernando Stürmer da Rosa <luisfsr@dismail.de>, 2020.
 #
 msgid ""
 msgstr ""
@@ -12,7 +13,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: https://source.puri.sm/Librem5/chatty/issues\n"
 "POT-Creation-Date: 2020-05-28 15:24+0000\n"
 "PO-Revision-Date: 2020-05-28 14:46-0300\n"
-"Last-Translator: Rafael Fontenelle <rafaelff@gnome.org>\n"
+"Last-Translator: Luís Fernando Stürmer da Rosa <luisfsr@dismail.de>\n"
 "Language-Team: Brazilian Portuguese <gnome-pt_br-list@gnome.org>\n"
 "Language: pt_BR\n"
 "MIME-Version: 1.0\n"
@@ -272,7 +273,7 @@ msgstr "Copiar"
 
 #: src/chatty-notify.c:81
 msgid "Open Message"
-msgstr "Mensagem aberta"
+msgstr "Abrir mensagem"
 
 #: src/chatty-notify.c:86
 msgid "Message Received"
@@ -409,7 +410,7 @@ msgstr "Um aplicativo de conversa via XMPP e SMS"
 
 #: src/chatty-window.c:902
 msgid "translator-credits"
-msgstr "Créditos de tradução"
+msgstr "Luís Fernando Stürmer da Rosa <luisfsr@dismail.de>"
 
 #: src/dialogs/chatty-muc-info-dialog.c:324
 msgid "members"
