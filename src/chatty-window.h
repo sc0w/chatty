@@ -48,7 +48,6 @@ void chatty_window_change_view (ChattyWindow *self, guint state);
 GtkWidget *chatty_window_get_convs_notebook (ChattyWindow *self);
 
 void chatty_window_chat_list_select_first (ChattyWindow *self);
-void chatty_window_set_header_chat_info_button_visible (ChattyWindow *self, gboolean visible);
 
 
 G_END_DECLS

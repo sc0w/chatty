@@ -564,16 +564,13 @@ on_feedback_triggered (LfbEvent      *event,
 static void
 chatty_conv_switch_conv (ChattyConversation *chatty_conv)
 {
-  ChattyWindow           *window;
-  PurpleConversationType  conv_type;
-  GtkWidget              *convs_notebook;
-  gint                    page_num;
+  ChattyWindow *window;
+  GtkWidget *convs_notebook;
+  int page_num;
 
   window = chatty_application_get_main_window (CHATTY_APPLICATION_DEFAULT ());
 
   convs_notebook = chatty_window_get_convs_notebook (window);
-
-  conv_type = purple_conversation_get_type (chatty_conv->conv);
 
   page_num = gtk_notebook_page_num (GTK_NOTEBOOK(convs_notebook),
                                     chatty_conv->chat_view);
@@ -583,10 +580,6 @@ chatty_conv_switch_conv (ChattyConversation *chatty_conv)
 
   g_debug ("chatty_conv_switch_conv active_conv: %s   page_num %i",
            purple_conversation_get_name (chatty_conv->conv), page_num);
-
-  if (conv_type == PURPLE_CONV_TYPE_CHAT) {
-    chatty_window_set_header_chat_info_button_visible (window, TRUE);
-  }
 
   chatty_chat_view_focus_entry (CHATTY_CHAT_VIEW (chatty_conv->chat_view));
 }

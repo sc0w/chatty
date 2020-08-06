@@ -327,6 +327,8 @@ window_notebook_after_switch_cb (GtkNotebook  *notebook,
            purple_conversation_get_name (conv));
 
   chatty_chat_set_unread_count (chat, 0);
+  gtk_widget_set_visible (self->header_chat_info_button,
+                          !chatty_chat_is_im (chat));
 }
 
 
@@ -405,8 +407,6 @@ chatty_window_open_item (ChattyWindow *self,
 
     buddy = (PurpleBuddy*)node;
     account = purple_buddy_get_account (buddy);
-
-    chatty_window_set_header_chat_info_button_visible (self, FALSE);
 
     if (chatty_blist_protocol_is_sms (account)) {
       ChattyEds *chatty_eds;
@@ -1239,15 +1239,6 @@ chatty_window_set_uri (ChattyWindow *self,
 
   g_free (who);
 }
-
-
-void 
-chatty_window_set_header_chat_info_button_visible (ChattyWindow *self,
-                                                   gboolean      visible)
-{
-  gtk_widget_set_visible (self->header_chat_info_button, visible);
-}
-
 
 GtkWidget *
 chatty_window_get_convs_notebook (ChattyWindow *self)
