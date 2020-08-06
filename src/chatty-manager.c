@@ -936,7 +936,7 @@ chatty_conv_write_conversation (PurpleConversation *conv,
   // If anyone wants to suppress archiving - feel free to set NO_LOG flag
   purple_signal_emit (chatty_manager_get_default (),
                       "conversation-write", account, &pcm, &uuid, type);
-  g_debug("Posting mesage id:%s flags:%d type:%d from:%s",
+  g_debug("Posting message id:%s flags:%d type:%d from:%s",
           uuid, pcm.flags, type, pcm.who);
 
   /*
