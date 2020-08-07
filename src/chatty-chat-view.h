@@ -46,7 +46,6 @@ ChattyChat *chatty_chat_view_get_chat (ChattyChatView *self);
 void        chatty_chat_view_load     (ChattyChatView *self,
                                        guint           limit);
 void        chatty_chat_view_remove_footer (ChattyChatView *self);
-void        chatty_chat_view_focus_entry   (ChattyChatView *self);
 void        chatty_chat_view_show_typing_indicator (ChattyChatView *self);
 void        chatty_chat_view_hide_typing_indicator (ChattyChatView *self);
 

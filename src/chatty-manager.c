@@ -580,8 +580,6 @@ chatty_conv_switch_conv (ChattyConversation *chatty_conv)
 
   g_debug ("chatty_conv_switch_conv active_conv: %s   page_num %i",
            purple_conversation_get_name (chatty_conv->conv), page_num);
-
-  chatty_chat_view_focus_entry (CHATTY_CHAT_VIEW (chatty_conv->chat_view));
 }
 
 
@@ -622,8 +620,6 @@ chatty_conv_stack_add_conv (ChattyConversation *chatty_conv)
 
   g_free (text);
   g_strfreev (name_split);
-
-  chatty_chat_view_focus_entry (CHATTY_CHAT_VIEW (chatty_conv->chat_view));
 }
 
 static void

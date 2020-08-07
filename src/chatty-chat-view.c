@@ -860,6 +860,16 @@ chat_view_sms_sent_cb (const char *sms_id,
 }
 
 static void
+chatty_chat_view_map (GtkWidget *widget)
+{
+  ChattyChatView *self = (ChattyChatView *)widget;
+
+  GTK_WIDGET_CLASS (chatty_chat_view_parent_class)->map (widget);
+
+  gtk_widget_grab_focus (self->message_input);
+}
+
+static void
 chatty_chat_view_finalize (GObject *object)
 {
   ChattyChatView *self = (ChattyChatView *)object;
@@ -876,6 +886,8 @@ chatty_chat_view_class_init (ChattyChatViewClass *klass)
   GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
 
   object_class->finalize = chatty_chat_view_finalize;
+
+  widget_class->map = chatty_chat_view_map;
 
   gtk_widget_class_set_template_from_resource (widget_class,
                                                "/sm/puri/chatty/"
@@ -1002,14 +1014,6 @@ chatty_chat_view_remove_footer (ChattyChatView *self)
   g_hash_table_foreach_remove (ht_sms_id,
                                chat_view_hash_table_match_item,
                                self);
-}
-
-void
-chatty_chat_view_focus_entry (ChattyChatView *self)
-{
-  g_return_if_fail (CHATTY_IS_CHAT_VIEW (self));
-
-  gtk_widget_grab_focus (self->message_input);
 }
 
 void
