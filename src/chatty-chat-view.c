@@ -471,6 +471,22 @@ chat_encrypt_changed_cb (ChattyChatView *self)
   gtk_image_set_from_icon_name (GTK_IMAGE (self->encrypt_icon), icon_name, 1);
 }
 
+static void
+chat_buddy_typing_changed_cb (ChattyChatView *self)
+{
+  g_assert (CHATTY_IS_CHAT_VIEW (self));
+
+  if (chatty_chat_get_buddy_typing (self->chat)) {
+    gtk_revealer_set_reveal_child (GTK_REVEALER (self->typing_revealer), TRUE);
+    self->refresh_typing_id = g_timeout_add (300,
+                                             (GSourceFunc)chat_view_indicator_refresh_cb,
+                                             self);
+  } else {
+    gtk_revealer_set_reveal_child (GTK_REVEALER (self->typing_revealer), FALSE);
+    g_clear_handle_id (&self->refresh_typing_id, g_source_remove);
+  }
+}
+
 static gboolean
 chat_view_input_focus_in_cb (ChattyChatView *self)
 {
@@ -992,8 +1008,13 @@ chatty_chat_view_set_chat (ChattyChatView *self,
                            G_CALLBACK (chat_encrypt_changed_cb),
                            self,
                            G_CONNECT_SWAPPED);
+  g_signal_connect_object (self->chat, "notify::buddy-typing",
+                           G_CALLBACK (chat_buddy_typing_changed_cb),
+                           self,
+                           G_CONNECT_SWAPPED);
 
   chat_encrypt_changed_cb (self);
+  chat_buddy_typing_changed_cb (self);
   chatty_chat_view_update (self);
 }
 
@@ -1014,25 +1035,4 @@ chatty_chat_view_remove_footer (ChattyChatView *self)
   g_hash_table_foreach_remove (ht_sms_id,
                                chat_view_hash_table_match_item,
                                self);
-}
-
-void
-chatty_chat_view_show_typing_indicator (ChattyChatView *self)
-{
-  g_return_if_fail (CHATTY_IS_CHAT_VIEW (self));
-
-  gtk_revealer_set_reveal_child (GTK_REVEALER (self->typing_revealer), TRUE);
-
-  self->refresh_typing_id = g_timeout_add (300,
-                                           (GSourceFunc)chat_view_indicator_refresh_cb,
-                                           self);
-}
-
-void
-chatty_chat_view_hide_typing_indicator (ChattyChatView *self)
-{
-  g_return_if_fail (CHATTY_IS_CHAT_VIEW (self));
-
-  gtk_revealer_set_reveal_child (GTK_REVEALER (self->typing_revealer), FALSE);
-  g_clear_handle_id (&self->refresh_typing_id, g_source_remove);
 }

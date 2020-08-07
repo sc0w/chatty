@@ -276,29 +276,6 @@ window_get_active_purple_conv (GtkNotebook *notebook)
   return chatty_conv ? chatty_conv->conv : NULL;
 }
 
-
-static void
-window_notebook_before_switch_cb (GtkNotebook  *notebook,
-                                  GtkWidget    *page,
-                                  gint          page_num,
-                                  ChattyWindow *self)
-{
-  ChattyConversation *chatty_conv;
-  PurpleConversation *conv;
-
-  g_assert (GTK_IS_NOTEBOOK (notebook));
-  g_assert (CHATTY_IS_WINDOW (self));
-
-  conv = window_get_active_purple_conv (GTK_NOTEBOOK (self->convs_notebook));
-
-  g_return_if_fail (conv != NULL);
-
-  chatty_conv = CHATTY_CONVERSATION (conv);
-
-  chatty_chat_view_hide_typing_indicator (CHATTY_CHAT_VIEW (chatty_conv->chat_view));
-}
-
-
 static void
 window_notebook_after_switch_cb (GtkNotebook  *notebook,
                                  GtkWidget    *page,
@@ -1159,10 +1136,6 @@ chatty_window_init (ChattyWindow *self)
   g_signal_connect_object (self->manager, "notify::active-protocols",
                            G_CALLBACK (window_active_protocols_changed_cb), self,
                            G_CONNECT_SWAPPED);
-
-  g_signal_connect (G_OBJECT (self->convs_notebook),
-                    "switch-page",
-                    G_CALLBACK (window_notebook_before_switch_cb), self);
 
   g_signal_connect_after (G_OBJECT (self->convs_notebook),
                           "switch-page",

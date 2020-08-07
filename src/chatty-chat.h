@@ -82,5 +82,8 @@ void                chatty_chat_set_encryption         (ChattyChat        *self,
 void                chatty_chat_set_show_notifications (ChattyChat        *self,
                                                         gboolean           show);
 gboolean            chatty_chat_get_auto_join          (ChattyChat        *self);
+gboolean            chatty_chat_get_buddy_typing       (ChattyChat        *self);
+void                chatty_chat_set_buddy_typing       (ChattyChat        *self,
+                                                        gboolean           is_typing);
 
 G_END_DECLS

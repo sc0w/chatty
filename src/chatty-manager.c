@@ -1365,6 +1365,44 @@ manager_deleting_conversation_cb (PurpleConversation *conv,
   chatty_manager_delete_conversation (self, conv);
 }
 
+static void
+manager_buddy_set_typing (PurpleAccount *account,
+                          const char    *name,
+                          ChattyManager *self,
+                          gboolean       is_typing)
+{
+  PurpleConversation *conv;
+  ChattyChat *chat;
+
+  g_assert (CHATTY_IS_MANAGER (self));
+
+  conv = purple_find_conversation_with_account (PURPLE_CONV_TYPE_IM,
+                                                name,
+                                                account);
+  if (!conv)
+    return;
+
+  chat = chatty_manager_find_purple_conv (self, conv);
+  g_return_if_fail (chat);
+
+  chatty_chat_set_buddy_typing (chat, is_typing);
+}
+
+static void
+manager_buddy_typing_cb (PurpleAccount *account,
+                         const char    *name,
+                         ChattyManager *self)
+{
+  manager_buddy_set_typing (account, name, self, TRUE);
+}
+
+static void
+manager_buddy_typing_stopped_cb (PurpleAccount *account,
+                                 const char    *name,
+                                 ChattyManager *self)
+{
+  manager_buddy_set_typing (account, name, self, FALSE);
+}
 
 static gboolean
 manager_conversation_buddy_leaving_cb (PurpleConversation *conv,
@@ -1778,6 +1816,16 @@ chatty_manager_initialize_libpurple (ChattyManager *self)
   purple_signal_connect (purple_conversations_get_handle (),
                          "deleting-conversation", self,
                          PURPLE_CALLBACK (manager_deleting_conversation_cb), self);
+
+  purple_signal_connect (purple_conversations_get_handle (),
+                         "buddy-typing", self,
+                         PURPLE_CALLBACK (manager_buddy_typing_cb), self);
+  purple_signal_connect (purple_conversations_get_handle (),
+                         "buddy-typed", self,
+                         PURPLE_CALLBACK (manager_buddy_typing_stopped_cb), self);
+  purple_signal_connect (purple_conversations_get_handle (),
+                         "buddy-typing-stopped", self,
+                         PURPLE_CALLBACK (manager_buddy_typing_stopped_cb), self);
 
   /**
    * This is default fallback history handler which is called last,

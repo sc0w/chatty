@@ -65,6 +65,7 @@ struct _ChattyChat
   e_msg_dir           last_msg_direction;
   ChattyEncryption    encrypt;
   gboolean            is_im;
+  gboolean            buddy_typing;
 };
 
 G_DEFINE_TYPE (ChattyChat, chatty_chat, CHATTY_TYPE_ITEM)
@@ -72,6 +73,7 @@ G_DEFINE_TYPE (ChattyChat, chatty_chat, CHATTY_TYPE_ITEM)
 enum {
   PROP_0,
   PROP_ENCRYPT,
+  PROP_BUDDY_TYPING,
   PROP_PURPLE_CHAT,
   N_PROPS
 };
@@ -329,6 +331,10 @@ chatty_chat_get_property (GObject    *object,
       g_value_set_boolean (value, self->encrypt == CHATTY_ENCRYPTION_ENABLED);
       break;
 
+    case PROP_BUDDY_TYPING:
+      g_value_set_boolean (value, self->buddy_typing);
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
       break;
@@ -395,6 +401,13 @@ chatty_chat_class_init (ChattyChatClass *klass)
                           "Whether the chat is encrypted or not",
                           FALSE,
                           G_PARAM_READWRITE | G_PARAM_EXPLICIT_NOTIFY | G_PARAM_STATIC_STRINGS);
+
+  properties[PROP_BUDDY_TYPING] =
+    g_param_spec_boolean ("buddy-typing",
+                          "Buddy typing",
+                          "Whether the buddy in chat is typing",
+                          FALSE,
+                          G_PARAM_READABLE | G_PARAM_STATIC_STRINGS);
 
   properties[PROP_PURPLE_CHAT] =
     g_param_spec_pointer ("purple-chat",
@@ -1090,4 +1103,38 @@ chatty_chat_get_auto_join (ChattyChat *self)
     return FALSE;
 
   return purple_blist_node_get_bool (node, "chatty-autojoin");
+}
+
+/**
+ * chatty_chat_get_buddy_typing:
+ * @self: A #ChattyChat
+ *
+ * Get if the associated buddy is typing or
+ * not.  This is accurate only for IM chat.
+ * For multi user chat, this function always
+ * returns %FALSE
+ *
+ * Returns: %TRUE if the chat buddy is typing.
+ * %FALSE otherwise.
+ */
+gboolean
+chatty_chat_get_buddy_typing (ChattyChat *self)
+{
+  g_return_val_if_fail (CHATTY_IS_CHAT (self), FALSE);
+
+  return self->buddy_typing;
+
+}
+
+void
+chatty_chat_set_buddy_typing (ChattyChat *self,
+                              gboolean    is_typing)
+{
+  g_return_if_fail (CHATTY_IS_CHAT (self));
+
+  if (self->buddy_typing == !!is_typing)
+    return;
+
+  self->buddy_typing = !!is_typing;
+  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_BUDDY_TYPING]);
 }

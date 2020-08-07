@@ -23,50 +23,6 @@
 // *** callbacks
 
 static void
-cb_buddy_typing (PurpleAccount *account,
-                 const char    *name)
-{
-  PurpleConversation *conv;
-  ChattyConversation *chatty_conv;
-
-  conv = purple_find_conversation_with_account (PURPLE_CONV_TYPE_IM,
-                                                name,
-                                                account);
-  if (!conv) {
-    return;
-  }
-
-  chatty_conv = CHATTY_CONVERSATION(conv);
-
-  if (chatty_conv && chatty_conv->conv == conv) {
-    chatty_chat_view_show_typing_indicator (CHATTY_CHAT_VIEW (chatty_conv->chat_view));
-  }
-}
-
-
-static void
-cb_buddy_typed (PurpleAccount *account,
-                const char    *name)
-{
-  PurpleConversation *conv;
-  ChattyConversation *chatty_conv;
-
-  conv = purple_find_conversation_with_account (PURPLE_CONV_TYPE_IM,
-                                                name,
-                                                account);
-  if (!conv) {
-    return;
-  }
-
-  chatty_conv = CHATTY_CONVERSATION(conv);
-
-  if (chatty_conv && chatty_conv->conv == conv) {
-    chatty_chat_view_hide_typing_indicator (CHATTY_CHAT_VIEW (chatty_conv->chat_view));
-  }
-}
-
-
-static void
 cb_update_buddy_icon (PurpleBuddy *buddy)
 {
   PurpleConversation *conv;
@@ -276,18 +232,6 @@ chatty_conversations_init (void)
 
   purple_signal_connect (blist_handle, "buddy-icon-changed",
                           handle, PURPLE_CALLBACK (cb_update_buddy_icon), NULL);
-
-  purple_signal_connect (purple_conversations_get_handle (),
-                         "buddy-typing", &handle,
-                         PURPLE_CALLBACK (cb_buddy_typing), NULL);
-
-  purple_signal_connect (purple_conversations_get_handle (),
-                         "buddy-typed", &handle,
-                         PURPLE_CALLBACK (cb_buddy_typed), NULL);
-
-  purple_signal_connect (purple_conversations_get_handle (),
-                         "buddy-typing-stopped", &handle,
-                         PURPLE_CALLBACK (cb_buddy_typed), NULL);
 
   chatty_chat_view_purple_init ();
 }
