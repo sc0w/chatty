@@ -45,6 +45,5 @@ void        chatty_chat_view_set_chat (ChattyChatView *self,
 ChattyChat *chatty_chat_view_get_chat (ChattyChatView *self);
 void        chatty_chat_view_load     (ChattyChatView *self,
                                        guint           limit);
-void        chatty_chat_view_remove_footer (ChattyChatView *self);
 
 G_END_DECLS

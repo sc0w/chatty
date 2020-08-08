@@ -890,6 +890,9 @@ chatty_chat_view_finalize (GObject *object)
 {
   ChattyChatView *self = (ChattyChatView *)object;
 
+  g_hash_table_foreach_remove (ht_sms_id,
+                               chat_view_hash_table_match_item,
+                               self);
   g_clear_object (&self->chat);
 
   G_OBJECT_CLASS (chatty_chat_view_parent_class)->finalize (object);
@@ -1024,15 +1027,4 @@ chatty_chat_view_get_chat (ChattyChatView *self)
   g_return_val_if_fail (CHATTY_IS_CHAT_VIEW (self), NULL);
 
   return self->chat;
-}
-
-
-void
-chatty_chat_view_remove_footer (ChattyChatView *self)
-{
-  g_return_if_fail (CHATTY_IS_CHAT_VIEW (self));
-
-  g_hash_table_foreach_remove (ht_sms_id,
-                               chat_view_hash_table_match_item,
-                               self);
 }

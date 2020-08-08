@@ -2413,7 +2413,6 @@ chatty_manager_delete_conversation (ChattyManager      *self,
   }
 
   if (chat) {
-    chatty_chat_view_remove_footer (CHATTY_CHAT_VIEW (CHATTY_CONVERSATION (conv)->chat_view));
     chatty_utils_remove_list_item (G_LIST_STORE (model), chat);
   }
 }
