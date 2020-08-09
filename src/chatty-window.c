@@ -140,6 +140,25 @@ window_chat_list_row_new (ChattyItem   *item,
   return row;
 }
 
+static GtkWidget *
+window_get_view_for_chat (ChattyWindow *self,
+                          ChattyChat   *chat)
+{
+  g_autoptr(GList) children = NULL;
+
+  g_assert (CHATTY_IS_WINDOW (self));
+  g_assert (CHATTY_IS_CHAT (chat));
+
+  children = gtk_container_get_children (GTK_CONTAINER (self->convs_notebook));
+
+  for (GList *child = children; child; child = child->next)
+    if (CHATTY_IS_CHAT_VIEW (child->data) &&
+        chatty_chat_view_get_chat (child->data) == chat)
+      return child->data;
+
+  return NULL;
+}
+
 static void
 window_set_item (ChattyWindow *self,
                  ChattyItem   *item)
@@ -195,13 +214,6 @@ window_chat_changed_cb (ChattyWindow *self)
   has_child = g_list_model_get_n_items (model) > 0;
 
   gtk_widget_set_sensitive (self->header_sub_menu_button, has_child);
-
-  if (!CHATTY_IS_CHAT (self->selected_item)) {
-    self->selected_item = NULL;
-
-    chatty_avatar_set_item (CHATTY_AVATAR (self->sub_header_icon), NULL);
-    gtk_label_set_label (GTK_LABEL (self->sub_header_label), "");
-  }
 
   /*
    * When the items are re-arranged, the selection will be lost.
@@ -880,6 +892,23 @@ window_active_protocols_changed_cb (ChattyWindow *self)
   window_chat_changed_cb (self);
 }
 
+static void
+window_chat_deleted_cb (ChattyWindow *self,
+                        ChattyChat   *chat)
+{
+  GtkWidget *view;
+
+  g_assert (CHATTY_IS_WINDOW (self));
+  g_assert (CHATTY_IS_CHAT (chat));
+
+  if (self->selected_item == (gpointer)chat)
+    window_set_item (self, NULL);
+
+  view = window_get_view_for_chat (self, chat);
+
+  if (view)
+    gtk_widget_destroy (view);
+}
 
 static void
 chatty_window_unmap (GtkWidget *widget)
@@ -1048,6 +1077,9 @@ chatty_window_init (ChattyWindow *self)
   self->manager = g_object_ref (chatty_manager_get_default ());
   g_signal_connect_object (self->manager, "notify::active-protocols",
                            G_CALLBACK (window_active_protocols_changed_cb), self,
+                           G_CONNECT_SWAPPED);
+  g_signal_connect_object (self->manager, "chat-deleted",
+                           G_CALLBACK (window_chat_deleted_cb), self,
                            G_CONNECT_SWAPPED);
 
   g_signal_connect_after (G_OBJECT (self->convs_notebook),

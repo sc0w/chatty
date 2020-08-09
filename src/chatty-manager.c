@@ -100,6 +100,7 @@ enum {
 
 enum {
   AUTHORIZE_BUDDY,
+  CHAT_DELETED,
   NOTIFY_ADDED,
   CONNECTION_ERROR,
   N_SIGNALS
@@ -622,26 +623,6 @@ chatty_conv_stack_add_conv (ChattyConversation *chatty_conv)
   g_strfreev (name_split);
 }
 
-static void
-chatty_conv_remove_conv (ChattyConversation *chatty_conv)
-{
-  ChattyWindow  *window;
-  GtkWidget     *convs_notebook;
-  guint          index;
-
-  window = chatty_application_get_main_window (CHATTY_APPLICATION_DEFAULT ());
-
-  convs_notebook = chatty_window_get_convs_notebook (window);
-
-  index = gtk_notebook_page_num (GTK_NOTEBOOK(convs_notebook),
-                                 chatty_conv->chat_view);
-
-  gtk_notebook_remove_page (GTK_NOTEBOOK(convs_notebook), index);
-
-  g_debug ("chatty_conv_remove_conv conv");
-}
-
-
 static ChattyConversation *
 chatty_conv_find_conv (PurpleConversation * conv)
 {
@@ -766,8 +747,6 @@ chatty_conv_destroy (PurpleConversation *conv)
   ChattyConversation *chatty_conv;
 
   chatty_conv = CHATTY_CONVERSATION (conv);
-
-  chatty_conv_remove_conv (chatty_conv);
 
   g_debug ("chatty_conv_destroy conv");
 
@@ -1970,6 +1949,23 @@ chatty_manager_class_init (ChattyManagerClass *klass)
                   G_TYPE_STRING, G_TYPE_STRING);
 
   /**
+   * ChattyManager::chat-deleted:
+   * @self: a #ChattyManager
+   * @chat: A #ChattyChat
+   *
+   * Emitted when a chat is deleted.  ‘chat-deleted’ is
+   * emitted just before the chat is actually deleted
+   * and thus @chat will still point to a valid memory.
+   */
+  signals [CHAT_DELETED] =
+    g_signal_new ("chat-deleted",
+                  G_TYPE_FROM_CLASS (klass),
+                  G_SIGNAL_RUN_LAST,
+                  0, NULL, NULL, NULL,
+                  G_TYPE_NONE,
+                  1, CHATTY_TYPE_CHAT);
+
+  /**
    * ChattyManager::connection-error:
    * @self: a #ChattyManager
    * @account: A #ChattyPpAccount
@@ -2424,6 +2420,7 @@ chatty_manager_delete_conversation (ChattyManager      *self,
   }
 
   if (chat) {
+    g_signal_emit (self,  signals[CHAT_DELETED], 0, chat);
     chatty_utils_remove_list_item (G_LIST_STORE (model), chat);
   }
 }
