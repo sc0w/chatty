@@ -287,6 +287,18 @@ history_close_db (ChattyHistory *self,
   status = sqlite3_close (self->db);
 
   if (status == SQLITE_OK) {
+    /*
+     * We can’t know when will @self associated with the task will
+     * be unref.  So chatty_history_get_default() called immediately
+     * after this may return the @self that is yet to be free.  But
+     * as the worker_thread is exited after closing the database, any
+     * actions with the same @self will not execute, and so the tasks
+     * will take ∞ time to complete.
+     *
+     * So Instead of relying on GObject to free the object, Let’s
+     * explicitly run dispose
+     */
+    g_object_run_dispose (G_OBJECT (self));
     g_object_unref (self);
     g_debug ("Database closed successfully");
     g_task_return_boolean (task, TRUE);
@@ -789,6 +801,16 @@ chatty_history_worker (gpointer user_data)
 }
 
 static void
+chatty_history_dispose (GObject *object)
+{
+  ChattyHistory *self = (ChattyHistory *)object;
+
+  g_clear_pointer (&self->worker_thread, g_thread_unref);
+
+  G_OBJECT_CLASS (chatty_history_parent_class)->dispose (object);
+}
+
+static void
 chatty_history_finalize (GObject *object)
 {
   ChattyHistory *self = (ChattyHistory *)object;
@@ -797,7 +819,6 @@ chatty_history_finalize (GObject *object)
     g_warning ("Database not closed");
 
   g_clear_pointer (&self->queue, g_async_queue_unref);
-  g_clear_pointer (&self->worker_thread, g_thread_unref);
 
   G_OBJECT_CLASS (chatty_history_parent_class)->finalize (object);
 }
@@ -807,6 +828,7 @@ chatty_history_class_init (ChattyHistoryClass *klass)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
 
+  object_class->dispose  = chatty_history_dispose;
   object_class->finalize = chatty_history_finalize;
 }
 
