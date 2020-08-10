@@ -35,7 +35,6 @@ typedef enum {
 typedef enum {
   CHATTY_VIEW_CHAT_LIST,
   CHATTY_VIEW_MESSAGE_LIST,
-  CHATTY_VIEW_SETTINGS,
 } ChattyWindowState;
 
 

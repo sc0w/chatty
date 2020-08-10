@@ -933,9 +933,6 @@ chatty_window_change_view (ChattyWindow      *self,
   g_assert (CHATTY_IS_WINDOW (self));
 
   switch (view) {
-    case CHATTY_VIEW_SETTINGS:
-      chatty_window_show_settings_dialog (self);
-      break;
     case CHATTY_VIEW_MESSAGE_LIST:
       hdy_leaflet_set_visible_child_name (HDY_LEAFLET (self->content_box), "content");
       break;
