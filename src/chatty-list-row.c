@@ -69,15 +69,22 @@ chatty_time_ago_in_words (time_t time_stamp)
 
     str_about     = "~";
     str_less_than = "<";
+    /* TRANSLATORS: Suffix used for seconds.  Keep as short as possible */
     str_seconds   = _("s");
+    /* TRANSLATORS: Suffix used for minute(s).  Keep as short as possible */
     str_minute    = _("m");
     str_minutes   = _("m");
+    /* TRANSLATORS: Suffix used for hour(s).  Keep as short as possible */
     str_hour      = _("h");
     str_hours     = _("h");
+    /* TRANSLATORS: Suffix used for day(s).  Keep as short as possible */
     str_day       = _("d");
     str_days      = _("d");
+    /* TRANSLATORS: Suffix used for 1 month.  Keep as short as possible */
     str_month     = _("mo");
+    /* TRANSLATORS: Suffix used for months.  Keep as short as possible */
     str_months    = _("mos");
+    /* TRANSLATORS: Suffix used for year(s).  Keep as short as possible */
     str_year      = _("y");
     str_years     = _("y");
 
@@ -180,10 +187,12 @@ chatty_time_ago_in_words (time_t time_stamp)
     if (remainder < 131400) {
       prefix = str_about;
     } else if (remainder < 394200) {
+      /* TRANSLATORS: "Over" as in "Over 10 minutes" */
       prefix = _("Over");
     } else {
       ++number;
       unit = str_years;
+      /* TRANSLATORS: "Almost" as in "Almost 10 minutes" */
       prefix = _("Almost");
     }
     break;
