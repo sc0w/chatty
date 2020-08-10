@@ -42,7 +42,7 @@ struct _ChattyUserInfoDialog
   GtkWidget *listbox_fps;
 
   ChattyChat *chat;
-  ChattyConversation *chatty_conv;
+  PurpleConversation *conv;
   PurpleBuddy        *buddy;
   const char         *alias;
 };
@@ -199,9 +199,9 @@ chatty_user_info_dialog_request_fps (ChattyUserInfoDialog *self)
 
   void * plugins_handle = purple_plugins_get_handle();
 
-  account = purple_conversation_get_account (self->chatty_conv->conv);
-  type = purple_conversation_get_type (self->chatty_conv->conv);
-  name = purple_conversation_get_name (self->chatty_conv->conv);
+  account = purple_conversation_get_account (self->conv);
+  type = purple_conversation_get_type (self->conv);
+  name = purple_conversation_get_name (self->conv);
 
   if (type == PURPLE_CONV_TYPE_IM) {
     g_autofree gchar *stripped = chatty_utils_jabber_id_strip (name);
@@ -249,7 +249,7 @@ chatty_user_info_dialog_update_chat (ChattyUserInfoDialog *self)
     chatty_user_info_dialog_request_fps (self);
   }
 
-  self->buddy = purple_find_buddy (self->chatty_conv->conv->account, self->chatty_conv->conv->name);
+  self->buddy = purple_find_buddy (self->conv->account, self->conv->name);
   self->alias = purple_buddy_get_alias (self->buddy);
 
   if (protocol == CHATTY_PROTOCOL_SMS) {
@@ -273,7 +273,7 @@ chatty_user_info_dialog_update_chat (ChattyUserInfoDialog *self)
 
   alias = self->alias ? chatty_utils_jabber_id_strip (self->alias) : g_strdup ("");
   gtk_label_set_text (GTK_LABEL(self->label_alias), alias);
-  gtk_label_set_text (GTK_LABEL(self->label_jid), self->chatty_conv->conv->name);
+  gtk_label_set_text (GTK_LABEL(self->label_jid), self->conv->name);
 }
 
 
@@ -336,14 +336,11 @@ void
 chatty_user_info_dialog_set_chat (ChattyUserInfoDialog *self,
                                   ChattyChat           *chat)
 {
-  PurpleConversation *conv;
-
   g_return_if_fail (CHATTY_IS_USER_INFO_DIALOG (self));
   g_return_if_fail (CHATTY_IS_CHAT (chat));
 
-  conv = chatty_chat_get_purple_conv (chat);
+  self->conv = chatty_chat_get_purple_conv (chat);
   self->chat = chat;
-  self->chatty_conv = conv->ui_data;
 
   chatty_user_info_dialog_update_chat (self);
 }

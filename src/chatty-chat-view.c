@@ -45,7 +45,7 @@ struct _ChattyChatView
   GtkAdjustment *vadjustment;
 
   ChattyChat *chat;
-  ChattyConversation *chatty_conv;
+  PurpleConversation *conv;
   char       *last_message_id;  /* id of last sent message, currently used only for SMS */
   guint       message_type;
   guint       refresh_typing_id;
@@ -246,8 +246,8 @@ chat_view_setup_file_upload (ChattyChatView *self)
 
   gtk_widget_show (self->send_file_button);
 
-  gc = purple_conversation_get_gc (self->chatty_conv->conv);
-  node = chatty_utils_get_conv_blist_node (self->chatty_conv->conv);
+  gc = purple_conversation_get_gc (self->conv);
+  node = chatty_utils_get_conv_blist_node (self->conv);
   prpl_info = PURPLE_PLUGIN_PROTOCOL_INFO (gc->prpl);
 
   if (prpl_info->blist_node_menu)
@@ -278,8 +278,8 @@ chatty_chat_view_update (ChattyChatView *self)
 
   g_assert (CHATTY_IS_CHAT_VIEW (self));
 
-  account = purple_conversation_get_account (self->chatty_conv->conv);
-  conv_type = purple_conversation_get_type (self->chatty_conv->conv);
+  account = purple_conversation_get_account (self->conv);
+  conv_type = purple_conversation_get_type (self->conv);
   protocol_id = purple_account_get_protocol_id (account);
 
   if (conv_type == PURPLE_CONV_TYPE_CHAT)
@@ -331,7 +331,7 @@ chatty_update_typing_status (ChattyChatView *self)
 
   g_assert (CHATTY_IS_CHAT_VIEW (self));
 
-  conv = self->chatty_conv->conv;
+  conv = self->conv;
   type = purple_conversation_get_type (conv);
 
   if (type != PURPLE_CONV_TYPE_IM)
@@ -528,7 +528,7 @@ chatty_conv_check_for_command (ChattyChatView *self)
   PurpleMessageFlags  flags = 0;
 
   flags |= PURPLE_MESSAGE_NO_LOG | PURPLE_MESSAGE_SYSTEM;
-  conv = self->chatty_conv->conv;
+  conv = self->conv;
 
   gtk_text_buffer_get_bounds (self->message_input_buffer, &start, &end);
 
@@ -658,7 +658,7 @@ chat_view_send_file_button_clicked_cb (ChattyChatView *self,
 
   callback = g_object_get_data (G_OBJECT (button), "callback");
   data = g_object_get_data (G_OBJECT (button), "callback-data");
-  node = chatty_utils_get_conv_blist_node (self->chatty_conv->conv);
+  node = chatty_utils_get_conv_blist_node (self->conv);
 
   if (callback)
     callback (node, data);
@@ -677,7 +677,7 @@ chat_view_send_message_button_clicked_cb (ChattyChatView *self)
 
   g_assert (CHATTY_IS_CHAT_VIEW (self));
 
-  conv = self->chatty_conv->conv;
+  conv = self->conv;
   account = purple_conversation_get_account (conv);
 
   gtk_text_buffer_get_bounds (self->message_input_buffer, &start, &end);
@@ -761,7 +761,7 @@ chat_view_message_input_changed_cb (ChattyChatView *self)
 
   g_assert (CHATTY_IS_CHAT_VIEW (self));
 
-  account  = purple_conversation_get_account (self->chatty_conv->conv);
+  account  = purple_conversation_get_account (self->conv);
   protocol = purple_account_get_protocol_id (account);
   has_text = gtk_text_buffer_get_char_count (self->message_input_buffer) > 0;
   gtk_widget_set_visible (self->send_message_button, has_text);
@@ -984,8 +984,6 @@ void
 chatty_chat_view_set_chat (ChattyChatView *self,
                            ChattyChat     *chat)
 {
-  PurpleConversation *conv;
-
   g_return_if_fail (CHATTY_IS_CHAT_VIEW (self));
   g_return_if_fail (CHATTY_IS_CHAT (chat));
 
@@ -995,8 +993,7 @@ chatty_chat_view_set_chat (ChattyChatView *self,
   if (!chat)
     return;
 
-  conv = chatty_chat_get_purple_conv (chat);
-  self->chatty_conv = CHATTY_CONVERSATION (conv);
+  self->conv = chatty_chat_get_purple_conv (chat);
 
   gtk_list_box_bind_model (GTK_LIST_BOX (self->message_list),
                            chatty_chat_get_messages (self->chat),
