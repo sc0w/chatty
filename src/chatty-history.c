@@ -284,7 +284,7 @@ history_close_db (ChattyHistory *self,
 
   db = self->db;
   self->db = NULL;
-  status = sqlite3_close (self->db);
+  status = sqlite3_close (db);
 
   if (status == SQLITE_OK) {
     /*
