@@ -20,29 +20,6 @@
 #include "chatty-chat-view.h"
 
 
-// *** callbacks
-
-static void
-cb_update_buddy_icon (PurpleBuddy *buddy)
-{
-  PurpleConversation *conv;
-
-  conv = purple_find_conversation_with_account (PURPLE_CONV_TYPE_IM, 
-                                                buddy->name, 
-                                                buddy->account);
-
-  if (conv) {
-    ChattyChat *chat;
-
-    chat = chatty_manager_find_purple_conv (chatty_manager_get_default (), conv);
-
-    if (chat)
-      g_signal_emit_by_name (G_OBJECT (chat), "avatar-changed");
-  }
-}
-
-// *** end callbacks
-
 /**
  * chatty_conv_container_get_active_chatty_conv:
  * @notebook: a GtkNotebook
@@ -205,43 +182,4 @@ chatty_conv_join_chat (PurpleChat *chat)
   }
 
   g_free (chat_name);
-}
-
-
-void *
-chatty_conversations_get_handle (void)
-{
-  static int handle;
-
-  return &handle;
-}
-
-
-/**
- * chatty_init_conversations:
- *
- * Sets purple conversations preferenz values
- * and defines libpurple signal callbacks
- *
- */
-void
-chatty_conversations_init (void)
-{
-  void *handle = chatty_conversations_get_handle ();
-  void *blist_handle = purple_blist_get_handle ();
-
-  purple_signal_connect (blist_handle, "buddy-icon-changed",
-                          handle, PURPLE_CALLBACK (cb_update_buddy_icon), NULL);
-
-  chatty_chat_view_purple_init ();
-}
-
-
-void
-chatty_conversations_uninit (void)
-{
-  chatty_chat_view_purple_uninit ();
-  purple_prefs_disconnect_by_handle (chatty_conversations_get_handle());
-  purple_signals_disconnect_by_handle (chatty_conversations_get_handle());
-  purple_signals_unregister_by_instance (chatty_conversations_get_handle());
 }

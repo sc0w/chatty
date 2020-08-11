@@ -328,7 +328,7 @@ PurpleEventLoopUiOps eventloop_ui_ops =
 static void
 chatty_purple_quit (void)
 {
-  chatty_conversations_uninit ();
+  chatty_chat_view_purple_uninit ();
 
   purple_conversations_set_ui_ops (NULL);
   purple_connections_set_ui_ops (NULL);
@@ -345,7 +345,7 @@ chatty_purple_quit (void)
 static void
 chatty_purple_ui_init (void)
 {
-  chatty_conversations_init ();
+  chatty_chat_view_purple_init ();
   chatty_manager_purple_init (chatty_manager_get_default ());
 }
 
@@ -1247,6 +1247,25 @@ manager_buddy_signed_on_off_cb (PurpleBuddy *buddy)
            purple_account_get_protocol_id (purple_buddy_get_account(buddy)));
 }
 
+static void
+manager_buddy_icon_chaged_cb (PurpleBuddy   *buddy,
+                              ChattyManager *self)
+{
+  PurpleConversation *conv;
+
+  conv = purple_find_conversation_with_account (PURPLE_CONV_TYPE_IM,
+                                                buddy->name,
+                                                buddy->account);
+
+  if (conv) {
+    ChattyChat *chat;
+
+    chat = chatty_manager_find_purple_conv (self, conv);
+
+    if (chat)
+      g_signal_emit_by_name (G_OBJECT (chat), "avatar-changed");
+  }
+}
 
 static void
 manager_account_added_cb (PurpleAccount *pp_account,
@@ -2225,6 +2244,9 @@ chatty_manager_load_buddies (ChattyManager *self)
   purple_signal_connect (purple_blist_get_handle (),
                          "buddy-signed-off", self,
                          PURPLE_CALLBACK (manager_buddy_signed_on_off_cb), self);
+  purple_signal_connect (purple_blist_get_handle (),
+                         "buddy-icon-changed", self,
+                         PURPLE_CALLBACK (manager_buddy_icon_chaged_cb), self);
 
   buddies = purple_blist_get_buddies ();
 
