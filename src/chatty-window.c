@@ -246,36 +246,6 @@ window_get_chatty_conv_at_index (GtkNotebook *notebook,
   return g_object_get_data (G_OBJECT (page), "ChattyConversation");
 }
 
-
-static ChattyConversation *
-winodw_get_active_chatty_conv (GtkNotebook *notebook)
-{
-  GtkWidget *tab_cont;
-  int index;
-
-  index = gtk_notebook_get_current_page (notebook);
-
-  if (index == -1)
-    index = 0;
-
-  tab_cont = gtk_notebook_get_nth_page (notebook, index);
-
-  if (!tab_cont)
-    return NULL;
-
-  return g_object_get_data (G_OBJECT (tab_cont), "ChattyConversation");
-}
-
-static PurpleConversation *
-window_get_active_purple_conv (GtkNotebook *notebook)
-{
-  ChattyConversation *chatty_conv;
-
-  chatty_conv = winodw_get_active_chatty_conv (notebook);
-
-  return chatty_conv ? chatty_conv->conv : NULL;
-}
-
 static void
 window_notebook_after_switch_cb (GtkNotebook  *notebook,
                                  GtkWidget    *page,
@@ -728,7 +698,7 @@ window_leave_chat_clicked_cb (ChattyWindow *self)
 
   if (node) {
     purple_blist_node_set_bool (node, "chatty-autojoin", FALSE);
-    purple_conversation_destroy (window_get_active_purple_conv (GTK_NOTEBOOK (self->convs_notebook)));
+    purple_conversation_destroy (chatty_chat_get_purple_conv (CHATTY_CHAT (self->selected_item)));
   }
 
   self->selected_item = NULL;
@@ -755,7 +725,7 @@ window_add_contact_clicked_cb (ChattyWindow *self)
   buddy = chatty_chat_get_purple_buddy (CHATTY_CHAT (self->selected_item));
   g_return_if_fail (buddy != NULL);
 
-  conv = window_get_active_purple_conv (GTK_NOTEBOOK (self->convs_notebook));
+  conv = chatty_chat_get_purple_conv (CHATTY_CHAT (self->selected_item));
 
   account = purple_conversation_get_account (conv);
   purple_account_add_buddy (account, buddy);
@@ -811,31 +781,18 @@ window_show_chat_info_clicked_cb (ChattyWindow *self)
 {
   ChattyChat *chat;
   GtkWidget *dialog;
-  ChattyConversation *chatty_conv;
 
   g_assert (CHATTY_IS_WINDOW (self));
   g_return_if_fail (CHATTY_IS_CHAT (self->selected_item));
 
   chat = CHATTY_CHAT (self->selected_item);
-  chatty_conv = winodw_get_active_chatty_conv (GTK_NOTEBOOK (self->convs_notebook));
 
-  switch (purple_conversation_get_type (chatty_conv->conv)) {
-  case PURPLE_CONV_TYPE_IM:
+  if (chatty_chat_is_im (chat)) {
     dialog = chatty_user_info_dialog_new (GTK_WINDOW (self));
     chatty_user_info_dialog_set_chat (CHATTY_USER_INFO_DIALOG (dialog), chat);
-    break;
-
-  case PURPLE_CONV_TYPE_CHAT:
+  } else {
     dialog = chatty_muc_info_dialog_new (GTK_WINDOW (self));
     chatty_muc_info_dialog_set_chat (CHATTY_MUC_INFO_DIALOG (dialog), chat);
-    break;
-
-  case PURPLE_CONV_TYPE_UNKNOWN: /* fallthrough */
-  case PURPLE_CONV_TYPE_MISC:    /* fallthrough */
-  case PURPLE_CONV_TYPE_ANY:     /* fallthrough */
-  default:
-    g_assert_not_reached();
-    break;
   }
 
   gtk_dialog_run (GTK_DIALOG (dialog));
