@@ -65,6 +65,7 @@ chatty_deps = [
   dependency('sqlite3', version: '>=3.0.0'),
   dependency('libebook-contacts-1.2'),
   dependency('libebook-1.2'),
+  dependency('gsettings-desktop-schemas'),
   libebook_dep,
   libfeedback_dep,
   libm_dep,

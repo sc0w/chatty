@@ -14,6 +14,7 @@ Build-Depends:
  libpurple-dev,
  libsqlite3-dev,
  libebook1.2-dev,
+ gsettings-desktop-schemas-dev,
  meson,
 Standards-Version: 4.2.1
 Homepage: https://source.puri.sm/Librem5/chatty
@@ -23,7 +24,6 @@ Architecture: any
 Depends:
  ${misc:Depends},
  ${shlibs:Depends},
- gsettings-desktop-schemas,
 Recommends:
  purple-carbons,
  purple-lurch,
