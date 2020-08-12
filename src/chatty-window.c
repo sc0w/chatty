@@ -141,6 +141,22 @@ window_chat_list_row_new (ChattyItem   *item,
 }
 
 static void
+window_set_item (ChattyWindow *self,
+                 ChattyItem   *item)
+{
+  const char *header_label = "";
+
+  g_assert (CHATTY_IS_WINDOW (self));
+
+  if (CHATTY_IS_ITEM (item))
+    header_label = chatty_item_get_name (item);
+
+  self->selected_item = item;
+  chatty_avatar_set_item (CHATTY_AVATAR (self->sub_header_icon), item);
+  gtk_label_set_label (GTK_LABEL (self->sub_header_label), header_label);
+}
+
+static void
 chatty_window_update_sidebar_view (ChattyWindow *self)
 {
   GtkWidget *current_view;
@@ -240,11 +256,7 @@ window_notebook_after_switch_cb (GtkNotebook  *notebook,
   g_assert (CHATTY_IS_CHAT_VIEW (page));
 
   chat = chatty_chat_view_get_chat (CHATTY_CHAT_VIEW (page));
-  self->selected_item = CHATTY_ITEM (chat);
-  chatty_avatar_set_item (CHATTY_AVATAR (self->sub_header_icon), self->selected_item);
-  gtk_label_set_label (GTK_LABEL (self->sub_header_label),
-                       chatty_item_get_name (self->selected_item));
-
+  window_set_item (self, CHATTY_ITEM (chat));
   window_chat_changed_cb (self);
 
   g_debug ("%s: Chat name: %s", G_STRFUNC, chatty_chat_get_chat_name (chat));
@@ -372,10 +384,7 @@ window_chat_row_activated_cb (GtkListBox    *box,
 {
   g_assert (CHATTY_WINDOW (self));
 
-  self->selected_item = chatty_list_row_get_item (CHATTY_LIST_ROW (row));
-  chatty_avatar_set_item (CHATTY_AVATAR (self->sub_header_icon), self->selected_item);
-  gtk_label_set_label (GTK_LABEL (self->sub_header_label),
-                       chatty_item_get_name (self->selected_item));
+  window_set_item (self, chatty_list_row_get_item (CHATTY_LIST_ROW (row)));
 
   g_return_if_fail (CHATTY_IS_CHAT (self->selected_item));
 
@@ -419,10 +428,7 @@ notify_fold_cb (GObject      *sender,
     gtk_list_box_set_selection_mode (GTK_LIST_BOX (self->chats_listbox), GTK_SELECTION_SINGLE);
 
   if (fold == HDY_FOLD_FOLDED) {
-    self->selected_item = NULL;
-    chatty_avatar_set_item (CHATTY_AVATAR (self->sub_header_icon), NULL);
-    gtk_label_set_label (GTK_LABEL (self->sub_header_label), "");
-
+    window_set_item (self, NULL);
     hdy_leaflet_set_visible_child_name (HDY_LEAFLET (self->content_box), "sidebar");
   } else {
     chatty_window_chat_list_select_first (self);
@@ -451,13 +457,8 @@ window_new_message_clicked_cb (ChattyWindow *self)
   dialog = CHATTY_NEW_CHAT_DIALOG (self->new_chat_dialog);
   item = chatty_new_chat_dialog_get_selected_item (dialog);
 
-  if (CHATTY_IS_CHAT (item)) {
-    self->selected_item = item;
-
-    chatty_avatar_set_item (CHATTY_AVATAR (self->sub_header_icon), self->selected_item);
-    gtk_label_set_label (GTK_LABEL (self->sub_header_label),
-                         chatty_item_get_name (self->selected_item));
-  }
+  if (CHATTY_IS_CHAT (item))
+    window_set_item (self, item);
 
   if (CHATTY_IS_CONTACT (item) &&
       chatty_contact_is_dummy (CHATTY_CONTACT (item)))
@@ -511,9 +512,7 @@ window_back_clicked_cb (ChattyWindow *self)
 {
   g_assert (CHATTY_IS_WINDOW (self));
 
-  self->selected_item = NULL;
-  chatty_avatar_set_item (CHATTY_AVATAR (self->sub_header_icon), NULL);
-  gtk_label_set_label (GTK_LABEL (self->sub_header_label), "");
+  window_set_item (self, NULL);
 
   /*
    * Clears 'selected_node' which is evaluated to
@@ -622,18 +621,14 @@ window_delete_buddy_clicked_cb (ChattyWindow *self)
     chatty_history_delete_chat (CHATTY_CHAT (self->selected_item));
     if (PURPLE_BLIST_NODE_IS_BUDDY (node)) {
       conv = chatty_chat_get_purple_conv (CHATTY_CHAT (self->selected_item));
-      self->selected_item = NULL;
-      chatty_avatar_set_item (CHATTY_AVATAR (self->sub_header_icon), NULL);
-      gtk_label_set_label (GTK_LABEL (self->sub_header_label), "");
+      window_set_item (self, NULL);
 
       purple_account_remove_buddy (buddy->account, buddy, NULL);
       purple_conversation_destroy (conv);
       purple_blist_remove_buddy (buddy);
 
     } else if (PURPLE_BLIST_NODE_IS_CHAT (node)) {
-      self->selected_item = NULL;
-      chatty_avatar_set_item (CHATTY_AVATAR (self->sub_header_icon), NULL);
-      gtk_label_set_label (GTK_LABEL (self->sub_header_label), "");
+      window_set_item (self, NULL);
 
       // TODO: LELAND: Is this the right place? After recreating a recently
       // deleted chat (same session), the conversation is still in memory
@@ -677,10 +672,7 @@ window_leave_chat_clicked_cb (ChattyWindow *self)
     purple_conversation_destroy (chatty_chat_get_purple_conv (CHATTY_CHAT (self->selected_item)));
   }
 
-  self->selected_item = NULL;
-  chatty_avatar_set_item (CHATTY_AVATAR (self->sub_header_icon), NULL);
-  gtk_label_set_label (GTK_LABEL (self->sub_header_label), "");
-
+  window_set_item (self, NULL);
   chatty_window_chat_list_select_first (self);
   chatty_window_change_view (self, CHATTY_VIEW_CHAT_LIST);
 }
