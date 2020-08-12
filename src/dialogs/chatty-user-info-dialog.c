@@ -185,17 +185,15 @@ user_info_dialog_encrypt_changed_cb (ChattyUserInfoDialog *self)
 static void
 chatty_user_info_dialog_request_fps (ChattyUserInfoDialog *self)
 {
-  PurpleAccount          *account;
-  PurpleConversationType  type;
-  const char             *name;
+  PurpleAccount *account;
+  const char *name;
 
   void * plugins_handle = purple_plugins_get_handle();
 
   account = purple_conversation_get_account (self->conv);
-  type = purple_conversation_get_type (self->conv);
   name = purple_conversation_get_name (self->conv);
 
-  if (type == PURPLE_CONV_TYPE_IM) {
+  if (chatty_chat_is_im (self->chat)) {
     g_autofree gchar *stripped = chatty_utils_jabber_id_strip (name);
 
     purple_signal_emit (plugins_handle,
