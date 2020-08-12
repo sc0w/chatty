@@ -109,10 +109,7 @@ switch_notify_changed_cb (ChattyUserInfoDialog *self)
   g_assert (CHATTY_IS_USER_INFO_DIALOG (self));
 
   active = gtk_switch_get_active (GTK_SWITCH(self->switch_notify));
-
-  purple_blist_node_set_bool (PURPLE_BLIST_NODE(self->buddy),
-                              "chatty-notifications",
-                              active);
+  chatty_chat_set_show_notifications (self->chat, active);
 }
 
 
