@@ -271,16 +271,10 @@ static gboolean
 window_chat_name_matches (ChattyItem   *item,
                           ChattyWindow *self)
 {
-  PurpleBlistNode *node;
   ChattyProtocol protocols;
 
   g_assert (CHATTY_IS_CHAT (item));
   g_assert (CHATTY_IS_WINDOW (self));
-
-  node = (PurpleBlistNode *) chatty_chat_get_purple_chat (CHATTY_CHAT (item));
-
-  if (!node)
-    node = (PurpleBlistNode *)chatty_chat_get_purple_buddy (CHATTY_CHAT (item));
 
   protocols = chatty_manager_get_active_protocols (self->manager);
 
@@ -288,18 +282,15 @@ window_chat_name_matches (ChattyItem   *item,
     return FALSE;
 
   /* FIXME: Not a good idea */
-  if (node && chatty_item_get_protocols (item) != CHATTY_PROTOCOL_SMS) {
-    PurpleAccount *account = NULL;
+  if (chatty_item_get_protocols (item) != CHATTY_PROTOCOL_SMS) {
+    ChattyAccount *account;
 
-    if (node && !purple_blist_node_get_bool (node, "chatty-autojoin"))
+    if (!chatty_chat_get_auto_join (CHATTY_CHAT (item)))
       return FALSE;
 
-    if (PURPLE_BLIST_NODE_IS_CHAT (node))
-      account = PURPLE_CHAT (node)->account;
-    else if (PURPLE_BLIST_NODE_IS_BUDDY (node))
-      account = PURPLE_BUDDY (node)->account;
+    account = chatty_chat_get_account (CHATTY_CHAT (item));
 
-    if (!purple_account_is_connected (account))
+    if (!account || chatty_account_get_status (account) != CHATTY_CONNECTED)
       return FALSE;
   }
 
