@@ -177,17 +177,12 @@ switch_prefs_state_changed_cb (ChattyMucInfoDialog *self)
 static void
 switch_prefs_notify_changed_cb (ChattyMucInfoDialog *self)
 {
-  PurpleBlistNode *node;
-  gboolean         active;
+  gboolean active;
 
   g_assert (CHATTY_IS_MUC_INFO_DIALOG (self));
 
   active = gtk_switch_get_active (GTK_SWITCH(self->switch_prefs_notifications));
-
-  node = PURPLE_BLIST_NODE(purple_blist_find_chat (self->conv->account,
-                                                   self->conv->name));
-
-  purple_blist_node_set_bool (node, "chatty-notifications", active);
+  chatty_chat_set_show_notifications (self->chat, active);
 }
 
 
