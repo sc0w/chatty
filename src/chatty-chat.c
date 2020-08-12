@@ -653,6 +653,27 @@ chatty_chat_get_protocol (ChattyChat *self)
   return CHATTY_PROTOCOL_NONE;
 }
 
+ChattyAccount *
+chatty_chat_get_account (ChattyChat *self)
+{
+  PurpleAccount *account;
+
+  g_return_val_if_fail (CHATTY_IS_CHAT (self), NULL);
+
+  if (self->account)
+    account = self->account;
+  else if (self->conv)
+    account = self->conv->account;
+  else if (self->buddy)
+    account = self->buddy->account;
+  else if (self->pp_chat)
+    account = self->pp_chat->account;
+  else
+    return NULL;
+
+  return account->ui_data;
+}
+
 PurpleChat *
 chatty_chat_get_purple_chat (ChattyChat *self)
 {

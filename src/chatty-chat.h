@@ -15,6 +15,7 @@
 #include <purple.h>
 
 #include "users/chatty-item.h"
+#include "users/chatty-account.h"
 #include "users/chatty-pp-buddy.h"
 #include "chatty-message.h"
 #include "chatty-enums.h"
@@ -43,6 +44,7 @@ void                chatty_chat_set_purple_conv       (ChattyChat         *self,
                                                        PurpleConversation *conv);
 gboolean            chatty_chat_is_im                 (ChattyChat         *self);
 ChattyProtocol      chatty_chat_get_protocol          (ChattyChat         *self);
+ChattyAccount      *chatty_chat_get_account           (ChattyChat         *self);
 PurpleChat         *chatty_chat_get_purple_chat       (ChattyChat         *self);
 PurpleBuddy        *chatty_chat_get_purple_buddy      (ChattyChat         *self);
 PurpleConversation *chatty_chat_get_purple_conv       (ChattyChat         *self);
