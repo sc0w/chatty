@@ -229,38 +229,17 @@ window_chat_changed_cb (ChattyWindow *self)
                         gettext (OverlayContent[mode].text_2));
 }
 
-static ChattyConversation *
-window_get_chatty_conv_at_index (GtkNotebook *notebook,
-                                 int          index)
-{
-  GtkWidget *page;
-
-  if (index == -1)
-    index = 0;
-
-  page = gtk_notebook_get_nth_page (GTK_NOTEBOOK(notebook), index);
-
-  if (!page)
-    return NULL;
-
-  return g_object_get_data (G_OBJECT (page), "ChattyConversation");
-}
-
 static void
 window_notebook_after_switch_cb (GtkNotebook  *notebook,
                                  GtkWidget    *page,
                                  gint          page_num,
                                  ChattyWindow *self)
 {
-  ChattyConversation *chatty_conv;
-  PurpleConversation *conv;
   ChattyChat *chat;
 
-  chatty_conv = window_get_chatty_conv_at_index (notebook, page_num);
+  g_assert (CHATTY_IS_CHAT_VIEW (page));
 
-  conv = chatty_conv->conv;
-
-  chat = chatty_manager_find_purple_conv (self->manager, conv);
+  chat = chatty_chat_view_get_chat (CHATTY_CHAT_VIEW (page));
   self->selected_item = CHATTY_ITEM (chat);
   chatty_avatar_set_item (CHATTY_AVATAR (self->sub_header_icon), self->selected_item);
   gtk_label_set_label (GTK_LABEL (self->sub_header_label),
@@ -268,10 +247,7 @@ window_notebook_after_switch_cb (GtkNotebook  *notebook,
 
   window_chat_changed_cb (self);
 
-  g_return_if_fail (conv != NULL);
-
-  g_debug ("cb_stack_cont_switch_conv conv: chatty_conv->conv: %s",
-           purple_conversation_get_name (conv));
+  g_debug ("%s: Chat name: %s", G_STRFUNC, chatty_chat_get_chat_name (chat));
 
   chatty_chat_set_unread_count (chat, 0);
   gtk_widget_set_visible (self->header_chat_info_button,
