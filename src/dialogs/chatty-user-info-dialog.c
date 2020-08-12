@@ -86,18 +86,13 @@ show_select_avatar_dialog (ChattyUserInfoDialog *self)
 static void
 button_avatar_clicked_cb (ChattyUserInfoDialog *self)
 {
-  PurpleContact *contact;
-  char          *file_name = NULL;
+  g_autofree char *file_name = NULL;
 
   file_name = show_select_avatar_dialog (self);
 
-  if (file_name) {
-    contact = purple_buddy_get_contact (self->buddy);
-
-    purple_buddy_icons_node_set_custom_icon_from_file ((PurpleBlistNode*)contact, file_name);
-  }
-
-  g_free (file_name);
+  if (file_name)
+    chatty_item_set_avatar_async (CHATTY_ITEM (self->chat), file_name,
+                                  NULL, NULL, NULL);
 }
 
 
