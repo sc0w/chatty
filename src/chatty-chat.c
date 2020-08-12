@@ -318,6 +318,37 @@ chatty_chat_get_avatar (ChattyItem *item)
 }
 
 static void
+chatty_chat_set_avatar_async (ChattyItem          *item,
+                              const char          *file_name,
+                              GCancellable        *cancellable,
+                              GAsyncReadyCallback  callback,
+                              gpointer             user_data)
+{
+  ChattyChat *self = (ChattyChat *)item;
+  g_autoptr(GTask) task = NULL;
+  gboolean ret = FALSE;
+
+  g_assert (CHATTY_IS_CHAT (self));
+  g_assert (!cancellable || G_IS_CANCELLABLE (cancellable));
+
+  if (self->buddy) {
+    PurpleContact *contact;
+    PurpleStoredImage *icon;
+
+    contact = purple_buddy_get_contact (self->buddy);
+    icon = purple_buddy_icons_node_set_custom_icon_from_file ((PurpleBlistNode*)contact,
+                                                              file_name);
+    ret = icon != NULL;
+  }
+
+  g_signal_emit_by_name (self, "avatar-changed");
+
+  /* Purple does not support multi-thread.  Just create the task and return */
+  task = g_task_new (self, cancellable, callback, user_data);
+  g_task_return_boolean (task, ret);
+}
+
+static void
 chatty_chat_get_property (GObject    *object,
                           guint       prop_id,
                           GValue     *value,
@@ -394,6 +425,7 @@ chatty_chat_class_init (ChattyChatClass *klass)
   item_class->get_name = chatty_chat_get_name;
   item_class->get_protocols = chatty_chat_get_protocols;
   item_class->get_avatar = chatty_chat_get_avatar;
+  item_class->set_avatar_async = chatty_chat_set_avatar_async;
 
   properties[PROP_ENCRYPT] =
     g_param_spec_boolean ("encrypt",
