@@ -381,3 +381,25 @@ chatty_application_get_main_window (ChattyApplication *self)
 
   return NULL;
 }
+
+/**
+ * chatty_application_get_active_chat:
+ * @self: A #ChattyApplication
+ *
+ * Get the currently shown chat
+ *
+ * Returns: (transfer none): A #ChattyChat if a chat
+ * is shown. %NULL if no chat is shown.  If window is
+ * hidden, %NULL is returned regardless of wether a
+ * chat is shown or not.
+ */
+ChattyChat *
+chatty_application_get_active_chat (ChattyApplication *self)
+{
+  g_return_val_if_fail (CHATTY_IS_APPLICATION (self), NULL);
+
+  if (self->main_window)
+    return chatty_window_get_active_chat (CHATTY_WINDOW (self->main_window));
+
+  return NULL;
+}

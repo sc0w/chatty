@@ -21,37 +21,6 @@
 
 
 /**
- * chatty_conv_container_get_active_chatty_conv:
- * @notebook: a GtkNotebook
- *
- * Returns the chatty conversation that is
- * currently set active in the notebook
- *
- * Returns: ChattyConversation
- *
- */
-ChattyConversation *
-chatty_conv_container_get_active_chatty_conv (GtkNotebook *notebook)
-{
-  int       index;
-  GtkWidget *tab_cont;
-
-  index = gtk_notebook_get_current_page (GTK_NOTEBOOK(notebook));
-
-  if (index == -1) {
-    index = 0;
-  }
-
-  tab_cont = gtk_notebook_get_nth_page (GTK_NOTEBOOK(notebook), index);
-
-  if (!tab_cont) {
-    return NULL;
-  }
-
-  return g_object_get_data (G_OBJECT(tab_cont), "ChattyConversation");
-}
-
-/**
  * chatty_conv_im_with_buddy:
  * @account: a PurpleAccount
  * @name: the buddy name

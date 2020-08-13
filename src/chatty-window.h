@@ -9,6 +9,8 @@
 
 
 #include <gtk/gtk.h>
+
+#include "chatty-chat.h"
 #include "chatty-settings.h"
 
 G_BEGIN_DECLS
@@ -47,6 +49,7 @@ void chatty_window_change_view (ChattyWindow *self, guint state);
 GtkWidget *chatty_window_get_convs_notebook (ChattyWindow *self);
 
 void chatty_window_chat_list_select_first (ChattyWindow *self);
+ChattyChat *chatty_window_get_active_chat (ChattyWindow *self);
 
 
 G_END_DECLS

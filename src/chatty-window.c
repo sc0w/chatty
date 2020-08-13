@@ -1133,3 +1133,23 @@ chatty_window_get_convs_notebook (ChattyWindow *self)
 
   return self->convs_notebook;
 }
+
+ChattyChat *
+chatty_window_get_active_chat (ChattyWindow *self)
+{
+  GtkWidget *child;
+  gint current_page;
+
+  g_return_val_if_fail (CHATTY_IS_WINDOW (self), NULL);
+
+  current_page = gtk_notebook_get_current_page (GTK_NOTEBOOK (self->convs_notebook));
+
+  if (current_page == -1)
+    return NULL;
+
+  child = gtk_notebook_get_nth_page (GTK_NOTEBOOK (self->convs_notebook), current_page);
+  if (!gtk_widget_is_drawable (child))
+    return NULL;
+
+  return chatty_chat_view_get_chat (CHATTY_CHAT_VIEW (child));
+}

@@ -742,9 +742,6 @@ chatty_conv_new (PurpleConversation *conv)
   chatty_conv->chat_view = chatty_chat_view_new ();
   chat = chatty_manager_add_conversation (chatty_manager_get_default (), chatty_conv->conv);
   chatty_chat_view_set_chat (CHATTY_CHAT_VIEW (chatty_conv->chat_view), chat);
-  g_object_set_data (G_OBJECT (chatty_conv->chat_view),
-                     "ChattyConversation",
-                     chatty_conv);
 
   gtk_widget_show (chatty_conv->chat_view);
 
@@ -861,17 +858,13 @@ chatty_conv_write_conversation (PurpleConversation *conv,
   ChattyChat               *chat;
   g_autoptr(ChattyMessage)  chat_message = NULL;
   ChattyConversation       *chatty_conv;
-  ChattyConversation       *active_chatty_conv;
   ChattyManager            *self;
   PurpleConversationType    type;
   PurpleConnection         *gc;
   PurpleAccount            *account;
   PurpleBuddy              *buddy = NULL;
   PurpleBlistNode          *node;
-  gboolean                  conv_active;
   GdkPixbuf                *avatar = NULL;
-  ChattyWindow             *window;
-  GtkWidget                *convs_notebook;
   const char               *buddy_name;
   gchar                    *titel;
   g_autofree char          *uuid = NULL;
@@ -960,16 +953,12 @@ chatty_conv_write_conversation (PurpleConversation *conv,
       chat_message = chatty_message_new (NULL, NULL, message, uuid, 0, CHATTY_DIRECTION_SYSTEM, 0);
       chatty_chat_append_message (chat, chat_message);
     } else if (pcm.flags & PURPLE_MESSAGE_RECV) {
+      ChattyChat *active_chat;
 
-      window = chatty_application_get_main_window (CHATTY_APPLICATION_DEFAULT ());
+      active_chat = chatty_application_get_active_chat (CHATTY_APPLICATION_DEFAULT ());
 
-      convs_notebook = chatty_window_get_convs_notebook (window);
-
-      active_chatty_conv = chatty_conv_container_get_active_chatty_conv (GTK_NOTEBOOK(convs_notebook));
-
-      conv_active = (chatty_conv == active_chatty_conv && gtk_widget_is_drawable (convs_notebook));
-
-      if (buddy && purple_blist_node_get_bool (node, "chatty-notifications") && !conv_active) {
+      if (buddy && purple_blist_node_get_bool (node, "chatty-notifications") &&
+          active_chat != chat) {
         g_autoptr(GdkPixbuf) image = NULL;
         ChattyPpBuddy *pp_buddy;
 
