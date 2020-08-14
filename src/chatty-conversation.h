@@ -32,7 +32,6 @@ typedef enum
 
 
 void chatty_conv_im_with_buddy (PurpleAccount *account, const char *username);
-void chatty_conv_show_conversation (PurpleConversation *conv);
 void chatty_conv_join_chat (PurpleChat *chat);
 void chatty_conv_add_history_since_component(GHashTable *components, const char *account, const char *room);
 

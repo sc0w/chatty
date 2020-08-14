@@ -49,37 +49,8 @@ chatty_conv_im_with_buddy (PurpleAccount *account,
                                     name);
   }
 
-  chatty_conv_show_conversation (conv);
-}
-
-
-/**
- * chatty_conv_show_conversation:
- * @conv: a PurpleConversation
- *
- * Shows a conversation after a notification
- *
- * Called from cb_open_message in chatty-notify.c
- *
- */
-void
-chatty_conv_show_conversation (PurpleConversation *conv)
-{
-  ChattyWindow       *window;
-
-  if (!conv) {
-    return;
-  }
-
-  window = chatty_application_get_main_window (CHATTY_APPLICATION_DEFAULT ());
-
   purple_conversation_present (conv);
-
-  chatty_window_change_view (window, CHATTY_VIEW_MESSAGE_LIST);
-
-  gtk_window_present (GTK_WINDOW(window));
 }
-
 
 void
 chatty_conv_add_history_since_component (GHashTable *components,

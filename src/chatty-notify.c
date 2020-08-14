@@ -24,7 +24,7 @@ cb_open_message (GSimpleAction *action,
                  gpointer       user_data)
 {
   if (conv_notify) {
-    chatty_conv_show_conversation (conv_notify);
+    purple_conversation_present (conv_notify);
   }
 }
 
