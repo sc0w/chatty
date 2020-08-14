@@ -103,6 +103,7 @@ enum {
   CHAT_DELETED,
   NOTIFY_ADDED,
   CONNECTION_ERROR,
+  OPEN_CHAT,
   N_SIGNALS
 };
 
@@ -561,68 +562,6 @@ on_feedback_triggered (LfbEvent      *event,
   }
 }
 
-
-static void
-chatty_conv_switch_conv (ChattyConversation *chatty_conv)
-{
-  ChattyWindow *window;
-  GtkWidget *convs_notebook;
-  int page_num;
-
-  window = chatty_application_get_main_window (CHATTY_APPLICATION_DEFAULT ());
-
-  convs_notebook = chatty_window_get_convs_notebook (window);
-
-  page_num = gtk_notebook_page_num (GTK_NOTEBOOK(convs_notebook),
-                                    chatty_conv->chat_view);
-
-  gtk_notebook_set_current_page (GTK_NOTEBOOK(convs_notebook),
-                                 page_num);
-
-  g_debug ("chatty_conv_switch_conv active_conv: %s   page_num %i",
-           purple_conversation_get_name (chatty_conv->conv), page_num);
-}
-
-
-static void
-chatty_conv_stack_add_conv (ChattyConversation *chatty_conv)
-{
-  ChattyWindow            *window;
-  PurpleConversation      *conv = chatty_conv->conv;
-  GtkWidget               *convs_notebook;
-  const gchar             *tab_txt;
-  gchar                   *text;
-  gchar                   **name_split;
-
-  window = chatty_application_get_main_window (CHATTY_APPLICATION_DEFAULT ());
-
-  convs_notebook = chatty_window_get_convs_notebook (window);
-
-  tab_txt = purple_conversation_get_title (conv);
-
-  gtk_notebook_append_page (GTK_NOTEBOOK(convs_notebook),
-                            chatty_conv->chat_view, NULL);
-
-  name_split = g_strsplit (tab_txt, "@", -1);
-  text = g_strdup_printf ("%s %s",name_split[0], " >");
-
-  gtk_notebook_set_tab_label_text (GTK_NOTEBOOK(convs_notebook),
-                                   chatty_conv->chat_view, text);
-
-  gtk_widget_show (chatty_conv->chat_view);
-
-  gtk_notebook_set_current_page (GTK_NOTEBOOK(convs_notebook), 0);
-
-  if (purple_prefs_get_bool (CHATTY_PREFS_ROOT "/conversations/show_tabs")) {
-    gtk_notebook_set_show_tabs (GTK_NOTEBOOK(convs_notebook), TRUE);
-  } else {
-    gtk_notebook_set_show_tabs (GTK_NOTEBOOK(convs_notebook), FALSE);
-  }
-
-  g_free (text);
-  g_strfreev (name_split);
-}
-
 static ChattyConversation *
 chatty_conv_find_conv (PurpleConversation * conv)
 {
@@ -720,14 +659,7 @@ chatty_conv_new (PurpleConversation *conv)
     }
   }
 
-  chatty_conv->chat_view = chatty_chat_view_new ();
   chat = chatty_manager_add_conversation (chatty_manager_get_default (), chatty_conv->conv);
-  chatty_chat_view_set_chat (CHATTY_CHAT_VIEW (chatty_conv->chat_view), chat);
-
-  gtk_widget_show (chatty_conv->chat_view);
-
-  chatty_conv_stack_add_conv (chatty_conv);
-
   conv_node = chatty_utils_get_conv_blist_node (conv);
 
   if (conv_node != NULL &&
@@ -737,7 +669,7 @@ chatty_conv_new (PurpleConversation *conv)
       purple_conversation_set_logging (conv, purple_value_get_boolean (value));
     }
 
-  chatty_manager_load_more_chat (chatty_manager_get_default (), chat, LAZY_LOAD_INITIAL_MSGS_LIMIT);
+  chatty_manager_load_more_chat (chatty_manager_get_default (), chat, 1);
 }
 
 
@@ -1015,13 +947,16 @@ chatty_conv_muc_list_update_user (PurpleConversation *conv,
 static void
 chatty_conv_present_conversation (PurpleConversation *conv)
 {
-  ChattyConversation *chatty_conv;
+  ChattyManager *self;
+  ChattyChat *chat;
 
-  chatty_conv = CHATTY_CONVERSATION (conv);
+  self = chatty_manager_get_default ();
+  chat = chatty_manager_find_purple_conv (self, conv);
+  g_return_if_fail (chat);
 
-  g_debug ("chatty_conv_present_conversation conv: %s", purple_conversation_get_name (conv));
+  g_debug ("%s conversation: %s", G_STRFUNC, chatty_item_get_name (CHATTY_ITEM (chat)));
 
-  chatty_conv_switch_conv (chatty_conv);
+  g_signal_emit (self,  signals[OPEN_CHAT], 0, chat);
 }
 
 
@@ -1998,6 +1933,22 @@ chatty_manager_class_init (ChattyManagerClass *klass)
                   0, NULL, NULL, NULL,
                   G_TYPE_NONE,
                   3, CHATTY_TYPE_PP_ACCOUNT, G_TYPE_STRING, G_TYPE_STRING);
+
+  /**
+   * ChattyManager::open-chat:
+   * @self: A #ChattyManager
+   * @chat: A #ChattyChat
+   *
+   * Emitted when user requests to open a chat.  UI can hook
+   * to this signal to do whatever appropriate.
+   */
+  signals [OPEN_CHAT] =
+    g_signal_new ("open-chat",
+                  G_TYPE_FROM_CLASS (klass),
+                  G_SIGNAL_RUN_LAST,
+                  0, NULL, NULL, NULL,
+                  G_TYPE_NONE,
+                  1, CHATTY_TYPE_CHAT);
 }
 
 static void

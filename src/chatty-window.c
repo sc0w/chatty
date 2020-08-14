@@ -31,6 +31,7 @@
 #include "dialogs/chatty-user-info-dialog.h"
 #include "dialogs/chatty-muc-info-dialog.h"
 
+#define LAZY_LOAD_INITIAL_MSGS_LIMIT 20
 
 struct _ChattyWindow
 {
@@ -1085,6 +1086,11 @@ chatty_window_init (ChattyWindow *self)
   g_signal_connect_after (G_OBJECT (self->convs_notebook),
                           "switch-page",
                           G_CALLBACK (window_notebook_after_switch_cb), self);
+
+  if (purple_prefs_get_bool (CHATTY_PREFS_ROOT "/conversations/show_tabs"))
+    gtk_notebook_set_show_tabs (GTK_NOTEBOOK (self->convs_notebook), TRUE);
+  else
+    gtk_notebook_set_show_tabs (GTK_NOTEBOOK (self->convs_notebook), FALSE);
 }
 
 
@@ -1158,14 +1164,6 @@ chatty_window_set_uri (ChattyWindow *self,
   g_free (who);
 }
 
-GtkWidget *
-chatty_window_get_convs_notebook (ChattyWindow *self)
-{
-  g_return_val_if_fail (CHATTY_IS_WINDOW (self), NULL);
-
-  return self->convs_notebook;
-}
-
 ChattyChat *
 chatty_window_get_active_chat (ChattyWindow *self)
 {
@@ -1184,4 +1182,42 @@ chatty_window_get_active_chat (ChattyWindow *self)
     return NULL;
 
   return chatty_chat_view_get_chat (CHATTY_CHAT_VIEW (child));
+}
+
+void
+chatty_window_open_chat (ChattyWindow *self,
+                         ChattyChat   *chat)
+{
+  GtkWidget *view;
+  int page_num;
+
+  g_return_if_fail (CHATTY_IS_WINDOW (self));
+  g_return_if_fail (CHATTY_IS_CHAT (chat));
+
+  view = window_get_view_for_chat (self, chat);
+
+  if (!view) {
+    const char *name;
+    g_auto(GStrv) split = NULL;
+    g_autofree char *label = NULL;
+
+    view  = chatty_chat_view_new ();
+    name  = chatty_item_get_name (CHATTY_ITEM (chat));
+    split = g_strsplit (name, "@", -1);
+    label = g_strdup_printf ("%s %s", split[0], " >");
+
+    chatty_chat_view_set_chat (CHATTY_CHAT_VIEW (view), chat);
+    gtk_widget_show (view);
+
+    gtk_container_add (GTK_CONTAINER (self->convs_notebook), view);
+    gtk_notebook_set_tab_label_text (GTK_NOTEBOOK(self->convs_notebook), view, label);
+
+    chatty_manager_load_more_chat (chatty_manager_get_default (), chat, LAZY_LOAD_INITIAL_MSGS_LIMIT);
+  }
+
+  page_num = gtk_notebook_page_num (GTK_NOTEBOOK (self->convs_notebook), view);
+  gtk_notebook_set_current_page (GTK_NOTEBOOK (self->convs_notebook), page_num);
+  hdy_leaflet_set_visible_child (HDY_LEAFLET (self->content_box), self->convs_notebook);
+
+  gtk_window_present (GTK_WINDOW (self));
 }

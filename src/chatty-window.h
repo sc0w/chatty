@@ -46,10 +46,10 @@ void       chatty_window_set_uri (ChattyWindow *self,
 
 void chatty_window_change_view (ChattyWindow *self, guint state);
 
-GtkWidget *chatty_window_get_convs_notebook (ChattyWindow *self);
-
 void chatty_window_chat_list_select_first (ChattyWindow *self);
 ChattyChat *chatty_window_get_active_chat (ChattyWindow *self);
+void        chatty_window_open_chat       (ChattyWindow *self,
+                                           ChattyChat   *chat);
 
 
 G_END_DECLS

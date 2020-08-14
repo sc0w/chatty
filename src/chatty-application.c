@@ -173,6 +173,21 @@ application_show_connection_error (ChattyApplication *self,
   run_dialog_and_destroy (GTK_DIALOG (dialog));
 }
 
+static void
+application_open_chat (ChattyApplication *self,
+                       ChattyChat        *chat)
+{
+  g_assert (CHATTY_IS_APPLICATION (self));
+  g_assert (CHATTY_IS_CHAT (chat));
+
+  if (!self->main_window) {
+    self->main_window = chatty_window_new (GTK_APPLICATION (self));
+    g_object_add_weak_pointer (G_OBJECT (self->main_window), (gpointer *)&self->main_window);
+  }
+
+  chatty_window_open_chat (CHATTY_WINDOW (self->main_window), chat);
+}
+
 static gboolean
 application_open_uri (ChattyApplication *self)
 {
@@ -317,6 +332,10 @@ chatty_application_activate (GApplication *application)
                       "delete-event",
                       G_CALLBACK (gtk_widget_hide_on_delete),
                       NULL);
+
+  g_signal_connect_object (self->manager, "open-chat",
+                           G_CALLBACK (application_open_chat), self,
+                           G_CONNECT_SWAPPED);
 
   if (self->show_window)
     gtk_window_present (GTK_WINDOW (self->main_window));
