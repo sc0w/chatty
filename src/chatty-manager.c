@@ -768,7 +768,6 @@ chatty_conv_write_conversation (PurpleConversation *conv,
 {
   ChattyChat               *chat;
   g_autoptr(ChattyMessage)  chat_message = NULL;
-  ChattyConversation       *chatty_conv;
   ChattyManager            *self;
   PurpleConversationType    type;
   PurpleConnection         *gc;
@@ -788,10 +787,6 @@ chatty_conv_write_conversation (PurpleConversation *conv,
                                    NULL};
   g_autoptr(GError)         err = NULL;
   g_autoptr(LfbEvent)       event = NULL;
-
-  chatty_conv = CHATTY_CONVERSATION (conv);
-
-  g_return_if_fail (chatty_conv != NULL);
 
   if ((flags & PURPLE_MESSAGE_SYSTEM) && !(flags & PURPLE_MESSAGE_NOTIFY)) {
     flags &= ~(PURPLE_MESSAGE_SEND | PURPLE_MESSAGE_RECV);

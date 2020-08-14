@@ -20,8 +20,6 @@ typedef struct chatty_conversation       ChattyConversation;
 
 struct chatty_conversation {
   PurpleConversation  *conv;
-
-  GtkWidget     *chat_view;
 };
 
 
