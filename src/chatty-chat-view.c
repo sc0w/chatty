@@ -326,15 +326,13 @@ chatty_update_typing_status (ChattyChatView *self)
   PurpleConvIm           *im;
   GtkTextIter             start, end;
   g_autofree char         *text = NULL;
-  PurpleConversationType  type;
   gboolean                empty;
 
   g_assert (CHATTY_IS_CHAT_VIEW (self));
 
   conv = self->conv;
-  type = purple_conversation_get_type (conv);
 
-  if (type != PURPLE_CONV_TYPE_IM)
+  if (!chatty_chat_is_im (self->chat))
     return;
 
   gtk_text_buffer_get_bounds (self->message_input_buffer, &start, &end);
@@ -668,17 +666,15 @@ static void
 chat_view_send_message_button_clicked_cb (ChattyChatView *self)
 {
   PurpleConversation  *conv;
-  PurpleAccount *account;
+  ChattyAccount *account;
   GtkTextIter    start, end;
   gchar         *message = NULL;
-  const gchar   *protocol_id;
   gchar         *sms_id_str;
   guint          sms_id;
 
   g_assert (CHATTY_IS_CHAT_VIEW (self));
 
   conv = self->conv;
-  account = purple_conversation_get_account (conv);
 
   gtk_text_buffer_get_bounds (self->message_input_buffer, &start, &end);
 
@@ -689,10 +685,9 @@ chat_view_send_message_button_clicked_cb (ChattyChatView *self)
     return;
   }
 
-  if (!purple_account_is_connected (account))
+  account = chatty_chat_get_account (self->chat);
+  if (chatty_account_get_status (account) != CHATTY_CONNECTED)
     return;
-
-  protocol_id = purple_account_get_protocol_id (account);
 
   gtk_widget_grab_focus (self->message_input);
   purple_idle_touch ();
@@ -701,7 +696,7 @@ chat_view_send_message_button_clicked_cb (ChattyChatView *self)
 
   if (gtk_text_buffer_get_char_count (self->message_input_buffer)) {
     /* provide a msg-id to the sms-plugin for send-receipts */
-    if (g_strcmp0 (protocol_id, "prpl-mm-sms") == 0) {
+    if (chatty_chat_get_protocol (self->chat) == CHATTY_PROTOCOL_SMS) {
       sms_id = g_random_int ();
 
       sms_id_str = g_strdup_printf ("%i", sms_id);
@@ -755,14 +750,10 @@ chat_view_input_key_pressed_cb (ChattyChatView *self,
 static void
 chat_view_message_input_changed_cb (ChattyChatView *self)
 {
-  PurpleAccount *account;
-  const gchar   *protocol;
-  gboolean       has_text;
+  gboolean has_text;
 
   g_assert (CHATTY_IS_CHAT_VIEW (self));
 
-  account  = purple_conversation_get_account (self->conv);
-  protocol = purple_account_get_protocol_id (account);
   has_text = gtk_text_buffer_get_char_count (self->message_input_buffer) > 0;
   gtk_widget_set_visible (self->send_message_button, has_text);
 
@@ -770,7 +761,7 @@ chat_view_message_input_changed_cb (ChattyChatView *self)
     chatty_update_typing_status (self);
 
   if (chatty_settings_get_convert_emoticons (chatty_settings_get_default ()) &&
-      (g_strcmp0 (protocol, "prpl-mm-sms") != 0))
+      chatty_chat_get_protocol (self->chat) != CHATTY_PROTOCOL_SMS)
     chatty_check_for_emoticon (self);
 }
 
