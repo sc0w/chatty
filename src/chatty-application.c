@@ -202,6 +202,19 @@ application_open_uri (ChattyApplication *self)
 }
 
 static void
+chatty_application_show_window (GSimpleAction *action,
+                                GVariant      *parameter,
+                                gpointer       user_data)
+{
+  ChattyApplication *self = user_data;
+
+  g_assert (CHATTY_IS_APPLICATION (self));
+
+  g_application_activate (G_APPLICATION (self));
+  gtk_window_present (GTK_WINDOW (self->main_window));
+}
+
+static void
 chatty_application_finalize (GObject *object)
 {
   ChattyApplication *self = (ChattyApplication *)object;
@@ -279,6 +292,9 @@ chatty_application_startup (GApplication *application)
 {
   ChattyApplication *self = (ChattyApplication *)application;
   g_autofree char *db_path = NULL;
+  static const GActionEntry app_entries[] = {
+    { "show-window", chatty_application_show_window },
+  };
 
   self->daemon = FALSE;
   self->manager = g_object_ref (chatty_manager_get_default ());
@@ -296,6 +312,9 @@ chatty_application_startup (GApplication *application)
   self->css_provider = gtk_css_provider_new ();
   gtk_css_provider_load_from_resource (self->css_provider,
                                        "/sm/puri/chatty/css/style.css");
+
+  g_action_map_add_action_entries (G_ACTION_MAP (self), app_entries,
+                                   G_N_ELEMENTS (app_entries), self);
 
   gtk_style_context_add_provider_for_screen (gdk_screen_get_default(),
                                              GTK_STYLE_PROVIDER (self->css_provider),

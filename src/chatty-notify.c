@@ -52,6 +52,7 @@ chatty_notify_show_notification (const char         *title,
   application = g_application_get_default ();
 
   notification = g_notification_new ("chatty");
+  g_notification_set_default_action (notification, "app.show-window");
 
   if (pixbuf) {
     icon = chatty_icon_get_gicon_from_pixbuf (pixbuf);
