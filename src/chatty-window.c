@@ -1219,5 +1219,6 @@ chatty_window_open_chat (ChattyWindow *self,
   gtk_notebook_set_current_page (GTK_NOTEBOOK (self->convs_notebook), page_num);
   hdy_leaflet_set_visible_child (HDY_LEAFLET (self->content_box), self->convs_notebook);
 
+  chatty_chat_set_unread_count (chat, 0);
   gtk_window_present (GTK_WINDOW (self));
 }
