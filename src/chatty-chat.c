@@ -1191,3 +1191,28 @@ chatty_chat_set_buddy_typing (ChattyChat *self,
   self->buddy_typing = !!is_typing;
   g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_BUDDY_TYPING]);
 }
+
+void
+chatty_chat_delete (ChattyChat *self)
+{
+  g_return_if_fail (CHATTY_IS_CHAT (self));
+
+  if (chatty_chat_is_im (self)) {
+    PurpleBuddy *buddy;
+
+    buddy = self->buddy;
+    purple_account_remove_buddy (buddy->account, buddy, NULL);
+    purple_conversation_destroy (self->conv);
+    purple_blist_remove_buddy (buddy);
+  } else {
+    GHashTable *components;
+
+    // TODO: LELAND: Is this the right place? After recreating a recently
+    // deleted chat (same session), the conversation is still in memory
+    // somewhere and when re-joining the same chat, the db is not re-populated
+    // (until next app session) since there is no server call. Ask @Andrea
+    components = purple_chat_get_components (self->pp_chat);
+    g_hash_table_steal (components, "history_since");
+    purple_blist_remove_chat (self->pp_chat);
+  }
+}

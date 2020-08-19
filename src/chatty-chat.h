@@ -87,5 +87,6 @@ gboolean            chatty_chat_get_auto_join          (ChattyChat        *self)
 gboolean            chatty_chat_get_buddy_typing       (ChattyChat        *self);
 void                chatty_chat_set_buddy_typing       (ChattyChat        *self,
                                                         gboolean           is_typing);
+void                chatty_chat_delete                 (ChattyChat        *self);
 
 G_END_DECLS

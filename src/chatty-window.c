@@ -564,16 +564,11 @@ chatty_update_header (ChattyWindow *self)
 static void
 window_delete_buddy_clicked_cb (ChattyWindow *self)
 {
-  PurpleConversation *conv;
-  PurpleBlistNode *node;
-  PurpleBuddy     *buddy = NULL;
-  PurpleChat      *chat = NULL;
-  GtkWidget       *dialog;
-  GHashTable      *components;
-  const char      *name;
-  const char      *text;
-  const char      *sub_text;
-  int              response;
+  GtkWidget *dialog;
+  const char *name;
+  const char *text;
+  const char *sub_text;
+  int response;
 
   g_assert (CHATTY_IS_WINDOW (self));
 
@@ -583,21 +578,14 @@ window_delete_buddy_clicked_cb (ChattyWindow *self)
     g_return_if_reached ();
   }
 
-  node = (PurpleBlistNode *)chatty_chat_get_purple_buddy (CHATTY_CHAT (self->selected_item));
+  name = chatty_item_get_name (CHATTY_ITEM (self->selected_item));
 
-  if (!node)
-    node = (PurpleBlistNode *)chatty_chat_get_purple_chat (CHATTY_CHAT (self->selected_item));
-
-  if (PURPLE_BLIST_NODE_IS_CHAT(node)) {
-    chat = (PurpleChat*)node;
-    name = purple_chat_get_name (chat);
-    text = _("Disconnect group chat");
-    sub_text = _("This removes chat from chats list");
-  } else {
-    buddy = (PurpleBuddy*)node;
-    name = purple_buddy_get_alias (buddy);
+  if (chatty_chat_is_im (CHATTY_CHAT (self->selected_item))) {
     text = _("Delete chat with");
     sub_text = _("This deletes the conversation history");
+  } else {
+    text = _("Disconnect group chat");
+    sub_text = _("This removes chat from chats list");
   }
 
   dialog = gtk_message_dialog_new (GTK_WINDOW (self),
@@ -625,27 +613,9 @@ window_delete_buddy_clicked_cb (ChattyWindow *self)
 
   if (response == GTK_RESPONSE_OK) {
     chatty_history_delete_chat (CHATTY_CHAT (self->selected_item));
-    if (PURPLE_BLIST_NODE_IS_BUDDY (node)) {
-      conv = chatty_chat_get_purple_conv (CHATTY_CHAT (self->selected_item));
-      window_set_item (self, NULL);
+    chatty_chat_delete (CHATTY_CHAT (self->selected_item));
 
-      purple_account_remove_buddy (buddy->account, buddy, NULL);
-      purple_conversation_destroy (conv);
-      purple_blist_remove_buddy (buddy);
-
-    } else if (PURPLE_BLIST_NODE_IS_CHAT (node)) {
-      window_set_item (self, NULL);
-
-      // TODO: LELAND: Is this the right place? After recreating a recently
-      // deleted chat (same session), the conversation is still in memory
-      // somewhere and when re-joining the same chat, the db is not re-populated
-      // (until next app session) since there is no server call. Ask @Andrea
-
-      components = purple_chat_get_components (chat);
-      g_hash_table_steal (components, "history_since");
-      purple_blist_remove_chat (chat);
-    }
-
+    window_set_item (self, NULL);
     chatty_window_chat_list_select_first (self);
 
     chatty_window_change_view (self, CHATTY_VIEW_CHAT_LIST);
