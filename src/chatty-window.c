@@ -434,6 +434,8 @@ notify_fold_cb (GObject      *sender,
   if (fold == HDY_FOLD_FOLDED) {
     window_set_item (self, NULL);
     hdy_leaflet_set_visible_child_name (HDY_LEAFLET (self->content_box), "sidebar");
+  } else if (self->selected_item) {
+    window_chat_changed_cb (self);
   } else {
     chatty_window_chat_list_select_first (self);
   }
