@@ -1,3 +1,78 @@
+chatty (0.1.15) amber-phone; urgency=medium
+
+  [ Mohammed Sadiq ]
+  * new-chat-dialog: Inform user if contacts app failed to open
+  * tests: Add direct database tests for history
+  * meson: Move chatty-message to libsrc
+  * message: Add API to get/set custom name
+  * chat: Add API to get chat name
+  * chat: Add API to prepend message
+  * chat: Add API to check if chat is IM
+  * Add and use new history
+  * window: Use GtkStack to stack sidebar widgets
+  * window: Simplify updating headerbar info button
+  * chat-view: Focus chat entry when mapped
+  * chat: Add 'buddy-typing' property and use it
+  * chat-view: Clear related hash table data on finalize
+  * Reduce usage of chatty_conversation
+  * notify: Remove unused code
+  * list-row: Add some translation comments
+  * purple-notify: Place dialog over the current active window
+  * manager: Move buddy-icon-changed from conversation
+  * muc-info-dialog: Use chatty-chat API to set notifications
+  * user-info-dialog: Use chatty-chat API to set notifications
+  * window: Use chatty-chat APIs where possible
+  * window: Simplify getting current chat
+  * window: Simplify setting item
+  * chat: Implement set_avatar_async
+  * user-info-dialog: Use chatty-item API to set avatar
+  * user-info-dialog: Simplify check if chat is IM
+  * chat: Add API to get associated chaty-account
+  * window: Simplify filtering chat list
+  * Add API to get active chat and use it
+  * manager: Add chat-deleted signal and use it
+  * manager: Add open-chat signal and use it
+  * Remove no longer required code
+  * Simplify showing a conversation
+  * application: Show main window on clicking notification
+  * chat-view: Replace purple APIs with chatty-chat APIs
+  * window: Always reset unread count after opening a chat
+  * window: Don't change selection when fold mode changes
+  * history: Fix possible deadlock
+  * history: Close database right
+  * chat: Add API to delete chat and use it
+
+  [ Luís Fernando Stürmer da Rosa ]
+  * Update pt_BR.po
+  * po: Update Brazilian Portuguese translation
+
+  [ Guido Günther ]
+  * data: Drop unused protocol icons (Closes: #374)
+
+  [ Daniel Șerbănescu ]
+  * po: Update Romanian translation
+
+  [ Yuri Chornoivan ]
+  * po: Update Ukrainian translation
+  * po: Update Ukrainian translation
+
+  [ Daniel Mustieles ]
+  * po: Update Spanish translation
+
+  [ Evangelos Ribeiro Tzaras ]
+  * src/chatty-manager.c: Fix spelling mistake
+  * Desktop files: Add "Network" main category
+
+  [ Emin Tufan Çetin ]
+  * po: Update Turkish translation
+
+  [ Zander Brown ]
+  * po: Update British English translation
+  * l10n: disambiguate timestamp strings
+  * utils: improve translation of timestamps on messages
+
+ -- Mohammed Sadiq <sadiq@sadiqpk.org>  Thu, 20 Aug 2020 14:39:15 +0530
+
 chatty (0.1.14) amber-phone; urgency=medium
 
   [ louib ]
