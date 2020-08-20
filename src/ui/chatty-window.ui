@@ -44,6 +44,7 @@
   </object>
   <object class="GtkPopoverMenu" id="header_chat_list_new_msg_popover">
     <property name="can_focus">False</property>
+    <property name="relative-to">header_add_chat_button</property>
     <child>
       <object class="GtkBox">
         <property name="visible">True</property>

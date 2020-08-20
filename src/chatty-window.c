@@ -501,11 +501,6 @@ window_add_chat_button_clicked_cb (ChattyWindow *self)
   has_im  = !!(protocols & ~CHATTY_PROTOCOL_SMS);
 
   if (has_im) {
-    // TODO: popover can be bound in builder XML as 
-    // soon as bulk-sms is available
-    gtk_popover_set_relative_to (GTK_POPOVER(self->header_chat_list_new_msg_popover),
-                                 GTK_WIDGET(self->header_add_chat_button));
-
     gtk_popover_popup (GTK_POPOVER(self->header_chat_list_new_msg_popover));
   } else {
     window_new_message_clicked_cb (self);
