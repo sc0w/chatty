@@ -12,17 +12,6 @@
 #include <gtk/gtkwidget.h>
 #include "purple.h"
 
-typedef struct chatty_conversation       ChattyConversation;
-
-
-#define CHATTY_CONVERSATION(conv) \
-  ((ChattyConversation *)(conv)->ui_data)
-
-struct chatty_conversation {
-  PurpleConversation  *conv;
-};
-
-
 typedef enum
 {
   CHATTY_SMS_RECEIPT_NONE      = -1,

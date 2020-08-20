@@ -562,8 +562,8 @@ on_feedback_triggered (LfbEvent      *event,
   }
 }
 
-static ChattyConversation *
-chatty_conv_find_conv (PurpleConversation * conv)
+static ChattyChat *
+chatty_conv_find_chat (PurpleConversation *conv)
 {
   PurpleBuddy     *buddy;
   PurpleContact   *contact;
@@ -605,22 +605,21 @@ chatty_conv_new (PurpleConversation *conv)
   PurpleBuddy        *buddy;
   PurpleValue        *value;
   PurpleBlistNode    *conv_node;
-  ChattyConversation *chatty_conv;
   const gchar        *protocol_id;
   const gchar        *conv_name;
   const gchar        *folks_name;
 
   PurpleConversationType conv_type = purple_conversation_get_type (conv);
 
-  if (conv_type == PURPLE_CONV_TYPE_IM && (chatty_conv = chatty_conv_find_conv (conv))) {
-    conv->ui_data = chatty_conv;
+  if (conv_type == PURPLE_CONV_TYPE_IM &&
+      (chat = chatty_conv_find_chat (conv))) {
+    conv->ui_data = chat;
+    g_object_add_weak_pointer (G_OBJECT (chat), (gpointer *)&conv->ui_data);
+
     return;
   }
 
-  chatty_conv = g_new0 (ChattyConversation, 1);
-  conv->ui_data = chatty_conv;
-  chatty_conv->conv = conv;
-
+  chat = chatty_manager_add_conversation (chatty_manager_get_default (), conv);
   account = purple_conversation_get_account (conv);
   protocol_id = purple_account_get_protocol_id (account);
 
@@ -659,7 +658,6 @@ chatty_conv_new (PurpleConversation *conv)
     }
   }
 
-  chat = chatty_manager_add_conversation (chatty_manager_get_default (), chatty_conv->conv);
   conv_node = chatty_utils_get_conv_blist_node (conv);
 
   if (conv_node != NULL &&
@@ -671,20 +669,6 @@ chatty_conv_new (PurpleConversation *conv)
 
   chatty_manager_load_more_chat (chatty_manager_get_default (), chat, 1);
 }
-
-
-static void
-chatty_conv_destroy (PurpleConversation *conv)
-{
-  ChattyConversation *chatty_conv;
-
-  chatty_conv = CHATTY_CONVERSATION (conv);
-
-  g_debug ("chatty_conv_destroy conv");
-
-  g_free (chatty_conv);
-}
-
 
 static void
 chatty_conv_write_chat (PurpleConversation *conv,
@@ -704,11 +688,7 @@ chatty_conv_write_im (PurpleConversation *conv,
                       PurpleMessageFlags  flags,
                       time_t              mtime)
 {
-  ChattyConversation *chatty_conv;
-
-  chatty_conv = CHATTY_CONVERSATION (conv);
-
-  if (conv != chatty_conv->conv &&
+  if (conv->ui_data && conv != chatty_chat_get_purple_conv (conv->ui_data) &&
       flags & PURPLE_MESSAGE_ACTIVE_ONLY)
     return;
 
@@ -958,7 +938,7 @@ chatty_conv_present_conversation (PurpleConversation *conv)
 static PurpleConversationUiOps conversation_ui_ops =
 {
   chatty_conv_new,
-  chatty_conv_destroy,
+  NULL,
   chatty_conv_write_chat,
   chatty_conv_write_im,
   chatty_conv_write_conversation,
