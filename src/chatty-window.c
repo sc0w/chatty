@@ -491,20 +491,12 @@ window_new_muc_clicked_cb (ChattyWindow *self)
 static void
 window_add_chat_button_clicked_cb (ChattyWindow *self)
 {
-  ChattyProtocol protocols;
-  gboolean       has_im;
-
   g_assert (CHATTY_IS_WINDOW (self));
 
-  protocols = chatty_manager_get_active_protocols (self->manager);
-
-  has_im  = !!(protocols & ~CHATTY_PROTOCOL_SMS);
-
-  if (has_im) {
-    gtk_popover_popup (GTK_POPOVER(self->header_chat_list_new_msg_popover));
-  } else {
+  if (chatty_manager_get_active_protocols (self->manager) == CHATTY_PROTOCOL_SMS)
     window_new_message_clicked_cb (self);
-  }
+  else
+    gtk_popover_popup (GTK_POPOVER (self->header_chat_list_new_msg_popover));
 }
 
 
