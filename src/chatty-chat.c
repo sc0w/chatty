@@ -98,6 +98,14 @@ jabber_id_strip_resource (const char *name)
 }
 
 static void
+emit_avatar_changed (ChattyChat *self)
+{
+  g_assert (CHATTY_IS_CHAT (self));
+
+  g_signal_emit_by_name (self, "avatar-changed");
+}
+
+static void
 chatty_chat_set_purple_chat (ChattyChat *self,
                              PurpleChat *chat)
 {
@@ -114,6 +122,31 @@ chatty_chat_set_purple_chat (ChattyChat *self,
   node = PURPLE_BLIST_NODE (chat);
   node->ui_data = self;
   g_object_add_weak_pointer (G_OBJECT (self), (gpointer *)&node->ui_data);
+}
+
+static void
+chatty_chat_set_purple_buddy (ChattyChat  *self,
+                              PurpleBuddy *buddy)
+{
+  PurpleBlistNode *node;
+
+  g_assert (CHATTY_IS_CHAT (self));
+  g_assert (buddy);
+
+  self->buddy = buddy;
+
+  if (!buddy)
+    return;
+
+  node = PURPLE_BLIST_NODE (buddy);
+
+  if (!node->ui_data)
+    return;
+
+  g_signal_connect_object (node->ui_data, "avatar-changed",
+                           G_CALLBACK (emit_avatar_changed),
+                           self,
+                           G_CONNECT_SWAPPED);
 }
 
 static gboolean
@@ -228,14 +261,6 @@ chat_find_user (ChattyChat *self,
   }
 
   return NULL;
-}
-
-static void
-emit_avatar_changed (ChattyChat *self)
-{
-  g_assert (CHATTY_IS_CHAT (self));
-
-  g_signal_emit_by_name (self, "avatar-changed");
 }
 
 static const char *
@@ -514,19 +539,7 @@ chatty_chat_new_im_chat (PurpleAccount *account,
 
   self = g_object_new (CHATTY_TYPE_CHAT, NULL);
   self->account = account;
-  self->buddy = buddy;
-
-  if (self->buddy) {
-    ChattyPpBuddy *pp_buddy;
-
-    pp_buddy = chatty_pp_buddy_get_object (self->buddy);
-
-    if (pp_buddy)
-      g_signal_connect_object (pp_buddy, "avatar-changed",
-                               G_CALLBACK (emit_avatar_changed),
-                               self,
-                               G_CONNECT_SWAPPED);
-  }
+  chatty_chat_set_purple_buddy (self, buddy);
 
   return self;
 }
@@ -580,19 +593,7 @@ chatty_chat_set_purple_conv (ChattyChat         *self,
   if (node && PURPLE_BLIST_NODE_IS_CHAT (node))
     chatty_chat_set_purple_chat (self, PURPLE_CHAT (node));
   else if (node && PURPLE_BLIST_NODE_IS_BUDDY (node))
-    self->buddy = PURPLE_BUDDY (node);
-
-  if (self->buddy) {
-    ChattyPpBuddy *buddy;
-
-    buddy = chatty_pp_buddy_get_object (self->buddy);
-
-    if (buddy)
-      g_signal_connect_object (buddy, "avatar-changed",
-                               G_CALLBACK (emit_avatar_changed),
-                               self,
-                               G_CONNECT_SWAPPED);
-  }
+    chatty_chat_set_purple_buddy (self, PURPLE_BUDDY (node));
 }
 
 /**
