@@ -536,31 +536,9 @@ ChattyChat *
 chatty_chat_new_purple_conv (PurpleConversation *conv)
 {
   ChattyChat *self;
-  PurpleBlistNode *node;
 
   self = g_object_new (CHATTY_TYPE_CHAT, NULL);
-  self->conv = conv;
-  conv->ui_data = self;
-  g_object_add_weak_pointer (G_OBJECT (self), (gpointer *)&conv->ui_data);
-
-  node = chatty_utils_get_conv_blist_node (conv);
-
-  if (node && PURPLE_BLIST_NODE_IS_CHAT (node))
-    self->pp_chat = PURPLE_CHAT (node);
-  else if (node && PURPLE_BLIST_NODE_IS_BUDDY (node))
-    self->buddy = PURPLE_BUDDY (node);
-
-  if (self->buddy) {
-    ChattyPpBuddy *buddy;
-
-    buddy = chatty_pp_buddy_get_object (self->buddy);
-
-    if (buddy)
-      g_signal_connect_object (buddy, "avatar-changed",
-                               G_CALLBACK (emit_avatar_changed),
-                               self,
-                               G_CONNECT_SWAPPED);
-  }
+  chatty_chat_set_purple_conv (self, conv);
 
   return self;
 }
