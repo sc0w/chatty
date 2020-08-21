@@ -97,6 +97,25 @@ jabber_id_strip_resource (const char *name)
   return stripped;
 }
 
+static void
+chatty_chat_set_purple_chat (ChattyChat *self,
+                             PurpleChat *chat)
+{
+  PurpleBlistNode *node;
+
+  g_assert (CHATTY_IS_CHAT (self));
+  g_assert (chat);
+
+  self->pp_chat = chat;
+
+  if (!chat)
+    return;
+
+  node = PURPLE_BLIST_NODE (chat);
+  node->ui_data = self;
+  g_object_add_weak_pointer (G_OBJECT (self), (gpointer *)&node->ui_data);
+}
+
 static gboolean
 chatty_chat_has_encryption_support (ChattyChat *self)
 {
@@ -519,7 +538,7 @@ chatty_chat_new_purple_chat (PurpleChat *pp_chat)
   ChattyChat *self;
 
   self = g_object_new (CHATTY_TYPE_CHAT, NULL);
-  self->pp_chat = pp_chat;
+  chatty_chat_set_purple_chat (self, pp_chat);
 
   return self;
 }
@@ -559,7 +578,7 @@ chatty_chat_set_purple_conv (ChattyChat         *self,
   node = chatty_utils_get_conv_blist_node (conv);
 
   if (node && PURPLE_BLIST_NODE_IS_CHAT (node))
-    self->pp_chat = PURPLE_CHAT (node);
+    chatty_chat_set_purple_chat (self, PURPLE_CHAT (node));
   else if (node && PURPLE_BLIST_NODE_IS_BUDDY (node))
     self->buddy = PURPLE_BUDDY (node);
 
