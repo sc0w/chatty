@@ -74,7 +74,6 @@ enum {
   PROP_0,
   PROP_ENCRYPT,
   PROP_BUDDY_TYPING,
-  PROP_PURPLE_CHAT,
   N_PROPS
 };
 
@@ -386,9 +385,6 @@ chatty_chat_set_property (GObject      *object,
       chatty_chat_set_encryption (self, g_value_get_boolean (value));
       break;
 
-    case PROP_PURPLE_CHAT:
-      self->pp_chat = g_value_get_pointer (value);
-      break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
     }
@@ -440,12 +436,6 @@ chatty_chat_class_init (ChattyChatClass *klass)
                           "Whether the buddy in chat is typing",
                           FALSE,
                           G_PARAM_READABLE | G_PARAM_STATIC_STRINGS);
-
-  properties[PROP_PURPLE_CHAT] =
-    g_param_spec_pointer ("purple-chat",
-                          "Purple Chat",
-                          "The PurpleChat to be used to create the object",
-                          G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY | G_PARAM_STATIC_STRINGS);
 
   g_object_class_install_properties (object_class, N_PROPS, properties);
 
@@ -526,9 +516,12 @@ chatty_chat_new_im_chat (PurpleAccount *account,
 ChattyChat *
 chatty_chat_new_purple_chat (PurpleChat *pp_chat)
 {
-  return g_object_new (CHATTY_TYPE_CHAT,
-                       "purple-chat", pp_chat,
-                       NULL);
+  ChattyChat *self;
+
+  self = g_object_new (CHATTY_TYPE_CHAT, NULL);
+  self->pp_chat = pp_chat;
+
+  return self;
 }
 
 
