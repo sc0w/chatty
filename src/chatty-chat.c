@@ -575,14 +575,15 @@ chatty_chat_set_purple_conv (ChattyChat         *self,
   g_return_if_fail (CHATTY_IS_CHAT (self));
 
   self->conv = conv;
-  conv->ui_data = self;
-  g_object_add_weak_pointer (G_OBJECT (self), (gpointer *)&conv->ui_data);
 
   if (self->pp_chat || self->buddy)
     return;
 
   if (!conv)
     return;
+
+  conv->ui_data = self;
+  g_object_add_weak_pointer (G_OBJECT (self), (gpointer *)&conv->ui_data);
 
   node = chatty_utils_get_conv_blist_node (conv);
 
