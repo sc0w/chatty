@@ -234,13 +234,6 @@ chatty_utils_create_fingerprint_row (const char *fp,
   return GTK_WIDGET(row);
 }
 
-gpointer
-chatty_utils_get_node_object (PurpleBlistNode *node)
-{
-  return node->ui_data;
-}
-
-
 const char *
 chatty_utils_get_color_for_str (const char *str)
 {
