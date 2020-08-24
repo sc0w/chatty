@@ -1226,18 +1226,6 @@ manager_account_connection_failed_cb (PurpleAccount         *pp_account,
     g_signal_emit (self,  signals[CONNECTION_ERROR], 0, account, error_msg);
 }
 
-
-static void
-manager_conversation_created_cb (PurpleConversation *conv,
-                                 ChattyManager      *self)
-{
-  if (conv->type == PURPLE_CONV_TYPE_CHAT &&
-      !purple_blist_find_chat (conv->account, conv->name))
-    return;
-
-  chatty_manager_add_conversation (self, conv);
-}
-
 static void
 manager_conversation_updated_cb (PurpleConversation   *conv,
                                  PurpleConvUpdateType  type,
@@ -1702,14 +1690,8 @@ chatty_manager_initialize_libpurple (ChattyManager *self)
                          PURPLE_CALLBACK (manager_account_connection_failed_cb), self);
 
   purple_signal_connect (purple_conversations_get_handle (),
-                         "conversation-created", self,
-                         PURPLE_CALLBACK (manager_conversation_created_cb), self);
-  purple_signal_connect (purple_conversations_get_handle (),
                          "conversation-updated", self,
                          PURPLE_CALLBACK (manager_conversation_updated_cb), self);
-  purple_signal_connect (purple_conversations_get_handle (),
-                         "chat-joined", self,
-                         PURPLE_CALLBACK (manager_conversation_created_cb), self);
   purple_signal_connect (purple_conversations_get_handle (),
                          "deleting-conversation", self,
                          PURPLE_CALLBACK (manager_deleting_conversation_cb), self);
