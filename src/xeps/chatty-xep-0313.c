@@ -18,7 +18,6 @@
 #include "chatty-xep-0313.h"
 #include "chatty-utils.h"
 #include "chatty-history.h"
-#include "chatty-conversation.h"
 #include "chatty-manager.h"
 #include "chatty-settings.h"
 

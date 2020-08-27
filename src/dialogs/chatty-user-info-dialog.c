@@ -16,7 +16,6 @@
 #include "chatty-manager.h"
 #include "users/chatty-pp-account.h"
 #include "chatty-utils.h"
-#include "chatty-conversation.h"
 #include "chatty-icons.h"
 #include "chatty-enums.h"
 #include "chatty-chat.h"

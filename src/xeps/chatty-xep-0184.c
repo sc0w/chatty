@@ -19,7 +19,6 @@
 #include "xmlnode.h"
 #include "xeps.h"
 #include "chatty-xep-0184.h"
-#include "chatty-conversation.h"
 #include "chatty-settings.h"
 
 

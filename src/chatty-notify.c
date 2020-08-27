@@ -14,7 +14,6 @@
 #include "chatty-notify.h"
 #include "chatty-icons.h"
 #include "chatty-utils.h"
-#include "chatty-conversation.h"
 
 static PurpleConversation *conv_notify = NULL;
 

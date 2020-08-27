@@ -21,7 +21,6 @@
 #include "chatty-list-row.h"
 #include "chatty-settings.h"
 #include "chatty-chat-view.h"
-#include "chatty-conversation.h"
 #include "chatty-manager.h"
 #include "chatty-icons.h"
 #include "chatty-utils.h"

@@ -13,7 +13,6 @@
 
 #include <gtk/gtk.h>
 
-#include "chatty-conversation.h"
 #include "chatty-chat.h"
 
 G_BEGIN_DECLS
