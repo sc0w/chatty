@@ -67,7 +67,6 @@ void            chatty_manager_load_more_chat         (ChattyManager      *self,
                                                        guint               limit);
 ChattyChat     *chatty_manager_find_purple_conv       (ChattyManager      *self,
                                                        PurpleConversation *conv);
-gboolean        chatty_blist_protocol_is_sms          (PurpleAccount      *account);
 void            chatty_conv_im_with_buddy             (PurpleAccount      *account,
                                                        const char         *username);
 void            chatty_conv_join_chat                 (PurpleChat         *chat);

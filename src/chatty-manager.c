@@ -2432,19 +2432,6 @@ chatty_manager_find_purple_conv (ChattyManager      *self,
   return manager_find_im (G_LIST_MODEL (self->chat_im_list), conv);
 }
 
-
-gboolean
-chatty_blist_protocol_is_sms (PurpleAccount *account)
-{
-  const gchar *protocol_id;
-
-  g_return_val_if_fail (account != NULL, FALSE);
-
-  protocol_id = purple_account_get_protocol_id (account);
-
-  return g_strcmp0 (protocol_id, "purple-mm-sms") == 0;
-}
-
 /**
  * chatty_conv_im_with_buddy:
  * @account: a PurpleAccount
