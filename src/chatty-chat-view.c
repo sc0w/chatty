@@ -733,12 +733,12 @@ chat_view_input_key_pressed_cb (ChattyChatView *self,
 {
   g_assert (CHATTY_IS_CHAT_VIEW (self));
 
-  if (!chatty_settings_get_return_sends_message (chatty_settings_get_default ()) ||
-      gtk_text_buffer_get_char_count (self->message_input_buffer) == 0)
-    return FALSE;
-
-  if (!(event_key->state & GDK_SHIFT_MASK) && event_key->keyval == GDK_KEY_Return) {
-    chat_view_send_message_button_clicked_cb (self);
+  if (!(event_key->state & GDK_SHIFT_MASK) && event_key->keyval == GDK_KEY_Return &&
+      chatty_settings_get_return_sends_message (chatty_settings_get_default ())) {
+    if (gtk_text_buffer_get_char_count (self->message_input_buffer) > 0)
+      chat_view_send_message_button_clicked_cb (self);
+    else
+      gtk_widget_error_bell (self->message_input);
 
     return TRUE;
   }
