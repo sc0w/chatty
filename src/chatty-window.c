@@ -346,7 +346,7 @@ chatty_window_open_item (ChattyWindow *self,
     buddy = (PurpleBuddy*)node;
     account = purple_buddy_get_account (buddy);
 
-    if (chatty_blist_protocol_is_sms (account)) {
+    if (chatty_item_get_protocols (item) == CHATTY_PROTOCOL_SMS) {
       ChattyEds *chatty_eds;
       ChattyContact *contact;
       const char *number;
@@ -662,7 +662,7 @@ window_add_contact_clicked_cb (ChattyWindow *self)
   purple_blist_node_remove_setting (PURPLE_BLIST_NODE(buddy), "chatty-unknown-contact");
   purple_blist_node_set_bool (PURPLE_BLIST_NODE (buddy), "chatty-notifications", TRUE);
 
-  if (chatty_blist_protocol_is_sms (account)) {
+  if (chatty_item_get_protocols (CHATTY_ITEM (self->selected_item)) == CHATTY_PROTOCOL_SMS) {
     ChattyEds *chatty_eds;
     ChattyContact *contact = NULL;
 
