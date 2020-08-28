@@ -143,6 +143,7 @@ chatty_chat_set_purple_buddy (ChattyChat  *self,
   if (!node->ui_data)
     return;
 
+  g_object_set_data (node->ui_data, "chat", self);
   g_signal_connect_object (node->ui_data, "avatar-changed",
                            G_CALLBACK (emit_avatar_changed),
                            self,
@@ -439,6 +440,13 @@ static void
 chatty_chat_finalize (GObject *object)
 {
   ChattyChat *self = (ChattyChat *)object;
+
+  if (self->buddy) {
+    PurpleBlistNode *node;
+
+    node = PURPLE_BLIST_NODE (self->buddy);
+    g_object_set_data (node->ui_data, "chat", NULL);
+  }
 
   g_list_store_remove_all (self->chat_users);
   g_list_store_remove_all (self->message_store);
