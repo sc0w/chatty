@@ -309,7 +309,7 @@ chatty_muc_info_dialog_update_chat (ChattyMucInfoDialog *self)
   gtk_switch_set_state (GTK_SWITCH(self->switch_prefs_status),
                         purple_blist_node_get_bool (node, "chatty-status-msg"));
 
-  chatty_chat = chatty_manager_find_purple_conv (chatty_manager_get_default (), self->conv);
+  chatty_chat = self->conv->ui_data;
   g_return_if_fail (chatty_chat);
 
   user_list = chatty_chat_get_users (chatty_chat);
