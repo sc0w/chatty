@@ -2386,15 +2386,19 @@ chatty_manager_add_chat (ChattyManager *self,
   g_return_val_if_fail (CHATTY_IS_MANAGER (self), NULL);
   g_return_val_if_fail (CHATTY_IS_CHAT (chat), NULL);
 
-  model = G_LIST_MODEL (self->im_list);
+  model = G_LIST_MODEL (self->chat_im_list);
 
   if (chatty_utils_get_item_position (model, chat, NULL))
     item = chat;
   else
     item = chatty_manager_find_chat (model, chat);
 
-  if (!item)
-    g_list_store_append (self->im_list, chat);
+  if (!item) {
+    if (chatty_chat_is_im (chat))
+      g_list_store_append (self->im_list, chat);
+    else
+      g_list_store_append (self->chat_list, chat);
+  }
 
   gtk_sorter_changed (self->chat_sorter, GTK_SORTER_ORDER_TOTAL);
 
