@@ -621,7 +621,7 @@ chatty_conv_find_chat (PurpleConversation *conv)
 static void
 chatty_conv_new (PurpleConversation *conv)
 {
-  ChattyChat         *chat;
+  ChattyChat         *chat = NULL;
   PurpleAccount      *account;
   PurpleBuddy        *buddy;
   PurpleValue        *value;
@@ -640,7 +640,22 @@ chatty_conv_new (PurpleConversation *conv)
     return;
   }
 
-  chat = chatty_manager_add_conversation (chatty_manager_get_default (), conv);
+  conv_node = chatty_utils_get_conv_blist_node (conv);
+
+  if (conv_node && conv_node->ui_data) {
+    if (conv_type == PURPLE_CONV_TYPE_CHAT)
+      chat = conv_node->ui_data;
+    else
+      chat = g_object_get_data (conv_node->ui_data, "chat");
+
+    if (chat) {
+      chat = chatty_manager_add_chat (chatty_manager_get_default (), chat);
+      chatty_chat_set_purple_conv (chat, conv);
+    }
+  }
+
+  if (!chat)
+    chat = chatty_manager_add_conversation (chatty_manager_get_default (), conv);
   account = purple_conversation_get_account (conv);
   protocol_id = purple_account_get_protocol_id (account);
 
@@ -678,8 +693,6 @@ chatty_conv_new (PurpleConversation *conv)
       g_debug ("Unknown contact %s added to blist", purple_buddy_get_name (buddy));
     }
   }
-
-  conv_node = chatty_utils_get_conv_blist_node (conv);
 
   if (conv_node != NULL &&
       (value = g_hash_table_lookup (conv_node->settings, "enable-logging")) &&
