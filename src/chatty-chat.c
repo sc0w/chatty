@@ -577,16 +577,21 @@ chatty_chat_set_purple_conv (ChattyChat         *self,
 
   g_return_if_fail (CHATTY_IS_CHAT (self));
 
-  self->conv = conv;
+  if (self->conv && self->conv->ui_data) {
+    self->conv->ui_data = NULL;
+    g_object_remove_weak_pointer (G_OBJECT (self), (gpointer *)&self->conv->ui_data);
+  }
 
-  if (self->pp_chat || self->buddy)
-    return;
+  self->conv = conv;
 
   if (!conv)
     return;
 
   conv->ui_data = self;
   g_object_add_weak_pointer (G_OBJECT (self), (gpointer *)&conv->ui_data);
+
+  if (self->pp_chat || self->buddy)
+    return;
 
   node = chatty_utils_get_conv_blist_node (conv);
 
