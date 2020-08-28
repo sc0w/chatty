@@ -801,7 +801,7 @@ chatty_conv_write_conversation (PurpleConversation *conv,
   }
 
   node = chatty_utils_get_conv_blist_node (conv);
-  chat = chatty_manager_find_purple_conv (chatty_manager_get_default (), conv);
+  chat = conv->ui_data;
   self = chatty_manager_get_default ();
 
   account = purple_conversation_get_account (conv);
@@ -925,12 +925,9 @@ chatty_conv_muc_list_add_users (PurpleConversation *conv,
                                 GList              *users,
                                 gboolean            new_arrivals)
 {
-  ChattyChat *chat;
+  g_return_if_fail (conv->ui_data);
 
-  chat = chatty_manager_find_purple_conv (chatty_manager_get_default (), conv);
-
-  if (chat)
-    chatty_chat_add_users (chat, users);
+  chatty_chat_add_users (conv->ui_data, users);
 }
 
 
@@ -938,12 +935,9 @@ static void
 chatty_conv_muc_list_update_user (PurpleConversation *conv,
                                   const char         *user)
 {
-  ChattyChat *chat;
+  g_return_if_fail (conv->ui_data);
 
-  chat = chatty_manager_find_purple_conv (chatty_manager_get_default (), conv);
-  g_return_if_fail (chat);
-
-  chatty_chat_emit_user_changed (chat, user);
+  chatty_chat_emit_user_changed (conv->ui_data, user);
 }
 
 
@@ -954,10 +948,10 @@ chatty_conv_present_conversation (PurpleConversation *conv)
   ChattyChat *chat;
 
   self = chatty_manager_get_default ();
-  chat = chatty_manager_find_purple_conv (self, conv);
+  chat = conv->ui_data;
   g_return_if_fail (chat);
 
-  g_debug ("%s conversation: %s", G_STRFUNC, chatty_item_get_name (CHATTY_ITEM (chat)));
+  g_debug ("%s conversation: %s", G_STRFUNC, chatty_chat_get_chat_name (chat));
 
   g_signal_emit (self,  signals[OPEN_CHAT], 0, chat);
 }
@@ -1163,14 +1157,8 @@ manager_buddy_icon_chaged_cb (PurpleBuddy   *buddy,
                                                 buddy->name,
                                                 buddy->account);
 
-  if (conv) {
-    ChattyChat *chat;
-
-    chat = chatty_manager_find_purple_conv (self, conv);
-
-    if (chat)
-      g_signal_emit_by_name (G_OBJECT (chat), "avatar-changed");
-  }
+  if (conv && conv->ui_data)
+    g_signal_emit_by_name (conv->ui_data, "avatar-changed");
 }
 
 static void
@@ -1259,16 +1247,9 @@ manager_conversation_updated_cb (PurpleConversation   *conv,
                                  PurpleConvUpdateType  type,
                                  ChattyManager        *self)
 {
-  if (type == PURPLE_CONV_UPDATE_ICON) {
-    ChattyChat *chat;
-
-    chat = chatty_manager_find_purple_conv (self, conv);
-
-    if (chat)
-      g_signal_emit_by_name (chat, "avatar-changed");
-    else
-      g_warn_if_reached ();
-  }
+  if (type == PURPLE_CONV_UPDATE_ICON &&
+      conv->ui_data)
+    g_signal_emit_by_name (conv->ui_data, "avatar-changed");
 }
 
 static void
@@ -1285,20 +1266,16 @@ manager_buddy_set_typing (PurpleAccount *account,
                           gboolean       is_typing)
 {
   PurpleConversation *conv;
-  ChattyChat *chat;
 
   g_assert (CHATTY_IS_MANAGER (self));
 
   conv = purple_find_conversation_with_account (PURPLE_CONV_TYPE_IM,
                                                 name,
                                                 account);
-  if (!conv)
+  if (!conv || !conv->ui_data)
     return;
 
-  chat = chatty_manager_find_purple_conv (self, conv);
-  g_return_if_fail (chat);
-
-  chatty_chat_set_buddy_typing (chat, is_typing);
+  chatty_chat_set_buddy_typing (conv->ui_data, is_typing);
 }
 
 static void
@@ -1323,14 +1300,9 @@ manager_conversation_buddy_leaving_cb (PurpleConversation *conv,
                                        const char         *reason,
                                        ChattyManager      *self)
 {
-  ChattyChat *chat;
+  g_return_val_if_fail (conv->ui_data, TRUE);
 
-  g_assert (CHATTY_IS_MANAGER (self));
-
-  chat = chatty_manager_find_purple_conv (self, conv);
-  g_return_val_if_fail (chat, TRUE);
-
-  chatty_chat_remove_user (chat, user);
+  chatty_chat_remove_user (conv->ui_data, user);
 
   return TRUE;
 }
@@ -2244,39 +2216,17 @@ chatty_manager_update_node (ChattyManager   *self,
   g_list_store_append (self->chat_list, chat);
 }
 
-static ChattyChat *
-manager_find_im (GListModel         *model,
-                 PurpleConversation *conv)
-{
-  guint n_items;
-
-  n_items = g_list_model_get_n_items (model);
-
-  for (guint i = 0; i < n_items; i++) {
-    g_autoptr(ChattyChat) chat = NULL;
-
-    chat = g_list_model_get_item (model, i);
-
-    if (chatty_chat_match_purple_conv (chat, conv))
-      return chat;
-  }
-
-  return NULL;
-}
-
 void
 chatty_manager_delete_conversation (ChattyManager      *self,
                                     PurpleConversation *conv)
 {
   ChattyChat *chat;
   PurpleBuddy *pp_buddy;
-  GListModel *model;
 
   g_return_if_fail (CHATTY_IS_MANAGER (self));
   g_return_if_fail (conv);
 
-  model = G_LIST_MODEL (self->chat_list);
-  chat  = manager_find_im (model, conv);
+  chat = conv->ui_data;
 
   if (!chat)
     return;
@@ -2294,8 +2244,11 @@ chatty_manager_delete_conversation (ChattyManager      *self,
   }
 
   if (chat) {
+    gboolean removed;
+
     g_signal_emit (self,  signals[CHAT_DELETED], 0, chat);
-    chatty_utils_remove_list_item (G_LIST_STORE (model), chat);
+    removed = chatty_utils_remove_list_item (self->chat_list, chat);
+    g_warn_if_fail (removed);
   }
 }
 
