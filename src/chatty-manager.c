@@ -2344,8 +2344,10 @@ chatty_manager_delete_conversation (ChattyManager      *self,
 
     buddy = chatty_pp_buddy_get_object (pp_buddy);
 
-    if (buddy)
+    if (buddy) {
+      g_object_set_data (G_OBJECT (buddy), "chat", NULL);
       chatty_pp_buddy_set_chat (buddy, NULL);
+    }
   }
 
   if (chat) {
