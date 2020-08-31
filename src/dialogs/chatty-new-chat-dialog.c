@@ -120,6 +120,15 @@ dialog_filter_item_cb (ChattyItem          *item,
       return FALSE;
   }
 
+  if (CHATTY_IS_CHAT (item)) {
+    ChattyAccount *account;
+
+    account = chatty_chat_get_account (CHATTY_CHAT (item));
+
+    if (chatty_account_get_status (account) != CHATTY_CONNECTED)
+      return FALSE;
+  }
+
   return chatty_item_matches (item, self->search_str, self->active_protocols, TRUE);
 }
 
