@@ -502,8 +502,6 @@ chatty_blist_remove (PurpleBuddyList *list,
 
   if (node->ui_data)
     purple_signals_disconnect_by_handle (node->ui_data);
-
-  chatty_manager_remove_node (chatty_manager_get_default (), node);
 }
 
 static void
