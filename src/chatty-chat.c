@@ -1216,6 +1216,9 @@ chatty_chat_delete (ChattyChat *self)
   } else {
     GHashTable *components;
 
+    if (self->conv)
+      purple_conversation_destroy (self->conv);
+
     // TODO: LELAND: Is this the right place? After recreating a recently
     // deleted chat (same session), the conversation is still in memory
     // somewhere and when re-joining the same chat, the db is not re-populated
