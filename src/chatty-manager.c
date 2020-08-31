@@ -2255,27 +2255,6 @@ chatty_manager_update_node (ChattyManager   *self,
   g_list_store_append (self->chat_list, chat);
 }
 
-
-void
-chatty_manager_remove_node (ChattyManager   *self,
-                            PurpleBlistNode *node)
-{
-  ChattyChat *chat;
-  PurpleChat *pp_chat;
-
-  g_assert (CHATTY_IS_MANAGER (self));
-
-  if (!PURPLE_BLIST_NODE_IS_CHAT (node))
-    return;
-
-  pp_chat = (PurpleChat*)node;
-
-  chat = manager_find_chat (G_LIST_MODEL (self->chat_list), pp_chat);
-
-  if (chat)
-    chatty_utils_remove_list_item (self->chat_list, chat);
-}
-
 static ChattyChat *
 manager_find_im (GListModel         *model,
                  PurpleConversation *conv)
