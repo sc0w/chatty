@@ -53,7 +53,6 @@ struct _ChattyChatView
 };
 
 static GHashTable *ht_sms_id = NULL;
-static GHashTable *ht_emoticon = NULL;
 
 #define INDICATOR_WIDTH   60
 #define INDICATOR_HEIGHT  40
@@ -83,31 +82,23 @@ const char *disclaimer_strings[][3] = {
   },
 };
 
-static void
-chatty_conv_init_emoticon_translations (void)
-{
-  ht_emoticon = g_hash_table_new_full (g_str_hash,
-                                       g_str_equal,
-                                       g_free,
-                                       g_free);
-
-  g_hash_table_insert (ht_emoticon, ":)", "🙂");
-  g_hash_table_insert (ht_emoticon, ";)", "😉");
-  g_hash_table_insert (ht_emoticon, ":(", "🙁");
-  g_hash_table_insert (ht_emoticon, ":'(", "😢");
-  g_hash_table_insert (ht_emoticon, ":/", "😕");
-  g_hash_table_insert (ht_emoticon, ":D", "😀");
-  g_hash_table_insert (ht_emoticon, ":'D", "😂");
-  g_hash_table_insert (ht_emoticon, ";P", "😜");
-  g_hash_table_insert (ht_emoticon, ":P", "😛");
-  g_hash_table_insert (ht_emoticon, ";p", "😜");
-  g_hash_table_insert (ht_emoticon, ":p", "😛");
-  g_hash_table_insert (ht_emoticon, ":o", "😮");
-  g_hash_table_insert (ht_emoticon, "B)", "😎 ");
-  g_hash_table_insert (ht_emoticon, "SANTA", "🎅");
-  g_hash_table_insert (ht_emoticon, "FROSTY", "⛄");
-}
-
+const char *emoticons[][15] = {
+  {":)", "🙂"},
+  {";)", "😉"},
+  {":(", "🙁"},
+  {":'(", "😢"},
+  {":/", "😕"},
+  {":D", "😀"},
+  {":'D", "😂"},
+  {";P", "😜"},
+  {":P", "😛"},
+  {";p", "😜"},
+  {":p", "😛"},
+  {":o", "😮"},
+  {"B)", "😎 "},
+  {"SANTA", "🎅"},
+  {"FROSTY", "⛄"},
+};
 
 static gboolean
 chat_view_time_is_same_day (time_t time_a,
@@ -210,25 +201,21 @@ chat_view_indicator_refresh_cb (ChattyChatView *self)
 static void
 chatty_check_for_emoticon (ChattyChatView *self)
 {
-  GtkTextIter         start, end, position;
-  GHashTableIter      iter;
-  gpointer            key, value;
-  g_autofree char    *text = NULL;
+  GtkTextIter start, end, position;
+  g_autofree char *text = NULL;
 
   g_assert (CHATTY_IS_CHAT_VIEW (self));
 
   gtk_text_buffer_get_bounds (self->message_input_buffer, &start, &end);
   text = gtk_text_buffer_get_text (self->message_input_buffer, &start, &end, FALSE);
 
-  g_hash_table_iter_init (&iter, ht_emoticon);
-
-  while (g_hash_table_iter_next (&iter, &key, &value))
-    if (g_str_has_suffix (text, (char *)key)) {
+  for (guint i = 0; i < G_N_ELEMENTS (emoticons); i++)
+    if (g_str_has_suffix (text, emoticons[i][0])) {
       position = end;
 
-      gtk_text_iter_backward_chars (&position, strlen ((char *)key));
+      gtk_text_iter_backward_chars (&position, strlen (emoticons[i][0]));
       gtk_text_buffer_delete (self->message_input_buffer, &position, &end);
-      gtk_text_buffer_insert (self->message_input_buffer, &position, (char *)value, -1);
+      gtk_text_buffer_insert (self->message_input_buffer, &position, emoticons[i][1], -1);
 
       break;
     }
@@ -955,7 +942,6 @@ void
 chatty_chat_view_purple_init (void)
 {
   ht_sms_id = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_object_unref);
-  chatty_conv_init_emoticon_translations ();
 
   purple_signal_connect (purple_conversations_get_handle (),
                          "sms-sent", ht_sms_id,
@@ -968,7 +954,6 @@ chatty_chat_view_purple_uninit (void)
   purple_signals_disconnect_by_handle (ht_sms_id);
 
   g_hash_table_destroy (ht_sms_id);
-  g_hash_table_destroy (ht_emoticon);
 }
 
 void
