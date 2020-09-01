@@ -779,7 +779,7 @@ chatty_chat_are_same (ChattyChat *a,
     return TRUE;
 
   if (b->conv &&
-      chatty_chat_match_purple_conv (b, b->conv))
+      chatty_chat_match_purple_conv (a, b->conv))
     return TRUE;
 
   return FALSE;
