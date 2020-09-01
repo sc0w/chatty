@@ -2276,37 +2276,6 @@ manager_find_im (GListModel         *model,
   return NULL;
 }
 
-
-ChattyChat *
-chatty_manager_add_conversation (ChattyManager      *self,
-                                 PurpleConversation *conv)
-{
-  ChattyChat *chat;
-
-  g_return_val_if_fail (CHATTY_IS_MANAGER (self), NULL);
-
-  if (!conv)
-    return NULL;
-
-  chat = manager_find_im (G_LIST_MODEL (self->chat_im_list), conv);
-
-  if (chat) {
-    chatty_chat_set_purple_conv (chat, conv);
-    g_signal_emit_by_name (chat, "changed");
-
-    return chat;
-  }
-
-  chat = chatty_chat_new_purple_conv (conv);
-  g_list_store_append (self->im_list, chat);
-  gtk_sorter_changed (self->chat_sorter, GTK_SORTER_ORDER_TOTAL);
-
-  g_object_unref (chat);
-
-  return chat;
-}
-
-
 void
 chatty_manager_delete_conversation (ChattyManager      *self,
                                     PurpleConversation *conv)

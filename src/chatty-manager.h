@@ -54,8 +54,6 @@ ChattyProtocol  chatty_manager_get_active_protocols   (ChattyManager   *self);
 ChattyEds      *chatty_manager_get_eds                (ChattyManager   *self);
 void            chatty_manager_update_node            (ChattyManager   *self,
                                                        PurpleBlistNode *node);
-ChattyChat     *chatty_manager_add_conversation       (ChattyManager      *self,
-                                                       PurpleConversation *conv);
 void            chatty_manager_delete_conversation    (ChattyManager      *self,
                                                        PurpleConversation *conv);
 ChattyChat     *chatty_manager_add_chat               (ChattyManager      *self,
