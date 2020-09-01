@@ -647,13 +647,14 @@ chatty_conv_new (PurpleConversation *conv)
       chat = g_object_get_data (conv_node->ui_data, "chat");
 
     if (chat) {
-      chat = chatty_manager_add_chat (chatty_manager_get_default (), chat);
       chatty_chat_set_purple_conv (chat, conv);
     }
   }
 
   if (!chat)
-    chat = chatty_manager_add_conversation (chatty_manager_get_default (), conv);
+    chat = chatty_chat_new_purple_conv (conv);
+
+  chat = chatty_manager_add_chat (chatty_manager_get_default (), chat);
   account = purple_conversation_get_account (conv);
   protocol_id = purple_account_get_protocol_id (account);
 
