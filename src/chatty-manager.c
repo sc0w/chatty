@@ -2322,15 +2322,6 @@ chatty_manager_load_more_chat (ChattyManager *self,
                                      g_object_ref (self));
 }
 
-ChattyChat *
-chatty_manager_find_purple_conv (ChattyManager      *self,
-                                 PurpleConversation *conv)
-{
-  g_return_val_if_fail (CHATTY_IS_MANAGER (self), NULL);
-
-  return manager_find_im (G_LIST_MODEL (self->chat_list), conv);
-}
-
 /**
  * chatty_conv_im_with_buddy:
  * @account: a PurpleAccount
