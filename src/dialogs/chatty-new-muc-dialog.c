@@ -167,8 +167,8 @@ chatty_new_muc_add_account_to_list (ChattyNewMucDialog *self,
                                     ChattyPpAccount    *account)
 {
   HdyActionRow *row;
-  const gchar  *protocol_id;
   GtkWidget    *prefix_radio_button;
+  ChattyProtocol protocol;
 
   g_return_if_fail (CHATTY_IS_NEW_MUC_DIALOG(self));
 
@@ -177,16 +177,15 @@ chatty_new_muc_add_account_to_list (ChattyNewMucDialog *self,
                      "row-account",
                      (gpointer) account);
 
-  protocol_id = chatty_pp_account_get_protocol_id (account);
+  protocol = chatty_item_get_protocols (CHATTY_ITEM (account));
 
   // TODO list supported protocols here
-  if ((g_strcmp0 (protocol_id, "prpl-jabber")) != 0 &&
-      (g_strcmp0 (protocol_id, "prpl-matrix")) != 0 &&
-      (g_strcmp0 (protocol_id, "prpl-telegram")) != 0 &&
-      (g_strcmp0 (protocol_id, "prpl-delta")) != 0 &&
-      (g_strcmp0 (protocol_id, "prpl-threepl")) != 0) {
+  if (protocol & ~(CHATTY_PROTOCOL_XMPP |
+                   CHATTY_PROTOCOL_MATRIX |
+                   CHATTY_PROTOCOL_TELEGRAM |
+                   CHATTY_PROTOCOL_DELTA |
+                   CHATTY_PROTOCOL_THREEPL))
     return;
-  }
 
   if (chatty_account_get_status (CHATTY_ACCOUNT (account)) == CHATTY_DISCONNECTED) {
     return;
