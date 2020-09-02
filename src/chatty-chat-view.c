@@ -258,21 +258,17 @@ static void
 chatty_chat_view_update (ChattyChatView *self)
 {
   GtkStyleContext *context;
-  PurpleAccount *account;
-  const char *protocol_id;
   PurpleConversationType conv_type;
   int index = -1;
 
   g_assert (CHATTY_IS_CHAT_VIEW (self));
 
-  account = purple_conversation_get_account (self->conv);
   conv_type = purple_conversation_get_type (self->conv);
-  protocol_id = purple_account_get_protocol_id (account);
 
   if (conv_type == PURPLE_CONV_TYPE_CHAT)
     self->message_type = CHATTY_MSG_TYPE_MUC;
   else if (conv_type == PURPLE_CONV_TYPE_IM &&
-           g_strcmp0 (protocol_id, "prpl-mm-sms") == 0)
+           chatty_item_get_protocols (CHATTY_ITEM (self->chat)) == CHATTY_PROTOCOL_SMS)
     self->message_type = CHATTY_MSG_TYPE_SMS;
   else
     self->message_type = CHATTY_MSG_TYPE_IM;
@@ -283,7 +279,7 @@ chatty_chat_view_update (ChattyChatView *self)
     chatty_chat_load_encryption_status (self->chat);
 
   if (chatty_manager_has_file_upload_plugin (chatty_manager_get_default ()) &&
-      g_strcmp0 (protocol_id, "prpl-jabber") == 0)
+      chatty_item_get_protocols (CHATTY_ITEM (self->chat)) == CHATTY_PROTOCOL_XMPP)
     chat_view_setup_file_upload (self);
 
   if (self->message_type == CHATTY_MSG_TYPE_IM)
