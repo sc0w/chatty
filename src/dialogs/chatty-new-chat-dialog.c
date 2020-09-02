@@ -123,6 +123,10 @@ dialog_filter_item_cb (ChattyItem          *item,
   if (CHATTY_IS_CHAT (item)) {
     ChattyAccount *account;
 
+    /* Hide chat if it's buddy chat as the buddy is shown separately */
+    if (chatty_chat_get_purple_buddy (CHATTY_CHAT (item)))
+      return FALSE;
+
     account = chatty_chat_get_account (CHATTY_CHAT (item));
 
     if (chatty_account_get_status (account) != CHATTY_CONNECTED)
