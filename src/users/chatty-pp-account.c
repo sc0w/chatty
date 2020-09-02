@@ -663,13 +663,13 @@ chatty_pp_account_get_active_status (ChattyPpAccount *self)
 gboolean
 chatty_pp_account_is_sms (ChattyPpAccount *self)
 {
-  const char *id;
+  ChattyProtocol protocol;
 
   g_return_val_if_fail (CHATTY_IS_PP_ACCOUNT (self), FALSE);
 
-  id = chatty_pp_account_get_protocol_id (self);
+  protocol = chatty_item_get_protocols (CHATTY_ITEM (self));
 
-  return g_str_equal (id, "prpl-mm-sms");
+  return protocol == CHATTY_PROTOCOL_SMS;
 }
 
 const char *
