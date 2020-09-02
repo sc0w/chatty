@@ -624,7 +624,6 @@ chatty_conv_new (PurpleConversation *conv)
   PurpleBuddy        *buddy;
   PurpleValue        *value;
   PurpleBlistNode    *conv_node;
-  const gchar        *protocol_id;
   const gchar        *conv_name;
   const gchar        *folks_name;
 
@@ -656,7 +655,6 @@ chatty_conv_new (PurpleConversation *conv)
 
   chat = chatty_manager_add_chat (chatty_manager_get_default (), chat);
   account = purple_conversation_get_account (conv);
-  protocol_id = purple_account_get_protocol_id (account);
 
   if (conv_type == PURPLE_CONV_TYPE_IM) {
     // Add SMS and IMs from unknown contacts to the chats-list,
@@ -665,7 +663,7 @@ chatty_conv_new (PurpleConversation *conv)
     conv_name = purple_conversation_get_name (conv);
     buddy = purple_find_buddy (account, conv_name);
 
-    if (g_strcmp0 (protocol_id, "prpl-mm-sms") == 0) {
+    if (chatty_item_get_protocols (CHATTY_ITEM (chat)) == CHATTY_PROTOCOL_SMS) {
       if (buddy == NULL) {
         ChattyEds *chatty_eds;
         ChattyContact *contact;
