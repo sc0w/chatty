@@ -59,7 +59,7 @@ struct _ChattyManager
   GListStore      *chat_list;
   GListStore      *list_of_user_list;
   GtkFlattenListModel *contact_list;
-  GtkSortListModel    *sorted_chat_im_list;
+  GtkSortListModel    *sorted_chat_list;
   GtkSorter           *chat_sorter;
 
   PurplePlugin    *sms_plugin;
@@ -1954,8 +1954,8 @@ chatty_manager_init (ChattyManager *self)
 
   self->chat_sorter = gtk_custom_sorter_new ((GCompareDataFunc)manager_sort_chat_item,
                                              NULL, NULL);
-  self->sorted_chat_im_list = gtk_sort_list_model_new (G_LIST_MODEL (self->chat_list),
-                                                       self->chat_sorter);
+  self->sorted_chat_list = gtk_sort_list_model_new (G_LIST_MODEL (self->chat_list),
+                                                    self->chat_sorter);
 
   g_signal_connect_object (self->chatty_eds, "notify::is-ready",
                            G_CALLBACK (manager_eds_is_ready), self,
@@ -2071,7 +2071,7 @@ chatty_manager_get_chat_list (ChattyManager *self)
 {
   g_return_val_if_fail (CHATTY_IS_MANAGER (self), NULL);
 
-  return G_LIST_MODEL (self->sorted_chat_im_list);
+  return G_LIST_MODEL (self->sorted_chat_list);
 }
 
 /**
