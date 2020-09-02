@@ -384,8 +384,6 @@ account_list_row_activated_cb (ChattySettingsDialog *self,
     }
   else
     {
-      const gchar *protocol_id;
-
       gtk_widget_show (self->save_button);
       self->selected_account = g_object_get_data (G_OBJECT (row), "row-account");
       g_assert (self->selected_account != NULL);
@@ -394,10 +392,8 @@ account_list_row_activated_cb (ChattySettingsDialog *self,
       gtk_stack_set_visible_child_name (GTK_STACK (self->main_stack),
                                         "edit-account-view");
 
-      protocol_id = chatty_pp_account_get_protocol_id (self->selected_account);
-
       if (chatty_manager_lurch_plugin_is_loaded (manager) &&
-          g_strcmp0 (protocol_id, "prpl-jabber") == 0)
+          chatty_item_get_protocols (CHATTY_ITEM (self->selected_account)) == CHATTY_PROTOCOL_XMPP)
         {
           PurpleAccount *account;
 
@@ -560,8 +556,8 @@ chatty_account_row_new (ChattyPpAccount *account)
 {
   HdyActionRow   *row;
   GtkWidget      *account_enabled_switch;
-  const gchar    *protocol_id;
   GtkWidget      *spinner;
+  ChattyProtocol protocol;
 
   row = hdy_action_row_new ();
   gtk_widget_show (GTK_WIDGET (row));
@@ -569,14 +565,13 @@ chatty_account_row_new (ChattyPpAccount *account)
                      "row-account",
                      (gpointer) account);
 
-  protocol_id = chatty_pp_account_get_protocol_id (account);
-
-  if ((g_strcmp0 (protocol_id, "prpl-jabber")) != 0 &&
-      (g_strcmp0 (protocol_id, "prpl-matrix")) != 0 &&
-      (g_strcmp0 (protocol_id, "prpl-telegram")) != 0 &&
-      (g_strcmp0 (protocol_id, "prpl-delta")) != 0 &&
-      (g_strcmp0 (protocol_id, "prpl-threepl")) != 0 &&
-      (g_strcmp0 (protocol_id, "prpl-mm-sms")) != 0)
+  protocol = chatty_item_get_protocols (CHATTY_ITEM (account));
+  if (protocol & ~(CHATTY_PROTOCOL_XMPP |
+                   CHATTY_PROTOCOL_MATRIX |
+                   CHATTY_PROTOCOL_TELEGRAM |
+                   CHATTY_PROTOCOL_DELTA |
+                   CHATTY_PROTOCOL_THREEPL |
+                   CHATTY_PROTOCOL_SMS))
     return NULL;
 
   spinner = gtk_spinner_new ();
