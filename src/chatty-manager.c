@@ -57,11 +57,8 @@ struct _ChattyManager
   ChattyEds       *chatty_eds;
   GListStore      *account_list;
   GListStore      *chat_list;
-  GListStore      *im_list;
-  GListStore      *list_of_chat_list;
   GListStore      *list_of_user_list;
   GtkFlattenListModel *contact_list;
-  GtkFlattenListModel *chat_im_list;
   GtkSortListModel    *sorted_chat_im_list;
   GtkSorter           *chat_sorter;
 
@@ -1947,8 +1944,6 @@ chatty_manager_init (ChattyManager *self)
   self->account_list = g_list_store_new (CHATTY_TYPE_PP_ACCOUNT);
 
   self->chat_list = g_list_store_new (CHATTY_TYPE_CHAT);
-  self->im_list = g_list_store_new (CHATTY_TYPE_CHAT);
-  self->list_of_chat_list = g_list_store_new (G_TYPE_LIST_MODEL);
   self->list_of_user_list = g_list_store_new (G_TYPE_LIST_MODEL);
 
   self->contact_list = gtk_flatten_list_model_new (G_TYPE_OBJECT,
@@ -1957,14 +1952,9 @@ chatty_manager_init (ChattyManager *self)
   g_list_store_append (self->list_of_user_list,
                        chatty_eds_get_model (self->chatty_eds));
 
-  self->chat_im_list = gtk_flatten_list_model_new (G_TYPE_OBJECT,
-                                                   G_LIST_MODEL (self->list_of_chat_list));
-  g_list_store_append (self->list_of_chat_list, G_LIST_MODEL (self->chat_list));
-  g_list_store_append (self->list_of_chat_list, G_LIST_MODEL (self->im_list));
-
   self->chat_sorter = gtk_custom_sorter_new ((GCompareDataFunc)manager_sort_chat_item,
                                              NULL, NULL);
-  self->sorted_chat_im_list = gtk_sort_list_model_new (G_LIST_MODEL (self->chat_im_list),
+  self->sorted_chat_im_list = gtk_sort_list_model_new (G_LIST_MODEL (self->chat_list),
                                                        self->chat_sorter);
 
   g_signal_connect_object (self->chatty_eds, "notify::is-ready",
@@ -2285,13 +2275,8 @@ chatty_manager_delete_conversation (ChattyManager      *self,
   g_return_if_fail (CHATTY_IS_MANAGER (self));
   g_return_if_fail (conv);
 
-  model = G_LIST_MODEL (self->im_list);
+  model = G_LIST_MODEL (self->chat_list);
   chat  = manager_find_im (model, conv);
-
-  if (!chat) {
-    model = G_LIST_MODEL (self->chat_list);
-    chat  = manager_find_im (model, conv);
-  }
 
   if (!chat)
     return;
@@ -2346,7 +2331,7 @@ chatty_manager_add_chat (ChattyManager *self,
   g_return_val_if_fail (CHATTY_IS_MANAGER (self), NULL);
   g_return_val_if_fail (CHATTY_IS_CHAT (chat), NULL);
 
-  model = G_LIST_MODEL (self->chat_im_list);
+  model = G_LIST_MODEL (self->chat_list);
 
   if (chatty_utils_get_item_position (model, chat, NULL))
     item = chat;
@@ -2354,9 +2339,6 @@ chatty_manager_add_chat (ChattyManager *self,
     item = chatty_manager_find_chat (model, chat);
 
   if (!item) {
-    if (chatty_chat_is_im (chat))
-      g_list_store_append (self->im_list, chat);
-    else
       g_list_store_append (self->chat_list, chat);
   }
 
@@ -2393,7 +2375,7 @@ chatty_manager_find_purple_conv (ChattyManager      *self,
 {
   g_return_val_if_fail (CHATTY_IS_MANAGER (self), NULL);
 
-  return manager_find_im (G_LIST_MODEL (self->chat_im_list), conv);
+  return manager_find_im (G_LIST_MODEL (self->chat_list), conv);
 }
 
 /**
