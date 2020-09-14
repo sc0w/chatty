@@ -22,7 +22,9 @@ struct _ChattyAccountClass
 {
   ChattyItemClass parent_class;
 
+  const char  *(*get_protocol_name)     (ChattyAccount *self);
   ChattyStatus (*get_status)            (ChattyAccount *self);
+  const char  *(*get_username)          (ChattyAccount *self);
   GListModel  *(*get_buddies)           (ChattyAccount *self);
   gboolean     (*get_enabled)           (ChattyAccount *self);
   void         (*set_enabled)           (ChattyAccount *self,
@@ -36,7 +38,9 @@ struct _ChattyAccountClass
 };
 
 
+const char   *chatty_account_get_protocol_name     (ChattyAccount *self);
 ChattyStatus  chatty_account_get_status            (ChattyAccount *self);
+const char   *chatty_account_get_username          (ChattyAccount *self);
 GListModel   *chatty_account_get_buddies           (ChattyAccount *self);
 gboolean      chatty_account_get_enabled           (ChattyAccount *self);
 void          chatty_account_set_enabled           (ChattyAccount *self,

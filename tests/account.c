@@ -43,7 +43,7 @@ test_account (ChattyAccount *ac,
   str = chatty_pp_account_get_protocol_id (CHATTY_PP_ACCOUNT (ac));
   g_assert_cmpstr (str, ==, protocol_id);
 
-  str = chatty_pp_account_get_username (CHATTY_PP_ACCOUNT (ac));
+  str = chatty_account_get_username (CHATTY_ACCOUNT (ac));
   g_assert_cmpstr (str, ==, username);
 
   chatty_account_set_enabled (ac, TRUE);
@@ -98,7 +98,7 @@ test_new_account (void)
   str = chatty_pp_account_get_protocol_id (account);
   g_assert_cmpstr (str, ==, "prpl-jabber");
 
-  str = chatty_pp_account_get_protocol_name (account);
+  str = chatty_account_get_protocol_name (CHATTY_ACCOUNT (account));
   g_assert_cmpstr (str, ==, "XMPP");
 
   pp_account = chatty_pp_account_get_account (account);

@@ -200,7 +200,7 @@ chatty_new_muc_add_account_to_list (ChattyNewMucDialog *self,
                      (gpointer)prefix_radio_button);
 
   hdy_action_row_add_prefix (row, GTK_WIDGET(prefix_radio_button ));
-  hdy_action_row_set_title (row, chatty_pp_account_get_username (account));
+  hdy_action_row_set_title (row, chatty_account_get_username (CHATTY_ACCOUNT (account)));
 
   gtk_container_add (GTK_CONTAINER(self->accounts_list), GTK_WIDGET(row));
 

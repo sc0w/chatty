@@ -197,8 +197,8 @@ settings_update_account_details (ChattySettingsDialog *self)
   g_assert (CHATTY_IS_SETTINGS_DIALOG (self));
 
   account = self->selected_account;
-  account_name = chatty_pp_account_get_username (account);
-  protocol_name = chatty_pp_account_get_protocol_name (account);
+  account_name = chatty_account_get_username (CHATTY_ACCOUNT (account));
+  protocol_name = chatty_account_get_protocol_name (CHATTY_ACCOUNT (account));
 
   gtk_entry_set_text (GTK_ENTRY (self->account_id_entry), account_name);
   gtk_label_set_text (GTK_LABEL (self->account_protocol_label), protocol_name);
@@ -510,7 +510,7 @@ settings_delete_account_clicked_cb (ChattySettingsDialog *self)
 
   gtk_message_dialog_format_secondary_text (GTK_MESSAGE_DIALOG (dialog),
                                             _("Delete account %s?"),
-                                            chatty_pp_account_get_username (self->selected_account));
+                                            chatty_account_get_username (CHATTY_ACCOUNT (self->selected_account)));
 
   gtk_dialog_set_default_response (GTK_DIALOG (dialog), GTK_RESPONSE_CANCEL);
   gtk_window_set_position (GTK_WINDOW (dialog), GTK_WIN_POS_CENTER_ON_PARENT);
@@ -594,8 +594,8 @@ chatty_account_row_new (ChattyPpAccount *account)
                           account_enabled_switch, "active",
                           G_BINDING_BIDIRECTIONAL | G_BINDING_SYNC_CREATE);
 
-  hdy_action_row_set_title (row, chatty_pp_account_get_username (account));
-  hdy_action_row_set_subtitle (row, chatty_pp_account_get_protocol_name (account));
+  hdy_action_row_set_title (row, chatty_account_get_username (CHATTY_ACCOUNT (account)));
+  hdy_action_row_set_subtitle (row, chatty_account_get_protocol_name (CHATTY_ACCOUNT (account)));
   hdy_action_row_add_action (row, account_enabled_switch);
   hdy_action_row_set_activatable_widget (row, NULL);
 
