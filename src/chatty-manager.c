@@ -1188,7 +1188,7 @@ manager_account_added_cb (PurpleAccount *pp_account,
   if (self->disable_auto_login)
     chatty_account_set_enabled (CHATTY_ACCOUNT (account), FALSE);
 
-  if (chatty_pp_account_is_sms (account))
+  if (chatty_item_is_sms (CHATTY_ITEM (account)))
     chatty_account_set_enabled (CHATTY_ACCOUNT (account), TRUE);
 }
 
@@ -1422,7 +1422,7 @@ manager_connection_signed_on_cb (PurpleConnection *gc,
    * SMS plugin emits “signed-on” regardless of the true state
    * So it’s handled in “mm-sms-state” callback.
    */
-  if (chatty_pp_account_is_sms (account))
+  if (chatty_item_is_sms (CHATTY_ITEM (account)))
     return;
 
   protocol = chatty_item_get_protocols (CHATTY_ITEM (account));
@@ -1450,7 +1450,7 @@ manager_connection_signed_off_cb (PurpleConnection *gc,
    * SMS plugin emits “signed-off” regardless of the true state
    * So it’s handled in “mm-sms-state” callback.
    */
-  if (chatty_pp_account_is_sms (account))
+  if (chatty_item_is_sms (CHATTY_ITEM (account)))
     return;
 
   manager_update_protocols (self);

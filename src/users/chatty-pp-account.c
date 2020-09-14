@@ -660,18 +660,6 @@ chatty_pp_account_get_active_status (ChattyPpAccount *self)
   return purple_account_get_active_status (self->pp_account);
 }
 
-gboolean
-chatty_pp_account_is_sms (ChattyPpAccount *self)
-{
-  ChattyProtocol protocol;
-
-  g_return_val_if_fail (CHATTY_IS_PP_ACCOUNT (self), FALSE);
-
-  protocol = chatty_item_get_protocols (CHATTY_ITEM (self));
-
-  return protocol == CHATTY_PROTOCOL_SMS;
-}
-
 const char *
 chatty_pp_account_get_protocol_id (ChattyPpAccount *self)
 {
@@ -746,7 +734,7 @@ chatty_pp_account_disconnect (ChattyPpAccount *self)
 
   g_return_if_fail (CHATTY_IS_PP_ACCOUNT (self));
 
-  if (chatty_pp_account_is_sms (self))
+  if (chatty_item_is_sms (CHATTY_ITEM (self)))
     return;
 
   status = chatty_account_get_status (CHATTY_ACCOUNT (self));

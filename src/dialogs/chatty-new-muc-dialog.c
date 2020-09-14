@@ -223,7 +223,7 @@ chatty_new_muc_populate_account_list (ChattyNewMucDialog *self)
 
     account = chatty_pp_account_get_object (l->data);
 
-    if (!chatty_pp_account_is_sms (account)) {
+    if (!chatty_item_is_sms (CHATTY_ITEM (account))) {
       chatty_new_muc_add_account_to_list (self, account);
     }
   }

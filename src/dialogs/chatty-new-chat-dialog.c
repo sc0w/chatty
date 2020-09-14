@@ -348,7 +348,7 @@ account_list_row_activated_cb (ChattyNewChatDialog *self,
 
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (prefix_radio), TRUE);
 
-  if (chatty_pp_account_is_sms (account)) {
+  if (chatty_item_is_sms (CHATTY_ITEM (account))) {
     chatty_new_chat_set_edit_mode (self, FALSE);
   } else {
     chatty_new_chat_set_edit_mode (self, TRUE);
