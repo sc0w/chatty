@@ -12,6 +12,7 @@
 
 #include <glib.h>
 #include <gtk/gtk.h>
+#include "chatty-message.h"
 #include "chatty-chat.h"
 #include "chatty-manager.h"
 #include "version.h"

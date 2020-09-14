@@ -28,6 +28,7 @@
 #include "chatty-chat-view.h"
 #include "users/chatty-pp-account.h"
 #include "chatty-chat.h"
+#include "chatty-pp-chat.h"
 #include "chatty-icons.h"
 #include "chatty-notify.h"
 #include "chatty-purple-request.h"
@@ -168,7 +169,8 @@ manager_get_messages_cb (GObject      *object,
     chat = g_object_get_data (G_OBJECT (result), "chat");
     g_assert (CHATTY_IS_CHAT (chat));
 
-    chatty_chat_prepend_messages (chat, messages);
+    if (CHATTY_IS_PP_CHAT (chat))
+      chatty_pp_chat_prepend_messages (CHATTY_PP_CHAT (chat), messages);
   } else if (error && !g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED)) {
     g_warning ("Error fetching messages: %s,", error->message);
   }
@@ -183,7 +185,7 @@ manager_load_messages_cb (GObject      *object,
   g_autoptr(ChattyManager) self = user_data;
   g_autoptr(GPtrArray) messages = NULL;
   g_autoptr(GError) error = NULL;
-  ChattyChat *chat;
+  ChattyPpChat *chat;
 
   g_assert (CHATTY_IS_MANAGER (self));
   g_assert (CHATTY_IS_HISTORY (history));
@@ -191,22 +193,24 @@ manager_load_messages_cb (GObject      *object,
   messages = chatty_history_get_messages_finish (history, result, &error);
 
   chat = g_object_get_data (G_OBJECT (result), "chat");
-  g_assert (CHATTY_IS_CHAT (chat));
+
+  if (!CHATTY_IS_PP_CHAT (chat))
+    return;
 
   if (!messages)
-    chatty_chat_set_show_notifications (chat, TRUE);
+    chatty_pp_chat_set_show_notifications (chat, TRUE);
 
   if (messages) {
-    if (chatty_chat_get_auto_join (chat)) {
+    if (chatty_pp_chat_get_auto_join (chat)) {
       GListModel *model;
       ChattyChat *item;
 
-      item = chatty_manager_add_chat (chatty_manager_get_default (), chat);
+      item = chatty_manager_add_chat (chatty_manager_get_default (), CHATTY_CHAT (chat));
       model = chatty_chat_get_messages (item);
 
       /* If at least one message is loaded, don’t add again. */
       if (g_list_model_get_n_items (model) == 0)
-        chatty_chat_prepend_messages (item, messages);
+        chatty_pp_chat_prepend_messages (CHATTY_PP_CHAT (item), messages);
     }
 
   } else if (error && !g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED)) {
@@ -643,12 +647,12 @@ chatty_conv_new (PurpleConversation *conv)
       chat = g_object_get_data (conv_node->ui_data, "chat");
 
     if (chat) {
-      chatty_chat_set_purple_conv (chat, conv);
+      chatty_pp_chat_set_purple_conv (CHATTY_PP_CHAT (chat), conv);
     }
   }
 
   if (!chat)
-    chat = chatty_chat_new_purple_conv (conv);
+    chat = (ChattyChat *)chatty_pp_chat_new_purple_conv (conv);
 
   chat = chatty_manager_add_chat (chatty_manager_get_default (), chat);
   account = purple_conversation_get_account (conv);
@@ -716,7 +720,7 @@ chatty_conv_write_im (PurpleConversation *conv,
                       PurpleMessageFlags  flags,
                       time_t              mtime)
 {
-  if (conv->ui_data && conv != chatty_chat_get_purple_conv (conv->ui_data) &&
+  if (conv->ui_data && conv != chatty_pp_chat_get_purple_conv (conv->ui_data) &&
       flags & PURPLE_MESSAGE_ACTIVE_ONLY)
     return;
 
@@ -865,7 +869,7 @@ chatty_conv_write_conversation (PurpleConversation *conv,
     if (pcm.flags & (PURPLE_MESSAGE_SYSTEM | PURPLE_MESSAGE_ERROR)) {
       // System is usually also RECV so should be first to catch
       chat_message = chatty_message_new (NULL, NULL, message, uuid, 0, CHATTY_DIRECTION_SYSTEM, 0);
-      chatty_chat_append_message (chat, chat_message);
+      chatty_pp_chat_append_message (CHATTY_PP_CHAT (chat), chat_message);
     } else if (pcm.flags & PURPLE_MESSAGE_RECV) {
       ChattyChat *active_chat;
 
@@ -894,12 +898,12 @@ chatty_conv_write_conversation (PurpleConversation *conv,
       }
 
       chat_message = chatty_message_new (NULL, who, message, uuid, mtime, CHATTY_DIRECTION_IN, 0);
-      chatty_chat_append_message (chat, chat_message);
+      chatty_pp_chat_append_message (CHATTY_PP_CHAT (chat), chat_message);
     } else if (flags & PURPLE_MESSAGE_SEND && pcm.flags & PURPLE_MESSAGE_SEND) {
       // normal send
       chat_message = chatty_message_new (NULL, NULL, message, uuid, 0, CHATTY_DIRECTION_OUT, 0);
       chatty_message_set_status (chat_message, CHATTY_STATUS_SENT, 0);
-      chatty_chat_append_message (chat, chat_message);
+      chatty_pp_chat_append_message (CHATTY_PP_CHAT (chat), chat_message);
     } else if (pcm.flags & PURPLE_MESSAGE_SEND) {
       // offline send (from MAM)
       // FIXME: current list_box does not allow ordering rows by timestamp
@@ -907,7 +911,7 @@ chatty_conv_write_conversation (PurpleConversation *conv,
       // FIXME: Alternatively may need to reload history to re-populate rows
       chat_message = chatty_message_new (NULL, NULL, message, uuid, mtime, CHATTY_DIRECTION_OUT, 0);
       chatty_message_set_status (chat_message, CHATTY_STATUS_SENT, 0);
-      chatty_chat_append_message (chat, chat_message);
+      chatty_pp_chat_append_message (CHATTY_PP_CHAT (chat), chat_message);
     }
 
     chatty_chat_set_unread_count (chat, chatty_chat_get_unread_count (chat) + 1);
@@ -927,7 +931,7 @@ chatty_conv_muc_list_add_users (PurpleConversation *conv,
 {
   g_return_if_fail (conv->ui_data);
 
-  chatty_chat_add_users (conv->ui_data, users);
+  chatty_pp_chat_add_users (conv->ui_data, users);
 }
 
 
@@ -937,7 +941,7 @@ chatty_conv_muc_list_update_user (PurpleConversation *conv,
 {
   g_return_if_fail (conv->ui_data);
 
-  chatty_chat_emit_user_changed (conv->ui_data, user);
+  chatty_pp_chat_emit_user_changed (conv->ui_data, user);
 }
 
 
@@ -1083,7 +1087,7 @@ manager_buddy_added_cb (PurpleBuddy   *pp_buddy,
   contact = chatty_eds_find_by_number (self->chatty_eds, id);
   chatty_pp_buddy_set_contact (buddy, contact);
 
-  chat = chatty_chat_new_im_chat (pp_account, pp_buddy);
+  chat = (ChattyChat *)chatty_pp_chat_new_im_chat (pp_account, pp_buddy);
   chatty_history_get_messages_async (chatty_history_get_default (), chat, NULL, 1,
                                      manager_load_messages_cb,
                                      g_object_ref (self));
@@ -1275,7 +1279,7 @@ manager_buddy_set_typing (PurpleAccount *account,
   if (!conv || !conv->ui_data)
     return;
 
-  chatty_chat_set_buddy_typing (conv->ui_data, is_typing);
+  chatty_pp_chat_set_buddy_typing (conv->ui_data, is_typing);
 }
 
 static void
@@ -1302,7 +1306,7 @@ manager_conversation_buddy_leaving_cb (PurpleConversation *conv,
 {
   g_return_val_if_fail (conv->ui_data, TRUE);
 
-  chatty_chat_remove_user (conv->ui_data, user);
+  chatty_pp_chat_remove_user (conv->ui_data, user);
 
   return TRUE;
 }
@@ -1467,7 +1471,7 @@ manager_find_chat (GListModel *model,
 
     chat = g_list_model_get_item (model, i);
 
-    if (chatty_chat_get_purple_chat (chat) == pp_chat)
+    if (chatty_pp_chat_get_purple_chat (CHATTY_PP_CHAT (chat)) == pp_chat)
       return chat;
   }
 
@@ -2211,7 +2215,7 @@ chatty_manager_update_node (ChattyManager   *self,
     return;
   }
 
-  chat = chatty_chat_new_purple_chat (pp_chat);
+  chat = (ChattyChat *)chatty_pp_chat_new_purple_chat (pp_chat);
 
   g_list_store_append (self->chat_list, chat);
 }
@@ -2231,7 +2235,7 @@ chatty_manager_delete_conversation (ChattyManager      *self,
   if (!chat)
     return;
 
-  pp_buddy = chatty_chat_get_purple_buddy (chat);
+  pp_buddy = chatty_pp_chat_get_purple_buddy (CHATTY_PP_CHAT (chat));
   if (pp_buddy) {
     ChattyPpBuddy *buddy;
 
@@ -2266,7 +2270,7 @@ chatty_manager_find_chat (GListModel *model,
 
     chat = g_list_model_get_item (model, i);
 
-    if (chatty_chat_are_same (chat, item))
+    if (chatty_pp_chat_are_same (CHATTY_PP_CHAT (chat), CHATTY_PP_CHAT (item)))
       return chat;
   }
 

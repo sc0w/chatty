@@ -16,6 +16,7 @@
 #include "chatty-window.h"
 #include "chatty-manager.h"
 #include "chatty-chat.h"
+#include "chatty-pp-chat.h"
 #include "users/chatty-contact.h"
 #include "contrib/gtk.h"
 #include "users/chatty-pp-account.h"
@@ -124,7 +125,8 @@ dialog_filter_item_cb (ChattyItem          *item,
     ChattyAccount *account;
 
     /* Hide chat if it's buddy chat as the buddy is shown separately */
-    if (chatty_chat_get_purple_buddy (CHATTY_CHAT (item)))
+    if (CHATTY_IS_PP_CHAT (item) &&
+        chatty_pp_chat_get_purple_buddy (CHATTY_PP_CHAT (item)))
       return FALSE;
 
     account = chatty_chat_get_account (CHATTY_CHAT (item));

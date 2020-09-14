@@ -19,6 +19,7 @@ libsrc = [
   'users/chatty-pp-account.c',
   'chatty-list-row.c',
   'chatty-chat.c',
+  'chatty-pp-chat.c',
   'chatty-contact-provider.c',
   'chatty-message.c',
   'chatty-settings.c',

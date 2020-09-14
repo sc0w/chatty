@@ -20,6 +20,7 @@
 #include "chatty-manager.h"
 #include "chatty-list-row.h"
 #include "chatty-settings.h"
+#include "chatty-pp-chat.h"
 #include "chatty-chat-view.h"
 #include "chatty-manager.h"
 #include "chatty-icons.h"
@@ -297,7 +298,8 @@ window_chat_name_matches (ChattyItem   *item,
   if (chatty_item_get_protocols (item) != CHATTY_PROTOCOL_SMS) {
     ChattyAccount *account;
 
-    if (!chatty_chat_get_auto_join (CHATTY_CHAT (item)))
+    if (CHATTY_IS_PP_CHAT (item) &&
+        !chatty_pp_chat_get_auto_join (CHATTY_PP_CHAT (item)))
       return FALSE;
 
     account = chatty_chat_get_account (CHATTY_CHAT (item));
@@ -336,8 +338,8 @@ chatty_window_open_item (ChattyWindow *self,
   if (CHATTY_IS_PP_BUDDY (item))
     node = (PurpleBlistNode *)chatty_pp_buddy_get_buddy (CHATTY_PP_BUDDY (item));
 
-  if (CHATTY_IS_CHAT (item))
-    node = (PurpleBlistNode *)chatty_chat_get_purple_buddy (CHATTY_CHAT (item));
+  if (CHATTY_IS_PP_CHAT (item))
+    node = (PurpleBlistNode *)chatty_pp_chat_get_purple_buddy (CHATTY_PP_CHAT (item));
 
   if (node) {
     PurpleAccount *account;
@@ -368,8 +370,8 @@ chatty_window_open_item (ChattyWindow *self,
     return;
   }
 
-  if (CHATTY_IS_CHAT (item) &&
-      (chat = chatty_chat_get_purple_chat (CHATTY_CHAT (item)))) {
+  if (CHATTY_IS_PP_CHAT (item) &&
+      (chat = chatty_pp_chat_get_purple_chat (CHATTY_PP_CHAT (item)))) {
     chatty_conv_join_chat (chat);
 
     purple_blist_node_set_bool ((PurpleBlistNode *)chat, "chatty-autojoin", TRUE);
@@ -599,7 +601,7 @@ window_delete_buddy_clicked_cb (ChattyWindow *self)
 
   if (response == GTK_RESPONSE_OK) {
     chatty_history_delete_chat (CHATTY_CHAT (self->selected_item));
-    chatty_chat_delete (CHATTY_CHAT (self->selected_item));
+    chatty_pp_chat_delete (CHATTY_PP_CHAT (self->selected_item));
 
     window_set_item (self, NULL);
     chatty_window_chat_list_select_first (self);
@@ -624,14 +626,14 @@ window_leave_chat_clicked_cb (ChattyWindow *self)
     g_return_if_reached ();
   }
 
-  node = (PurpleBlistNode *)chatty_chat_get_purple_buddy (CHATTY_CHAT (self->selected_item));
+  node = (PurpleBlistNode *)chatty_pp_chat_get_purple_buddy (CHATTY_PP_CHAT (self->selected_item));
 
   if (!node)
-    node = (PurpleBlistNode *)chatty_chat_get_purple_chat (CHATTY_CHAT (self->selected_item));
+    node = (PurpleBlistNode *)chatty_pp_chat_get_purple_chat (CHATTY_PP_CHAT (self->selected_item));
 
   if (node) {
     purple_blist_node_set_bool (node, "chatty-autojoin", FALSE);
-    purple_conversation_destroy (chatty_chat_get_purple_conv (CHATTY_CHAT (self->selected_item)));
+    purple_conversation_destroy (chatty_pp_chat_get_purple_conv (CHATTY_PP_CHAT (self->selected_item)));
   }
 
   window_set_item (self, NULL);
@@ -652,10 +654,10 @@ window_add_contact_clicked_cb (ChattyWindow *self)
   g_assert (CHATTY_IS_WINDOW (self));
   g_return_if_fail (self->selected_item);
 
-  buddy = chatty_chat_get_purple_buddy (CHATTY_CHAT (self->selected_item));
+  buddy = chatty_pp_chat_get_purple_buddy (CHATTY_PP_CHAT (self->selected_item));
   g_return_if_fail (buddy != NULL);
 
-  conv = chatty_chat_get_purple_conv (CHATTY_CHAT (self->selected_item));
+  conv = chatty_pp_chat_get_purple_conv (CHATTY_PP_CHAT (self->selected_item));
 
   account = purple_conversation_get_account (conv);
   purple_account_add_buddy (account, buddy);
@@ -693,7 +695,7 @@ window_add_in_contacts_clicked_cb (ChattyWindow *self)
   g_assert (CHATTY_IS_WINDOW (self));
   g_return_if_fail (self->selected_item);
 
-  buddy = chatty_chat_get_purple_buddy (CHATTY_CHAT (self->selected_item));
+  buddy = chatty_pp_chat_get_purple_buddy (CHATTY_PP_CHAT (self->selected_item));
   g_return_if_fail (buddy != NULL);
 
   who = purple_buddy_get_name (buddy);
@@ -1107,7 +1109,7 @@ chatty_window_set_uri (ChattyWindow *self,
   if (pp_buddy && contact)
     chatty_pp_buddy_set_contact (pp_buddy, contact);
 
-  chat = chatty_chat_new_im_chat (account, buddy);
+  chat = (ChattyChat *)chatty_pp_chat_new_im_chat (account, buddy);
   item = chatty_manager_add_chat (chatty_manager_get_default (), chat);
 
   purple_blist_node_set_bool (PURPLE_BLIST_NODE(buddy), "chatty-autojoin", TRUE);

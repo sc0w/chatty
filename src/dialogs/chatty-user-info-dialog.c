@@ -12,6 +12,7 @@
 #include <glib/gi18n.h>
 #include <glib-object.h>
 #include "chatty-avatar.h"
+#include "chatty-pp-chat.h"
 #include "chatty-window.h"
 #include "chatty-manager.h"
 #include "users/chatty-pp-account.h"
@@ -103,7 +104,7 @@ switch_notify_changed_cb (ChattyUserInfoDialog *self)
   g_assert (CHATTY_IS_USER_INFO_DIALOG (self));
 
   active = gtk_switch_get_active (GTK_SWITCH(self->switch_notify));
-  chatty_chat_set_show_notifications (self->chat, active);
+  chatty_pp_chat_set_show_notifications (CHATTY_PP_CHAT (self->chat), active);
 }
 
 
@@ -166,7 +167,7 @@ user_info_dialog_encrypt_changed_cb (ChattyUserInfoDialog *self)
 
   g_assert (CHATTY_IS_USER_INFO_DIALOG (self));
 
-  encryption = chatty_chat_get_encryption_status (self->chat);
+  encryption = chatty_chat_get_encryption (self->chat);
 
   if (encryption == CHATTY_ENCRYPTION_UNSUPPORTED ||
       encryption == CHATTY_ENCRYPTION_UNKNOWN)
@@ -234,7 +235,7 @@ chatty_user_info_dialog_update_chat (ChattyUserInfoDialog *self)
     gtk_widget_show (GTK_WIDGET(self->label_encrypt));
     gtk_widget_show (GTK_WIDGET(self->label_encrypt_status));
 
-    chatty_chat_load_encryption_status (self->chat);
+    chatty_pp_chat_load_encryption_status (CHATTY_PP_CHAT (self->chat));
     chatty_user_info_dialog_request_fps (self);
   }
 
@@ -328,7 +329,9 @@ chatty_user_info_dialog_set_chat (ChattyUserInfoDialog *self,
   g_return_if_fail (CHATTY_IS_USER_INFO_DIALOG (self));
   g_return_if_fail (CHATTY_IS_CHAT (chat));
 
-  self->conv = chatty_chat_get_purple_conv (chat);
+  if (CHATTY_IS_PP_CHAT (chat))
+    self->conv = chatty_pp_chat_get_purple_conv (CHATTY_PP_CHAT (chat));
+
   self->chat = chat;
 
   chatty_user_info_dialog_update_chat (self);

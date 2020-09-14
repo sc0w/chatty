@@ -11,6 +11,7 @@
 #include <glib.h>
 #include <glib/gi18n.h>
 #include <glib-object.h>
+#include "chatty-pp-chat.h"
 #include "chatty-window.h"
 #include "chatty-icons.h"
 #include "chatty-list-row.h"
@@ -181,7 +182,7 @@ switch_prefs_notify_changed_cb (ChattyMucInfoDialog *self)
   g_assert (CHATTY_IS_MUC_INFO_DIALOG (self));
 
   active = gtk_switch_get_active (GTK_SWITCH(self->switch_prefs_notifications));
-  chatty_chat_set_show_notifications (self->chat, active);
+  chatty_pp_chat_set_show_notifications (CHATTY_PP_CHAT (self->chat), active);
 }
 
 
@@ -393,7 +394,8 @@ chatty_muc_info_dialog_set_chat (ChattyMucInfoDialog *self,
   g_return_if_fail (CHATTY_IS_MUC_INFO_DIALOG (self));
   g_return_if_fail (CHATTY_IS_CHAT (chat));
 
-  self->conv = chatty_chat_get_purple_conv (chat);
+  if (CHATTY_IS_PP_CHAT (chat))
+    self->conv = chatty_pp_chat_get_purple_conv (CHATTY_PP_CHAT (chat));
   self->chat = chat;
 
   chatty_muc_info_dialog_update_chat (self);
