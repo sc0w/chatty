@@ -223,6 +223,17 @@ chatty_pp_account_get_username (ChattyAccount *account)
   return purple_account_get_username (self->pp_account);
 }
 
+static void
+chatty_pp_account_set_username (ChattyAccount *account,
+                                const char    *username)
+{
+  ChattyPpAccount *self = (ChattyPpAccount *)account;
+
+  g_assert (CHATTY_IS_PP_ACCOUNT (self));
+
+  purple_account_set_username (self->pp_account, username);
+}
+
 static gboolean
 chatty_pp_account_get_enabled (ChattyAccount *account)
 {
@@ -282,6 +293,27 @@ chatty_pp_account_set_remember_password (ChattyAccount *account,
   g_assert (CHATTY_IS_PP_ACCOUNT (self));
 
   purple_account_set_remember_password (self->pp_account, !!remember);
+}
+
+static void
+chatty_pp_account_save (ChattyAccount *account)
+{
+  ChattyPpAccount *self = (ChattyPpAccount *)account;
+
+  g_return_if_fail (CHATTY_IS_PP_ACCOUNT (self));
+
+  /* purple adds the account only if not yet added */
+  purple_accounts_add (self->pp_account);
+}
+
+static void
+chatty_pp_account_delete (ChattyAccount *account)
+{
+  ChattyPpAccount *self = (ChattyPpAccount *)account;
+
+  g_return_if_fail (CHATTY_IS_PP_ACCOUNT (self));
+
+  purple_accounts_delete (self->pp_account);
 }
 
 static gboolean
@@ -516,12 +548,15 @@ chatty_pp_account_class_init (ChattyPpAccountClass *klass)
   account_class->get_protocol_name = chatty_pp_account_get_protocol_name;
   account_class->get_status   = chatty_pp_account_get_status;
   account_class->get_username = chatty_pp_account_get_username;
+  account_class->set_username = chatty_pp_account_set_username;
   account_class->get_enabled  = chatty_pp_account_get_enabled;
   account_class->set_enabled  = chatty_pp_account_set_enabled;
   account_class->get_password = chatty_pp_account_get_password;
   account_class->set_password = chatty_pp_account_set_password;
   account_class->get_remember_password = chatty_pp_account_get_remember_password;
   account_class->set_remember_password = chatty_pp_account_set_remember_password;
+  account_class->save = chatty_pp_account_save;
+  account_class->delete = chatty_pp_account_delete;
 
   properties[PROP_USERNAME] =
     g_param_spec_string ("username",
@@ -647,23 +682,6 @@ chatty_pp_account_get_buddy_list (ChattyPpAccount *self)
   return G_LIST_MODEL (self->buddy_list);
 }
 
-/**
- * chatty_pp_account_save:
- * @self: A #ChattyPpAccount
- *
- * Save @self to accounts store, which is saved to disk.
- * If the account is already saved, the function simply
- * returns.
- */
-void
-chatty_pp_account_save (ChattyPpAccount *self)
-{
-  g_return_if_fail (CHATTY_IS_PP_ACCOUNT (self));
-
-  /* purple adds the account only if not yet added */
-  purple_accounts_add (self->pp_account);
-}
-
 /* XXX: a helper API till the dust settles */
 PurpleAccount *
 chatty_pp_account_get_account (ChattyPpAccount *self)
@@ -692,15 +710,6 @@ chatty_pp_account_get_protocol_id (ChattyPpAccount *self)
   id = purple_account_get_protocol_id (self->pp_account);
 
   return id ? id : "";
-}
-
-void
-chatty_pp_account_set_username (ChattyPpAccount *self,
-                                const char      *username)
-{
-  g_return_if_fail (CHATTY_IS_PP_ACCOUNT (self));
-
-  purple_account_set_username (self->pp_account, username);
 }
 
 /**

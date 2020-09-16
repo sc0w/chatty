@@ -1036,7 +1036,7 @@ chatty_manager_enable_sms_account (ChattyManager *self)
     return;
 
   account = chatty_pp_account_new (CHATTY_PROTOCOL_SMS, "SMS", NULL);
-  chatty_pp_account_save (account);
+  chatty_account_save (CHATTY_ACCOUNT (account));
 }
 
 static ChattyPpBuddy *
