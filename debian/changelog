@@ -1,3 +1,66 @@
+chatty (0.1.16) amber-phone; urgency=medium
+
+  [ Mohammed Sadiq ]
+  * window: Set popover relative-to in UI file
+  * window: Simplify handling add chat
+  * Remove ChattyConversation struct
+  * chat: Fix possible dereferencing of NULL
+  * chat: Simplify setting PurpleConversation
+  * chat: Remove purple-chat property
+  * chat: Point ui_data to self when setting PurpleChat
+  * chat: Simplify setting buddy
+  * manager: Remove redundant code
+  * utils: Remove an unused function
+  * chat-view: Don't let Return key insert newline if set to send message
+  * Move chatty-conversation to chatty-manager
+  * window: Use chatty-item API to check if item is SMS
+  * manager: Remove unused function
+  * chat: Fix setting ui_data when buddy/chat is already set
+  * manager: Add chat to the right store
+  * chat: Link buddy to self when buddy is set
+  * manager: Unset buddy chat when deleting a chat
+  * manager: Check if chat exists before adding a new one
+  * chat: Destroy conversation when deleting chat
+  * new-chat-dialog: Hide chats from disconnected accounts
+  * manager: Don't remove chat when node is removed
+  * manager: Remove no longer used code
+  * manager: Simplify adding chat to list
+  * manager: Remove no longer used function
+  * chat-view: Use an array to store emoticons
+  * chat: Use the right variable for check
+  * manager: Use chatty-item API to get chat protocol
+  * pp-account: Use chatty-item API to get protocol
+  * settings-dialog: Use chatty-item API to get protocol
+  * new-muc-dialog: Use chatty-item API to get account protocol
+  * chat-view: Use chatty-item API to get chat protocol
+  * pp-buddy: Use chatty-item API to get buddy protocol
+  * new-chat-dialog: Hide IM chats with buddies
+  * manager: Remove some lists used to store chats
+  * manager: Rename a variable
+  * manager: Use ui_data to get chat from conv
+  * xep-0184: Use ui_data to get chat from conv
+  * muc-info-dialog: Use ui_data to get chat from conv
+  * manager: Remove an unused function
+  * Add chatty-chat base class
+  * item: Move is_sms() from chatty-pp-account
+  * account: Move some pp-account APIs to parent class
+  * account: Move more APIs from pp-account
+
+  [ Fabio Tomat ]
+  * po: Add friulian to LINGUAS
+  * po: Add friulian translations
+
+  [ scootergrisen ]
+  * Update da.po
+
+  [ Anders Jonsson ]
+  * Add Swedish translation
+
+  [ Марко Костић (Marko Kostić) ]
+  * po: Add Serbian translation
+
+ -- Mohammed Sadiq <sadiq@sadiqpk.org>  Wed, 23 Sep 2020 13:15:01 +0530
+
 chatty (0.1.15) amber-phone; urgency=medium
 
   [ Mohammed Sadiq ]
