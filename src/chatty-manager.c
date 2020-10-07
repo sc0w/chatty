@@ -832,7 +832,21 @@ chatty_conv_write_conversation (PurpleConversation *conv,
 
     pcm.who = chatty_utils_jabber_id_strip(who);
   } else {
-    pcm.who = chatty_pp_chat_get_buddy_name (CHATTY_PP_CHAT (chat), who);
+    ChattyProtocol protocol;
+
+    protocol = chatty_item_get_protocols (CHATTY_ITEM (chat));
+
+    if (protocol == CHATTY_PROTOCOL_MATRIX ||
+        protocol == CHATTY_PROTOCOL_XMPP)
+      pcm.who = chatty_pp_chat_get_buddy_name (CHATTY_PP_CHAT (chat), who);
+    else
+      pcm.who = g_strdup (who);
+
+    if (protocol == CHATTY_PROTOCOL_XMPP &&
+        !g_str_has_prefix (pcm.who, conv->name)) {
+      g_autofree char *temp = pcm.who;
+      pcm.who = chatty_utils_jabber_id_strip (pcm.who);
+    }
   }
 
   // No reason to go further if we ignore system/status
@@ -851,7 +865,7 @@ chatty_conv_write_conversation (PurpleConversation *conv,
 
   // If anyone wants to suppress archiving - feel free to set NO_LOG flag
   purple_signal_emit (chatty_manager_get_default (),
-                      "conversation-write", account, &pcm, &uuid, type);
+                      "conversation-write", conv, &pcm, &uuid, type);
   g_debug("Posting message id:%s flags:%d type:%d from:%s",
           uuid, pcm.flags, type, pcm.who);
 
@@ -869,8 +883,7 @@ chatty_conv_write_conversation (PurpleConversation *conv,
     if (chatty_chat_is_im (chat))
       chat_name = chatty_chat_get_chat_name (chat);
 
-    chatty_history_add_message (account->username, pcm.alias, chat_name,
-                                pcm.what, &uuid, pcm.flags, pcm.when, type);
+    chatty_history_add_message (chat, chat_name, pcm.what, &uuid, pcm.flags, pcm.when);
     }
 
   if (*message != '\0') {
@@ -1355,6 +1368,10 @@ auto_join_chat_cb (gpointer data)
         prpl_info = PURPLE_PLUGIN_PROTOCOL_INFO(purple_find_prpl (purple_account_get_protocol_id (account)));
         components = purple_chat_get_components (chat);
         chat_name = prpl_info->get_chat_name(components);
+
+        if (!chat_name || !*chat_name)
+          continue;
+
         chatty_conv_add_history_since_component(components, account->username, chat_name);
 
         serv_join_chat (purple_account_get_connection (account),
@@ -1688,7 +1705,7 @@ chatty_manager_initialize_libpurple (ChattyManager *self)
                           purple_marshal_VOID__POINTER_POINTER_POINTER_UINT,
                           NULL, 4,
                           purple_value_new(PURPLE_TYPE_SUBTYPE,
-                                           PURPLE_SUBTYPE_ACCOUNT),
+                                           PURPLE_SUBTYPE_CONVERSATION),
                           purple_value_new (PURPLE_TYPE_BOXED,
                                             "PurpleConvMessage *"),
                           purple_value_new(PURPLE_TYPE_POINTER),
