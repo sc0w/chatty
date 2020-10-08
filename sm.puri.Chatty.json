@@ -191,7 +191,8 @@
                 "-DENABLE_INTROSPECTION=ON",
                 "-DENABLE_INSTALLED_TESTS=OFF",
                 "-DENABLE_GTK_DOC=OFF",
-                "-DENABLE_EXAMPLES=OFF"
+                "-DENABLE_EXAMPLES=OFF",
+                "-DENABLE_CANBERRA=OFF"
             ],
             "sources": [
                 {
@@ -221,6 +222,7 @@
             ],
             "config-opts": [
                 "-Dtelepathy_backend=false",
+                "-Dbluez_backend=false",
                 "-Dinspect_tool=false",
                 "-Dimport_tool=false"
            ],
@@ -228,6 +230,20 @@
                 {
                     "type": "git",
                     "url": "https://gitlab.gnome.org/GNOME/folks.git"
+                }
+            ]
+        },
+        {
+            "name": "libfeedback",
+            "buildsystem": "meson",
+            "config-opts": [
+                "-Dtests=false",
+                "-Ddaemon=false"
+            ],
+            "sources": [
+                {
+                    "type": "git",
+                    "url": "https://source.puri.sm/Librem5/feedbackd.git"
                 }
             ]
         },
