@@ -254,7 +254,8 @@ chatty_message_row_new (ChattyMessage  *message,
     gtk_label_set_xalign (GTK_LABEL (self->footer_label), 0);
   }
 
-  if (is_im || direction == CHATTY_DIRECTION_SYSTEM)
+  if (is_im || direction == CHATTY_DIRECTION_SYSTEM ||
+      direction == CHATTY_DIRECTION_OUT)
     gtk_widget_hide (self->avatar_image);
   else
     chatty_avatar_set_item (CHATTY_AVATAR (self->avatar_image),
