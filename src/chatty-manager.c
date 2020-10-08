@@ -824,6 +824,8 @@ chatty_conv_write_conversation (PurpleConversation *conv,
     }
 
     pcm.who = chatty_utils_jabber_id_strip(who);
+  } else {
+    pcm.who = chatty_pp_chat_get_buddy_name (CHATTY_PP_CHAT (chat), who);
   }
 
   // No reason to go further if we ignore system/status
