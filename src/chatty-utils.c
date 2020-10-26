@@ -336,3 +336,18 @@ chatty_utils_get_conv_blist_node (PurpleConversation *conv)
   }
   return node;
 }
+
+ChattyMsgDirection
+chatty_utils_direction_from_flag (PurpleMessageFlags flag)
+{
+  if (flag & PURPLE_MESSAGE_RECV)
+    return CHATTY_DIRECTION_IN;
+
+  if (flag & PURPLE_MESSAGE_SEND)
+    return CHATTY_DIRECTION_OUT;
+
+  if (flag & PURPLE_MESSAGE_SYSTEM)
+    return CHATTY_DIRECTION_SYSTEM;
+
+  g_return_val_if_reached (CHATTY_DIRECTION_UNKNOWN);
+}
