@@ -11,6 +11,7 @@ Build-Depends:
  libfeedback-dev,
  libhandy-0.0-dev (>= 0.0.10),
  libebook-contacts1.2-dev,
+ libphonenumber-dev,
  libpurple-dev,
  libsqlite3-dev,
  libebook1.2-dev,

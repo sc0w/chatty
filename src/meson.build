@@ -26,6 +26,7 @@ libsrc = [
   'chatty-icons.c',
   'chatty-history.c',
   'chatty-utils.c',
+  'chatty-phone-utils.cpp',
 ]
 
 chatty_sources = [
@@ -52,6 +53,7 @@ chatty_sources = [
   version_h,
 ]
 
+libphonenumber_dep = cc.find_library('phonenumber', required: true)
 purple = dependency('purple')
 purple_plugdir = purple.get_pkgconfig_variable('plugindir')
 jabber = meson.get_compiler('c').find_library('jabber', dirs: purple_plugdir)
@@ -69,6 +71,7 @@ chatty_deps = [
   libebook_dep,
   libfeedback_dep,
   libm_dep,
+  libphonenumber_dep,
 ]
 
 gnome = import('gnome')
