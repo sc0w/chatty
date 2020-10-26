@@ -869,22 +869,8 @@ chatty_conv_write_conversation (PurpleConversation *conv,
   g_debug("Posting message id:%s flags:%d type:%d from:%s",
           uuid, pcm.flags, type, pcm.who);
 
-  /*
-   * This is default fallback history handler.  Other plugins may
-   * intercept “conversation-write” and suppress it if they handle
-   * history on their own (eg. MAM).  If %PURPLE_MESSAGE_NO_LOG is
-   * set in @flags, it won't be saved to database.
-   */
-  if (!(pcm.flags & PURPLE_MESSAGE_NO_LOG)) {
-    const char *chat_name;
-
-    chat_name = pcm.who;
-
-    if (chatty_chat_is_im (chat))
-      chat_name = chatty_chat_get_chat_name (chat);
-
-    chatty_history_add_message (chat, chat_name, pcm.what, &uuid, pcm.flags, pcm.when);
-    }
+  if (!uuid)
+    uuid = g_uuid_string_random ();
 
   if (*message != '\0') {
 
@@ -935,6 +921,18 @@ chatty_conv_write_conversation (PurpleConversation *conv,
       chatty_message_set_status (chat_message, CHATTY_STATUS_SENT, 0);
       chatty_pp_chat_append_message (CHATTY_PP_CHAT (chat), chat_message);
     }
+
+    if (chat_message && pcm.who && !(flags & PURPLE_MESSAGE_SEND))
+      chatty_message_set_user_name (chat_message, pcm.who);
+
+    /*
+     * This is default fallback history handler.  Other plugins may
+     * intercept “conversation-write” and suppress it if they handle
+     * history on their own (eg. MAM).  If %PURPLE_MESSAGE_NO_LOG is
+     * set in @flags, it won't be saved to database.
+     */
+    if (!(pcm.flags & PURPLE_MESSAGE_NO_LOG) && chat_message)
+      chatty_history_add_message (chat, chat_message);
 
     chatty_chat_set_unread_count (chat, chatty_chat_get_unread_count (chat) + 1);
     gtk_sorter_changed (self->chat_sorter, GTK_SORTER_ORDER_TOTAL);

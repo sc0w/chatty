@@ -22,10 +22,12 @@
 
 #include "purple-init.h"
 #include "chatty-settings.h"
+#include "chatty-utils.h"
 #include "chatty-history.h"
 
 typedef struct Message {
   ChattyChat *chat;
+  ChattyMessage *message;
   char *account;
   char *room;
   char *who;
@@ -71,6 +73,7 @@ free_message (Message *msg)
 {
   g_assert_true (msg);
   g_clear_object (&msg->chat);
+  g_clear_object (&msg->message);
   g_free (msg->account);
   g_free (msg->who);
   g_free (msg->what);
@@ -255,12 +258,27 @@ new_message (const char         *account,
              time_t              time_stamp,
              const char         *room)
 {
+  g_autoptr(ChattyContact) contact = NULL;
   ChattyChat *chat;
   Message *message;
+  ChattyMsgDirection direction = CHATTY_DIRECTION_UNKNOWN;
+
+  if (flags & PURPLE_MESSAGE_SYSTEM)
+    direction = CHATTY_DIRECTION_SYSTEM;
+  else if (flags & PURPLE_MESSAGE_RECV)
+    direction = CHATTY_DIRECTION_IN;
+  else if (flags & PURPLE_MESSAGE_SEND)
+    direction = CHATTY_DIRECTION_OUT;
 
   chat = chatty_chat_new (account, room ? room : buddy, room == NULL);
   g_object_set (G_OBJECT (chat), "protocols", CHATTY_PROTOCOL_XMPP, NULL);
   message = g_new (Message, 1);
+  contact = g_object_new (CHATTY_TYPE_CONTACT,
+                          "protocols", CHATTY_PROTOCOL_XMPP,
+                          NULL);
+  chatty_contact_set_value (contact, buddy);
+  message->message = chatty_message_new (CHATTY_ITEM (contact), NULL, msg_text,
+                                         uuid, time_stamp, direction, 0);
   message->account = g_strdup (account);
   message->who = g_strdup (buddy);
   message->what = g_strdup (msg_text);
@@ -375,9 +393,12 @@ add_message (ChattyHistory      *history,
   else
     type = PURPLE_CONV_TYPE_IM;
 
+  if (!uuid)
+    uuid = g_uuid_string_random ();
+
   uid = g_strdup (uuid);
   msg = new_message (account, who, message, uid, flags, when, room);
-  success = chatty_history_add_message (msg->chat, who, message, &uid, flags, when);
+  success = chatty_history_add_message (msg->chat, msg->message);
   g_assert_true (success);
   g_assert_nonnull (uid);
   g_ptr_array_add (test_msg_array, msg);
@@ -735,12 +756,21 @@ test_value (sqlite3    *db,
   flags = flag_for_direction (direction);
   if (statement_status == SQLITE_ROW) {
     g_autoptr(ChattyChat) chat = NULL;
+    g_autoptr(ChattyMessage) chat_message = NULL;
+    ChattyMsgDirection chat_direction;
     gboolean success;
 
     chat = chatty_chat_new (account, room ? room : who, room == NULL);
-
     g_object_set (G_OBJECT (chat), "protocols", CHATTY_PROTOCOL_XMPP, NULL);
-    success = chatty_history_add_message (chat, who, message, &uuid, flags, time_stamp);
+
+    if (!uuid)
+      uuid = g_uuid_string_random ();
+
+    chat_direction = chatty_utils_direction_from_flag (flags);
+    chat_message = chatty_message_new (NULL, NULL, message, uuid, time_stamp, chat_direction, 0);
+    if (chat_direction != CHATTY_DIRECTION_OUT)
+      chatty_message_set_user_name (chat_message, who);
+    success = chatty_history_add_message (chat, chat_message);
     g_assert_true (success);
   }
 

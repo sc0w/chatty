@@ -790,8 +790,14 @@ cb_chatty_mam_msg_received (PurpleConnection *pc,
         who = chatty_utils_jabber_id_strip (pcm->who);
     }
 
-    chatty_history_add_message (conv->ui_data, pcm->who, pcm->what,
-                                (char**)&stanza_id, pcm->flags, pcm->when);
+    if (!stanza_id)
+      stanza_id = g_uuid_string_random ();
+
+    chat_message = chatty_message_new (NULL, NULL, pcm->what, stanza_id, pcm->when,
+                                       chatty_utils_direction_from_flag (pcm->flags), 0);
+    if (chat_message && pcm->who && !(flags & PURPLE_MESSAGE_SEND))
+      chatty_message_set_user_name (chat_message, who ? who : pcm->who);
+    chatty_history_add_message (conv->ui_data, chat_message);
   }
   // Update last timestamp for account's archive
   if(mamq != NULL && mamq->to == NULL)

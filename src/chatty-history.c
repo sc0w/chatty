@@ -1856,62 +1856,6 @@ history_exists (ChattyHistory *self,
   g_task_return_boolean (task, found);
 }
 
-static void
-history_add_raw_message (ChattyHistory *self,
-                         GTask         *task)
-{
-  const char *account, *who, *msg, *uid;
-  sqlite3_stmt *stmt;
-  ChattyChat *chat;
-  int status, time_stamp, direction;
-  int thread_id, sender_id;
-
-  g_assert (CHATTY_IS_HISTORY (self));
-  g_assert (G_IS_TASK (task));
-
-  if (!self->db) {
-    g_task_return_new_error (task,
-                             G_IO_ERROR, G_IO_ERROR_FAILED,
-                             "Error: Database not opened");
-    return;
-  }
-
-  chat = g_object_get_data (G_OBJECT (task), "chat");
-  thread_id = insert_or_ignore_thread (self, chat, task);
-
-  if (!thread_id)
-    return;
-
-  account = chatty_chat_get_username (chat);
-  who = g_object_get_data (G_OBJECT (task), "who");
-  msg = g_object_get_data (G_OBJECT (task), "message");
-  uid = g_object_get_data (G_OBJECT (task), "uid");
-  time_stamp = GPOINTER_TO_INT (g_object_get_data (G_OBJECT (task), "time"));
-  direction = GPOINTER_TO_INT (g_object_get_data (G_OBJECT (task), "dir"));
-
-  g_assert (account);
-  g_assert (uid);
-
-  sender_id = insert_or_ignore_user (self, chatty_item_get_protocols (CHATTY_ITEM (chat)), who, task);
-  status = sqlite3_prepare_v2 (self->db,
-                               "INSERT INTO messages(uid,thread_id,sender_id,body,body_type,direction,time) "
-                               "VALUES(?1,?2,?3,?4," STRING (MESSAGE_TYPE_HTML) ",?5,?6);",
-                               -1, &stmt, NULL);
-
-  history_bind_text (stmt, 1, uid, "binding when adding message");
-  history_bind_int (stmt, 2, thread_id, "binding when adding message");
-  if (sender_id)
-    history_bind_int (stmt, 3, sender_id, "binding when adding message");
-  history_bind_text (stmt, 4, msg, "binding when adding message");
-  history_bind_int (stmt, 5, direction, "binding when adding message");
-  history_bind_int (stmt, 6, time_stamp, "binding when adding message");
-
-  status = sqlite3_step (stmt);
-  sqlite3_finalize (stmt);
-
-  g_task_return_boolean (task, status == SQLITE_DONE);
-}
-
 static gpointer
 chatty_history_worker (gpointer user_data)
 {
@@ -2652,52 +2596,15 @@ chatty_history_chat_exists (const char *account,
  * %FALSE otherwise.
  */
 gboolean
-chatty_history_add_message (ChattyChat          *chat,
-                            const char          *who,
-                            const char          *message,
-                            char               **uid,
-                            PurpleMessageFlags   flags,
-                            time_t               time_stamp)
+chatty_history_add_message (ChattyChat    *chat,
+                            ChattyMessage *message)
 {
   ChattyHistory *self;
   g_autoptr(GTask) task = NULL;
-  int dir = 0;
-
-  g_return_val_if_fail (uid, FALSE);
-  g_return_val_if_fail (CHATTY_IS_CHAT (chat), FALSE);
 
   self = chatty_history_get_default ();
-  g_return_val_if_fail (self->db, FALSE);
-
-  /* Don’t save if marked so */
-  if (flags & PURPLE_MESSAGE_NO_LOG)
-    return FALSE;
-
-  /* direction of message */
-  if (flags & PURPLE_MESSAGE_SYSTEM)
-    dir = 0;
-  else if (flags & PURPLE_MESSAGE_RECV)
-    dir = 1;
-  else if (flags & PURPLE_MESSAGE_SEND)
-    dir = -1;
-
-  if (flags & PURPLE_MESSAGE_SEND)
-    who = chatty_chat_get_username (chat);
-
-  if (!*uid)
-    *uid = g_uuid_string_random ();
-
   task = g_task_new (NULL, NULL, NULL, NULL);
-  g_object_ref (task);
-  g_task_set_task_data (task, history_add_raw_message, NULL);
-  g_object_set_data_full (G_OBJECT (task), "chat", g_object_ref (chat), g_object_unref);
-  g_object_set_data_full (G_OBJECT (task), "who", g_strdup (who), g_free);
-  g_object_set_data_full (G_OBJECT (task), "message", g_strdup (message), g_free);
-  g_object_set_data_full (G_OBJECT (task), "uid", g_strdup (*uid), g_free);
-  g_object_set_data (G_OBJECT (task), "dir", GINT_TO_POINTER (dir));
-  g_object_set_data (G_OBJECT (task), "time", GINT_TO_POINTER (time_stamp));
-
-  g_async_queue_push (self->queue, task);
+  chatty_history_add_message_async (self, chat, message, finish_cb, task);
 
   /* Wait until the task is completed */
   while (!g_task_get_completed (task))
