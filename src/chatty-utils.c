@@ -9,6 +9,7 @@
 #include <glib/gi18n.h>
 #include "chatty-manager.h"
 #include "chatty-settings.h"
+#include "chatty-phone-utils.h"
 #include "chatty-utils.h"
 #include <libebook-contacts/libebook-contacts.h>
 #include <gdesktop-enums.h>
@@ -30,6 +31,9 @@ chatty_utils_check_phonenumber (const char *phone_number)
   g_autofree char   *stripped = NULL;
   char              *result;
   g_autoptr(GError)  err = NULL;
+  const char *country;
+
+  g_debug ("%s number %s", G_STRLOC, phone_number);
 
   if (!phone_number || !*phone_number)
     return NULL;
@@ -37,21 +41,26 @@ chatty_utils_check_phonenumber (const char *phone_number)
   stripped = g_uri_unescape_string (phone_number, NULL);
 
   settings = chatty_settings_get_default ();
-  number = e_phone_number_from_string (stripped,
-                                       chatty_settings_get_country_iso_code (settings),
-                                       &err);
+  country = chatty_settings_get_country_iso_code (settings);
 
-  if (!number || !e_phone_number_is_supported ()) {
-    g_debug ("%s %s: %s", __func__, phone_number, err->message);
-
-    result = NULL;
-  } else {
-    if (g_strrstr (phone_number, "+")) {
-      result = e_phone_number_to_string (number, E_PHONE_NUMBER_FORMAT_E164);
-    } else {
-      result = e_phone_number_to_string (number, E_PHONE_NUMBER_FORMAT_NATIONAL);
-    }
+  if (!e_phone_number_is_supported ()) {
+    g_warning ("evolution-data-server built without libphonenumber support");
+    return NULL;
   }
+
+  number = e_phone_number_from_string (stripped, country, &err);
+
+  if (!number) {
+    g_debug ("Error parsing ‘%s’ for country ‘%s’: %s", phone_number, country, err->message);
+
+    return NULL;
+  }
+
+  if (*phone_number != '+' &&
+      !chatty_phone_utils_is_valid (phone_number, country))
+    result = e_phone_number_to_string (number, E_PHONE_NUMBER_FORMAT_NATIONAL);
+  else
+    result = e_phone_number_to_string (number, E_PHONE_NUMBER_FORMAT_E164);
 
   e_phone_number_free (number);
 
