@@ -366,16 +366,12 @@ chat_view_message_row_new (ChattyMessage  *message,
 {
   GtkWidget *row;
   ChattyProtocol protocol;
-  gboolean is_im = TRUE;
 
   g_assert (CHATTY_IS_MESSAGE (message));
   g_assert (CHATTY_IS_CHAT_VIEW (self));
 
-  if (self->message_type == CHATTY_MSG_TYPE_MUC)
-    is_im = FALSE;
-
   protocol = chatty_item_get_protocols (CHATTY_ITEM (self->chat));
-  row = chatty_message_row_new (message, protocol, is_im);
+  row = chatty_message_row_new (message, protocol, chatty_chat_is_im (self->chat));
   chatty_message_row_set_alias (CHATTY_MESSAGE_ROW (row),
                                 chatty_message_get_user_alias (message));
 
