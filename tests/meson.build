@@ -13,6 +13,7 @@ test_items = [
   'account',
   'history',
   'settings',
+  'utils',
 ]
 
 foreach item: test_items
