@@ -699,7 +699,14 @@ chatty_conv_new (PurpleConversation *conv)
       purple_conversation_set_logging (conv, purple_value_get_boolean (value));
     }
 
-  chatty_manager_load_more_chat (chatty_manager_get_default (), chat, 1);
+  {
+    GListModel *messages;
+
+    messages = chatty_chat_get_messages (chat);
+
+    if (g_list_model_get_n_items (messages) == 0)
+      chatty_manager_load_more_chat (chatty_manager_get_default (), chat, 1);
+  }
 }
 
 static void
