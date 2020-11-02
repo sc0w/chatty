@@ -1,3 +1,37 @@
+chatty (0.1.17) amber-phone; urgency=medium
+
+  [ Emin Tufan Çetin ]
+  * Update Turkish translation
+
+  [ Juliano de Souza Camargo ]
+  * po: Add Portuguese translation
+
+  [ Oliver Smith ]
+  * meson.build: set version to 0.1.16
+
+  [ Mohammed Sadiq ]
+  * message-row: Hide avatar for outgoing messages
+  * Fix message author name in muc chat
+  * window: Hide rows with empty chat when folded
+  * manager: Don't load second last message twice
+  * message-row: Don't strip html from SMS messages
+  * chat-view: Html escape matrix and XMPP outgoing messages
+
+  [ Adrien Plazas ]
+  * data: List compatible form-factors
+
+  [ Sebastian Krzyszkowiak ]
+  * gitlab-ci: Use bullseye CI repo for bullseye build
+
+  [ Evangelos Ribeiro Tzaras ]
+  * po: fix duplicated it_IT language
+  * po: fix duplicated de_DE language
+
+  [ Deniz Ercan ]
+  * po: Update German translation
+
+ -- Mohammed Sadiq <sadiq@sadiqpk.org>  Mon, 02 Nov 2020 08:36:10 +0530
+
 chatty (0.1.16) amber-phone; urgency=medium
 
   [ Mohammed Sadiq ]
