@@ -111,6 +111,8 @@ static GHashTable *ui_info = NULL;
 #define PURPLE_GLIB_READ_COND  (G_IO_IN | G_IO_HUP | G_IO_ERR)
 #define PURPLE_GLIB_WRITE_COND (G_IO_OUT | G_IO_HUP | G_IO_ERR | G_IO_NVAL)
 
+static void manager_update_protocols (ChattyManager *self);
+
 static int
 manager_sort_chat_item (ChattyChat *a,
                         ChattyChat *b,
@@ -936,6 +938,16 @@ chatty_conv_write_conversation (PurpleConversation *conv,
 
     chatty_chat_set_unread_count (chat, chatty_chat_get_unread_count (chat) + 1);
     gtk_sorter_changed (self->chat_sorter, GTK_SORTER_ORDER_TOTAL);
+  }
+
+  if (chat) {
+    GListModel *messages;
+
+    messages = chatty_chat_get_messages (chat);
+
+    /* The first message was added, notify so that chat list in main window updates */
+    if (g_list_model_get_n_items (messages) == 1)
+      manager_update_protocols (self);
   }
 
   g_free (pcm.who);
