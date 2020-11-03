@@ -211,8 +211,10 @@ manager_load_messages_cb (GObject      *object,
       model = chatty_chat_get_messages (item);
 
       /* If at least one message is loaded, don’t add again. */
-      if (g_list_model_get_n_items (model) == 0)
+      if (g_list_model_get_n_items (model) == 0) {
         chatty_pp_chat_prepend_messages (CHATTY_PP_CHAT (item), messages);
+        manager_update_protocols (self);
+      }
     }
 
   } else if (error && !g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED)) {
