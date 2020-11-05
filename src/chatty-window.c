@@ -685,7 +685,7 @@ window_add_contact_clicked_cb (ChattyWindow *self)
 
     who = purple_buddy_get_name (buddy);
 
-    number = chatty_utils_check_phonenumber (who);
+    number = chatty_utils_check_phonenumber (who, chatty_settings_get_country_iso_code (self->settings));
 
     if (number)
       contact = chatty_eds_find_by_number (chatty_eds, number);
@@ -715,7 +715,7 @@ window_add_in_contacts_clicked_cb (ChattyWindow *self)
   contact = purple_buddy_get_contact (buddy);
   alias = purple_contact_get_alias (contact);
 
-  number = chatty_utils_check_phonenumber (who);
+  number = chatty_utils_check_phonenumber (who, chatty_settings_get_country_iso_code (self->settings));
 
   chatty_dbus_gc_write_contact (alias, number);
 }
@@ -1097,7 +1097,7 @@ chatty_window_set_uri (ChattyWindow *self,
   if (!purple_account_is_connected (account))
     return;
 
-  who = chatty_utils_check_phonenumber (uri);
+  who = chatty_utils_check_phonenumber (uri, chatty_settings_get_country_iso_code (self->settings));
 
   chatty_eds = chatty_manager_get_eds (self->manager);
   contact = chatty_eds_find_by_number (chatty_eds, who);

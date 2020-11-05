@@ -23,15 +23,14 @@ static const char *avatar_colors[] = {
 };
 
 
-char* 
-chatty_utils_check_phonenumber (const char *phone_number)
+char *
+chatty_utils_check_phonenumber (const char *phone_number,
+                                const char *country)
 {
-  ChattySettings *settings;
   EPhoneNumber      *number;
   g_autofree char   *stripped = NULL;
   char              *result;
   g_autoptr(GError)  err = NULL;
-  const char *country;
 
   g_debug ("%s number %s", G_STRLOC, phone_number);
 
@@ -39,9 +38,6 @@ chatty_utils_check_phonenumber (const char *phone_number)
     return NULL;
 
   stripped = g_uri_unescape_string (phone_number, NULL);
-
-  settings = chatty_settings_get_default ();
-  country = chatty_settings_get_country_iso_code (settings);
 
   if (strspn (stripped, "+()- 0123456789") != strlen (stripped))
     return NULL;

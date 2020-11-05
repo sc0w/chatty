@@ -46,13 +46,18 @@ const char *phone[][3] = {
   {"09633123456", "IN", "+919633123456"},
   {"00919633123456", "IN", "+919633123456"},
   {"+919633123456", "IN", "+919633123456"},
+  {"+919633123456", "US", "+919633123456"},
   {"9633 123 456", "IN", "+919633123456"},
   {"9633 123 456", "DE", "+499633123456"},
   {"9633123456", "US", "(963) 312-3456"},
   {"213-321-9876", "US", "+12133219876"},
   {"(213) 321-9876", "US", "+12133219876"},
   {"+1 213 321 9876", "US", "+12133219876"},
+  {"+1 213 321 9876", "DE", "+12133219876"},
+  {"+1 213 321 9876", "PL", "+12133219876"},
+  {"+1 213 321 9876", "GB", "+12133219876"},
   {"+12133219876", "US", "+12133219876"},
+  {"00919633123456", "GB", "+919633123456"},
   {"12345", "IN", "12345"},
   {"12345", "US", "12345"},
   {"12345", "DE", "12345"},
@@ -83,14 +88,10 @@ test_phone_utils_valid (void)
 static void
 test_phone_utils_check_phone (void)
 {
-  ChattySettings *settings = chatty_settings_get_default ();
-  g_assert (CHATTY_IS_SETTINGS (settings));
-
   for (guint i = 0; i < G_N_ELEMENTS (phone); i++) {
     g_autofree char *expected = NULL;
 
-    chatty_settings_set_country_iso_code (settings, phone[i][1]);
-    expected = chatty_utils_check_phonenumber (phone[i][0]);
+    expected = chatty_utils_check_phonenumber (phone[i][0], phone[i][1]);
     g_assert_cmpstr (expected, ==, phone[i][2]);
   }
 }
@@ -100,8 +101,6 @@ main (int   argc,
       char *argv[])
 {
   g_test_init (&argc, &argv, NULL);
-
-  g_setenv ("GSETTINGS_BACKEND", "memory", TRUE);
 
   g_test_add_func ("/phone-utils/valid", test_phone_utils_valid);
   g_test_add_func ("/utils/check-phone", test_phone_utils_check_phone);
