@@ -33,5 +33,7 @@ Recommends:
 Suggests:
  calls,
 Description: XMPP and SMS messaging
- Chatty is a chat application for XMPP and SMS using
- libpurple and Modemmanager.
+ Chatty is GTK based chat application supporting SMS and XMPP.
+ .
+ It works on desktops but also adjusts to small screen sizes like smart phones
+ and other mobile devices.
