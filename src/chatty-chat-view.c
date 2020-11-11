@@ -699,7 +699,8 @@ chat_view_send_message_button_clicked_cb (ChattyChatView *self)
     }
 
     if (protocol == CHATTY_PROTOCOL_MATRIX ||
-        protocol == CHATTY_PROTOCOL_XMPP)
+        protocol == CHATTY_PROTOCOL_XMPP ||
+        protocol == CHATTY_PROTOCOL_TELEGRAM)
       escaped = purple_markup_escape_text (message, -1);
 
     if (conv && purple_conversation_get_type (conv) == PURPLE_CONV_TYPE_IM) {
