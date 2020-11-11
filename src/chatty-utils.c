@@ -43,6 +43,9 @@ chatty_utils_check_phonenumber (const char *phone_number)
   settings = chatty_settings_get_default ();
   country = chatty_settings_get_country_iso_code (settings);
 
+  if (strspn (stripped, "+()- 0123456789") != strlen (stripped))
+    return NULL;
+
   if (!e_phone_number_is_supported ()) {
     g_warning ("evolution-data-server built without libphonenumber support");
     return NULL;

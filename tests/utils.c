@@ -66,6 +66,8 @@ const char *phone[][3] = {
   {"112", "US", "112"},
   {"112", "IN", "112"},
   {"911", "US", "911"},
+  {"BT-123", "IN", NULL},
+  {"123-BT", "IN", NULL},
 };
 
 static void
