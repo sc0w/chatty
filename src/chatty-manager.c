@@ -1073,6 +1073,7 @@ manager_buddy_added_cb (PurpleBuddy   *pp_buddy,
                         ChattyManager *self)
 {
   g_autoptr(ChattyChat) chat = NULL;
+  PurpleConversation *conv;
   ChattyPpAccount *account;
   ChattyPpBuddy *buddy;
   ChattyContact *contact;
@@ -1096,7 +1097,19 @@ manager_buddy_added_cb (PurpleBuddy   *pp_buddy,
   contact = chatty_eds_find_by_number (self->chatty_eds, id);
   chatty_pp_buddy_set_contact (buddy, contact);
 
-  chat = (ChattyChat *)chatty_pp_chat_new_im_chat (pp_account, pp_buddy);
+  conv = purple_find_conversation_with_account (PURPLE_CONV_TYPE_IM,
+                                                pp_buddy->name,
+                                                pp_account);
+  if (conv)
+    chat = conv->ui_data;
+
+  if (chat) {
+    g_object_ref (chat);
+    chatty_pp_chat_set_purple_conv (CHATTY_PP_CHAT (chat), conv);
+  } else {
+    chat = (ChattyChat *)chatty_pp_chat_new_im_chat (pp_account, pp_buddy);
+  }
+
   chatty_history_get_messages_async (chatty_history_get_default (), chat, NULL, 1,
                                      manager_load_messages_cb,
                                      g_object_ref (self));
