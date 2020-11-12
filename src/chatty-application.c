@@ -24,6 +24,7 @@
 #define G_LOG_DOMAIN "chatty-application"
 
 #include <glib/gi18n.h>
+#include <handy.h>
 
 #include "chatty-config.h"
 #include "chatty-window.h"
@@ -300,6 +301,8 @@ chatty_application_startup (GApplication *application)
   self->manager = g_object_ref (chatty_manager_get_default ());
 
   G_APPLICATION_CLASS (chatty_application_parent_class)->startup (application);
+
+  hdy_init ();
 
   g_set_application_name (_("Chats"));
 

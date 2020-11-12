@@ -63,7 +63,7 @@ chatty_deps = [
   dependency('gio-2.0', version: '>= 2.50'),
   dependency('gtk+-3.0', version: '>= 3.22'),
   purple, jabber,
-  dependency('libhandy-0.0'),
+  dependency('libhandy-1'),
   dependency('sqlite3', version: '>=3.0.0'),
   dependency('libebook-contacts-1.2'),
   dependency('libebook-1.2'),

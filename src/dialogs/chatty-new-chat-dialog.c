@@ -38,7 +38,7 @@ static void chatty_new_chat_name_check (ChattyNewChatDialog *self,
 
 struct _ChattyNewChatDialog
 {
-  HdyDialog  parent_instance;
+  GtkDialog  parent_instance;
 
   GtkWidget *chats_listbox;
   GtkWidget *new_contact_row;
@@ -74,7 +74,7 @@ struct _ChattyNewChatDialog
 };
 
 
-G_DEFINE_TYPE (ChattyNewChatDialog, chatty_new_chat_dialog, HDY_TYPE_DIALOG)
+G_DEFINE_TYPE (ChattyNewChatDialog, chatty_new_chat_dialog, GTK_TYPE_DIALOG)
 
 
 static gboolean
@@ -420,7 +420,7 @@ chatty_new_chat_add_account_to_list (ChattyNewChatDialog *self,
 
   g_return_if_fail (CHATTY_IS_NEW_CHAT_DIALOG (self));
 
-  row = hdy_action_row_new ();
+  row = HDY_ACTION_ROW (hdy_action_row_new ());
   g_object_set_data (G_OBJECT (row),
                      "row-account",
                      (gpointer)account);
@@ -450,7 +450,7 @@ chatty_new_chat_add_account_to_list (ChattyNewChatDialog *self,
                      (gpointer)prefix_radio_button);
 
   hdy_action_row_add_prefix (row, GTK_WIDGET (prefix_radio_button ));
-  hdy_action_row_set_title (row, chatty_account_get_username (CHATTY_ACCOUNT (account)));
+  hdy_preferences_row_set_title (HDY_PREFERENCES_ROW (row), chatty_account_get_username (CHATTY_ACCOUNT (account)));
 
   gtk_container_add (GTK_CONTAINER (self->accounts_list), GTK_WIDGET (row));
 
@@ -604,10 +604,6 @@ chatty_new_chat_dialog_init (ChattyNewChatDialog *self)
 
   gtk_widget_init_template (GTK_WIDGET (self));
   self->cancellable = g_cancellable_new ();
-
-  gtk_list_box_set_header_func (GTK_LIST_BOX (self->accounts_list),
-                                hdy_list_box_separator_header,
-                                NULL, NULL);
 
   self->dummy_prefix_radio = gtk_radio_button_new_from_widget (GTK_RADIO_BUTTON (NULL));
 

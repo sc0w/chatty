@@ -16,13 +16,14 @@
 #include "chatty-icons.h"
 #include "chatty-list-row.h"
 #include "chatty-manager.h"
+#include "chatty-utils.h"
 #include "purple.h"
 #include "chatty-muc-info-dialog.h"
 
 
 struct _ChattyMucInfoDialog
 {
-  HdyDialog  parent_instance;
+  GtkDialog  parent_instance;
 
   GtkWidget *button_back;
   GtkWidget *button_invite_contact;
@@ -53,7 +54,7 @@ struct _ChattyMucInfoDialog
 };
 
 
-G_DEFINE_TYPE (ChattyMucInfoDialog, chatty_muc_info_dialog, HDY_TYPE_DIALOG)
+G_DEFINE_TYPE (ChattyMucInfoDialog, chatty_muc_info_dialog, GTK_TYPE_DIALOG)
 
 
 static void chatty_muc_set_topic (ChattyMucInfoDialog *self);
@@ -369,10 +370,6 @@ static void
 chatty_muc_info_dialog_init (ChattyMucInfoDialog *self)
 {
   gtk_widget_init_template (GTK_WIDGET(self));
-
-  gtk_list_box_set_header_func (GTK_LIST_BOX(self->list_muc_settings),
-                                hdy_list_box_separator_header,
-                                NULL, NULL);
 }
 
 

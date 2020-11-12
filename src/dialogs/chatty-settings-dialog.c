@@ -44,7 +44,7 @@
  * which was written by Andrea Schäfer. */
 struct _ChattySettingsDialog
 {
-  HdyDialog       parent_instance;
+  GtkDialog       parent_instance;
 
   GtkWidget      *add_button;
   GtkWidget      *save_button;
@@ -95,7 +95,7 @@ struct _ChattySettingsDialog
   gboolean visible;
 };
 
-G_DEFINE_TYPE (ChattySettingsDialog, chatty_settings_dialog, HDY_TYPE_DIALOG)
+G_DEFINE_TYPE (ChattySettingsDialog, chatty_settings_dialog, GTK_TYPE_DIALOG)
 
 
 static void
@@ -572,7 +572,8 @@ chatty_account_row_new (ChattyAccount *account)
   GtkWidget      *spinner;
   ChattyProtocol protocol;
 
-  row = hdy_action_row_new ();
+  row = HDY_ACTION_ROW (hdy_action_row_new ());
+  gtk_list_box_row_set_activatable (GTK_LIST_BOX_ROW (row), TRUE);
   gtk_widget_show (GTK_WIDGET (row));
   g_object_set_data (G_OBJECT(row),
                      "row-account",
@@ -607,9 +608,9 @@ chatty_account_row_new (ChattyAccount *account)
                           account_enabled_switch, "active",
                           G_BINDING_BIDIRECTIONAL | G_BINDING_SYNC_CREATE);
 
-  hdy_action_row_set_title (row, chatty_account_get_username (CHATTY_ACCOUNT (account)));
+  hdy_preferences_row_set_title (HDY_PREFERENCES_ROW (row), chatty_account_get_username (CHATTY_ACCOUNT (account)));
   hdy_action_row_set_subtitle (row, chatty_account_get_protocol_name (CHATTY_ACCOUNT (account)));
-  hdy_action_row_add_action (row, account_enabled_switch);
+  gtk_container_add (GTK_CONTAINER (row), account_enabled_switch);
   hdy_action_row_set_activatable_widget (row, NULL);
 
   return GTK_WIDGET (row);
@@ -791,18 +792,6 @@ chatty_settings_dialog_init (ChattySettingsDialog *self)
                            self, G_CONNECT_SWAPPED);
 
   gtk_widget_init_template (GTK_WIDGET (self));
-
-  gtk_list_box_set_header_func (GTK_LIST_BOX (self->accounts_list_box),
-                                hdy_list_box_separator_header, NULL, NULL);
-  gtk_list_box_set_header_func (GTK_LIST_BOX (self->fingerprint_list),
-                                hdy_list_box_separator_header, NULL, NULL);
-  gtk_list_box_set_header_func (GTK_LIST_BOX (self->fingerprint_device_list),
-                                hdy_list_box_separator_header, NULL, NULL);
-
-  gtk_list_box_set_header_func (GTK_LIST_BOX (self->protocol_list),
-                                hdy_list_box_separator_header, NULL, NULL);
-  gtk_list_box_set_header_func (GTK_LIST_BOX (self->new_account_settings_list),
-                                hdy_list_box_separator_header, NULL, NULL);
 
   gtk_widget_set_visible (self->message_carbons_row,
                           chatty_manager_has_carbons_plugin (manager));

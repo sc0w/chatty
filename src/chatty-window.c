@@ -88,7 +88,6 @@ struct _ChattyWindow
 G_DEFINE_TYPE (ChattyWindow, chatty_window, GTK_TYPE_APPLICATION_WINDOW)
 
 
-static void chatty_update_header (ChattyWindow *self);
 static void chatty_window_show_new_muc_dialog (ChattyWindow *self);
 
 
@@ -308,7 +307,7 @@ window_chat_name_matches (ChattyItem   *item,
       return FALSE;
   }
 
-  if (hdy_leaflet_get_fold (HDY_LEAFLET (self->header_box)) == HDY_FOLD_FOLDED) {
+  if (hdy_leaflet_get_folded (HDY_LEAFLET (self->header_box))) {
     GListModel *message_list;
     guint n_items;
 
@@ -408,18 +407,6 @@ window_chat_row_activated_cb (GtkListBox    *box,
   chatty_window_open_item (self, self->selected_item);
 }
 
-
-static void
-header_visible_child_cb (GObject      *sender,
-                         GParamSpec   *pspec,
-                         ChattyWindow *self)
-{
-  g_assert (CHATTY_IS_WINDOW (self));
-
-  chatty_update_header (self);
-}
-
-
 static void
 window_search_changed_cb (ChattyWindow *self,
                           GtkEntry     *entry)
@@ -437,14 +424,14 @@ notify_fold_cb (GObject      *sender,
                 GParamSpec   *pspec,
                 ChattyWindow *self)
 {
-  HdyFold fold = hdy_leaflet_get_fold (HDY_LEAFLET (self->header_box));
+  gboolean folded = hdy_leaflet_get_folded (HDY_LEAFLET (self->header_box));
 
-  if (fold == HDY_FOLD_FOLDED)
+  if (folded)
     gtk_list_box_set_selection_mode (GTK_LIST_BOX (self->chats_listbox), GTK_SELECTION_NONE);
   else
     gtk_list_box_set_selection_mode (GTK_LIST_BOX (self->chats_listbox), GTK_SELECTION_SINGLE);
 
-  if (fold == HDY_FOLD_FOLDED) {
+  if (folded) {
     window_set_item (self, NULL);
     hdy_leaflet_set_visible_child_name (HDY_LEAFLET (self->content_box), "sidebar");
   } else if (self->selected_item) {
@@ -454,7 +441,6 @@ notify_fold_cb (GObject      *sender,
   }
 
   gtk_filter_changed (self->chat_filter, GTK_FILTER_CHANGE_DIFFERENT);
-  chatty_update_header (self);
 }
 
 
@@ -545,22 +531,6 @@ chatty_window_chat_list_select_first (ChattyWindow *self)
     chatty_window_change_view (self, CHATTY_VIEW_CHAT_LIST);
   }
 }
-
-
-static void
-chatty_update_header (ChattyWindow *self)
-{
-  GtkWidget *header_child = hdy_leaflet_get_visible_child (HDY_LEAFLET (self->header_box));
-  HdyFold fold = hdy_leaflet_get_fold (HDY_LEAFLET (self->header_box));
-
-  g_assert (CHATTY_IS_WINDOW (self));
-  g_assert (header_child == NULL || GTK_IS_HEADER_BAR (header_child));
-
-  hdy_header_group_set_focus (HDY_HEADER_GROUP (self->header_group), 
-                              fold == HDY_FOLD_FOLDED ? 
-                              GTK_HEADER_BAR (header_child) : NULL);
-}
-
 
 static void
 window_delete_buddy_clicked_cb (ChattyWindow *self)
@@ -1033,7 +1003,6 @@ chatty_window_class_init (ChattyWindowClass *klass)
   gtk_widget_class_bind_template_callback (widget_class, window_add_in_contacts_clicked_cb);
   gtk_widget_class_bind_template_callback (widget_class, window_leave_chat_clicked_cb);
   gtk_widget_class_bind_template_callback (widget_class, window_delete_buddy_clicked_cb);
-  gtk_widget_class_bind_template_callback (widget_class, header_visible_child_cb);
   gtk_widget_class_bind_template_callback (widget_class, window_search_changed_cb);
   gtk_widget_class_bind_template_callback (widget_class, window_chat_row_activated_cb);
   gtk_widget_class_bind_template_callback (widget_class, chatty_window_show_new_muc_dialog);
