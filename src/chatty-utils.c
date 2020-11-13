@@ -22,6 +22,60 @@ static const char *avatar_colors[] = {
   "FFD54F", "FFB74D", "FF8A65", "A1887F"
 };
 
+#define DIGITS      "0123456789"
+#define ASCII_CAPS  "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+#define ASCII_SMALL "abcdefghijklmnopqrstuvwxyz"
+
+/*
+ * matrix_id_is_valid:
+ * @name: A string
+ * @prefix: The allowed prefix
+ *
+ * Check if @name is a valid username
+ * or channel name
+ *
+ * @prefix should be one of ‘#’ or ‘@’.
+ *
+ * See https://matrix.org/docs/spec/appendices#id12
+ */
+static gboolean
+matrix_id_is_valid (const char *name,
+                    char        prefix)
+{
+  guint len;
+
+  if (!name || !*name)
+    return FALSE;
+
+  if (prefix != '@' && prefix != '#')
+    return FALSE;
+
+  if (*(name + 1) == ':')
+    return FALSE;
+
+  if (prefix == '@' && *name != '@')
+    return FALSE;
+
+  /* Group name can have '#' or '!' (Group id) as prefix */
+  if (prefix == '#' && *name != '#' && *name != '!')
+    return FALSE;
+
+  len = strlen (name);
+
+  if (len > 255)
+    return FALSE;
+
+  if (strspn (name + 1, DIGITS ASCII_CAPS ASCII_SMALL ":._=/-") != len - 1)
+    return FALSE;
+
+  if (len >= 4 &&
+      *(name + len - 1) != ':' &&
+      !strchr (name + 1, prefix) &&
+      strchr (name, ':'))
+    return TRUE;
+
+  return FALSE;
+}
 
 char *
 chatty_utils_check_phonenumber (const char *phone_number,
@@ -66,6 +120,132 @@ chatty_utils_check_phonenumber (const char *phone_number,
   return result;
 }
 
+/**
+ * chatty_utils_username_is_valid:
+ * @name: A string
+ * @protocol: A #ChattyProtocol flag
+ *
+ * Check if @name is a valid username for the given
+ * @protocol(s). Please note that only rudimentary
+ * checks are done for the validation process.
+ *
+ * Currently, %CHATTY_PROTOCOL_XMPP, %CHATTY_PROTOCOL_SMS
+ * and %CHATTY_PROTOCOL_MATRIX or their combinations are
+ * supported for @protocol.
+ *
+ * Returns: A #ChattyProtocol with all valid protocols
+ * set.
+ */
+ChattyProtocol
+chatty_utils_username_is_valid (const char     *name,
+                                ChattyProtocol  protocol)
+{
+  ChattyProtocol valid = 0;
+  guint len;
+
+  if (!name)
+    return valid;
+
+  len = strlen (name);
+  if (len < 3)
+    return valid;
+
+  if (protocol & CHATTY_PROTOCOL_XMPP) {
+    const char *at_char, *at_char_end;
+
+    at_char = strchr (name, '@');
+    at_char_end = strrchr (name, '@');
+
+    /* Consider valid if @name has only one ‘@’ and @name
+     * doesn’t start nor end with a ‘@’
+     * See https://xmpp.org/rfcs/rfc3920.html#addressing
+     */
+    /* XXX: We are ignoring one valid case.  ie, domain alone
+     * or domain/resource */
+    if (at_char &&
+        /* Should not begin with ‘@’ */
+        *name != '@' &&
+        /* should not end with ‘@’ */
+        *(at_char + 1) &&
+        /* We require exact one ‘@’ */
+        at_char == at_char_end)
+      valid |= CHATTY_PROTOCOL_XMPP;
+  }
+
+  if (protocol & CHATTY_PROTOCOL_MATRIX) {
+    if (matrix_id_is_valid (name, '@'))
+      valid |= CHATTY_PROTOCOL_MATRIX;
+  }
+
+  if (protocol & CHATTY_PROTOCOL_TELEGRAM && *name == '+') {
+    /* country code doesn't matter as we use international format numbers */
+    if (chatty_phone_utils_is_valid (name, "US"))
+      valid |= CHATTY_PROTOCOL_TELEGRAM;
+  }
+
+  if (protocol & CHATTY_PROTOCOL_SMS && len < 20) {
+    const char *end;
+    guint end_len;
+
+    end = name;
+    if (*end == '+')
+      end++;
+
+    end_len = strspn (end, "0123456789- ()");
+
+    if (*name == '+')
+      end_len++;
+
+    if (end_len == len)
+      valid |= CHATTY_PROTOCOL_SMS;
+  }
+
+  return valid;
+}
+
+/**
+ * chatty_utils_groupname_is_valid:
+ * @name: A string
+ * @protocol: A #ChattyProtocol flag
+ *
+ * Check if @name is a valid group name for the given
+ * @protocol(s).  Please note that only rudimentary checks
+ * are done for the validation process.
+ *
+ * Currently %CHATTY_PROTOCOL_XMPP and %CHATTY_PROTOCOL_MATRIX
+ * or their combinations are supported for @protocol.
+ *
+ * Returns: A #ChattyProtocol with all valid protocols
+ * set.
+ */
+ChattyProtocol
+chatty_utils_groupname_is_valid (const char     *name,
+                                 ChattyProtocol  protocol)
+{
+  ChattyProtocol valid = 0;
+  guint len;
+
+  if (!name)
+    return valid;
+
+  len = strlen (name);
+  if (len < 3)
+    return valid;
+
+  if (protocol & CHATTY_PROTOCOL_XMPP) {
+    if (chatty_utils_username_is_valid (name, CHATTY_PROTOCOL_XMPP))
+      valid |= CHATTY_PROTOCOL_XMPP;
+  }
+
+  if (protocol & CHATTY_PROTOCOL_MATRIX) {
+    /* Consider valid if @name starts with ‘#’ and has only one
+     * ‘#’, has ‘:’, and has atleast 4 chars*/
+    if (matrix_id_is_valid (name, '#'))
+      valid |= CHATTY_PROTOCOL_MATRIX;
+  }
+
+  return valid;
+}
 
 char *
 chatty_utils_jabber_id_strip (const char *name)

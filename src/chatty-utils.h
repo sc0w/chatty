@@ -20,6 +20,10 @@
 char *chatty_utils_jabber_id_strip (const char *name);
 char *chatty_utils_check_phonenumber (const char *phone_number,
                                       const char *country);
+ChattyProtocol chatty_utils_username_is_valid  (const char     *name,
+                                                ChattyProtocol  protocol);
+ChattyProtocol chatty_utils_groupname_is_valid (const char     *name,
+                                                ChattyProtocol  protocol);
 gboolean chatty_utils_get_item_position (GListModel *list,
                                          gpointer    item,
                                          guint      *position);
