@@ -683,7 +683,8 @@ chatty_pp_chat_finalize (GObject *object)
     PurpleBlistNode *node;
 
     node = PURPLE_BLIST_NODE (self->buddy);
-    g_object_set_data (node->ui_data, "chat", NULL);
+    if (node->ui_data)
+      g_object_set_data (node->ui_data, "chat", NULL);
   }
 
   g_list_store_remove_all (self->chat_users);
