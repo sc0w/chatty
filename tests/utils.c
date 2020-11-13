@@ -96,6 +96,89 @@ test_phone_utils_check_phone (void)
   }
 }
 
+
+static void
+test_utils_username_valid (void)
+{
+  typedef struct data {
+    char *user_name;
+    ChattyProtocol protocol;
+    ChattyProtocol account_protocol;
+  } data;
+  data array[] = {
+    { "0123456789", CHATTY_PROTOCOL_SMS},
+    { "+1 (1234) 5678", CHATTY_PROTOCOL_SMS},
+    { "+91123456789", CHATTY_PROTOCOL_SMS},
+    { "+91-1234-56789", CHATTY_PROTOCOL_SMS},
+    { "+1 213 321 4567", CHATTY_PROTOCOL_SMS | CHATTY_PROTOCOL_TELEGRAM},
+    { "+12133214567", CHATTY_PROTOCOL_SMS | CHATTY_PROTOCOL_TELEGRAM},
+    { "+919995123456", CHATTY_PROTOCOL_SMS | CHATTY_PROTOCOL_TELEGRAM},
+    { "5555", CHATTY_PROTOCOL_SMS},
+    { "valid@xmpp.example.com", CHATTY_PROTOCOL_XMPP},
+    { "@valid:example.com", CHATTY_PROTOCOL_MATRIX},
+    { "@നല്ല:matrix.example.com", 0},
+    { "invalid", 0},
+    { "domain/resource", 0},
+    { "/invalid", 0},
+    { "invalid/", 0},
+    { "@invalid", 0},
+    { "invalid:", 0},
+    { "@invalid:", 0},
+    { "invalid@", 0},
+    { "in:valid@", 0},
+    { "#invalid:matrix.example.com", 0},
+    { "+9876543210A", 0},
+    { "", 0},
+    { NULL, 0}
+  };
+
+
+  for (int i = 0; i < G_N_ELEMENTS (array); i++) {
+    ChattyProtocol protocol;
+
+    protocol = chatty_utils_username_is_valid (array[i].user_name, array[i].protocol);
+    g_assert_cmpint (protocol, ==, array[i].protocol);
+
+    protocol = chatty_utils_username_is_valid (array[i].user_name, CHATTY_PROTOCOL_ANY);
+    g_assert_cmpint (protocol, ==, array[i].protocol);
+  }
+}
+
+static void
+test_utils_groupname_valid (void)
+{
+  typedef struct data {
+    char *group_name;
+    ChattyProtocol protocol;
+  } data;
+  data array[] = {
+    { "valid@xmpp.example.com", CHATTY_PROTOCOL_XMPP },
+    { "#valid:matrix.example.com", CHATTY_PROTOCOL_MATRIX },
+    { "!valid:matrix.example.com", CHATTY_PROTOCOL_MATRIX },
+    { "@invalid:matrix.example.com", 0 },
+    { "#:invalid", 0 },
+    { "@invalid", 0},
+    { "#invalid", 0},
+    { "invalid:", 0},
+    { "#invalid:", 0},
+    { "invalid#", 0},
+    { "in:valid#", 0},
+    { "#:", 0 },
+    { "", 0},
+    { NULL, 0}
+  };
+
+  for (int i = 0; i < G_N_ELEMENTS (array); i++) {
+    ChattyProtocol protocol;
+
+    protocol = chatty_utils_groupname_is_valid (array[i].group_name, array[i].protocol);
+    g_assert_cmpint (protocol, ==, array[i].protocol);
+
+    protocol = chatty_utils_groupname_is_valid (array[i].group_name, CHATTY_PROTOCOL_ANY);
+    g_assert_cmpint (protocol, ==, array[i].protocol);
+  }
+}
+
 int
 main (int   argc,
       char *argv[])
@@ -104,6 +187,8 @@ main (int   argc,
 
   g_test_add_func ("/phone-utils/valid", test_phone_utils_valid);
   g_test_add_func ("/utils/check-phone", test_phone_utils_check_phone);
+  g_test_add_func ("/utils/username_valid", test_utils_username_valid);
+  g_test_add_func ("/utils/groupname_valid", test_utils_groupname_valid);
 
   return g_test_run ();
 }
