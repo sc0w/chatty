@@ -130,6 +130,11 @@ get_fp_list_own_cb (int         err,
       }
     }
 
+    gtk_container_foreach (GTK_CONTAINER (self->fingerprint_list),
+                           (GtkCallback)gtk_widget_destroy, NULL);
+    gtk_container_foreach (GTK_CONTAINER (self->fingerprint_device_list),
+                           (GtkCallback)gtk_widget_destroy, NULL);
+
     for (curr_p = filtered_list; curr_p; curr_p = curr_p->next) {
       fp = (char *) g_hash_table_lookup(id_fp_table, curr_p->data);
 
