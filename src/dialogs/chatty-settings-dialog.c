@@ -474,17 +474,23 @@ settings_avatar_button_clicked_cb (ChattySettingsDialog *self)
 }
 
 static void
-settings_account_id_changed_cb (ChattySettingsDialog *self,
-                                GtkEntry             *account_id_entry)
+settings_account_id_changed_cb (ChattySettingsDialog *self)
 {
   const gchar *id;
+  ChattyProtocol protocol;
 
   g_assert (CHATTY_IS_SETTINGS_DIALOG (self));
-  g_assert (GTK_IS_ENTRY (account_id_entry));
 
-  id = gtk_entry_get_text (account_id_entry);
+  id = gtk_entry_get_text (GTK_ENTRY (self->new_account_id_entry));
 
-  gtk_widget_set_sensitive (self->add_button, id && *id);
+  if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (self->matrix_radio_button)))
+    protocol = CHATTY_PROTOCOL_MATRIX;
+  else if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (self->telegram_radio_button)))
+    protocol = CHATTY_PROTOCOL_TELEGRAM;
+  else
+    protocol = CHATTY_PROTOCOL_XMPP;
+
+  gtk_widget_set_sensitive (self->add_button, chatty_utils_username_is_valid (id, protocol));
 }
 
 static void
@@ -553,6 +559,9 @@ settings_protocol_changed_cb (ChattySettingsDialog *self,
     gtk_entry_set_text (GTK_ENTRY (self->server_url_entry), "https://chat.librem.one");
 
   gtk_widget_grab_focus (self->account_id_entry);
+
+  /* Force re-check if id is valid */
+  settings_account_id_changed_cb (self);
 }
 
 static GtkWidget *
