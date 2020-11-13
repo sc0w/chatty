@@ -61,8 +61,8 @@ struct _ChattySettingsDialog
   GtkWidget      *password_entry;
   GtkWidget      *edit_password_button;
 
+  GtkWidget      *protocol_list_group;
   GtkWidget      *protocol_list;
-  GtkWidget      *protocol_title_label;
   GtkWidget      *xmpp_radio_button;
   GtkWidget      *matrix_row;
   GtkWidget      *matrix_radio_button;
@@ -321,12 +321,14 @@ settings_update_new_account_view (ChattySettingsDialog *self)
   if (gtk_widget_get_visible (self->matrix_row) ||
       gtk_widget_get_visible (self->telegram_row))
     {
-      gtk_label_set_text (GTK_LABEL (self->protocol_title_label), _("Select Protocol"));
+      hdy_preferences_group_set_title (HDY_PREFERENCES_GROUP (self->protocol_list_group),
+                                       _("Select Protocol"));
       gtk_widget_show (self->protocol_list);
     }
   else
     {
-      gtk_label_set_text (GTK_LABEL (self->protocol_title_label), _("Add XMPP account"));
+      hdy_preferences_group_set_title (HDY_PREFERENCES_GROUP (self->protocol_list_group),
+                                       _("Add XMPP account"));
       gtk_widget_hide (self->protocol_list);
     }
 
@@ -739,8 +741,8 @@ chatty_settings_dialog_class_init (ChattySettingsDialogClass *klass)
   gtk_widget_class_bind_template_child (widget_class, ChattySettingsDialog, password_entry);
   gtk_widget_class_bind_template_child (widget_class, ChattySettingsDialog, edit_password_button);
 
+  gtk_widget_class_bind_template_child (widget_class, ChattySettingsDialog, protocol_list_group);
   gtk_widget_class_bind_template_child (widget_class, ChattySettingsDialog, protocol_list);
-  gtk_widget_class_bind_template_child (widget_class, ChattySettingsDialog, protocol_title_label);
   gtk_widget_class_bind_template_child (widget_class, ChattySettingsDialog, xmpp_radio_button);
   gtk_widget_class_bind_template_child (widget_class, ChattySettingsDialog, matrix_row);
   gtk_widget_class_bind_template_child (widget_class, ChattySettingsDialog, matrix_radio_button);
