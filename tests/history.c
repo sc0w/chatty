@@ -38,21 +38,6 @@ typedef struct Message {
   time_t when;
 } Message;
 
-static ChattyMsgDirection
-chatty_direction_for_flag (PurpleMessageFlags flag)
-{
-  if (flag & PURPLE_MESSAGE_RECV)
-    return CHATTY_DIRECTION_IN;
-
-  if (flag & PURPLE_MESSAGE_SEND)
-    return CHATTY_DIRECTION_OUT;
-
-  if (flag & PURPLE_MESSAGE_SYSTEM)
-    return CHATTY_DIRECTION_SYSTEM;
-
-  g_return_val_if_reached (CHATTY_DIRECTION_SYSTEM);
-}
-
 static PurpleMessageFlags
 flag_for_direction (int direction)
 {
@@ -303,7 +288,7 @@ compare_message (Message       *message,
   if (message == NULL)
     return;
 
-  direction = chatty_direction_for_flag (message->flags);
+  direction = chatty_utils_direction_from_flag (message->flags);
   g_assert_cmpstr (message->what, ==, chatty_message_get_text (chatty_message));
   g_assert_cmpstr (message->uuid, ==, chatty_message_get_uid (chatty_message));
   g_assert_cmpint (message->when, ==, chatty_message_get_time (chatty_message));
@@ -612,7 +597,7 @@ test_history_raw_message (void)
   when = time (NULL);
 
   add_message (history, msg_array, account, room, who, uuid,
-               "Random message", when, PURPLE_MESSAGE_SYSTEM);
+               "Random message", when, PURPLE_MESSAGE_SYSTEM | PURPLE_MESSAGE_RECV);
   g_clear_pointer (&uuid, g_free);
   g_ptr_array_free (msg_array, TRUE);
 
