@@ -1076,6 +1076,19 @@ chatty_window_set_uri (ChattyWindow *self,
   else
     alias = who;
 
+  if (!who) {
+    GtkWidget *dialog;
+
+    dialog = gtk_message_dialog_new (GTK_WINDOW (self),
+                                     GTK_DIALOG_MODAL,
+                                     GTK_MESSAGE_WARNING,
+                                     GTK_BUTTONS_CLOSE,
+                                     _("“%s” is not a valid phone number"), uri);
+    gtk_dialog_run (GTK_DIALOG (dialog));
+    gtk_widget_destroy (dialog);
+
+    return;
+  }
   g_return_if_fail (who != NULL);
 
   buddy = purple_find_buddy (account, who);
