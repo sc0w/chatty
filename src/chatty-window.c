@@ -663,6 +663,8 @@ window_add_contact_clicked_cb (ChattyWindow *self)
     if (!contact)
       chatty_dbus_gc_write_contact (who, number);
   }
+
+  gtk_widget_hide (self->menu_add_contact_button);
 }
 
 
