@@ -75,7 +75,8 @@ chatty_utils_check_phonenumber (const char *phone_number,
                                 const char *country)
 {
   EPhoneNumber      *number;
-  g_autofree char   *stripped = NULL;
+  g_autofree char   *raw = NULL;
+  char              *stripped;
   char              *result;
   g_autoptr(GError)  err = NULL;
 
@@ -84,7 +85,16 @@ chatty_utils_check_phonenumber (const char *phone_number,
   if (!phone_number || !*phone_number)
     return NULL;
 
-  stripped = g_uri_unescape_string (phone_number, NULL);
+  raw = g_uri_unescape_string (phone_number, NULL);
+
+  if (g_str_has_prefix (raw, "sms:"))
+    stripped = raw + strlen ("sms:");
+  else
+    stripped = raw;
+
+  /* Skip sms:// */
+  while (*stripped == '/')
+    stripped++;
 
   if (strspn (stripped, "+()- 0123456789") != strlen (stripped))
     return NULL;
