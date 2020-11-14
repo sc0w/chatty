@@ -7,7 +7,7 @@
     "finish-args": [
         "--share=network",
         "--share=ipc",
-        "--socket=x11",
+        "--socket=fallback-x11",
         "--socket=wayland"
     ],
     "cleanup-commands": [ "rm -rf /app/lib/debug/ /app/include/boost" ],
