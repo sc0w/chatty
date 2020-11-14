@@ -558,7 +558,7 @@ settings_protocol_changed_cb (ChattySettingsDialog *self,
   else if (button == self->matrix_radio_button)
     gtk_entry_set_text (GTK_ENTRY (self->server_url_entry), "https://chat.librem.one");
 
-  gtk_widget_grab_focus (self->account_id_entry);
+  gtk_widget_grab_focus (self->new_account_id_entry);
 
   /* Force re-check if id is valid */
   settings_account_id_changed_cb (self);
