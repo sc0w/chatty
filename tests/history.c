@@ -34,7 +34,6 @@ typedef struct Message {
   char *what;
   char *uuid;
   PurpleMessageFlags flags;
-  PurpleConversationType type;
   time_t when;
 } Message;
 
@@ -248,13 +247,7 @@ new_message (const char         *account,
   Message *message;
   ChattyMsgDirection direction = CHATTY_DIRECTION_UNKNOWN;
 
-  if (flags & PURPLE_MESSAGE_SYSTEM)
-    direction = CHATTY_DIRECTION_SYSTEM;
-  else if (flags & PURPLE_MESSAGE_RECV)
-    direction = CHATTY_DIRECTION_IN;
-  else if (flags & PURPLE_MESSAGE_SEND)
-    direction = CHATTY_DIRECTION_OUT;
-
+  direction = chatty_utils_direction_from_flag (flags);
   chat = chatty_chat_new (account, room ? room : buddy, room == NULL);
   g_object_set (G_OBJECT (chat), "protocols", CHATTY_PROTOCOL_XMPP, NULL);
   message = g_new (Message, 1);
@@ -367,16 +360,10 @@ add_message (ChattyHistory      *history,
   GTask *task;
   char *uid;
   int time_stamp;
-  PurpleConversationType type;
   gboolean success;
 
   g_assert_true (CHATTY_IS_HISTORY (history));
   g_assert_nonnull (account);
-
-  if (room)
-    type = PURPLE_CONV_TYPE_CHAT;
-  else
-    type = PURPLE_CONV_TYPE_IM;
 
   if (!uuid)
     uuid = g_uuid_string_random ();
@@ -402,7 +389,7 @@ add_message (ChattyHistory      *history,
   g_assert_nonnull (msg_array);
   g_assert_cmpint (test_msg_array->len, ==, msg_array->len);
 
-  if (type == PURPLE_CONV_TYPE_CHAT) {
+  if (!chatty_chat_is_im (msg->chat)) {
     g_assert_true (chatty_history_chat_exists (account, room));
 
     time_stamp = chatty_history_get_chat_timestamp (uid, room);
