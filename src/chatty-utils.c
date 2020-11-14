@@ -15,13 +15,6 @@
 #include <gdesktop-enums.h>
 
 
-static const char *avatar_colors[] = {
-  "E57373", "F06292", "BA68C8", "9575CD",
-  "7986CB", "64B5F6", "4FC3F7", "4DD0E1",
-  "4DB6AC", "81C784", "AED581", "DCE775",
-  "FFD54F", "FFB74D", "FF8A65", "A1887F"
-};
-
 #define DIGITS      "0123456789"
 #define ASCII_CAPS  "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 #define ASCII_SMALL "abcdefghijklmnopqrstuvwxyz"
@@ -421,20 +414,6 @@ chatty_utils_create_fingerprint_row (const char *fp,
 
   return GTK_WIDGET(row);
 }
-
-const char *
-chatty_utils_get_color_for_str (const char *str)
-{
-  guint hash;
-
-  if (!str)
-    str = "";
-
-  hash = g_str_hash (str);
-
-  return avatar_colors[hash % G_N_ELEMENTS (avatar_colors)];
-}
-
 
 char *
 chatty_utils_get_human_time (time_t unix_time)
