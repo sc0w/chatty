@@ -61,21 +61,6 @@
             ]
         },
         {
-            "name": "libhandy",
-            "buildsystem": "meson",
-            "builddir": true,
-            "config-opts": [
-                "-Dglade_catalog=disabled"
-            ],
-            "sources": [
-                {
-                    "type": "git",
-                    "tag": "v0.0.12",
-                    "url": "https://source.puri.sm/Librem5/libhandy.git"
-                }
-            ]
-        },
-        {
             "name": "libical",
             "cleanup": [
                 "/lib/cmake"
@@ -198,38 +183,6 @@
                 {
                     "type": "git",
                     "url": "https://gitlab.gnome.org/GNOME/evolution-data-server.git"
-                }
-            ]
-        },
-        {
-            "name": "libgee",
-            "make-install-args": [
-                "girdir=/app/share/gir-1.0",
-                "typelibdir=/app/lib/girepository-1.0"
-            ],
-            "sources": [
-                {
-                    "type": "git",
-                    "url": "https://gitlab.gnome.org/GNOME/libgee.git"
-                }
-            ]
-        },
-        {
-            "name": "folks",
-            "buildsystem": "meson",
-            "cleanup": [
-                "/bin"
-            ],
-            "config-opts": [
-                "-Dtelepathy_backend=false",
-                "-Dbluez_backend=false",
-                "-Dinspect_tool=false",
-                "-Dimport_tool=false"
-           ],
-            "sources": [
-                {
-                    "type": "git",
-                    "url": "https://gitlab.gnome.org/GNOME/folks.git"
                 }
             ]
         },
