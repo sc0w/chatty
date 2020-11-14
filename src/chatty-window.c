@@ -660,7 +660,7 @@ window_add_contact_clicked_cb (ChattyWindow *self)
     if (number)
       contact = chatty_eds_find_by_number (chatty_eds, number);
 
-    if (contact)
+    if (!contact)
       chatty_dbus_gc_write_contact (who, number);
   }
 }
