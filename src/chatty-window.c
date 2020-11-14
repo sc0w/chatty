@@ -213,7 +213,7 @@ window_chat_changed_cb (ChattyWindow *self)
   model = chatty_manager_get_chat_list (self->manager);
   has_child = g_list_model_get_n_items (model) > 0;
 
-  gtk_widget_set_sensitive (self->header_sub_menu_button, has_child);
+  gtk_widget_set_sensitive (self->header_sub_menu_button, !!self->selected_item);
 
   /*
    * When the items are re-arranged, the selection will be lost.
