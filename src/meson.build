@@ -18,6 +18,7 @@ libsrc = [
   'users/chatty-account.c',
   'users/chatty-pp-account.c',
   'chatty-list-row.c',
+  'chatty-avatar.c',
   'chatty-chat.c',
   'chatty-pp-chat.c',
   'chatty-contact-provider.c',
@@ -29,9 +30,21 @@ libsrc = [
   'chatty-phone-utils.cpp',
 ]
 
+ui_files = files (
+  'ui/chatty-chat-view.ui',
+  'ui/chatty-contact-row.ui',
+  'ui/chatty-dialog-join-muc.ui',
+  'ui/chatty-dialog-muc-info.ui',
+  'ui/chatty-dialog-new-chat.ui',
+  'ui/chatty-dialog-user-info.ui',
+  'ui/chatty-list-row.ui',
+  'ui/chatty-message-row.ui',
+  'ui/chatty-settings-dialog.ui',
+  'ui/chatty-window.ui',
+)
+
 chatty_sources = [
   'main.c',
-  'chatty-avatar.c',
   'chatty-chat-view.c',
   'chatty-manager.c',
   'chatty-application.c',
@@ -76,21 +89,31 @@ chatty_deps = [
 
 gnome = import('gnome')
 
-chatty_sources += gnome.compile_resources('chatty-resources',
+resources = gnome.compile_resources('chatty-resources',
   'chatty.gresource.xml',
   c_name: 'chatty'
 )
 
-libchatty = static_library(
-  'libchatty', libsrc,
+libchatty = both_libraries(
+  'chatty', libsrc, resources,
   install: false,
   dependencies: chatty_deps,
 )
 
-executable('chatty', chatty_sources,
+gtk_builder_tool = find_program('gtk-builder-tool', required: false)
+if gtk_builder_tool.found()
+  preload_env = 'LD_PRELOAD=@0@:libhandy-1.so'.format(libchatty.get_shared_lib().full_path())
+  foreach file: ui_files
+    test('Validate @0@'.format(file), gtk_builder_tool,
+         env: [preload_env],
+         args: ['validate', file])
+  endforeach
+endif
+
+executable('chatty', chatty_sources, resources,
   include_directories: jabber_incdir,
   dependencies: chatty_deps,
-  link_with: libchatty,
+  link_with: libchatty.get_static_lib(),
   install: true,
   install_rpath: purple_plugdir,
 )
