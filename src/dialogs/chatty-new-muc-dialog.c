@@ -246,7 +246,7 @@ chatty_new_muc_dialog_class_init (ChattyNewMucDialogClass *klass)
   GtkWidgetClass *widget_class = GTK_WIDGET_CLASS(klass);
 
   gtk_widget_class_set_template_from_resource (widget_class,
-                                               "/sm/puri/chatty/"
+                                               "/sm/puri/Chatty/"
                                                "ui/chatty-dialog-join-muc.ui");
 
   gtk_widget_class_bind_template_child (widget_class, ChattyNewMucDialog, accounts_list);

@@ -314,7 +314,7 @@ chatty_application_startup (GApplication *application)
 
   self->css_provider = gtk_css_provider_new ();
   gtk_css_provider_load_from_resource (self->css_provider,
-                                       "/sm/puri/chatty/css/style.css");
+                                       "/sm/puri/Chatty/css/style.css");
 
   g_action_map_add_action_entries (G_ACTION_MAP (self), app_entries,
                                    G_N_ELEMENTS (app_entries), self);

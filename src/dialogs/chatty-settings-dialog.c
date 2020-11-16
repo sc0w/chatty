@@ -723,7 +723,7 @@ chatty_settings_dialog_class_init (ChattySettingsDialogClass *klass)
   object_class->finalize = chatty_settings_dialog_finalize;
 
   gtk_widget_class_set_template_from_resource (widget_class,
-                                               "/sm/puri/chatty/"
+                                               "/sm/puri/Chatty/"
                                                "ui/chatty-settings-dialog.ui");
 
   gtk_widget_class_bind_template_child (widget_class, ChattySettingsDialog, add_button);

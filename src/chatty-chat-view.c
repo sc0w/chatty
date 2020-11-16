@@ -890,7 +890,7 @@ chatty_chat_view_class_init (ChattyChatViewClass *klass)
   widget_class->map = chatty_chat_view_map;
 
   gtk_widget_class_set_template_from_resource (widget_class,
-                                               "/sm/puri/chatty/"
+                                               "/sm/puri/Chatty/"
                                                "ui/chatty-chat-view.ui");
 
   gtk_widget_class_bind_template_child (widget_class, ChattyChatView, message_list);

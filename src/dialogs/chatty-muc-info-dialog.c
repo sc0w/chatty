@@ -331,7 +331,7 @@ chatty_muc_info_dialog_class_init (ChattyMucInfoDialogClass *klass)
   GtkWidgetClass *widget_class = GTK_WIDGET_CLASS(klass);
 
   gtk_widget_class_set_template_from_resource (widget_class,
-                                               "/sm/puri/chatty/"
+                                               "/sm/puri/Chatty/"
                                                "ui/chatty-dialog-muc-info.ui");
 
   gtk_widget_class_bind_template_child (widget_class, ChattyMucInfoDialog, button_back);

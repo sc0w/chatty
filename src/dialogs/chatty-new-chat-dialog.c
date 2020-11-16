@@ -563,7 +563,7 @@ chatty_new_chat_dialog_class_init (ChattyNewChatDialogClass *klass)
   widget_class->show = chatty_new_chat_dialog_show;
 
   gtk_widget_class_set_template_from_resource (widget_class,
-                                               "/sm/puri/chatty/"
+                                               "/sm/puri/Chatty/"
                                                "ui/chatty-dialog-new-chat.ui");
 
   gtk_widget_class_bind_template_child (widget_class, ChattyNewChatDialog, new_chat_stack);

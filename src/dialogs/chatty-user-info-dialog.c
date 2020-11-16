@@ -273,7 +273,7 @@ chatty_user_info_dialog_class_init (ChattyUserInfoDialogClass *klass)
   GtkWidgetClass *widget_class = GTK_WIDGET_CLASS(klass);
 
   gtk_widget_class_set_template_from_resource (widget_class,
-                                               "/sm/puri/chatty/"
+                                               "/sm/puri/Chatty/"
                                                "ui/chatty-dialog-user-info.ui");
 
   gtk_widget_class_bind_template_child (widget_class, ChattyUserInfoDialog, button_avatar);

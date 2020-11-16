@@ -959,7 +959,7 @@ chatty_window_class_init (ChattyWindowClass *klass)
   widget_class->unmap = chatty_window_unmap;
 
   gtk_widget_class_set_template_from_resource (widget_class,
-                                               "/sm/puri/chatty/"
+                                               "/sm/puri/Chatty/"
                                                "ui/chatty-window.ui");
 
   gtk_widget_class_bind_template_child (widget_class, ChattyWindow, sub_header_label);
