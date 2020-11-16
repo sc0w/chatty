@@ -11,9 +11,6 @@
     <file>ui/chatty-dialog-muc-info.ui</file>
     <file>ui/chatty-dialog-user-info.ui</file>
     <file>ui/chatty-window.ui</file>
-    <file>icons/ui/send-symbolic.svg</file>
-    <file>icons/ui/xmpp-logo.svg</file>
-    <file>icons/ui/matrix-logo.svg</file>
     <file>icons/ui/eye-not-looking-symbolic.svg</file>
     <file>icons/ui/eye-open-negative-filled-symbolic.svg</file>
     <file>css/style.css</file>
