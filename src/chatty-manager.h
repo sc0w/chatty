@@ -15,6 +15,7 @@
 
 #include "users/chatty-pp-account.h"
 #include "chatty-contact-provider.h"
+#include "chatty-history.h"
 #include "chatty-chat.h"
 
 G_BEGIN_DECLS
@@ -64,5 +65,6 @@ void            chatty_manager_load_more_chat         (ChattyManager      *self,
 void            chatty_conv_im_with_buddy             (PurpleAccount      *account,
                                                        const char         *username);
 void            chatty_conv_join_chat                 (PurpleChat         *chat);
+ChattyHistory  *chatty_manager_get_history            (ChattyManager      *self);
 
 G_END_DECLS

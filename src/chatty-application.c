@@ -308,7 +308,8 @@ chatty_application_startup (GApplication *application)
 
   lfb_init (CHATTY_APP_ID, NULL);
   db_path =  g_build_filename (purple_user_dir(), "chatty", "db", NULL);
-  chatty_history_open (db_path, "chatty-history.db");
+  chatty_history_open (chatty_manager_get_history (self->manager),
+                       db_path, "chatty-history.db");
 
   self->settings = chatty_settings_get_default ();
 
@@ -372,8 +373,10 @@ chatty_application_activate (GApplication *application)
 static void
 chatty_application_shutdown (GApplication *application)
 {
+  ChattyApplication *self = (ChattyApplication *)application;
+
   g_object_unref (chatty_settings_get_default ());
-  chatty_history_close ();
+  chatty_history_close (chatty_manager_get_history (self->manager));
   lfb_uninit ();
 
   G_APPLICATION_CLASS (chatty_application_parent_class)->shutdown (application);

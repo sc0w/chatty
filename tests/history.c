@@ -297,7 +297,7 @@ test_history_new (void)
   const char *file_name;
   gboolean status;
 
-  history = chatty_history_get_default ();
+  history = chatty_history_new ();
   g_assert (CHATTY_IS_HISTORY (history));
   g_assert_false (chatty_history_is_open (history));
 
@@ -332,14 +332,13 @@ test_history_new (void)
 
   g_remove (file_name);
   g_assert_false (g_file_test (file_name, G_FILE_TEST_EXISTS));
-  chatty_history_open (g_test_get_dir (G_TEST_BUILT), "test-history.db");
-  g_assert_true (g_file_test (file_name, G_FILE_TEST_IS_REGULAR));
 
-  history = chatty_history_get_default ();
+  history = chatty_history_new ();
+  chatty_history_open (history, g_test_get_dir (G_TEST_BUILT), "test-history.db");
+  g_assert_true (g_file_test (file_name, G_FILE_TEST_IS_REGULAR));
   g_assert_true (chatty_history_is_open (history));
 
-  g_object_ref (history);
-  chatty_history_close ();
+  chatty_history_close (history);
   g_assert_false (chatty_history_is_open (history));
   g_object_unref (history);
 }
@@ -370,7 +369,7 @@ add_message (ChattyHistory      *history,
 
   uid = g_strdup (uuid);
   msg = new_message (account, who, message, uid, flags, when, room);
-  success = chatty_history_add_message (msg->chat, msg->message);
+  success = chatty_history_add_message (history, msg->chat, msg->message);
   g_assert_true (success);
   g_assert_nonnull (uid);
   g_ptr_array_add (test_msg_array, msg);
@@ -390,17 +389,17 @@ add_message (ChattyHistory      *history,
   g_assert_cmpint (test_msg_array->len, ==, msg_array->len);
 
   if (!chatty_chat_is_im (msg->chat)) {
-    g_assert_true (chatty_history_chat_exists (account, room));
+    g_assert_true (chatty_history_chat_exists (history, account, room));
 
-    time_stamp = chatty_history_get_chat_timestamp (uid, room);
+    time_stamp = chatty_history_get_chat_timestamp (history, uid, room);
     g_assert_cmpint (when, ==, time_stamp);
 
-    time_stamp = chatty_history_get_last_message_time (account, room);
+    time_stamp = chatty_history_get_last_message_time (history, account, room);
     g_assert_cmpint (when, ==, time_stamp);
   } else {
-    g_assert_true (chatty_history_im_exists (account, who));
+    g_assert_true (chatty_history_im_exists (history, account, who));
 
-    time_stamp = chatty_history_get_im_timestamp (uid, account);
+    time_stamp = chatty_history_get_im_timestamp (history, uid, account);
     g_assert_cmpint (when, ==, time_stamp);
   }
 
@@ -409,26 +408,27 @@ add_message (ChattyHistory      *history,
 }
 
 static void
-delete_existing_chat (const char *account,
-                      const char *chat_name,
-                      gboolean    is_im)
+delete_existing_chat (ChattyHistory *history,
+                      const char    *account,
+                      const char    *chat_name,
+                      gboolean       is_im)
 {
   g_autoptr(ChattyChat) chat = NULL;
   gboolean status;
 
   if (is_im)
-    status = chatty_history_im_exists (account, chat_name);
+    status = chatty_history_im_exists (history, account, chat_name);
   else
-    status = chatty_history_chat_exists (account, chat_name);
+    status = chatty_history_chat_exists (history, account, chat_name);
   g_assert_true (status);
 
   chat = chatty_chat_new (account, chat_name, is_im);
-  chatty_history_delete_chat (chat);
+  chatty_history_delete_chat (history, chat);
 
   if (is_im)
-    status = chatty_history_im_exists (account, chat_name);
+    status = chatty_history_im_exists (history, account, chat_name);
   else
-    status = chatty_history_chat_exists (account, chat_name);
+    status = chatty_history_chat_exists (history, account, chat_name);
   g_assert_false (status);
 }
 
@@ -515,15 +515,16 @@ add_chatty_message (ChattyHistory      *history,
 static void
 test_history_message (void)
 {
-  ChattyHistory *history;
+  g_autoptr(ChattyHistory) history = NULL;
   ChattyChat *chat;
   GPtrArray *msg_array;
   const char *account, *who;
   int when;
 
   g_remove (g_test_get_filename (G_TEST_BUILT, "test-history.db", NULL));
-  chatty_history_open (g_test_get_dir (G_TEST_BUILT), "test-history.db");
-  history = chatty_history_get_default ();
+
+  history = chatty_history_new ();
+  chatty_history_open (history, g_test_get_dir (G_TEST_BUILT), "test-history.db");
   g_assert_true (chatty_history_is_open (history));
 
   msg_array = g_ptr_array_new ();
@@ -554,7 +555,7 @@ test_history_message (void)
   add_chatty_message (history, chat, msg_array, "And more message", when + 1, CHATTY_DIRECTION_IN, 0);
   add_chatty_message (history, chat, msg_array, "More message", when + 1, CHATTY_DIRECTION_OUT, 0);
 
-  chatty_history_close ();
+  chatty_history_close (history);
 }
 
 static void
@@ -567,8 +568,9 @@ test_history_raw_message (void)
   int when;
 
   g_remove (g_test_get_filename (G_TEST_BUILT, "test-history.db", NULL));
-  chatty_history_open (g_test_get_dir (G_TEST_BUILT), "test-history.db");
-  history = chatty_history_get_default ();
+
+  history = chatty_history_new ();
+  chatty_history_open (history, g_test_get_dir (G_TEST_BUILT), "test-history.db");
 
   /* Test chat message */
   msg_array = g_ptr_array_new ();
@@ -577,8 +579,8 @@ test_history_raw_message (void)
   account = "account@test";
   who = "buddy@test";
   room = "chatroom@test";
-  g_assert_false (chatty_history_im_exists (account, who));
-  g_assert_false (chatty_history_chat_exists (account, room));
+  g_assert_false (chatty_history_im_exists (history, account, who));
+  g_assert_false (chatty_history_chat_exists (history, account, room));
 
   uuid = g_uuid_string_random ();
   when = time (NULL);
@@ -605,10 +607,13 @@ test_history_raw_message (void)
   room = NULL;
   uuid = NULL;
 
-  chatty_history_close ();
+  chatty_history_close (history);
   g_remove (g_test_get_filename (G_TEST_BUILT, "test-history.db", NULL));
-  chatty_history_open (g_test_get_dir (G_TEST_BUILT), "test-history.db");
-  history = chatty_history_get_default ();
+  g_object_unref (history);
+
+  history = chatty_history_new ();
+  chatty_history_open (history, g_test_get_dir (G_TEST_BUILT), "test-history.db");
+  /* history = chatty_history_get_default (); */
 
   msg_array = g_ptr_array_new ();
   g_ptr_array_set_free_func (msg_array, (GDestroyNotify)free_message);
@@ -695,24 +700,26 @@ test_history_raw_message (void)
                "And one more", when + 3, PURPLE_MESSAGE_RECV);
 
   /* Test deletion */
-  delete_existing_chat (account, "buddy@test", TRUE);
-  delete_existing_chat (account, "somebuddy@test", TRUE);
-  delete_existing_chat (account, "room@test", FALSE);
-  delete_existing_chat (account, "another@test", FALSE);
+  delete_existing_chat (history, account, "buddy@test", TRUE);
+  delete_existing_chat (history, account, "somebuddy@test", TRUE);
+  delete_existing_chat (history, account, "room@test", FALSE);
+  delete_existing_chat (history, account, "another@test", FALSE);
 
-  chatty_history_close ();
+  chatty_history_close (history);
+  g_object_unref (history);
 }
 
 static void
-test_value (sqlite3    *db,
-            const char *statement,
-            int         statement_status,
-            int         id,
-            int         direction,
-            const char *account,
-            const char *who,
-            const char *message,
-            const char *room)
+test_value (ChattyHistory *history,
+            sqlite3       *db,
+            const char    *statement,
+            int            statement_status,
+            int            id,
+            int            direction,
+            const char    *account,
+            const char    *who,
+            const char    *message,
+            const char    *room)
 {
   g_autofree char *uuid = NULL;
   sqlite3_stmt *stmt;
@@ -742,7 +749,7 @@ test_value (sqlite3    *db,
     chat_message = chatty_message_new (NULL, NULL, message, uuid, time_stamp, chat_direction, 0);
     if (chat_direction != CHATTY_DIRECTION_OUT)
       chatty_message_set_user_name (chat_message, who);
-    success = chatty_history_add_message (chat, chat_message);
+    success = chatty_history_add_message (history, chat, chat_message);
     g_assert_true (success);
   }
 
@@ -776,6 +783,7 @@ test_value (sqlite3    *db,
 static void
 test_history_db (void)
 {
+  g_autoptr(ChattyHistory) history = NULL;
   const char *file_name, *account, *who, *message, *room;
   const char *statement;
   sqlite3 *db;
@@ -784,7 +792,9 @@ test_history_db (void)
   file_name = g_test_get_filename (G_TEST_BUILT, "test-history.db", NULL);
   g_remove (file_name);
   g_assert_false (g_file_test (file_name, G_FILE_TEST_IS_REGULAR));
-  chatty_history_open (g_test_get_dir (G_TEST_BUILT), "test-history.db");
+
+  history = chatty_history_new ();
+  chatty_history_open (history, g_test_get_dir (G_TEST_BUILT), "test-history.db");
   g_assert_true (g_file_test (file_name, G_FILE_TEST_IS_REGULAR));
 
   status = sqlite3_open (file_name, &db);
@@ -806,13 +816,13 @@ test_history_db (void)
     "INNER JOIN users as s "
     "ON sender_id=s.id;";
 
-  test_value (db, statement, SQLITE_ROW, 1, -1, account, who, message, NULL);
-  test_value (db, statement, SQLITE_ROW, 2, 1, account, who, message, NULL);
-  test_value (db, statement, SQLITE_ROW, 3, -1, account, who, message, room);
-  test_value (db, statement, SQLITE_ROW, 4, 1, account, who, message, room);
+  test_value (history, db, statement, SQLITE_ROW, 1, -1, account, who, message, NULL);
+  test_value (history, db, statement, SQLITE_ROW, 2, 1, account, who, message, NULL);
+  test_value (history, db, statement, SQLITE_ROW, 3, -1, account, who, message, room);
+  test_value (history, db, statement, SQLITE_ROW, 4, 1, account, who, message, room);
 
   sqlite3_close (db);
-  chatty_history_close ();
+  chatty_history_close (history);
 }
 
 static void
@@ -859,6 +869,7 @@ test_history_migration_db (void)
   g_assert_no_error (error);
 
   while ((name = g_dir_read_name (dir)) != NULL) {
+    g_autoptr(ChattyHistory) history = NULL;
     g_autofree char *expected_file = NULL;
     g_autofree char *input_file = NULL;
     g_autofree char *input = NULL;
@@ -888,8 +899,9 @@ test_history_migration_db (void)
     /* Open history with old db, which will result in db migration */
     input_file = g_strdup (name);
     strcpy (input_file + strlen (input_file) - strlen ("sql"), "db");
-    chatty_history_open (g_test_get_dir (G_TEST_BUILT), input_file);
-    chatty_history_close ();
+    history = chatty_history_new ();
+    chatty_history_open (history, g_test_get_dir (G_TEST_BUILT), input_file);
+    chatty_history_close (history);
     g_free (input_file);
 
     /* Attach old (now migrated) db with expected migrated db */

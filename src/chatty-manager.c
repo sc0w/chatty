@@ -55,6 +55,7 @@ struct _ChattyManager
 {
   GObject          parent_instance;
 
+  ChattyHistory   *history;
   ChattyEds       *chatty_eds;
   GListStore      *account_list;
   GListStore      *chat_list;
@@ -139,7 +140,8 @@ chatty_conv_add_history_since_component (GHashTable *components,
 
   g_autofree gchar *iso_timestamp = g_malloc0(MAX_GMT_ISO_SIZE * sizeof(char));
 
-  mtime = chatty_history_get_last_message_time (account, room);
+  mtime = chatty_history_get_last_message_time (chatty_manager_get_history (chatty_manager_get_default ()),
+                                                account, room);
   mtime += 1; // Use the next epoch to exclude the last stored message(s)
   timeinfo = gmtime (&mtime);
   g_return_if_fail (strftime (iso_timestamp,
@@ -936,7 +938,7 @@ chatty_conv_write_conversation (PurpleConversation *conv,
      * set in @flags, it won't be saved to database.
      */
     if (!(pcm.flags & PURPLE_MESSAGE_NO_LOG) && chat_message)
-      chatty_history_add_message (chat, chat_message);
+      chatty_history_add_message (self->history, chat, chat_message);
 
     chatty_chat_set_unread_count (chat, chatty_chat_get_unread_count (chat) + 1);
     gtk_sorter_changed (self->chat_sorter, GTK_SORTER_ORDER_TOTAL);
@@ -1135,7 +1137,7 @@ manager_buddy_added_cb (PurpleBuddy   *pp_buddy,
     chat = (ChattyChat *)chatty_pp_chat_new_im_chat (pp_account, pp_buddy);
   }
 
-  chatty_history_get_messages_async (chatty_history_get_default (), chat, NULL, 1,
+  chatty_history_get_messages_async (self->history, chat, NULL, 1,
                                      manager_load_messages_cb,
                                      g_object_ref (self));
 }
@@ -1839,7 +1841,10 @@ chatty_manager_dispose (GObject *object)
 static void
 chatty_manager_finalize (GObject *object)
 {
+  ChattyManager *self = (ChattyManager *)object;
+
   chatty_purple_quit ();
+  g_clear_object (&self->history);
 
   G_OBJECT_CLASS (chatty_manager_parent_class)->finalize (object);
 }
@@ -2372,7 +2377,7 @@ chatty_manager_load_more_chat (ChattyManager *self,
   if (since)
     g_object_unref (since);
 
-  chatty_history_get_messages_async (chatty_history_get_default (), chat, since, limit,
+  chatty_history_get_messages_async (self->history, chat, since, limit,
                                      manager_get_messages_cb,
                                      g_object_ref (self));
 }
@@ -2457,4 +2462,15 @@ chatty_conv_join_chat (PurpleChat *chat)
   }
 
   g_free (chat_name);
+}
+
+ChattyHistory *
+chatty_manager_get_history (ChattyManager *self)
+{
+  g_return_val_if_fail (CHATTY_IS_MANAGER (self), NULL);
+
+  if (!self->history)
+    self->history = chatty_history_new ();
+
+  return self->history;
 }

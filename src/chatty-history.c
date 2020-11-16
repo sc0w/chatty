@@ -1424,7 +1424,6 @@ history_close_db (ChattyHistory *self,
      * explicitly run dispose
      */
     g_object_run_dispose (G_OBJECT (self));
-    g_object_unref (self);
     g_debug ("Database closed successfully");
     g_task_return_boolean (task, TRUE);
   } else {
@@ -1919,23 +1918,16 @@ chatty_history_init (ChattyHistory *self)
 }
 
 /**
- * chatty_history_get_default:
+ * chatty_history_new:
  *
- * Get the default #ChattyHistory
+ * Create a new #ChattyHistory
  *
- * Returns: (transfer none): A #ChattyHistory
+ * Returns: (transfer full): A #ChattyHistory
  */
 ChattyHistory *
-chatty_history_get_default (void)
+chatty_history_new (void)
 {
-  static ChattyHistory *self;
-
-  if (!self) {
-    self = g_object_new (CHATTY_TYPE_HISTORY, NULL);
-    g_object_add_weak_pointer (G_OBJECT (self), (gpointer *)&self);
-  }
-
-  return self;
+  return g_object_new (CHATTY_TYPE_HISTORY, NULL);
 }
 
 /**
@@ -2270,6 +2262,7 @@ finish_cb (GObject      *object,
 
 /**
  * chatty_history_open:
+ * @self: A #ChattyHistory
  * @dir: The database directory
  * @file_name: The file name of database
  *
@@ -2281,13 +2274,12 @@ finish_cb (GObject      *object,
  *
  */
 void
-chatty_history_open (const char *dir,
-                     const char *file_name)
+chatty_history_open (ChattyHistory *self,
+                     const char    *dir,
+                     const char    *file_name)
 {
-  ChattyHistory *self;
   g_autoptr(GTask) task = NULL;
 
-  self = chatty_history_get_default ();
   task = g_task_new (NULL, NULL, NULL, NULL);
   chatty_history_open_async (self, g_strdup (dir), file_name, finish_cb, task);
 
@@ -2298,6 +2290,7 @@ chatty_history_open (const char *dir,
 
 /**
  * chatty_history_close:
+ * @self: A #ChattyHistory
  *
  * Close database opened with default #ChattyHistory,
  * if any.
@@ -2306,12 +2299,9 @@ chatty_history_open (const char *dir,
  *
  */
 void
-chatty_history_close (void)
+chatty_history_close (ChattyHistory *self)
 {
-  ChattyHistory *self;
   g_autoptr(GTask) task = NULL;
-
-  self = chatty_history_get_default ();
 
   if (!self->db)
     return;
@@ -2326,6 +2316,7 @@ chatty_history_close (void)
 
 /**
  * chatty_history_get_chat_timestamp:
+ * @self: A #ChattyHistory
  * @uuid: A valid uid string
  * @room: A valid chat room name.
  *
@@ -2338,18 +2329,17 @@ chatty_history_close (void)
  * or %INT_MAX if no match found.
  */
 int
-chatty_history_get_chat_timestamp (const char *uuid,
-                                   const char *room)
+chatty_history_get_chat_timestamp (ChattyHistory *self,
+                                   const char    *uuid,
+                                   const char    *room)
 {
   g_autoptr(GError) error = NULL;
   g_autoptr(GTask) task = NULL;
-  ChattyHistory *self;
   int time_stamp;
 
   g_return_val_if_fail (uuid, 0);
   g_return_val_if_fail (room, 0);
 
-  self = chatty_history_get_default ();
   g_return_val_if_fail (self->db, FALSE);
 
   task = g_task_new (NULL, NULL, NULL, NULL);
@@ -2376,6 +2366,7 @@ chatty_history_get_chat_timestamp (const char *uuid,
 
 /**
  * chatty_history_get_im_timestamp:
+ * @self: A #ChattyHistory
  * @uuid: A valid uid string
  * @account: A valid user id name.
  *
@@ -2388,18 +2379,17 @@ chatty_history_get_chat_timestamp (const char *uuid,
  * or %INT_MAX if no match found.
  */
 int
-chatty_history_get_im_timestamp (const char *uuid,
-                                 const char *account)
+chatty_history_get_im_timestamp (ChattyHistory *self,
+                                 const char    *uuid,
+                                 const char    *account)
 {
   g_autoptr(GError) error = NULL;
   g_autoptr(GTask) task = NULL;
-  ChattyHistory *self;
   int time_stamp;
 
   g_return_val_if_fail (uuid, 0);
   g_return_val_if_fail (account, 0);
 
-  self = chatty_history_get_default ();
   g_return_val_if_fail (self->db, FALSE);
 
   task = g_task_new (NULL, NULL, NULL, NULL);
@@ -2426,6 +2416,7 @@ chatty_history_get_im_timestamp (const char *uuid,
 
 /**
  * chatty_history_get_last_message_time:
+ * @self: A #ChattyHistory
  * @account: A valid account name
  * @roome: A valid room name.
  *
@@ -2438,18 +2429,16 @@ chatty_history_get_im_timestamp (const char *uuid,
  * or 0 if no match found.
  */
 int
-chatty_history_get_last_message_time (const char *account,
-                                      const char *room)
+chatty_history_get_last_message_time (ChattyHistory *self,
+                                      const char    *account,
+                                      const char    *room)
 {
   g_autoptr(GError) error = NULL;
   g_autoptr(GTask) task = NULL;
-  ChattyHistory *self;
   int time_stamp;
 
   g_return_val_if_fail (account, 0);
   g_return_val_if_fail (room, 0);
-
-  self = chatty_history_get_default ();
   g_return_val_if_fail (self->db, 0);
 
   task = g_task_new (NULL, NULL, NULL, NULL);
@@ -2477,6 +2466,7 @@ chatty_history_get_last_message_time (const char *account,
 
 /**
  * chatty_history_delete_chat:
+ * @self: A #ChattyHistory
  * @chat: a #ChattyChat
  *
  * Delete all messages matching @chat
@@ -2486,12 +2476,11 @@ chatty_history_get_last_message_time (const char *account,
  *
  */
 void
-chatty_history_delete_chat (ChattyChat *chat)
+chatty_history_delete_chat (ChattyHistory *self,
+                            ChattyChat    *chat)
 {
-  ChattyHistory *self;
   g_autoptr(GTask) task = NULL;
 
-  self = chatty_history_get_default ();
   task = g_task_new (NULL, NULL, NULL, NULL);
   chatty_history_delete_chat_async (self, chat, finish_cb, task);
 
@@ -2501,15 +2490,14 @@ chatty_history_delete_chat (ChattyChat *chat)
 }
 
 static gboolean
-chatty_history_exists (const char *account,
-                       const char *room,
-                       const char *who)
+chatty_history_exists (ChattyHistory *self,
+                       const char    *account,
+                       const char    *room,
+                       const char    *who)
 {
 
-  ChattyHistory *self;
   g_autoptr(GTask) task = NULL;
 
-  self = chatty_history_get_default ();
   g_return_val_if_fail (self->db, FALSE);
 
   task = g_task_new (NULL, NULL, NULL, NULL);
@@ -2530,6 +2518,7 @@ chatty_history_exists (const char *account,
 
 /**
  * chatty_history_im_exists:
+ * @self: A #ChattyHistory
  * @account: a valid account name
  * @who: A valid user name
  *
@@ -2542,17 +2531,19 @@ chatty_history_exists (const char *account,
  * for the given detail.  %FALSE otherwise.
  */
 gboolean
-chatty_history_im_exists (const char *account,
-                          const char *who)
+chatty_history_im_exists (ChattyHistory *self,
+                          const char    *account,
+                          const char    *who)
 {
   g_return_val_if_fail (account, 0);
   g_return_val_if_fail (who, 0);
 
-  return chatty_history_exists (account, NULL, who);
+  return chatty_history_exists (self, account, NULL, who);
 }
 
 /**
  * chatty_history_exists:
+ * @self: A #ChattyHistory
  * @account: a valid account name
  * @room: A Valid room name
  *
@@ -2565,30 +2556,21 @@ chatty_history_im_exists (const char *account,
  * for the given detail.  %FALSE otherwise.
  */
 gboolean
-chatty_history_chat_exists (const char *account,
-                            const char *room)
+chatty_history_chat_exists (ChattyHistory *self,
+                            const char    *account,
+                            const char    *room)
 {
   g_return_val_if_fail (account, 0);
   g_return_val_if_fail (room, 0);
 
-  return chatty_history_exists (account, room, NULL);
+  return chatty_history_exists (self, account, room, NULL);
 }
 
 /**
  * chatty_history_add_message:
- * @account: a valid account name
- * @chat: A #ChattyChat
- * @who: A user name or %NULL
- * @message The chat message to store
- * @uid: (inout): A pointer to uid string for the @message
- * @flags: A #PurpleMessageFlags
- * @time_stamp: A unix time
- *
- * Store a message to database.  If @flags has
- * %PURPLE_MESSAGE_NO_LOG set, this method returns
- * without saving.  If @uid points to %NULL, an
- * RFC 4122 version 4 random UUID will generated for
- * you.
+ * @self: A #ChattyHistory
+ * @chat: the #ChattyChat @message belongs to
+ * @message: A #ChattyMessage
  *
  * This method runs synchronously.
  *
@@ -2596,13 +2578,12 @@ chatty_history_chat_exists (const char *account,
  * %FALSE otherwise.
  */
 gboolean
-chatty_history_add_message (ChattyChat    *chat,
+chatty_history_add_message (ChattyHistory *self,
+                            ChattyChat    *chat,
                             ChattyMessage *message)
 {
-  ChattyHistory *self;
   g_autoptr(GTask) task = NULL;
 
-  self = chatty_history_get_default ();
   task = g_task_new (NULL, NULL, NULL, NULL);
   chatty_history_add_message_async (self, chat, message, finish_cb, task);
 
@@ -2612,3 +2593,4 @@ chatty_history_add_message (ChattyChat    *chat,
 
   return g_task_propagate_boolean (task, NULL);
 }
+

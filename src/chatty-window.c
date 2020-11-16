@@ -583,7 +583,8 @@ window_delete_buddy_clicked_cb (ChattyWindow *self)
   response = gtk_dialog_run (GTK_DIALOG (dialog));
 
   if (response == GTK_RESPONSE_OK) {
-    chatty_history_delete_chat (CHATTY_CHAT (self->selected_item));
+    chatty_history_delete_chat (chatty_manager_get_history (self->manager),
+                                CHATTY_CHAT (self->selected_item));
     chatty_pp_chat_delete (CHATTY_PP_CHAT (self->selected_item));
 
     window_set_item (self, NULL);
