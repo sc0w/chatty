@@ -25,7 +25,7 @@
 #define STRING_VALUE(arg) #arg
 
 /* increment when DB changes */
-#define HISTORY_VERSION 1
+#define HISTORY_VERSION 2
 
 /* Shouldn't be modified, new values should be appended */
 #define CHATTY_ID_UNKNOWN_VALUE 0
@@ -63,6 +63,10 @@
 #define MESSAGE_TYPE_AUDIO         11
 /* Temporary until the link is parsed */
 #define MESSAGE_TYPE_LINK          20
+
+#define FILE_STATUS_DOWNLOADED     1
+#define FILE_STATUS_MISSING        2
+#define FILE_STATUS_DECRYPT_FAILED 3
 
 struct _ChattyHistory
 {
@@ -173,6 +177,69 @@ history_protocol_to_type_value (ChattyProtocol protocol)
   }
 }
 
+static int
+history_message_type_to_value (ChattyMsgType type)
+{
+  switch (type) {
+  case CHATTY_MESSAGE_UNKNOWN:
+    g_return_val_if_reached (MESSAGE_TYPE_UNKNOWN);
+
+  case CHATTY_MESSAGE_TEXT:
+    return MESSAGE_TYPE_TEXT;
+
+  case CHATTY_MESSAGE_HTML:
+  case CHATTY_MESSAGE_HTML_ESCAPED:
+    return MESSAGE_TYPE_HTML_ESCAPED;
+
+  case CHATTY_MESSAGE_MATRIX_HTML:
+    return MESSAGE_TYPE_MATRIX_HTML;
+
+  case CHATTY_MESSAGE_LOCATION:
+    return MESSAGE_TYPE_LOCATION;
+
+  case CHATTY_MESSAGE_FILE:
+    return MESSAGE_TYPE_FILE;
+
+  case CHATTY_MESSAGE_IMAGE:
+    return MESSAGE_TYPE_IMAGE;
+
+  case CHATTY_MESSAGE_AUDIO:
+    return MESSAGE_TYPE_AUDIO;
+
+  case CHATTY_MESSAGE_VIDEO:
+    return MESSAGE_TYPE_VIDEO;
+
+  default:
+    g_return_val_if_reached (MESSAGE_TYPE_HTML);
+  }
+}
+
+static ChattyMsgType
+history_value_to_message_type (int value)
+{
+  if (value == MESSAGE_TYPE_UNKNOWN)
+    g_return_val_if_reached (CHATTY_MESSAGE_UNKNOWN);
+  else if (value == MESSAGE_TYPE_TEXT)
+    return CHATTY_MESSAGE_TEXT;
+  else if (value == MESSAGE_TYPE_HTML_ESCAPED ||
+           value == CHATTY_MESSAGE_HTML)
+    return CHATTY_MESSAGE_HTML_ESCAPED;
+  else if (value == MESSAGE_TYPE_MATRIX_HTML)
+    return CHATTY_MESSAGE_MATRIX_HTML;
+  else if (value == MESSAGE_TYPE_LOCATION)
+    return CHATTY_MESSAGE_LOCATION;
+  else if (value == MESSAGE_TYPE_FILE)
+    return CHATTY_MESSAGE_FILE;
+  else if (value == MESSAGE_TYPE_IMAGE)
+    return CHATTY_MESSAGE_IMAGE;
+  else if (value == MESSAGE_TYPE_AUDIO)
+    return CHATTY_MESSAGE_AUDIO;
+  else if (value == MESSAGE_TYPE_VIDEO)
+    return CHATTY_MESSAGE_VIDEO;
+
+  g_return_val_if_reached (CHATTY_MESSAGE_HTML);
+}
+
 #if 0
 static int
 id_type_to_value (ChattyIdType type)
@@ -280,20 +347,39 @@ chatty_history_create_schema (ChattyHistory *self,
    * So what to name? file or files?
    */
   sql = "BEGIN TRANSACTION;"
+
+    "CREATE TABLE IF NOT EXISTS mime_type ("
+    "id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, "
+    "name TEXT NOT NULL UNIQUE);"
+
     "CREATE TABLE IF NOT EXISTS files ("
     "id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, "
-    "name TEXT NOT NULL, "
-    "url TEXT, "
+    "name TEXT, "
+    "url TEXT NOT NULL UNIQUE, "
     "path TEXT, "
-    "mime_type TEXT, "
+    "mime_type_id INTEGER REFERENCES mime_type(id), "
+    "status INT, "
     "size INTEGER);"
 
-    "CREATE TABLE IF NOT EXISTS media ("
+    "CREATE TABLE IF NOT EXISTS audio ("
     "id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, "
     "file_id INTEGER NOT NULL UNIQUE, "
-    "thumbnail_id INTEGER REFERENCES media(id), "
+    "duration INTEGER, "
+    "FOREIGN KEY(file_id) REFERENCES files(id));"
+
+    "CREATE TABLE IF NOT EXISTS image ("
+    "id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, "
+    "file_id INTEGER NOT NULL UNIQUE, "
     "width INTEGER, "
     "height INTEGER, "
+    "FOREIGN KEY(file_id) REFERENCES files(id));"
+
+    "CREATE TABLE IF NOT EXISTS video ("
+    "id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, "
+    "file_id INTEGER NOT NULL UNIQUE, "
+    "width INTEGER, "
+    "height INTEGER, "
+    "duration INTEGER, "
     "FOREIGN KEY(file_id) REFERENCES files(id));"
 
     /* TODO: Someday */
@@ -306,7 +392,8 @@ chatty_history_create_schema (ChattyHistory *self,
     "id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, "
     "username TEXT NOT NULL, "
     "alias TEXT, "
-    "avatar_id INTEGER REFERENCES media(id), "
+    /* changed to refer files() in Version 2 */
+    "avatar_id INTEGER REFERENCES files(id), "
     "type INTEGER NOT NULL, "
     /* For phone numbers */
     "UNIQUE (username, type));"
@@ -336,7 +423,8 @@ chatty_history_create_schema (ChattyHistory *self,
     "id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, "
     "name TEXT NOT NULL, "
     "alias TEXT, "
-    "avatar_id INTEGER REFERENCES media(id), "
+    /* changed to refer files() in Version 2 */
+    "avatar_id INTEGER REFERENCES files(id), "
     "account_id INTEGER NOT NULL REFERENCES accounts(id) ON DELETE CASCADE, "
     "type INTEGER NOT NULL, "
     "encrypted INTEGER DEFAULT 0, "
@@ -360,6 +448,8 @@ chatty_history_create_schema (ChattyHistory *self,
     "time INTEGER NOT NULL, "
     "status INTEGER, "
     "encrypted INTEGER DEFAULT 0, "
+    /* preview file: Introduced in version 2 */
+    "preview_id INTEGER REFERENCES files(id), "
     "UNIQUE (uid, thread_id, body, time));"
 
     /* Alter threads after the messages table is created */
@@ -712,9 +802,15 @@ history_add_thread (ChattyHistory *self,
   return status == SQLITE_DONE;
 }
 
+/* TODO */
+/* this function works for migration from v0
+ * to both v1 and v2 as the tables and columns
+ * used in this function doesn't change in
+ * v1 or v2.
+ */
 static gboolean
-chatty_history_migrate_db_to_v1 (ChattyHistory *self,
-                                 GTask         *task)
+chatty_history_migrate_db_to_v1_v2 (ChattyHistory *self,
+                                    GTask         *task)
 {
   char *error = NULL;
   int status;
@@ -1311,6 +1407,112 @@ chatty_history_migrate_db_to_v1 (ChattyHistory *self,
   return FALSE;
 }
 
+/* TODO */
+static gboolean
+chatty_history_migrate_db_to_v2 (ChattyHistory *self,
+                                 GTask         *task)
+{
+  char *error = NULL;
+  int status;
+
+  g_assert (CHATTY_IS_HISTORY (self));
+  g_assert (G_IS_TASK (task));
+  g_assert (g_thread_self () == self->worker_thread);
+
+  chatty_history_backup (self);
+
+  status = sqlite3_exec (self->db,
+                         "BEGIN TRANSACTION;"
+                         "PRAGMA foreign_keys=OFF;"
+
+                         "DROP TABLE IF EXISTS media;"
+                         "DROP TABLE IF EXISTS files;"
+
+                         "CREATE TABLE IF NOT EXISTS mime_type ("
+                         "id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, "
+                         "name TEXT NOT NULL UNIQUE);"
+
+                         "CREATE TABLE IF NOT EXISTS files ("
+                         "id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, "
+                         "name TEXT, "
+                         "url TEXT NOT NULL UNIQUE, "
+                         "path TEXT, "
+                         "mime_type_id INTEGER REFERENCES mime_type(id), "
+                         "status INT, "
+                         "size INTEGER);"
+
+                         "CREATE TABLE IF NOT EXISTS video ("
+                         "id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, "
+                         "file_id INTEGER NOT NULL UNIQUE, "
+                         "width INTEGER, "
+                         "height INTEGER, "
+                         "duration INTEGER, "
+                         "FOREIGN KEY(file_id) REFERENCES files(id));"
+
+                         "CREATE TABLE IF NOT EXISTS image ("
+                         "id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, "
+                         "file_id INTEGER NOT NULL UNIQUE, "
+                         "width INTEGER, "
+                         "height INTEGER, "
+                         "FOREIGN KEY(file_id) REFERENCES files(id));"
+
+                         "CREATE TABLE IF NOT EXISTS audio ("
+                         "id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, "
+                         "file_id INTEGER NOT NULL UNIQUE, "
+                         "duration INTEGER, "
+                         "FOREIGN KEY(file_id) REFERENCES files(id));"
+
+                         "ALTER TABLE messages ADD COLUMN preview_id INTEGER REFERENCES files(id);"
+
+
+                         "CREATE TABLE IF NOT EXISTS temp_users ("
+                         "id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, "
+                         "username TEXT NOT NULL, "
+                         "alias TEXT, "
+                         "avatar_id INTEGER REFERENCES files(id), "
+                         "type INTEGER NOT NULL, "
+                         "UNIQUE (username, type));"
+
+                         "INSERT INTO temp_users SELECT * FROM users;"
+                         "DROP TABLE IF EXISTS users;"
+                         "ALTER TABLE temp_users RENAME TO users;"
+
+
+                         "CREATE TABLE IF NOT EXISTS temp_threads ("
+                         "id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, "
+                         "name TEXT NOT NULL, "
+                         "alias TEXT, "
+                         "avatar_id INTEGER REFERENCES files(id), "
+                         "account_id INTEGER NOT NULL REFERENCES accounts(id) ON DELETE CASCADE, "
+                         "type INTEGER NOT NULL, "
+                         "encrypted INTEGER DEFAULT 0, "
+                         "last_read_id INTEGER REFERENCES messages(id), "
+                         "UNIQUE (name, account_id, type));"
+
+                         "INSERT INTO temp_threads SELECT * FROM threads;"
+                         "DROP TABLE IF EXISTS threads;"
+                         "ALTER TABLE temp_threads RENAME TO threads;"
+
+                         "COMMIT;",
+                         NULL, NULL, &error);
+
+  if (status == SQLITE_OK || status == SQLITE_DONE) {
+    /* Update user_version pragma */
+    if (!chatty_history_update_version (self, task))
+      return FALSE;
+    return TRUE;
+  }
+
+  g_task_return_new_error (task,
+                           G_IO_ERROR,
+                           G_IO_ERROR_FAILED,
+                           "Error setting db version. errno: %d, desc: %s. %s",
+                           status, sqlite3_errstr (status), error);
+  sqlite3_free (error);
+
+  return FALSE;
+}
+
 static gboolean
 chatty_history_migrate (ChattyHistory *self,
                         GTask         *task)
@@ -1332,7 +1534,12 @@ chatty_history_migrate (ChattyHistory *self,
     return FALSE;
 
   case 0:
-    if (!chatty_history_migrate_db_to_v1 (self, task))
+    if (!chatty_history_migrate_db_to_v1_v2 (self, task))
+      return FALSE;
+    break;
+
+  case 1:
+    if (!chatty_history_migrate_db_to_v2 (self, task))
       return FALSE;
     break;
 
@@ -1479,6 +1686,7 @@ get_messages_before_id (ChattyHistory *self,
                         ChattyChat    *chat,
                         int            thread_id,
                         guint          since_id,
+                        guint          since_time,
                         guint          limit)
 {
   GPtrArray *messages = NULL;
@@ -1490,22 +1698,46 @@ get_messages_before_id (ChattyHistory *self,
   g_assert (g_thread_self () == self->worker_thread);
   g_assert (limit != 0);
 
-  status = sqlite3_prepare_v2 (self->db, "SELECT time,direction,body,uid,users.username FROM messages "
+  status = sqlite3_prepare_v2 (self->db,
+                               "SELECT DISTINCT time,direction,body,uid,users.username,body_type,"
+                               "files.name,files.url,files.path,mime_type.name,files.size,files.status,"
+                               "coalesce(video.width,image.width),"
+                               "coalesce(video.height,image.height),"
+                               "coalesce(video.duration,audio.duration),"
+                               "p_files.name,p_files.url,p_files.path,p_mime_type.name,p_files.size,p_files.status,"
+                               "coalesce(p_video.width,p_image.width),"
+                               "coalesce(p_video.height,p_image.height),"
+                               "coalesce(p_video.duration,p_audio.duration) "
+                               "FROM messages "
+                               "LEFT JOIN files ON body_type>=8 AND body_type<=11 AND files.id=body "
+                               "LEFT JOIN mime_type ON body_type>=8 AND body_type<=11 AND files.mime_type_id=mime_type.id "
+                               "LEFT JOIN image ON body_type=9 AND files.id=image.file_id "
+                               "LEFT JOIN video ON body_type=10 AND files.id=video.file_id "
+                               "LEFT JOIN audio ON body_type=11 AND files.id=audio.file_id "
+                               "LEFT JOIN files AS p_files ON messages.preview_id=p_files.id "
+                               "LEFT JOIN mime_type AS p_mime_type ON p_files.mime_type_id=p_mime_type.id "
+                               "LEFT JOIN image AS p_image ON p_files.id=p_image.file_id "
+                               "LEFT JOIN video AS p_video ON p_files.id=p_video.file_id "
+                               "LEFT JOIN audio AS p_audio ON p_files.id=p_audio.file_id "
                                "LEFT JOIN users "
                                "ON messages.sender_id=users.id "
                                "WHERE thread_id=? "
                                "AND messages.id < ? "
+                               "AND messages.time <= ? "
                                "AND body NOT NULL AND body !='' "
                                "ORDER BY time DESC, messages.id DESC LIMIT ?;",
                                -1, &stmt, NULL);
   history_bind_int (stmt, 1, thread_id, "binding when getting messages");
   history_bind_int (stmt, 2, since_id, "binding when getting messages");
-  history_bind_int (stmt, 3, limit, "binding when getting messages");
+  history_bind_int (stmt, 3, since_time, "binding when getting messages");
+  history_bind_int (stmt, 4, limit, "binding when getting messages");
 
   while (sqlite3_step (stmt) == SQLITE_ROW) {
+    ChattyFileInfo *file = NULL, *preview = NULL;
     ChattyMessage *message;
     const char *msg, *uid;
     const char *who = NULL;
+    ChattyMsgType type;
     guint time_stamp;
     int direction;
 
@@ -1514,14 +1746,46 @@ get_messages_before_id (ChattyHistory *self,
 
     time_stamp = sqlite3_column_int (stmt, 0);
     direction = sqlite3_column_int (stmt, 1);
-    msg = (const char *)sqlite3_column_text (stmt, 2);
+    type = history_value_to_message_type (sqlite3_column_int (stmt, 5));
+
+    /* preview is not limitted to media messages */
+    if (sqlite3_column_text (stmt, 16)) {
+      preview = g_new0 (ChattyFileInfo, 1);
+      preview->file_name = g_strdup ((const char *)sqlite3_column_text (stmt, 15));
+      preview->url = g_strdup ((const char *)sqlite3_column_text (stmt, 16));
+      preview->path = g_strdup ((const char *)sqlite3_column_text (stmt, 17));
+      preview->mime_type = g_strdup ((const char *)sqlite3_column_text (stmt, 18));
+      preview->size = sqlite3_column_int (stmt, 19);
+      preview->status = sqlite3_column_int (stmt, 20);
+      preview->width = sqlite3_column_int (stmt, 21);
+      preview->height = sqlite3_column_int (stmt, 22);
+      preview->duration = sqlite3_column_int (stmt, 23);
+    }
+
+    if (sqlite3_column_text (stmt, 7)) {
+      file = g_new0 (ChattyFileInfo, 1);
+      file->file_name = g_strdup ((const char *)sqlite3_column_text (stmt, 6));
+      file->url = g_strdup ((const char *)sqlite3_column_text (stmt, 7));
+      file->path = g_strdup ((const char *)sqlite3_column_text (stmt, 8));
+      file->mime_type = g_strdup ((const char *)sqlite3_column_text (stmt, 9));
+      file->size = sqlite3_column_int (stmt, 10);
+      file->status = sqlite3_column_int (stmt, 11);
+      file->width = sqlite3_column_int (stmt, 12);
+      file->height = sqlite3_column_int (stmt, 13);
+      file->duration = sqlite3_column_int (stmt, 14);
+    }
+    else
+      msg = (const char *)sqlite3_column_text (stmt, 2);
+
     uid = (const char *)sqlite3_column_text (stmt, 3);
 
     if (!chatty_chat_is_im (chat))
       who = (const char *)sqlite3_column_text (stmt, 4);
 
-    message = chatty_message_new (NULL, who, msg, uid, time_stamp,
+    message = chatty_message_new (NULL, who, msg, uid, time_stamp, type,
                                   history_direction_from_value (direction), 0);
+    chatty_message_set_file (message, file);
+    chatty_message_set_preview (message, preview);
     g_ptr_array_insert (messages, 0, message);
   }
 
@@ -1540,7 +1804,7 @@ history_get_messages (ChattyHistory *self,
   ChattyChat *chat;
   guint since_id;
   guint limit;
-  int thread_id;
+  int thread_id, since = INT_MAX;
 
   g_assert (CHATTY_IS_HISTORY (self));
   g_assert (G_IS_TASK (task));
@@ -1561,9 +1825,112 @@ history_get_messages (ChattyHistory *self,
   g_assert (!start || CHATTY_IS_MESSAGE (start));
   g_assert (CHATTY_IS_CHAT (chat));
 
+  if (start)
+    since = chatty_message_get_time (start);
+
   since_id = get_id_for_message (self, chat, start, &thread_id);
-  messages = get_messages_before_id (self, chat, thread_id, since_id, limit);
+  messages = get_messages_before_id (self, chat, thread_id, since_id, since, limit);
   g_task_return_pointer (task, messages, (GDestroyNotify)g_ptr_array_unref);
+}
+
+static int
+add_file_info (ChattyHistory  *self,
+               ChattyFileInfo *file)
+{
+  sqlite3_stmt *stmt;
+  int file_id = 0, mime_id = 0;
+  int status;
+
+  g_assert (CHATTY_IS_HISTORY (self));
+
+  if (!file)
+    return 0;
+
+  if (file->mime_type) {
+    sqlite3_prepare_v2 (self->db,
+                        "INSERT OR IGNORE INTO mime_type(name) VALUES(?)",
+                        -1, &stmt, NULL);
+    history_bind_text (stmt, 1, file->mime_type, "binding when getting timestamp");
+    sqlite3_step (stmt);
+    sqlite3_finalize (stmt);
+
+    sqlite3_prepare_v2 (self->db, "SELECT id FROM mime_type WHERE name=?" ,
+                        -1, &stmt, NULL);
+    history_bind_text (stmt, 1, file->mime_type, "binding when getting timestamp");
+    if (sqlite3_step (stmt) == SQLITE_ROW)
+      mime_id = sqlite3_column_int (stmt, 0);
+    sqlite3_finalize (stmt);
+  }
+
+  if (file->status == CHATTY_FILE_DOWNLOADED)
+    status = FILE_STATUS_DOWNLOADED;
+  else if (file->status == CHATTY_FILE_DECRYPT_FAILED)
+    status = FILE_STATUS_DECRYPT_FAILED;
+  else if (file->status == CHATTY_FILE_MISSING)
+    status = FILE_STATUS_MISSING;
+  else
+    status = 0;
+
+  sqlite3_prepare_v2 (self->db, "SELECT id FROM files WHERE url=?", -1, &stmt, NULL);
+  history_bind_text (stmt, 1, file->url, "binding when getting file");
+  if (sqlite3_step (stmt) == SQLITE_ROW)
+    file_id = sqlite3_column_int (stmt, 0);
+  sqlite3_finalize (stmt);
+
+  sqlite3_prepare_v2 (self->db,
+                      "INSERT INTO files(name,url,path,mime_type_id,size,status) "
+                      "VALUES(?1,?2,?3,?4,?5,?6) "
+                      "ON CONFLICT(url) DO UPDATE SET size=?5, status=?6",
+                      -1, &stmt, NULL);
+  history_bind_text (stmt, 1, file->file_name, "binding when adding file");
+  history_bind_text (stmt, 2, file->url, "binding when adding file");
+  history_bind_text (stmt, 3, file->path, "binding when adding file");
+  if (mime_id)
+    history_bind_int (stmt, 4, mime_id, "binding when adding file");
+  if (file->size)
+    history_bind_int (stmt, 5, file->size, "binding when adding file");
+  if (status)
+    history_bind_int (stmt, 6, status, "binding when adding file");
+  sqlite3_step (stmt);
+  sqlite3_finalize (stmt);
+
+  if (file_id)
+    return file_id;
+
+  file_id = sqlite3_last_insert_rowid (self->db);
+
+  if (file->mime_type &&
+      ((file->width && file->height) || file->duration)) {
+    if (g_str_has_prefix (file->mime_type, "video/"))
+      sqlite3_prepare_v2 (self->db,
+                          "INSERT INTO video(file_id,width,height,duration) "
+                          "VALUES(?1,?2,?3,?4)",
+                          -1, &stmt, NULL);
+    else if (g_str_has_prefix (file->mime_type, "image/"))
+      sqlite3_prepare_v2 (self->db,
+                          "INSERT INTO image(file_id,width,height) "
+                          "VALUES(?1,?2,?3)",
+                          -1, &stmt, NULL);
+    else if (g_str_has_prefix (file->mime_type, "audio/"))
+      sqlite3_prepare_v2 (self->db,
+                          "INSERT INTO audio(file_id,duration) "
+                          "VALUES(?1,?4)",
+                          -1, &stmt, NULL);
+    else
+      return file_id;
+
+    history_bind_int (stmt, 1, file_id, "binding when adding media");
+    if (file->width && !g_str_has_prefix (file->mime_type, "audio/"))
+      history_bind_int (stmt, 2, file->width, "binding when adding media");
+    if (file->height && !g_str_has_prefix (file->mime_type, "audio/"))
+      history_bind_int (stmt, 3, file->height, "binding when adding media");
+    if (file->duration && !g_str_has_prefix (file->mime_type, "image/"))
+      history_bind_int (stmt, 4, file->duration, "binding when adding media");
+    sqlite3_step (stmt);
+    sqlite3_finalize (stmt);
+  }
+
+  return file_id;
 }
 
 static void
@@ -1575,7 +1942,8 @@ history_add_message (ChattyHistory *self,
   sqlite3_stmt *stmt;
   const char *who, *uid, *msg;
   ChattyMsgDirection direction;
-  int thread_id = 0, sender_id = 0;
+  ChattyMsgType type;
+  int thread_id = 0, sender_id = 0, file_id = 0, preview_id = 0;
   int status, dir;
   time_t time_stamp;
 
@@ -1601,6 +1969,7 @@ history_add_message (ChattyHistory *self,
   time_stamp = chatty_message_get_time (message);
   direction = chatty_message_get_msg_direction (message);
   dir = history_direction_to_value (direction);
+  type = chatty_message_get_msg_type (message);
 
   /* TODO: check if this is good */
   if (!who || !*who) {
@@ -1615,9 +1984,24 @@ history_add_message (ChattyHistory *self,
     return;
 
   sender_id = insert_or_ignore_user (self, chatty_item_get_protocols (CHATTY_ITEM (chat)), who, task);
+
+  if (type == CHATTY_MESSAGE_IMAGE ||
+      type == CHATTY_MESSAGE_AUDIO ||
+      type == CHATTY_MESSAGE_VIDEO ||
+      type == CHATTY_MESSAGE_FILE) {
+    preview_id = add_file_info (self, chatty_message_get_preview (message));
+    file_id = add_file_info (self, chatty_message_get_file (message));
+  }
+
   sqlite3_prepare_v2 (self->db,
-                      "INSERT INTO messages(uid,thread_id,sender_id,body,body_type,direction,time) "
-                      "VALUES(?1,?2,?3,?4,?5,?6,?7);",
+                      "INSERT OR IGNORE INTO messages(uid,thread_id,sender_id,body,body_type,direction,time,preview_id,encrypted) "
+                      "VALUES(?1,?2,?3,"
+                      "CASE "
+                      "WHEN ?5>="STRING (MESSAGE_TYPE_FILE) " AND ?5<="STRING (MESSAGE_TYPE_AUDIO) " "
+                      "THEN ?8 "
+                      "ELSE ?4 "
+                      "END,"
+                      "?5,?6,?7,?9,?10);",
                       -1, &stmt, NULL);
 
   history_bind_text (stmt, 1, uid, "binding when adding message");
@@ -1625,12 +2009,16 @@ history_add_message (ChattyHistory *self,
   if (sender_id)
     history_bind_int (stmt, 3, sender_id, "binding when adding message");
   history_bind_text (stmt, 4, msg, "binding when adding message");
-  if (chatty_item_get_protocols (CHATTY_ITEM (chat)) == CHATTY_PROTOCOL_SMS)
-    history_bind_int (stmt, 5, MESSAGE_TYPE_TEXT, "binding when adding message");
-  else
-    history_bind_int (stmt, 5, MESSAGE_TYPE_HTML_ESCAPED, "binding when adding message");
+  history_bind_int (stmt, 5, history_message_type_to_value (type),
+                    "binding when adding message");
   history_bind_int (stmt, 6, dir, "binding when adding message");
   history_bind_int (stmt, 7, time_stamp, "binding when adding message");
+  if (file_id)
+    history_bind_int (stmt, 8, file_id, "binding when adding message");
+  if (preview_id)
+    history_bind_int (stmt, 9, preview_id, "binding when adding message");
+  history_bind_int (stmt, 10, chatty_message_get_encrypted (message),
+                    "binding when adding message");
 
   status = sqlite3_step (stmt);
   sqlite3_finalize (stmt);

@@ -35,9 +35,16 @@ struct _ChattyMessage
   char            *message;
   char            *uid;
   char            *id;
+
+  ChattyFileInfo  *file;
+  ChattyFileInfo  *preview;
+
+  ChattyMsgType    type;
   ChattyMsgStatus  status;
   ChattyMsgDirection direction;
   time_t           time;
+
+  gboolean encrypted;
 };
 
 G_DEFINE_TYPE (ChattyMessage, chatty_message, G_TYPE_OBJECT)
@@ -98,6 +105,7 @@ chatty_message_new (ChattyItem         *user,
                     const char         *message,
                     const char         *uid,
                     time_t              timestamp,
+                    ChattyMsgType       type,
                     ChattyMsgDirection  direction,
                     ChattyMsgStatus     status)
 {
@@ -114,8 +122,62 @@ chatty_message_new (ChattyItem         *user,
   self->status = status;
   self->direction = direction;
   self->time = timestamp;
+  self->type = type;
 
   return self;
+}
+
+gboolean
+chatty_message_get_encrypted (ChattyMessage *self)
+{
+  g_return_val_if_fail (CHATTY_IS_MESSAGE (self), FALSE);
+
+  return self->encrypted;
+}
+
+void
+chatty_message_set_encrypted (ChattyMessage *self,
+                              gboolean       is_encrypted)
+{
+  g_return_if_fail (CHATTY_IS_MESSAGE (self));
+
+  self->encrypted = !!is_encrypted;
+}
+
+ChattyFileInfo *
+chatty_message_get_file (ChattyMessage *self)
+{
+  g_return_val_if_fail (CHATTY_IS_MESSAGE (self), NULL);
+
+  return self->file;
+}
+
+void
+chatty_message_set_file (ChattyMessage  *self,
+                         ChattyFileInfo *file)
+{
+  g_return_if_fail (CHATTY_IS_MESSAGE (self));
+  g_return_if_fail (!self->file);
+
+  self->file = file;
+}
+
+ChattyFileInfo *
+chatty_message_get_preview (ChattyMessage *self)
+{
+  g_return_val_if_fail (CHATTY_IS_MESSAGE (self), NULL);
+
+  return self->preview;
+}
+
+void
+chatty_message_set_preview (ChattyMessage  *self,
+                            ChattyFileInfo *preview)
+{
+  g_return_if_fail (CHATTY_IS_MESSAGE (self));
+  g_return_if_fail (!self->preview);
+
+  self->preview = preview;
 }
 
 const char *
@@ -124,6 +186,16 @@ chatty_message_get_uid (ChattyMessage *self)
   g_return_val_if_fail (CHATTY_IS_MESSAGE (self), NULL);
 
   return self->uid;
+}
+
+void
+chatty_message_set_uid (ChattyMessage *self,
+                        const char    *uid)
+{
+  g_return_if_fail (CHATTY_IS_MESSAGE (self));
+  g_return_if_fail (!self->uid);
+
+  self->uid = g_strdup (uid);
 }
 
 const char *
@@ -154,7 +226,6 @@ chatty_message_get_text (ChattyMessage *self)
 
   return self->message;
 }
-
 
 ChattyItem *
 chatty_message_get_user (ChattyMessage *self)
@@ -196,9 +267,20 @@ chatty_message_set_user_name (ChattyMessage *self,
 const char *
 chatty_message_get_user_alias (ChattyMessage *self)
 {
+  const char *name = NULL;
+
   g_return_val_if_fail (CHATTY_IS_MESSAGE (self), NULL);
 
-  return self->user_alias;
+  if (self->user_alias)
+    return self->user_alias;
+
+  if (self->user)
+    name = chatty_item_get_name (self->user);
+
+  if (name && *name)
+    return name;
+
+  return NULL;
 }
 
 time_t
@@ -231,10 +313,31 @@ chatty_message_set_status (ChattyMessage   *self,
   g_signal_emit (self, signals[UPDATED], 0);
 }
 
+ChattyMsgType
+chatty_message_get_msg_type (ChattyMessage *self)
+{
+  g_return_val_if_fail (CHATTY_IS_MESSAGE (self), CHATTY_MESSAGE_UNKNOWN);
+
+  return self->type;
+}
+
 ChattyMsgDirection
 chatty_message_get_msg_direction (ChattyMessage *self)
 {
   g_return_val_if_fail (CHATTY_IS_MESSAGE (self), CHATTY_DIRECTION_UNKNOWN);
 
   return self->direction;
+}
+
+void
+chatty_file_info_free (ChattyFileInfo *file_info)
+{
+  if (!file_info)
+    return;
+
+  g_free (file_info->file_name);
+  g_free (file_info->url);
+  g_free (file_info->path);
+  g_free (file_info->mime_type);
+  g_free (file_info);
 }

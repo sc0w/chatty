@@ -812,6 +812,8 @@ chatty_conv_write_conversation (PurpleConversation *conv,
                                    NULL};
   g_autoptr(GError)         err = NULL;
   g_autoptr(LfbEvent)       event = NULL;
+  ChattyProtocol            protocol;
+  ChattyMsgType             msg_type;
 
   if ((flags & PURPLE_MESSAGE_SYSTEM) && !(flags & PURPLE_MESSAGE_NOTIFY)) {
     flags &= ~(PURPLE_MESSAGE_SEND | PURPLE_MESSAGE_RECV);
@@ -820,6 +822,12 @@ chatty_conv_write_conversation (PurpleConversation *conv,
   node = chatty_utils_get_conv_blist_node (conv);
   chat = conv->ui_data;
   self = chatty_manager_get_default ();
+  protocol = chatty_item_get_protocols (CHATTY_ITEM (chat));
+
+  if (protocol == CHATTY_PROTOCOL_SMS)
+    msg_type = CHATTY_MESSAGE_TEXT;
+  else
+    msg_type = CHATTY_MESSAGE_HTML_ESCAPED;
 
   account = purple_conversation_get_account (conv);
   g_return_if_fail (account != NULL);
@@ -838,10 +846,6 @@ chatty_conv_write_conversation (PurpleConversation *conv,
 
     pcm.who = chatty_utils_jabber_id_strip(who);
   } else {
-    ChattyProtocol protocol;
-
-    protocol = chatty_item_get_protocols (CHATTY_ITEM (chat));
-
     if (protocol == CHATTY_PROTOCOL_MATRIX ||
         protocol == CHATTY_PROTOCOL_XMPP)
       pcm.who = chatty_pp_chat_get_buddy_name (CHATTY_PP_CHAT (chat), who);
@@ -882,7 +886,7 @@ chatty_conv_write_conversation (PurpleConversation *conv,
 
     if (pcm.flags & (PURPLE_MESSAGE_SYSTEM | PURPLE_MESSAGE_ERROR)) {
       // System is usually also RECV so should be first to catch
-      chat_message = chatty_message_new (NULL, NULL, message, uuid, 0, CHATTY_DIRECTION_SYSTEM, 0);
+      chat_message = chatty_message_new (NULL, NULL, message, uuid, 0, msg_type, CHATTY_DIRECTION_SYSTEM, 0);
       chatty_pp_chat_append_message (CHATTY_PP_CHAT (chat), chat_message);
     } else if (pcm.flags & PURPLE_MESSAGE_RECV) {
       ChattyChat *active_chat;
@@ -911,11 +915,11 @@ chatty_conv_write_conversation (PurpleConversation *conv,
         g_free (titel);
       }
 
-      chat_message = chatty_message_new (NULL, who, message, uuid, mtime, CHATTY_DIRECTION_IN, 0);
+      chat_message = chatty_message_new (NULL, who, message, uuid, mtime, msg_type, CHATTY_DIRECTION_IN, 0);
       chatty_pp_chat_append_message (CHATTY_PP_CHAT (chat), chat_message);
     } else if (flags & PURPLE_MESSAGE_SEND && pcm.flags & PURPLE_MESSAGE_SEND) {
       // normal send
-      chat_message = chatty_message_new (NULL, NULL, message, uuid, 0, CHATTY_DIRECTION_OUT, 0);
+      chat_message = chatty_message_new (NULL, NULL, message, uuid, 0, msg_type, CHATTY_DIRECTION_OUT, 0);
       chatty_message_set_status (chat_message, CHATTY_STATUS_SENT, 0);
       chatty_pp_chat_append_message (CHATTY_PP_CHAT (chat), chat_message);
     } else if (pcm.flags & PURPLE_MESSAGE_SEND) {
@@ -923,7 +927,7 @@ chatty_conv_write_conversation (PurpleConversation *conv,
       // FIXME: current list_box does not allow ordering rows by timestamp
       // TODO: Needs proper sort function and timestamp as user_data for rows
       // FIXME: Alternatively may need to reload history to re-populate rows
-      chat_message = chatty_message_new (NULL, NULL, message, uuid, mtime, CHATTY_DIRECTION_OUT, 0);
+      chat_message = chatty_message_new (NULL, NULL, message, uuid, mtime, msg_type, CHATTY_DIRECTION_OUT, 0);
       chatty_message_set_status (chat_message, CHATTY_STATUS_SENT, 0);
       chatty_pp_chat_append_message (CHATTY_PP_CHAT (chat), chat_message);
     }
