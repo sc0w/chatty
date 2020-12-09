@@ -239,8 +239,12 @@ chatty_user_info_dialog_update_chat (ChattyUserInfoDialog *self)
     chatty_user_info_dialog_request_fps (self);
   }
 
-  self->buddy = purple_find_buddy (self->conv->account, self->conv->name);
-  self->alias = purple_buddy_get_alias (self->buddy);
+  if (self->conv) {
+    self->buddy = purple_find_buddy (self->conv->account, self->conv->name);
+    self->alias = purple_buddy_get_alias (self->buddy);
+  } else {
+    self->alias = chatty_item_get_name (CHATTY_ITEM (self->chat));
+  }
 
   if (protocol == CHATTY_PROTOCOL_SMS) {
     gtk_label_set_text (GTK_LABEL(self->label_user_id), _("Phone Number:"));
@@ -257,13 +261,21 @@ chatty_user_info_dialog_update_chat (ChattyUserInfoDialog *self)
     gtk_label_set_text (GTK_LABEL(self->label_status_msg), purple_status_get_name (status));
   }
 
-  gtk_switch_set_state (GTK_SWITCH(self->switch_notify),
-                        purple_blist_node_get_bool (PURPLE_BLIST_NODE(self->buddy),
-                        "chatty-notifications"));
+  if (protocol == CHATTY_PROTOCOL_MATRIX) {
+    gtk_widget_hide (self->listbox_prefs);
+    gtk_widget_set_sensitive (self->button_avatar, FALSE);
+    gtk_widget_hide (self->label_user_id);
+    gtk_widget_hide (self->label_status_msg);
+  } else {
+    gtk_switch_set_state (GTK_SWITCH (self->switch_notify),
+                          purple_blist_node_get_bool (PURPLE_BLIST_NODE (self->buddy),
+                                                      "chatty-notifications"));
+  }
 
   alias = self->alias ? chatty_utils_jabber_id_strip (self->alias) : g_strdup ("");
   gtk_label_set_text (GTK_LABEL(self->label_alias), alias);
-  gtk_label_set_text (GTK_LABEL(self->label_jid), self->conv->name);
+  if (self->conv)
+    gtk_label_set_text (GTK_LABEL(self->label_jid), self->conv->name);
 }
 
 
