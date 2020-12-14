@@ -27,6 +27,10 @@
 #include "chatty-window.h"
 #include "chatty-chat-view.h"
 #include "users/chatty-pp-account.h"
+#include "matrix/chatty-ma-account.h"
+#include "matrix/chatty-ma-chat.h"
+#include "matrix/matrix-db.h"
+#include "chatty-secret-store.h"
 #include "chatty-chat.h"
 #include "chatty-pp-chat.h"
 #include "chatty-icons.h"
@@ -59,6 +63,7 @@ struct _ChattyManager
   ChattyEds       *chatty_eds;
   GListStore      *account_list;
   GListStore      *chat_list;
+  GListStore      *list_of_chat_list;
   GListStore      *list_of_user_list;
   GtkFlattenListModel *contact_list;
   GtkSortListModel    *sorted_chat_list;
@@ -68,6 +73,8 @@ struct _ChattyManager
   PurplePlugin    *lurch_plugin;
   PurplePlugin    *carbon_plugin;
   PurplePlugin    *file_upload_plugin;
+
+  MatrixDb        *matrix_db;
 
   gboolean         disable_auto_login;
   gboolean         network_available;
@@ -1975,12 +1982,16 @@ chatty_manager_class_init (ChattyManagerClass *klass)
 static void
 chatty_manager_init (ChattyManager *self)
 {
+  g_autoptr(GtkFlattenListModel) flatten_list = NULL;
+
   self->chatty_eds = chatty_eds_new (CHATTY_PROTOCOL_SMS);
 
-  self->account_list = g_list_store_new (CHATTY_TYPE_PP_ACCOUNT);
+  self->account_list = g_list_store_new (CHATTY_TYPE_ACCOUNT);
 
   self->chat_list = g_list_store_new (CHATTY_TYPE_CHAT);
+  self->list_of_chat_list = g_list_store_new (G_TYPE_LIST_MODEL);
   self->list_of_user_list = g_list_store_new (G_TYPE_LIST_MODEL);
+  g_list_store_append (self->list_of_chat_list, G_LIST_MODEL (self->chat_list));
 
   self->contact_list = gtk_flatten_list_model_new (G_TYPE_OBJECT,
                                                    G_LIST_MODEL (self->list_of_user_list));
@@ -1990,7 +2001,9 @@ chatty_manager_init (ChattyManager *self)
 
   self->chat_sorter = gtk_custom_sorter_new ((GCompareDataFunc)manager_sort_chat_item,
                                              NULL, NULL);
-  self->sorted_chat_list = gtk_sort_list_model_new (G_LIST_MODEL (self->chat_list),
+  flatten_list = gtk_flatten_list_model_new (G_TYPE_OBJECT,
+                                             G_LIST_MODEL (self->list_of_chat_list));
+  self->sorted_chat_list = gtk_sort_list_model_new (G_LIST_MODEL (flatten_list),
                                                     self->chat_sorter);
 
   g_signal_connect_object (self->chatty_eds, "notify::is-ready",
@@ -2040,10 +2053,55 @@ chatty_manager_purple_init (ChattyManager *self)
 
 }
 
+static void
+manager_secret_load_cb (GObject      *object,
+                        GAsyncResult *result,
+                        gpointer      user_data)
+{
+  ChattyManager *self = user_data;
+  g_autoptr(GPtrArray) accounts = NULL;
+  g_autoptr(GError) error = NULL;
+  GListModel *chat_list;
+
+  g_assert (CHATTY_IS_MANAGER (self));
+
+  accounts = chatty_secret_load_finish (result, &error);
+
+  if (!accounts)
+    return;
+
+  for (guint i = 0; i < accounts->len; i++) {
+    chatty_ma_account_set_history_db (accounts->pdata[i], self->history);
+    chatty_ma_account_set_db (accounts->pdata[i], self->matrix_db);
+
+    chat_list = chatty_ma_account_get_chat_list (accounts->pdata[i]);
+    g_list_store_append (self->list_of_chat_list, chat_list);
+  }
+
+  g_list_store_splice (self->account_list, 0, 0, accounts->pdata, accounts->len);
+}
+
+static void
+matrix_db_open_cb (GObject      *object,
+                   GAsyncResult *result,
+                   gpointer      user_data)
+{
+  ChattyManager *self = user_data;
+  g_autoptr(GError) error = NULL;
+
+  g_assert (CHATTY_IS_MANAGER (self));
+
+  if (matrix_db_open_finish (self->matrix_db, result, &error))
+    chatty_secret_load_async (NULL, manager_secret_load_cb, self);
+  else if (error && !g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
+    g_warning ("Failed to open Matrix DB: %s", error->message);
+}
+
 void
 chatty_manager_purple (ChattyManager *self)
 {
   g_autofree char *search_path = NULL;
+  char *db_path;
 
   g_return_if_fail (CHATTY_IS_MANAGER (self));
 
@@ -2055,6 +2113,13 @@ chatty_manager_purple (ChattyManager *self)
 
   search_path = g_build_filename (purple_user_dir (), "plugins", NULL);
   purple_plugins_add_search_path (search_path);
+
+  if (chatty_settings_get_experimental_features (chatty_settings_get_default ())) {
+    self->matrix_db = matrix_db_new ();
+    db_path =  g_build_filename (purple_user_dir(), "chatty", "db", NULL);
+    matrix_db_open_async (self->matrix_db, db_path, "matrix.db",
+                          matrix_db_open_cb, self);
+  }
 
   if (!purple_core_init (CHATTY_UI)) {
     g_printerr ("libpurple initialization failed\n");
