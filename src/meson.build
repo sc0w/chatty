@@ -16,6 +16,7 @@ libsrc = [
   'matrix/matrix-enc.c',
   'matrix/matrix-db.c',
   'matrix/matrix-utils.c',
+  'matrix/chatty-ma-account.c',
   'matrix/chatty-ma-buddy.c',
   'matrix/chatty-ma-chat.c',
   'users/chatty-item.c',

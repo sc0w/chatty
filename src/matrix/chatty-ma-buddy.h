@@ -15,6 +15,8 @@
 #include <json-glib/json-glib.h>
 
 #include "users/chatty-item.h"
+#include "matrix-api.h"
+#include "matrix-enc.h"
 
 G_BEGIN_DECLS
 
@@ -25,8 +27,8 @@ typedef struct _BuddyDevice BuddyDevice;
 G_DECLARE_FINAL_TYPE (ChattyMaBuddy, chatty_ma_buddy, CHATTY, MA_BUDDY, ChattyItem)
 
 ChattyMaBuddy   *chatty_ma_buddy_new               (const char    *matrix_id,
-                                                    gpointer       matrix_api,
-                                                    gpointer       matrix_enc);
+                                                    MatrixApi     *api,
+                                                    MatrixEnc     *enc);
 const char      *chatty_ma_buddy_get_id            (ChattyMaBuddy *self);
 void             chatty_ma_buddy_add_devices       (ChattyMaBuddy *self,
                                                     JsonObject    *root);

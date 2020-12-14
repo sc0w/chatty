@@ -1,0 +1,871 @@
+/* -*- mode: c; c-basic-offset: 2; indent-tabs-mode: nil; -*- */
+/* chatty-ma-account.c
+ *
+ * Copyright 2020 Purism SPC
+ *
+ * Author(s):
+ *   Mohammed Sadiq <sadiq@sadiqpk.org>
+ *
+ * SPDX-License-Identifier: LGPL-3.0-or-later
+ */
+
+#define G_LOG_DOMAIN "chatty-ma-account"
+
+#include <glib/gi18n.h>
+
+#include "chatty-history.h"
+#include "matrix-api.h"
+#include "matrix-enc.h"
+#include "matrix-db.h"
+#include "matrix-utils.h"
+#include "chatty-utils.h"
+#include "chatty-ma-chat.h"
+#include "chatty-ma-account.h"
+
+/**
+ * SECTION: chatty-mat-account
+ * @title: ChattyMaAccount
+ * @short_description: An abstraction for Matrix accounts
+ * @include: "chatty-mat-account.h"
+ */
+
+#define SYNC_TIMEOUT 30000 /* milliseconds */
+
+struct _ChattyMaAccount
+{
+  ChattyAccount   parent_instance;
+
+  char           *name;
+
+  MatrixApi      *matrix_api;
+  MatrixEnc      *matrix_enc;
+  MatrixDb       *matrix_db;
+
+  ChattyHistory  *history_db;
+
+  char           *pickle_key;
+  char           *next_batch;
+
+  GListStore     *chat_list;
+  GdkPixbuf      *avatar;
+
+  ChattyStatus   status;
+  gboolean       homeserver_valid;
+  gboolean       account_enabled;
+
+  gboolean       is_loading;
+  gboolean       save_account_pending;
+  gboolean       save_password_pending;
+
+  /* for sending events, incremented for each event */
+  int            event_id;
+};
+
+G_DEFINE_TYPE (ChattyMaAccount, chatty_ma_account, CHATTY_TYPE_ACCOUNT)
+
+
+static ChattyMaChat *
+matrix_find_chat_with_id (ChattyMaAccount *self,
+                          const char       *room_id,
+                          guint            *index)
+{
+  guint n_items;
+
+  g_assert (CHATTY_IS_MA_ACCOUNT (self));
+
+  if (!room_id || !*room_id)
+    return NULL;
+
+  n_items = g_list_model_get_n_items (G_LIST_MODEL (self->chat_list));
+  for (guint i = 0; i < n_items; i++) {
+    g_autoptr(ChattyMaChat) chat = NULL;
+
+    chat = g_list_model_get_item (G_LIST_MODEL (self->chat_list), i);
+    if (chatty_ma_chat_matches_id (chat, room_id)) {
+      if (index)
+        *index = i;
+
+      return chat;
+    }
+  }
+
+  return NULL;
+}
+
+static void
+matrix_parse_device_data (ChattyMaAccount *self,
+                          JsonObject      *to_device)
+{
+  JsonObject *object;
+  JsonArray *array;
+  guint length = 0;
+
+  g_assert (CHATTY_IS_MA_ACCOUNT (self));
+  g_assert (to_device);
+
+  array = matrix_utils_json_object_get_array (to_device, "events");
+  if (array)
+    length = json_array_get_length (array);
+
+  for (guint i = 0; i < length; i++) {
+    const char *type;
+
+    object = json_array_get_object_element (array, i);
+    type = matrix_utils_json_object_get_string (object, "type");
+
+    if (g_strcmp0 (type, "m.room.encrypted") == 0)
+      matrix_enc_handle_room_encrypted (self->matrix_enc, object);
+  }
+}
+
+static void
+matrix_parse_room_data (ChattyMaAccount *self,
+                        JsonObject       *rooms)
+{
+  JsonObject *joined_rooms, *left_rooms;
+  ChattyMaChat *chat;
+
+  g_assert (CHATTY_IS_MA_ACCOUNT (self));
+  g_assert (rooms);
+
+  joined_rooms = matrix_utils_json_object_get_object (rooms, "join");
+
+  if (joined_rooms) {
+    g_autoptr(GList) joined_room_ids = NULL;
+    JsonObject *room_data;
+
+    joined_room_ids = json_object_get_members (joined_rooms);
+
+    for (GList *room_id = joined_room_ids; room_id; room_id = room_id->next) {
+      chat = matrix_find_chat_with_id (self, room_id->data, NULL);
+      room_data = matrix_utils_json_object_get_object (joined_rooms, room_id->data);
+
+      if (!chat) {
+        chat = g_object_new (CHATTY_TYPE_MA_CHAT, "room-id", room_id->data, NULL);
+        chatty_ma_chat_set_matrix_db (chat, self->matrix_db);
+        chatty_ma_chat_set_history_db (chat, self->history_db);
+        /* TODO */
+        /* chatty_ma_chat_set_last_batch (chat, self->next_batch); */
+        chatty_ma_chat_set_data (chat, CHATTY_ACCOUNT (self), self->matrix_api, self->matrix_enc);
+        g_object_set (chat, "json-data", room_data, NULL);
+        g_list_store_append (self->chat_list, chat);
+        g_object_unref (chat);
+      } else if (room_data) {
+        g_object_set (chat, "json-data", room_data, NULL);
+      }
+    }
+  }
+
+  left_rooms = matrix_utils_json_object_get_object (rooms, "leave");
+
+  if (left_rooms) {
+    g_autoptr(GList) left_room_ids = NULL;
+
+    left_room_ids = json_object_get_members (left_rooms);
+
+    for (GList *room_id = left_room_ids; room_id; room_id = room_id->next) {
+      chat = matrix_find_chat_with_id (self, room_id->data, NULL);
+
+      if (chat)
+        chatty_utils_remove_list_item (self->chat_list, chat);
+    }
+  }
+}
+
+static void
+handle_get_homeserver (ChattyMaAccount *self,
+                       JsonObject      *object,
+                       GError          *error)
+{
+  g_assert (CHATTY_IS_MA_ACCOUNT (self));
+
+  if (g_error_matches (error, G_IO_ERROR, G_IO_ERROR_NOT_FOUND)) {
+    g_warning ("Couldn't connect to ‘/.well-known/matrix/client’ ");
+    matrix_api_set_homeserver (self->matrix_api, "https://chat.librem.one");
+  }
+}
+
+static void
+handle_password_login (ChattyMaAccount *self,
+                       JsonObject      *object,
+                       GError          *error)
+{
+  g_assert (CHATTY_IS_MA_ACCOUNT (self));
+
+  /* If no error, Api is informing us that logging in succeeded.
+   * Let’s update matrix_enc & set device keys to upload */
+  if (g_error_matches (error, MATRIX_ERROR, M_BAD_PASSWORD)) {
+    GtkWidget *dialog, *content, *header_bar;
+    GtkWidget *cancel_btn, *entry;
+    g_autofree char *label = NULL;
+    const char *password;
+    int response;
+
+    dialog = gtk_dialog_new_with_buttons (_("Incorrect password"),
+                                          gtk_application_get_active_window (GTK_APPLICATION (g_application_get_default ())),
+                                          GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_USE_HEADER_BAR,
+                                          _("_OK"), GTK_RESPONSE_ACCEPT,
+                                          _("_Cancel"), GTK_RESPONSE_REJECT,
+                                          NULL);
+
+    content = gtk_dialog_get_content_area (GTK_DIALOG (dialog));
+    gtk_container_set_border_width (GTK_CONTAINER (content), 18);
+    gtk_box_set_spacing (GTK_BOX (content), 12);
+    label = g_strdup_printf (_("Please enter password for “%s”"),
+                             matrix_api_get_username (self->matrix_api));
+    gtk_container_add (GTK_CONTAINER (content), gtk_label_new (label));
+    entry = gtk_entry_new ();
+    gtk_entry_set_visibility (GTK_ENTRY (entry), FALSE);
+    gtk_container_add (GTK_CONTAINER (content), entry);
+    gtk_widget_show_all (content);
+
+    header_bar = gtk_dialog_get_header_bar (GTK_DIALOG (dialog));
+    gtk_header_bar_set_show_close_button (GTK_HEADER_BAR (header_bar), FALSE);
+
+    cancel_btn = gtk_dialog_get_widget_for_response (GTK_DIALOG (dialog),
+                                                     GTK_RESPONSE_REJECT);
+    g_object_ref (cancel_btn);
+    gtk_container_remove (GTK_CONTAINER (header_bar), cancel_btn);
+    gtk_header_bar_pack_start (GTK_HEADER_BAR (header_bar), cancel_btn);
+    g_object_unref (cancel_btn);
+
+    response = gtk_dialog_run (GTK_DIALOG (dialog));
+    password = gtk_entry_get_text (GTK_ENTRY (entry));
+
+
+    if (response != GTK_RESPONSE_ACCEPT || !password || !*password) {
+      chatty_account_set_enabled (CHATTY_ACCOUNT (self), FALSE);
+    } else {
+      matrix_api_set_password (self->matrix_api, password);
+      self->is_loading = TRUE;
+      chatty_account_set_enabled (CHATTY_ACCOUNT (self), FALSE);
+      self->is_loading = FALSE;
+      chatty_account_set_enabled (CHATTY_ACCOUNT (self), TRUE);
+    }
+
+    gtk_widget_destroy (dialog);
+  }
+
+  if (!error) {
+    self->save_password_pending = TRUE;
+    chatty_account_save (CHATTY_ACCOUNT (self));
+  }
+}
+
+static void
+handle_upload_key (ChattyMaAccount *self,
+                   JsonObject      *object,
+                   GError          *error)
+{
+  g_assert (CHATTY_IS_MA_ACCOUNT (self));
+
+  if (object) {
+    /* XXX: check later */
+    matrix_enc_publish_one_time_keys (self->matrix_enc);
+
+    self->save_account_pending = TRUE;
+    chatty_account_save (CHATTY_ACCOUNT (self));
+  }
+}
+
+static void
+handle_get_joined_rooms (ChattyMaAccount *self,
+                         JsonObject      *object,
+                         GError          *error)
+{
+  JsonArray *array;
+  guint length = 0;
+
+  g_assert (CHATTY_IS_MA_ACCOUNT (self));
+
+  array = matrix_utils_json_object_get_array (object, "joined_rooms");
+
+  if (array)
+    length = json_array_get_length (array);
+
+  for (guint i = 0; i < length; i++) {
+    g_autoptr(ChattyMaChat) chat = NULL;
+    const char *room_id;
+
+    room_id = json_array_get_string_element (array, i);
+    chat = g_object_new (CHATTY_TYPE_MA_CHAT, "room-id", room_id, NULL);
+    chatty_ma_chat_set_matrix_db (chat, self->matrix_db);
+    chatty_ma_chat_set_history_db (chat, self->history_db);
+    chatty_ma_chat_set_data (chat, CHATTY_ACCOUNT (self), self->matrix_api, self->matrix_enc);
+    g_list_store_append (self->chat_list, chat);
+  }
+}
+
+static void
+handle_red_pill (ChattyMaAccount *self,
+                 JsonObject      *root,
+                 GError          *error)
+{
+  JsonObject *object;
+
+  g_assert (CHATTY_IS_MA_ACCOUNT (self));
+
+  if (error)
+    return;
+
+  if (self->status != CHATTY_CONNECTED) {
+    self->status = CHATTY_CONNECTED;
+    g_object_notify (G_OBJECT (self), "status");
+  }
+
+  object = matrix_utils_json_object_get_object (root, "to_device");
+  if (object)
+    matrix_parse_device_data (self, object);
+
+  object = matrix_utils_json_object_get_object (root, "rooms");
+  if (object)
+    matrix_parse_room_data (self, object);
+
+  self->save_account_pending = TRUE;
+  chatty_account_save (CHATTY_ACCOUNT (self));
+}
+
+static void
+matrix_account_sync_cb (ChattyMaAccount *self,
+                        MatrixApi       *api,
+                        MatrixAction     action,
+                        JsonObject      *object,
+                        GError          *error)
+{
+  g_assert (CHATTY_IS_MA_ACCOUNT (self));
+  g_assert (MATRIX_IS_API (api));
+  g_assert (self->matrix_api == api);
+
+  if (g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
+    return;
+
+  if (error)
+    g_debug ("%s Error %d: %s", g_quark_to_string (error->domain),
+             error->code, error->message);
+
+  switch (action) {
+  case MATRIX_BLUE_PILL:
+    return;
+
+  case MATRIX_GET_HOMESERVER:
+    handle_get_homeserver (self, object, error);
+    return;
+
+  case MATRIX_VERIFY_HOMESERVER:
+    return;
+
+  case MATRIX_PASSWORD_LOGIN:
+    handle_password_login (self, object, error);
+    return;
+
+  case MATRIX_UPLOAD_KEY:
+    handle_upload_key (self, object, error);
+    return;
+
+  case MATRIX_GET_JOINED_ROOMS:
+    handle_get_joined_rooms (self, object, error);
+    return;
+
+  case MATRIX_RED_PILL:
+    handle_red_pill (self, object, error);
+    return;
+
+  case MATRIX_ACCESS_TOKEN_LOGIN:
+  case MATRIX_SET_TYPING:
+  case MATRIX_SEND_MESSAGE:
+  case MATRIX_SEND_IMAGE:
+  case MATRIX_SEND_VIDEO:
+  case MATRIX_SEND_FILE:
+  default:
+    break;
+  }
+}
+
+static const char *
+chatty_ma_account_get_protocol_name (ChattyAccount *account)
+{
+  return "Matrix";
+}
+
+static ChattyStatus
+chatty_ma_account_get_status (ChattyAccount *account)
+{
+  ChattyMaAccount *self = (ChattyMaAccount *)account;
+
+  g_assert (CHATTY_IS_MA_ACCOUNT (self));
+
+  return self->status;
+}
+
+static const char *
+chatty_ma_account_get_username (ChattyAccount *account)
+{
+  ChattyMaAccount *self = (ChattyMaAccount *)account;
+
+  g_assert (CHATTY_IS_MA_ACCOUNT (self));
+
+  if (matrix_api_get_username (self->matrix_api))
+    return matrix_api_get_username (self->matrix_api);
+
+  return "";
+}
+
+static void
+chatty_ma_account_set_username (ChattyAccount *account,
+                                const char    *username)
+{
+  ChattyMaAccount *self = (ChattyMaAccount *)account;
+
+  g_assert (CHATTY_IS_MA_ACCOUNT (self));
+
+  matrix_api_set_username (self->matrix_api, username);
+}
+
+static gboolean
+chatty_ma_account_get_enabled (ChattyAccount *account)
+{
+  ChattyMaAccount *self = (ChattyMaAccount *)account;
+
+  g_assert (CHATTY_IS_MA_ACCOUNT (self));
+
+  return self->account_enabled;
+}
+
+static void
+chatty_ma_account_set_enabled (ChattyAccount *account,
+                               gboolean       enable)
+{
+  ChattyMaAccount *self = (ChattyMaAccount *)account;
+
+  g_assert (CHATTY_IS_MA_ACCOUNT (self));
+
+  if (self->account_enabled == enable)
+    return;
+
+  if (!self->matrix_enc && enable) {
+    self->matrix_enc = matrix_enc_new (self->matrix_db, NULL, NULL);
+    matrix_api_set_enc (self->matrix_api, self->matrix_enc);
+  }
+
+  self->account_enabled = enable;
+
+  if (self->account_enabled) {
+    self->status = CHATTY_CONNECTING;
+    matrix_api_start_sync (self->matrix_api);
+  } else {
+    self->status = CHATTY_DISCONNECTED;
+    matrix_api_stop_sync (self->matrix_api);
+  }
+
+  g_object_notify (G_OBJECT (self), "enabled");
+  g_object_notify (G_OBJECT (self), "status");
+
+  if (!self->is_loading) {
+    self->save_account_pending = TRUE;
+    chatty_account_save (account);
+  }
+}
+
+static const char *
+chatty_ma_account_get_password (ChattyAccount *account)
+{
+  const char *password;
+  ChattyMaAccount *self = (ChattyMaAccount *)account;
+
+  g_assert (CHATTY_IS_MA_ACCOUNT (self));
+
+  password = matrix_api_get_password (self->matrix_api);
+
+  if (password)
+    return password;
+
+  return "";
+}
+
+static void
+chatty_ma_account_set_password (ChattyAccount *account,
+                                const char    *password)
+{
+  ChattyMaAccount *self = (ChattyMaAccount *)account;
+
+  g_assert (CHATTY_IS_MA_ACCOUNT (self));
+
+  if (g_strcmp0 (password, matrix_api_get_password (self->matrix_api)) == 0)
+    return;
+
+  matrix_api_set_password (self->matrix_api, password);
+
+  if (matrix_api_get_homeserver (self->matrix_api)) {
+    self->save_password_pending = TRUE;
+    chatty_account_save (account);
+  }
+}
+
+static gboolean
+chatty_ma_account_get_remember_password (ChattyAccount *self)
+{
+  /* password is always remembered */
+  return TRUE;
+}
+
+static void
+chatty_ma_account_save (ChattyAccount *account)
+{
+  ChattyMaAccount *self = (ChattyMaAccount *)account;
+
+  g_assert (CHATTY_IS_MA_ACCOUNT (self));
+  g_return_if_fail (matrix_api_get_username (self->matrix_api));
+
+  chatty_ma_account_save_async (self, FALSE, NULL, NULL, NULL);
+}
+
+static void
+chatty_ma_account_delete (ChattyAccount *account)
+{
+  ChattyMaAccount *self = (ChattyMaAccount *)account;
+
+  g_assert (CHATTY_IS_MA_ACCOUNT (self));
+}
+
+static ChattyProtocol
+chatty_ma_account_get_protocols (ChattyItem *item)
+{
+  return CHATTY_PROTOCOL_MATRIX;
+}
+
+static const char *
+chatty_ma_account_get_name (ChattyItem *item)
+{
+  ChattyMaAccount *self = (ChattyMaAccount *)item;
+
+  g_assert (CHATTY_IS_MA_ACCOUNT (self));
+
+  if (self->name)
+    return self->name;
+
+  return "";
+}
+
+static void
+chatty_ma_account_set_name (ChattyItem *item,
+                            const char *name)
+{
+  ChattyMaAccount *self = (ChattyMaAccount *)item;
+
+  g_assert (CHATTY_IS_MA_ACCOUNT (self));
+
+  g_free (self->name);
+  self->name = g_strdup (name);
+}
+
+static void
+chatty_ma_account_finalize (GObject *object)
+{
+  ChattyMaAccount *self = (ChattyMaAccount *)object;
+
+  g_list_store_remove_all (self->chat_list);
+
+  g_clear_object (&self->matrix_api);
+  g_clear_object (&self->matrix_enc);
+  g_clear_object (&self->chat_list);
+  g_clear_object (&self->avatar);
+
+  G_OBJECT_CLASS (chatty_ma_account_parent_class)->finalize (object);
+}
+
+static void
+chatty_ma_account_class_init (ChattyMaAccountClass *klass)
+{
+  GObjectClass *object_class  = G_OBJECT_CLASS (klass);
+  ChattyItemClass *item_class = CHATTY_ITEM_CLASS (klass);
+  ChattyAccountClass *account_class = CHATTY_ACCOUNT_CLASS (klass);
+
+  object_class->finalize = chatty_ma_account_finalize;
+
+  item_class->get_protocols = chatty_ma_account_get_protocols;
+  item_class->get_name = chatty_ma_account_get_name;
+  item_class->set_name = chatty_ma_account_set_name;
+
+  account_class->get_protocol_name = chatty_ma_account_get_protocol_name;
+  account_class->get_status   = chatty_ma_account_get_status;
+  account_class->get_username = chatty_ma_account_get_username;
+  account_class->set_username = chatty_ma_account_set_username;
+  account_class->get_enabled  = chatty_ma_account_get_enabled;
+  account_class->set_enabled  = chatty_ma_account_set_enabled;
+  account_class->get_password = chatty_ma_account_get_password;
+  account_class->set_password = chatty_ma_account_set_password;
+  account_class->get_remember_password = chatty_ma_account_get_remember_password;
+  account_class->save = chatty_ma_account_save;
+  account_class->delete = chatty_ma_account_delete;
+}
+
+static void
+chatty_ma_account_init (ChattyMaAccount *self)
+{
+  self->chat_list = g_list_store_new (CHATTY_TYPE_MA_CHAT);
+
+  self->matrix_api = matrix_api_new (NULL);
+  matrix_api_set_sync_callback (self->matrix_api,
+                                (MatrixCallback)matrix_account_sync_cb, self);
+}
+
+ChattyMaAccount *
+chatty_ma_account_new (const char *username,
+                       const char *password)
+{
+  ChattyMaAccount *self;
+
+  g_return_val_if_fail (username, NULL);
+
+  self = g_object_new (CHATTY_TYPE_MA_ACCOUNT, NULL);
+
+  chatty_account_set_username (CHATTY_ACCOUNT (self), username);
+  chatty_account_set_password (CHATTY_ACCOUNT (self), password);
+
+  return self;
+}
+
+void
+chatty_ma_account_set_history_db (ChattyMaAccount *self,
+                                  gpointer         history_db)
+{
+  g_return_if_fail (CHATTY_IS_MA_ACCOUNT (self));
+  g_return_if_fail (CHATTY_IS_HISTORY (history_db));
+  g_return_if_fail (!self->history_db);
+
+  self->history_db = g_object_ref (history_db);
+}
+
+static void
+db_load_account_cb (GObject      *object,
+                    GAsyncResult *result,
+                    gpointer      user_data)
+{
+  ChattyMaAccount *self = user_data;
+  GTask *task = (GTask *)result;
+  g_autoptr(GError) error = NULL;
+  gboolean enabled;
+
+  g_assert (CHATTY_IS_MA_ACCOUNT (self));
+  g_assert (G_IS_TASK (task));
+
+  if (!self->matrix_enc) {
+    const char *pickle;
+
+    pickle = g_object_get_data (G_OBJECT (task), "pickle");
+    self->matrix_enc = matrix_enc_new (self->matrix_db, pickle, self->pickle_key);
+    matrix_api_set_enc (self->matrix_api, self->matrix_enc);
+    if (!pickle)
+      matrix_api_set_access_token (self->matrix_api, NULL, NULL);
+    g_clear_pointer (&self->pickle_key, matrix_utils_free_buffer);
+  }
+
+  if (!matrix_db_load_account_finish (self->matrix_db, result, &error)) {
+    if (error && !g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
+      g_warning ("Error loading account %s: %s",
+                 chatty_account_get_username (CHATTY_ACCOUNT (self)),
+                 error->message);
+    return;
+  }
+
+  enabled = GPOINTER_TO_INT (g_object_get_data (G_OBJECT (task), "enabled"));
+  self->next_batch = g_strdup (g_object_get_data (G_OBJECT (task), "batch"));
+
+  self->is_loading = TRUE;
+  matrix_api_set_next_batch (self->matrix_api, self->next_batch);
+  chatty_account_set_enabled (CHATTY_ACCOUNT (self), enabled);
+  self->is_loading = FALSE;
+}
+
+void
+chatty_ma_account_set_db (ChattyMaAccount *self,
+                          gpointer         matrix_db)
+{
+  g_return_if_fail (CHATTY_IS_MA_ACCOUNT (self));
+  g_return_if_fail (MATRIX_IS_DB (matrix_db));
+  g_return_if_fail (!self->matrix_db);
+
+  self->matrix_db = g_object_ref (matrix_db);
+  matrix_db_load_account_async (self->matrix_db, CHATTY_ACCOUNT (self),
+                                db_load_account_cb, self);
+}
+
+static void
+ma_account_db_save_cb (GObject      *object,
+                       GAsyncResult *result,
+                       gpointer      user_data)
+{
+  ChattyMaAccount *self;
+  g_autoptr(GTask) task = user_data;
+  GError *error = NULL;
+  gboolean status;
+
+  g_assert (G_IS_ASYNC_RESULT (result));
+  g_assert (G_IS_TASK (task));
+
+  self = g_task_get_source_object (task);
+  g_assert (CHATTY_IS_MA_ACCOUNT (self));
+
+  status = matrix_db_save_account_finish (self->matrix_db, result, &error);
+
+  if (error || !status)
+    self->save_account_pending = TRUE;
+
+  if (error)
+    g_task_return_error (task, error);
+  else
+    g_task_return_boolean (task, status);
+}
+
+void
+chatty_ma_account_save_async (ChattyMaAccount     *self,
+                              gboolean             force,
+                              GCancellable        *cancellable,
+                              GAsyncReadyCallback  callback,
+                              gpointer             user_data)
+{
+  GTask *task;
+
+  g_return_if_fail (CHATTY_IS_MA_ACCOUNT (self));
+  g_return_if_fail (!cancellable || G_IS_CANCELLABLE (cancellable));
+  g_return_if_fail (*chatty_account_get_username (CHATTY_ACCOUNT (self)));
+  g_return_if_fail (*chatty_account_get_password (CHATTY_ACCOUNT (self)));
+  g_return_if_fail (*chatty_ma_account_get_homeserver (self));
+
+  task = g_task_new (self, cancellable, callback, user_data);
+  if (self->save_password_pending || force) {
+
+    self->save_password_pending = FALSE;
+    /* TODO: Implement save */
+  } else if (self->save_account_pending) {
+    self->save_account_pending = FALSE;
+    matrix_db_save_account_async (self->matrix_db, CHATTY_ACCOUNT (self),
+                                  chatty_account_get_enabled (CHATTY_ACCOUNT (self)),
+                                  matrix_enc_get_account_pickle (self->matrix_enc),
+                                  matrix_api_get_device_id (self->matrix_api),
+                                  matrix_api_get_next_batch (self->matrix_api),
+                                  ma_account_db_save_cb, task);
+  }
+}
+
+gboolean
+chatty_ma_account_save_finish (ChattyMaAccount  *self,
+                               GAsyncResult     *result,
+                               GError          **error)
+{
+  g_return_val_if_fail (CHATTY_IS_MA_ACCOUNT (self), FALSE);
+  g_return_val_if_fail (G_IS_TASK (result), FALSE);
+
+  return g_task_propagate_boolean (G_TASK (result), error);
+}
+
+const char *
+chatty_ma_account_get_homeserver (ChattyMaAccount *self)
+{
+  const char *homeserver;
+
+  g_return_val_if_fail (CHATTY_IS_MA_ACCOUNT (self), "");
+
+  homeserver = matrix_api_get_homeserver (self->matrix_api);
+
+  if (homeserver)
+    return homeserver;
+
+  return "";
+}
+
+void
+chatty_ma_account_set_homeserver (ChattyMaAccount *self,
+                                  const char      *server_url)
+{
+  g_return_if_fail (CHATTY_IS_MA_ACCOUNT (self));
+
+  matrix_api_set_homeserver (self->matrix_api, server_url);
+}
+
+GListModel *
+chatty_ma_account_get_chat_list (ChattyMaAccount *self)
+{
+  g_return_val_if_fail (CHATTY_IS_MA_ACCOUNT (self), NULL);
+
+  return G_LIST_MODEL (self->chat_list);
+}
+
+void
+chatty_ma_account_send_file (ChattyMaAccount *self,
+                             ChattyChat      *chat,
+                             const char      *file_name)
+{
+  /* TODO */
+}
+
+static void
+ma_account_delete_chat_cb (GObject      *object,
+                           GAsyncResult *result,
+                           gpointer      user_data)
+{
+  ChattyMaAccount *self;
+  g_autoptr(GTask) task = user_data;
+  GError *error = NULL;
+  gboolean success;
+
+  g_assert (G_IS_TASK (task));
+
+  self = g_task_get_source_object (task);
+  g_assert (CHATTY_IS_MA_ACCOUNT (self));
+
+  success = matrix_api_delete_chat_finish (self->matrix_api, result, &error);
+
+  if (error && !g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
+    g_warning ("Error deleting chat: %s", error->message);
+
+  /* Failed deleting from server, re-add in local chat list */
+  if (!success) {
+    ChattyChat *chat;
+
+    chat = g_task_get_task_data (task);
+    g_list_store_append (self->chat_list, chat);
+  }
+
+  if (error)
+    g_task_return_error (task, error);
+  else
+    g_task_return_boolean (task, success);
+}
+
+void
+chatty_ma_account_delete_chat_async (ChattyMaAccount     *self,
+                                     ChattyChat          *chat,
+                                     GAsyncReadyCallback  callback,
+                                     gpointer             user_data)
+{
+  g_autoptr(GTask) task = NULL;
+
+  g_return_if_fail (CHATTY_IS_MA_ACCOUNT (self));
+  g_return_if_fail (CHATTY_IS_MA_CHAT (chat));
+
+  task = g_task_new (self, NULL, callback, user_data);
+  g_task_set_task_data (task, g_object_ref (chat), g_object_unref);
+
+  /* Remove the item so that it’s no longer listed in chat list */
+  /* TODO: Handle edge case where the item was deleted from two
+   * different sessions the same time */
+  if (!chatty_utils_remove_list_item (self->chat_list, chat))
+    g_return_if_reached ();
+
+  matrix_api_delete_chat_async (self->matrix_api,
+                                chatty_ma_chat_get_room_id (CHATTY_MA_CHAT (chat)),
+                                ma_account_delete_chat_cb,
+                                g_steal_pointer (&task));
+}
+
+gboolean
+chatty_ma_account_delete_chat_finish (ChattyMaAccount  *self,
+                                      GAsyncResult     *result,
+                                      GError          **error)
+{
+  g_return_val_if_fail (CHATTY_IS_MA_ACCOUNT (self), FALSE);
+  g_return_val_if_fail (G_IS_TASK (result), FALSE);
+
+  return g_task_propagate_boolean (G_TASK (result), error);
+}

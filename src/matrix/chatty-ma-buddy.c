@@ -26,8 +26,8 @@ struct _ChattyMaBuddy
   char           *name;
   GList          *devices;
 
-  GObject        *matrix_api;
-  GObject        *matrix_enc;
+  MatrixApi      *matrix_api;
+  MatrixEnc      *matrix_enc;
 
   gboolean        is_self;
 };
@@ -167,17 +167,22 @@ chatty_ma_buddy_init (ChattyMaBuddy *self)
 
 ChattyMaBuddy *
 chatty_ma_buddy_new (const char *matrix_id,
-                     gpointer    matrix_api,
-                     gpointer    matrix_enc)
+                     MatrixApi  *api,
+                     MatrixEnc  *enc)
 {
   ChattyMaBuddy *self;
 
   g_return_val_if_fail (matrix_id && *matrix_id == '@', NULL);
+  g_return_val_if_fail (MATRIX_IS_API (api), NULL);
+  g_return_val_if_fail (MATRIX_IS_ENC (enc), NULL);
 
   self = g_object_new (CHATTY_TYPE_MA_BUDDY, NULL);
   self->matrix_id = g_strdup (matrix_id);
-  self->matrix_api = g_object_ref (matrix_api);
-  self->matrix_enc = g_object_ref (matrix_enc);
+  self->matrix_api = g_object_ref (api);
+  self->matrix_enc = g_object_ref (enc);
+
+  if (g_str_equal (matrix_id, matrix_api_get_username (api)))
+    self->is_self = TRUE;
 
   return self;
 }
@@ -232,6 +237,10 @@ chatty_ma_buddy_add_devices (ChattyMaBuddy *self,
       continue;
     }
 
+    if (self->is_self &&
+        g_strcmp0 (device_id, matrix_api_get_device_id (self->matrix_api)) == 0)
+      continue;
+
     if (g_strcmp0 (member->data, device_id) != 0) {
       g_warning ("‘%s’ and ‘%s’ are not the same device", (char *)member->data, device_id);
       continue;
@@ -244,6 +253,11 @@ chatty_ma_buddy_add_devices (ChattyMaBuddy *self,
     object = matrix_utils_json_object_get_object (child, "keys");
     key = matrix_utils_json_object_get_string (object, key_name);
     g_free (key_name);
+
+    if (!matrix_enc_verify (self->matrix_enc, child, self->matrix_id, device_id, key)) {
+      g_warning ("failed to verify signature for %s with device %s", self->matrix_id, device_id);
+      continue;
+    }
 
     device = g_new0 (BuddyDevice, 1);
     device->device_id = g_strdup (device_id);
@@ -261,9 +275,9 @@ chatty_ma_buddy_add_devices (ChattyMaBuddy *self,
       const char *algorithm;
 
       algorithm = json_array_get_string_element (array, i);
-      if (g_strcmp0 (algorithm, "m.megolm.v1.aes-sha2") == 0)
+      if (g_strcmp0 (algorithm, ALGORITHM_MEGOLM) == 0)
         device->meagolm_v1 = TRUE;
-      else if (g_strcmp0 (algorithm, "m.olm.v1.curve25519-aes-sha2") == 0)
+      else if (g_strcmp0 (algorithm, ALGORITHM_OLM) == 0)
         device->olm_v1 = TRUE;
     }
 
@@ -345,7 +359,8 @@ chatty_ma_buddy_add_one_time_keys (ChattyMaBuddy *self,
     for (GList *node = members; node; node = node->next) {
       object = matrix_utils_json_object_get_object (child, node->data);
 
-      {
+      if (matrix_enc_verify (self->matrix_enc, object, self->matrix_id,
+                             device->device_id, device->ed_key)) {
         const char *key;
 
         key = matrix_utils_json_object_get_string (object, "key");
