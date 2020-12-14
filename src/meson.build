@@ -33,6 +33,7 @@ libsrc = [
   'chatty-settings.c',
   'chatty-icons.c',
   'chatty-history.c',
+  'chatty-secret-store.c',
   'chatty-utils.c',
   'chatty-phone-utils.cpp',
 ]
