@@ -293,6 +293,7 @@ chatty_application_startup (GApplication *application)
 {
   ChattyApplication *self = (ChattyApplication *)application;
   g_autofree char *db_path = NULL;
+  char *dir;
   static const GActionEntry app_entries[] = {
     { "show-window", chatty_application_show_window },
   };
@@ -305,6 +306,10 @@ chatty_application_startup (GApplication *application)
   hdy_init ();
 
   g_set_application_name (_("Chats"));
+
+  dir = g_build_filename (g_get_user_cache_dir (), "chatty", "matrix", "files", "thumbnail", NULL);
+  g_mkdir_with_parents (dir, S_IRWXU);
+  g_free (dir);
 
   lfb_init (CHATTY_APP_ID, NULL);
   db_path =  g_build_filename (purple_user_dir(), "chatty", "db", NULL);
