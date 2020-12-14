@@ -25,6 +25,8 @@
 #include "chatty-manager.h"
 #include "chatty-icons.h"
 #include "chatty-utils.h"
+#include "matrix/chatty-ma-account.h"
+#include "matrix/chatty-ma-chat.h"
 #include "dialogs/chatty-settings-dialog.h"
 #include "dialogs/chatty-new-chat-dialog.h"
 #include "dialogs/chatty-new-muc-dialog.h"
@@ -67,6 +69,7 @@ struct _ChattyWindow
   GtkWidget *header_chat_info_button;
   GtkWidget *header_add_chat_button;
   GtkWidget *header_sub_menu_button;
+  GtkWidget *leave_button;
 
   GtkWidget *convs_notebook;
 
@@ -404,7 +407,10 @@ window_chat_row_activated_cb (GtkListBox    *box,
 
   g_return_if_fail (CHATTY_IS_CHAT (self->selected_item));
 
-  chatty_window_open_item (self, self->selected_item);
+  if (CHATTY_IS_PP_CHAT (self->selected_item))
+    chatty_window_open_item (self, self->selected_item);
+  else
+    chatty_window_open_chat (self, CHATTY_CHAT (self->selected_item));
 }
 
 static void
@@ -585,7 +591,9 @@ window_delete_buddy_clicked_cb (ChattyWindow *self)
   if (response == GTK_RESPONSE_OK) {
     chatty_history_delete_chat (chatty_manager_get_history (self->manager),
                                 CHATTY_CHAT (self->selected_item));
-    chatty_pp_chat_delete (CHATTY_PP_CHAT (self->selected_item));
+    if (CHATTY_IS_PP_CHAT (self->selected_item)) {
+      chatty_pp_chat_delete (CHATTY_PP_CHAT (self->selected_item));
+    }
 
     window_set_item (self, NULL);
     chatty_window_chat_list_select_first (self);
@@ -975,6 +983,7 @@ chatty_window_class_init (ChattyWindowClass *klass)
   gtk_widget_class_bind_template_child (widget_class, ChattyWindow, header_chat_info_button);
   gtk_widget_class_bind_template_child (widget_class, ChattyWindow, header_add_chat_button);
   gtk_widget_class_bind_template_child (widget_class, ChattyWindow, header_sub_menu_button);
+  gtk_widget_class_bind_template_child (widget_class, ChattyWindow, leave_button);
 
   gtk_widget_class_bind_template_child (widget_class, ChattyWindow, search_button);
   gtk_widget_class_bind_template_child (widget_class, ChattyWindow, chats_search_bar);
@@ -1172,6 +1181,11 @@ chatty_window_open_chat (ChattyWindow *self,
 
     chatty_manager_load_more_chat (chatty_manager_get_default (), chat, LAZY_LOAD_INITIAL_MSGS_LIMIT);
   }
+
+  if (CHATTY_IS_PP_CHAT (chat))
+    gtk_widget_show (self->leave_button);
+  else
+    gtk_widget_hide (self->leave_button);
 
   page_num = gtk_notebook_page_num (GTK_NOTEBOOK (self->convs_notebook), view);
   gtk_notebook_set_current_page (GTK_NOTEBOOK (self->convs_notebook), page_num);
