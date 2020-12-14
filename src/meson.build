@@ -12,6 +12,7 @@ libsrc = [
   'contrib/gtkcustomsorter.c',
   'contrib/gtksortlistmodel.c',
   'contrib/gtkslicelistmodel.c',
+  'matrix/matrix-api.c',
   'matrix/matrix-enc.c',
   'matrix/matrix-utils.c',
   'matrix/chatty-ma-buddy.c',
