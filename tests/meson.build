@@ -14,6 +14,7 @@ test_items = [
   'history',
   'settings',
   'utils',
+  'matrix-utils',
 ]
 
 foreach item: test_items
