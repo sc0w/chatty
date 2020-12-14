@@ -286,14 +286,16 @@ static gboolean
 window_chat_name_matches (ChattyItem   *item,
                           ChattyWindow *self)
 {
-  ChattyProtocol protocols;
+  ChattyProtocol protocols, protocol;
 
   g_assert (CHATTY_IS_CHAT (item));
   g_assert (CHATTY_IS_WINDOW (self));
 
   protocols = chatty_manager_get_active_protocols (self->manager);
+  protocol = chatty_item_get_protocols (item);
 
-  if (!(protocols & chatty_item_get_protocols (item)))
+  if (protocol != CHATTY_PROTOCOL_MATRIX &&
+      !(protocols & chatty_item_get_protocols (item)))
     return FALSE;
 
   /* FIXME: Not a good idea */
@@ -310,7 +312,8 @@ window_chat_name_matches (ChattyItem   *item,
       return FALSE;
   }
 
-  if (hdy_leaflet_get_folded (HDY_LEAFLET (self->header_box))) {
+  if (protocol != CHATTY_PROTOCOL_MATRIX &&
+      hdy_leaflet_get_folded (HDY_LEAFLET (self->header_box))) {
     GListModel *message_list;
     guint n_items;
 
