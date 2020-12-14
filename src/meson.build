@@ -14,6 +14,7 @@ libsrc = [
   'contrib/gtkslicelistmodel.c',
   'matrix/matrix-api.c',
   'matrix/matrix-enc.c',
+  'matrix/matrix-db.c',
   'matrix/matrix-utils.c',
   'matrix/chatty-ma-buddy.c',
   'users/chatty-item.c',
