@@ -57,6 +57,22 @@ void            chatty_manager_update_node            (ChattyManager   *self,
                                                        PurpleBlistNode *node);
 void            chatty_manager_delete_conversation    (ChattyManager      *self,
                                                        PurpleConversation *conv);
+void            chatty_manager_delete_account_async   (ChattyManager      *self,
+                                                       ChattyAccount      *account,
+                                                       GCancellable       *cancellable,
+                                                       GAsyncReadyCallback callback,
+                                                       gpointer            user_data);
+gboolean        chatty_manager_delete_account_finish  (ChattyManager      *self,
+                                                       GAsyncResult       *result,
+                                                       GError            **error);
+void            chatty_manager_save_account_async     (ChattyManager      *self,
+                                                       ChattyAccount      *account,
+                                                       GCancellable       *cancellable,
+                                                       GAsyncReadyCallback callback,
+                                                       gpointer            user_data);
+gboolean        chatty_manager_save_account_finish    (ChattyManager      *self,
+                                                       GAsyncResult       *result,
+                                                       GError            **error);
 ChattyChat     *chatty_manager_add_chat               (ChattyManager      *self,
                                                        ChattyChat         *chat);
 void            chatty_manager_load_more_chat         (ChattyManager      *self,

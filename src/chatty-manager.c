@@ -2402,6 +2402,157 @@ chatty_manager_find_chat (GListModel *model,
   return NULL;
 }
 
+static void
+matrix_db_account_delete_cb (GObject      *object,
+                             GAsyncResult *result,
+                             gpointer      user_data)
+{
+  g_autoptr(GTask) task = user_data;
+  GError *error = NULL;
+  gboolean status;
+
+  g_assert (G_IS_TASK (task));
+
+  status = matrix_db_delete_account_finish (MATRIX_DB (object),
+                                            result, &error);
+
+  if (error)
+    g_task_return_error (task, error);
+  else
+    g_task_return_boolean (task, status);
+}
+
+static void
+manager_account_delete_cb (GObject      *object,
+                           GAsyncResult *result,
+                           gpointer      user_data)
+{
+  ChattyManager *self;
+  ChattyMaAccount *account;
+  g_autoptr(GTask) task = user_data;
+  GError *error = NULL;
+
+  g_assert (G_IS_TASK (task));
+
+  self = g_task_get_source_object (task);
+  account = g_task_get_task_data (task);
+
+  g_assert (CHATTY_IS_MANAGER (self));
+  g_assert (CHATTY_IS_MA_ACCOUNT (account));
+
+  if (!chatty_secret_delete_finish (result, &error)) {
+    g_task_return_error (task, error);
+    return;
+  }
+
+  matrix_db_delete_account_async (self->matrix_db, CHATTY_ACCOUNT (account),
+                                  matrix_db_account_delete_cb,
+                                  g_steal_pointer (&task));
+}
+
+void
+chatty_manager_delete_account_async (ChattyManager       *self,
+                                     ChattyAccount       *account,
+                                     GCancellable        *cancellable,
+                                     GAsyncReadyCallback  callback,
+                                     gpointer             user_data)
+{
+  GListModel *chat_list;
+  GTask *task;
+
+  g_return_if_fail (CHATTY_IS_MANAGER (self));
+  /* We now handle only matrix accounts */
+  g_return_if_fail (CHATTY_IS_MA_ACCOUNT (account));
+
+  task = g_task_new (self, cancellable, callback, user_data);
+  g_task_set_task_data (task, g_object_ref (account), g_object_unref);
+
+  chat_list = chatty_ma_account_get_chat_list (CHATTY_MA_ACCOUNT (account));
+  chatty_utils_remove_list_item (self->list_of_chat_list, chat_list);
+  chatty_utils_remove_list_item (self->account_list, account);
+
+  chatty_secret_delete_async (account, NULL, manager_account_delete_cb, task);
+}
+
+gboolean
+chatty_manager_delete_account_finish  (ChattyManager  *self,
+                                       GAsyncResult   *result,
+                                       GError        **error)
+{
+  g_return_val_if_fail (CHATTY_IS_MANAGER (self), FALSE);
+  g_return_val_if_fail (G_IS_ASYNC_RESULT (result), FALSE);
+
+  return g_task_propagate_boolean (G_TASK (result), error);
+}
+
+static void
+manager_save_account_cb (GObject      *object,
+                         GAsyncResult *result,
+                         gpointer      user_data)
+{
+  ChattyManager *self;
+  ChattyMaAccount *account = (gpointer)object;
+  g_autoptr(GTask) task = user_data;
+  g_autoptr(GError) error = NULL;
+  gboolean saved;
+
+  g_assert (G_IS_TASK (task));
+  g_assert (CHATTY_IS_MA_ACCOUNT (account));
+
+  self = g_task_get_source_object (task);
+  g_assert (CHATTY_IS_MANAGER (self));
+
+  saved = chatty_ma_account_save_finish (account, result, &error);
+
+  if (error) {
+    g_task_return_error (task, error);
+    return;
+  }
+
+  if (saved) {
+    GListModel *chat_list;
+
+    chat_list = chatty_ma_account_get_chat_list (account);
+    g_list_store_append (self->list_of_chat_list, chat_list);
+    g_list_store_append (self->account_list, account);
+
+    if (!chatty_manager_get_disable_auto_login (self))
+      chatty_account_set_enabled (CHATTY_ACCOUNT (account), TRUE);
+  }
+
+  g_task_return_boolean (task, saved);
+}
+
+void
+chatty_manager_save_account_async (ChattyManager       *self,
+                                   ChattyAccount       *account,
+                                   GCancellable        *cancellable,
+                                   GAsyncReadyCallback  callback,
+                                   gpointer             user_data)
+{
+  GTask *task;
+
+  g_return_if_fail (CHATTY_IS_MANAGER (self));
+  /* We now handle only matrix accounts */
+  g_return_if_fail (CHATTY_IS_MA_ACCOUNT (account));
+
+  task = g_task_new (self, cancellable, callback, user_data);
+  chatty_ma_account_set_history_db (CHATTY_MA_ACCOUNT (account), self->history);
+  chatty_ma_account_set_db (CHATTY_MA_ACCOUNT (account), self->matrix_db);
+  chatty_ma_account_save_async (CHATTY_MA_ACCOUNT (account), TRUE, NULL,
+                                manager_save_account_cb, task);
+}
+
+gboolean
+chatty_manager_save_account_finish (ChattyManager  *self,
+                                    GAsyncResult   *result,
+                                    GError        **error)
+{
+  g_return_val_if_fail (CHATTY_IS_MANAGER (self), FALSE);
+  g_return_val_if_fail (G_IS_ASYNC_RESULT (result), FALSE);
+
+  return g_task_propagate_boolean (G_TASK (result), error);
+}
 
 ChattyChat *
 chatty_manager_add_chat (ChattyManager *self,
