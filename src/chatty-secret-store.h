@@ -31,6 +31,12 @@ void       chatty_secret_store_save_async  (ChattyAccount       *account,
 gboolean   chatty_secret_store_save_finish (GAsyncResult        *result,
                                             GError             **error);
 
+void       chatty_secret_load_async        (GCancellable        *cancellable,
+                                            GAsyncReadyCallback  callback,
+                                            gpointer             user_data);
+GPtrArray *chatty_secret_load_finish       (GAsyncResult        *result,
+                                            GError             **error);
+
 void       chatty_secret_delete_async      (ChattyAccount       *account,
                                             GCancellable        *cancellable,
                                             GAsyncReadyCallback  callback,

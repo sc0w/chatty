@@ -104,6 +104,70 @@ chatty_secret_store_save_finish (GAsyncResult  *result,
   return secret_password_store_finish (result, error);
 }
 
+static void
+secret_load_cb (GObject      *object,
+                GAsyncResult *result,
+                gpointer      user_data)
+{
+  g_autoptr(GTask) task = user_data;
+  GPtrArray *accounts = NULL;
+  GError *error = NULL;
+  GList *secrets;
+
+  g_assert_true (G_IS_TASK (task));
+
+  secrets = secret_service_search_finish (NULL, result, &error);
+
+  if (error) {
+    g_task_return_error (task, error);
+    return;
+  }
+
+  for (GList *item = secrets; item; item = item->next) {
+    g_autoptr(ChattyMaAccount) account = NULL;
+
+    if (!accounts)
+      accounts = g_ptr_array_new_full (5, g_object_unref);
+
+    account = chatty_ma_account_new_secret (item->data);
+    g_ptr_array_insert (accounts, -1, account);
+  }
+
+  if (secrets)
+    g_list_free_full (secrets, g_object_unref);
+
+  g_task_return_pointer (task, accounts, (GDestroyNotify)g_ptr_array_unref);
+}
+
+void
+chatty_secret_load_async  (GCancellable        *cancellable,
+                           GAsyncReadyCallback  callback,
+                           gpointer             user_data)
+{
+  const SecretSchema *schema;
+  g_autoptr(GHashTable) attr = NULL;
+  GTask *task;
+
+  g_return_if_fail (!cancellable || G_IS_CANCELLABLE (cancellable));
+
+  schema = secret_store_get_schema ();
+  task = g_task_new (NULL, cancellable, callback, user_data);
+  attr = secret_attributes_build (schema, NULL);
+
+  secret_service_search (NULL, schema, attr,
+                         SECRET_SEARCH_ALL | SECRET_SEARCH_UNLOCK | SECRET_SEARCH_LOAD_SECRETS,
+                         cancellable, secret_load_cb, task);
+}
+
+GPtrArray *
+chatty_secret_load_finish (GAsyncResult  *result,
+                           GError       **error)
+{
+  g_return_val_if_fail (G_IS_ASYNC_RESULT (result), NULL);
+
+  return g_task_propagate_pointer (G_TASK (result), error);
+}
+
 void
 chatty_secret_delete_async (ChattyAccount       *account,
                             GCancellable        *cancellable,
