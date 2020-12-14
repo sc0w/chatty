@@ -6,11 +6,13 @@ project(
 
 i18n = import('i18n')
 gnome = import('gnome')
+cc = meson.get_compiler('c')
 
 top_inc = include_directories('.')
 src_inc = include_directories('src')
 
 config_h = configuration_data()
+config_h.set10('HAVE_EXPLICIT_BZERO', cc.has_function('explicit_bzero'))
 config_h.set_quoted('GETTEXT_PACKAGE', 'purism-chatty')
 config_h.set_quoted('LOCALEDIR', join_paths(get_option('prefix'), get_option('localedir')))
 config_h.set_quoted('PACKAGE_NAME', meson.project_name())
@@ -23,8 +25,6 @@ add_project_arguments([
   '-I' + meson.build_root(),
   '-DGLIB_DISABLE_DEPRECATION_WARNINGS',
 ], language: 'c')
-
-cc = meson.get_compiler('c')
 
 global_c_args = []
 test_c_args = [
