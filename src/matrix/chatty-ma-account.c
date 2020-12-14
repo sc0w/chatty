@@ -11,8 +11,10 @@
 
 #define G_LOG_DOMAIN "chatty-ma-account"
 
+#include <libsecret/secret.h>
 #include <glib/gi18n.h>
 
+#include "chatty-secret-store.h"
 #include "chatty-history.h"
 #include "matrix-api.h"
 #include "matrix-enc.h"
@@ -625,6 +627,75 @@ chatty_ma_account_new (const char *username,
   return self;
 }
 
+static char *
+ma_account_get_value (const char *str,
+                      const char *key)
+{
+  const char *start, *end;
+
+  if (!str || !*str)
+    return NULL;
+
+  g_assert (key && *key);
+
+  start = strstr (str, key);
+  if (start) {
+    start = start + strlen (key);
+    while (*start && *start++ != '"')
+      ;
+
+    end = start - 1;
+    do {
+      end++;
+      end = strchr (end, '"');
+    } while (end && *(end - 1) == '\\' && *(end - 2) != '\\');
+
+    if (end && end > start)
+      return g_strndup (start, end - start);
+  }
+
+  return NULL;
+}
+
+ChattyMaAccount *
+chatty_ma_account_new_secret (gpointer secret_item)
+{
+  ChattyMaAccount *self = NULL;
+  g_autoptr(GHashTable) attributes = NULL;
+  SecretItem *item = secret_item;
+  SecretValue *value;
+  const char *username, *homeserver, *credentials;
+  char *password, *token, *device_id;
+
+  g_return_val_if_fail (SECRET_IS_ITEM (item), NULL);
+
+  value = secret_item_get_secret (item);
+  credentials = secret_value_get_text (value);
+
+  attributes = secret_item_get_attributes (item);
+  username = g_hash_table_lookup (attributes, CHATTY_USERNAME_ATTRIBUTE);
+  homeserver = g_hash_table_lookup (attributes, CHATTY_SERVER_ATTRIBUTE);
+
+  password = ma_account_get_value (credentials, "\"password\"");
+  g_return_val_if_fail (password, NULL);
+
+  self = chatty_ma_account_new (username, password);
+  token = ma_account_get_value (credentials, "\"access-token\"");
+  device_id = ma_account_get_value (credentials, "\"device-id\"");
+  chatty_ma_account_set_homeserver (self, homeserver);
+
+  if (token && device_id) {
+    self->pickle_key = ma_account_get_value (credentials, "\"pickle-key\"");
+    matrix_api_set_access_token (self->matrix_api, token, device_id);
+  }
+
+  matrix_utils_free_buffer (device_id);
+  matrix_utils_free_buffer (password);
+  matrix_utils_free_buffer (token);
+
+  return self;
+}
+
 void
 chatty_ma_account_set_history_db (ChattyMaAccount *self,
                                   gpointer         history_db)
@@ -717,6 +788,42 @@ ma_account_db_save_cb (GObject      *object,
     g_task_return_boolean (task, status);
 }
 
+static void
+ma_account_save_cb (GObject      *object,
+                    GAsyncResult *result,
+                    gpointer      user_data)
+{
+  ChattyMaAccount *self;
+  g_autoptr(GTask) task = user_data;
+  GError *error = NULL;
+  gboolean status;
+
+  g_assert (G_IS_ASYNC_RESULT (result));
+  g_assert (G_IS_TASK (task));
+
+  self = g_task_get_source_object (task);
+  g_assert (CHATTY_IS_MA_ACCOUNT (self));
+
+  status = chatty_secret_store_save_finish (result, &error);
+
+  if (error || !status)
+    self->save_password_pending = TRUE;
+
+  if (error) {
+    g_task_return_error (task, error);
+  } else if (self->save_account_pending) {
+    self->save_account_pending = FALSE;
+    matrix_db_save_account_async (self->matrix_db, CHATTY_ACCOUNT (self),
+                                  chatty_account_get_enabled (CHATTY_ACCOUNT (self)),
+                                  matrix_enc_get_account_pickle (self->matrix_enc),
+                                  matrix_api_get_device_id (self->matrix_api),
+                                  matrix_api_get_next_batch (self->matrix_api),
+                                  ma_account_db_save_cb, g_steal_pointer (&task));
+  } else {
+    g_task_return_boolean (task, status);
+  }
+}
+
 void
 chatty_ma_account_save_async (ChattyMaAccount     *self,
                               gboolean             force,
@@ -734,9 +841,17 @@ chatty_ma_account_save_async (ChattyMaAccount     *self,
 
   task = g_task_new (self, cancellable, callback, user_data);
   if (self->save_password_pending || force) {
+    char *key = NULL;
+
+    if (self->matrix_enc)
+      key = matrix_enc_get_pickle_key (self->matrix_enc);
 
     self->save_password_pending = FALSE;
-    /* TODO: Implement save */
+    chatty_secret_store_save_async (CHATTY_ACCOUNT (self),
+                                    g_strdup (matrix_api_get_access_token (self->matrix_api)),
+                                    matrix_api_get_device_id (self->matrix_api),
+                                    key, cancellable,
+                                    ma_account_save_cb, task);
   } else if (self->save_account_pending) {
     self->save_account_pending = FALSE;
     matrix_db_save_account_async (self->matrix_db, CHATTY_ACCOUNT (self),
