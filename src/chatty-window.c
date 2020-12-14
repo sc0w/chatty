@@ -593,6 +593,13 @@ window_delete_buddy_clicked_cb (ChattyWindow *self)
                                 CHATTY_CHAT (self->selected_item));
     if (CHATTY_IS_PP_CHAT (self->selected_item)) {
       chatty_pp_chat_delete (CHATTY_PP_CHAT (self->selected_item));
+    } else {
+      ChattyAccount *account;
+
+      account = chatty_chat_get_account (CHATTY_CHAT (self->selected_item));
+      chatty_ma_account_delete_chat_async (CHATTY_MA_ACCOUNT (account),
+                                           CHATTY_CHAT (self->selected_item),
+                                           NULL, NULL);
     }
 
     window_set_item (self, NULL);
