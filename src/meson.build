@@ -71,16 +71,23 @@ purple = dependency('purple')
 purple_plugdir = purple.get_pkgconfig_variable('plugindir')
 jabber = meson.get_compiler('c').find_library('jabber', dirs: purple_plugdir)
 jabber_incdir = include_directories('xeps/prpl/jabber')
+# TODO: Use has_headers: 'olm/olm.h' when we bump meson requirement
+libolm_dep = cc.find_library('olm', required: true)
 
 chatty_deps = [
   dependency('gio-2.0', version: '>= 2.50'),
   dependency('gtk+-3.0', version: '>= 3.22'),
   purple, jabber,
+  dependency('libsecret-1'),
   dependency('libhandy-1'),
   dependency('sqlite3', version: '>=3.0.0'),
   dependency('libebook-contacts-1.2'),
   dependency('libebook-1.2'),
   dependency('gsettings-desktop-schemas'),
+  dependency('libgcrypt'),
+  dependency('libsoup-2.4'),
+  dependency('json-glib-1.0'),
+  libolm_dep,
   libebook_dep,
   libfeedback_dep,
   libm_dep,
