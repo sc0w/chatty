@@ -19,6 +19,7 @@
 #include "chatty-manager.h"
 #include "chatty-utils.h"
 #include "chatty-window.h"
+#include "matrix/chatty-ma-chat.h"
 #include "users/chatty-contact.h"
 #include "users/chatty-pp-buddy.h"
 #include "chatty-message-row.h"
@@ -281,6 +282,9 @@ chatty_chat_view_update (ChattyChatView *self)
       chatty_item_get_protocols (CHATTY_ITEM (self->chat)) == CHATTY_PROTOCOL_XMPP)
     chat_view_setup_file_upload (self);
 
+  if (CHATTY_IS_MA_CHAT (self->chat))
+    gtk_widget_show (self->send_file_button);
+
   if (self->message_type == CHATTY_MSG_TYPE_IM)
     index = 0;
   else if (self->message_type == CHATTY_MSG_TYPE_SMS)
@@ -321,6 +325,11 @@ chatty_update_typing_status (ChattyChatView *self)
   text = gtk_text_buffer_get_text (self->message_input_buffer, &start, &end, FALSE);
 
   empty = !text || !*text || *text == '/';
+
+  if (CHATTY_IS_MA_CHAT (self->chat)) {
+    chatty_ma_chat_set_typing (CHATTY_MA_CHAT (self->chat), !empty);
+    return;
+  }
 
   im = PURPLE_CONV_IM (conv);
 
@@ -632,6 +641,12 @@ chat_view_send_file_button_clicked_cb (ChattyChatView *self,
   g_assert (CHATTY_IS_CHAT_VIEW (self));
   g_assert (GTK_IS_BUTTON (button));
 
+  if (CHATTY_IS_MA_CHAT (self->chat)) {
+    /* TODO */
+
+    return;
+  }
+
   callback = g_object_get_data (G_OBJECT (button), "callback");
   data = g_object_get_data (G_OBJECT (button), "callback-data");
   node = chatty_utils_get_conv_blist_node (self->conv);
@@ -656,7 +671,7 @@ chat_view_send_message_button_clicked_cb (ChattyChatView *self)
 
   gtk_text_buffer_get_bounds (self->message_input_buffer, &start, &end);
 
-  if (chatty_conv_check_for_command (self)) {
+  if (conv && chatty_conv_check_for_command (self)) {
     gtk_widget_hide (self->send_message_button);
     gtk_text_buffer_delete (self->message_input_buffer, &start, &end);
 
@@ -708,6 +723,9 @@ chat_view_send_message_button_clicked_cb (ChattyChatView *self)
     } else if (conv && purple_conversation_get_type (conv) == PURPLE_CONV_TYPE_CHAT) {
       purple_conv_chat_send (PURPLE_CONV_CHAT (conv), escaped ? escaped : message);
     }
+
+    if (CHATTY_IS_MA_CHAT (self->chat))
+      chatty_ma_chat_send_message (CHATTY_MA_CHAT (self->chat), message);
 
     gtk_widget_hide (self->send_message_button);
   }
