@@ -29,6 +29,8 @@ src/chatty-purple-notify.c
 src/chatty-purple-notify.h
 src/chatty-purple-request.c
 src/chatty-purple-request.h
+src/chatty-secret-store.c
+src/chatty-secret-store.h
 src/chatty-settings.c
 src/chatty-settings.h
 src/chatty-utils.c
@@ -46,6 +48,12 @@ src/dialogs/chatty-settings-dialog.h
 src/dialogs/chatty-user-info-dialog.c
 src/dialogs/chatty-user-info-dialog.h
 src/main.c
+src/matrix/chatty-ma-account.c
+src/matrix/chatty-ma-account.h
+src/matrix/chatty-ma-chat.c
+src/matrix/chatty-ma-chat.h
+src/matrix/matrix-utils.c
+src/matrix/matrix-utils.h
 src/ui/chatty-contact-row.ui
 src/ui/chatty-dialog-join-muc.ui
 src/ui/chatty-dialog-muc-info.ui
