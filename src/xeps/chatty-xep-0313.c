@@ -804,8 +804,14 @@ cb_chatty_mam_msg_received (PurpleConnection *pc,
                                        chatty_utils_direction_from_flag (pcm->flags), 0);
     if (chat_message && pcm->who && !(flags & PURPLE_MESSAGE_SEND))
       chatty_message_set_user_name (chat_message, who ? who : pcm->who);
-    chatty_history_add_message (chatty_manager_get_history (manager),
-                                conv->ui_data, chat_message);
+
+    if (conv)
+      chatty_history_add_message (chatty_manager_get_history (manager),
+                                  conv->ui_data, chat_message);
+    else
+      g_warning ("NULL conversation for : who: %s, message: %s",
+                  who ? who: pcm->who, pcm->what);
+
   }
   // Update last timestamp for account's archive
   if(mamq != NULL && mamq->to == NULL)
