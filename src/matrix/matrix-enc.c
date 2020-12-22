@@ -1041,6 +1041,9 @@ matrix_enc_handle_join_room_encrypted (MatrixEnc  *self,
     }
   }
 
+  if (!session)
+    return NULL;
+
   g_return_val_if_fail (session, NULL);
 
   body = g_strdup (ciphertext);
