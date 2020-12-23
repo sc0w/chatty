@@ -2063,6 +2063,25 @@ chatty_manager_purple_init (ChattyManager *self)
 }
 
 static void
+manager_ma_account_changed_cb (ChattyMaAccount *account)
+{
+  ChattyManager *self;
+  GListModel *chat_list;
+  ChattyStatus status;
+
+  g_assert (CHATTY_IS_MA_ACCOUNT (account));
+
+  self = chatty_manager_get_default ();
+  status = chatty_account_get_status (CHATTY_ACCOUNT (account));
+  chat_list = chatty_ma_account_get_chat_list (account);
+
+  if (status == CHATTY_CONNECTED)
+    g_list_store_append (self->list_of_chat_list, chat_list);
+  else
+    chatty_utils_remove_list_item (self->list_of_chat_list, chat_list);
+}
+
+static void
 manager_secret_load_cb (GObject      *object,
                         GAsyncResult *result,
                         gpointer      user_data)
@@ -2070,7 +2089,6 @@ manager_secret_load_cb (GObject      *object,
   ChattyManager *self = user_data;
   g_autoptr(GPtrArray) accounts = NULL;
   g_autoptr(GError) error = NULL;
-  GListModel *chat_list;
 
   g_assert (CHATTY_IS_MANAGER (self));
 
@@ -2080,11 +2098,12 @@ manager_secret_load_cb (GObject      *object,
     return;
 
   for (guint i = 0; i < accounts->len; i++) {
+    g_signal_connect_object (accounts->pdata[i], "notify::status",
+                             G_CALLBACK (manager_ma_account_changed_cb),
+                             accounts->pdata[i], 0);
+
     chatty_ma_account_set_history_db (accounts->pdata[i], self->history);
     chatty_ma_account_set_db (accounts->pdata[i], self->matrix_db);
-
-    chat_list = chatty_ma_account_get_chat_list (accounts->pdata[i]);
-    g_list_store_append (self->list_of_chat_list, chat_list);
   }
 
   g_list_store_splice (self->account_list, 0, 0, accounts->pdata, accounts->len);
@@ -2519,11 +2538,11 @@ manager_save_account_cb (GObject      *object,
   }
 
   if (saved) {
-    GListModel *chat_list;
-
-    chat_list = chatty_ma_account_get_chat_list (account);
-    g_list_store_append (self->list_of_chat_list, chat_list);
     g_list_store_append (self->account_list, account);
+
+    g_signal_connect_object (account, "notify::status",
+                             G_CALLBACK (manager_ma_account_changed_cb),
+                             account, 0);
 
     if (!chatty_manager_get_disable_auto_login (self))
       chatty_account_set_enabled (CHATTY_ACCOUNT (account), TRUE);
