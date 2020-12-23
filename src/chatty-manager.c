@@ -1230,8 +1230,17 @@ manager_account_added_cb (PurpleAccount *pp_account,
                           ChattyManager *self)
 {
   g_autoptr(ChattyPpAccount) account = NULL;
+  const char *protocol_id;
 
   g_assert (CHATTY_IS_MANAGER (self));
+
+  protocol_id = purple_account_get_protocol_id (pp_account);
+
+  /* We handles matrix accounts locally. */
+  if (chatty_settings_get_experimental_features (chatty_settings_get_default ()) &&
+      g_strcmp0 (protocol_id, "prpl-matrix") == 0) {
+    return;
+  }
 
   account = chatty_pp_account_get_object (pp_account);
 
