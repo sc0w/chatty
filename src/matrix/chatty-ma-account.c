@@ -181,9 +181,27 @@ handle_get_homeserver (ChattyMaAccount *self,
 {
   g_assert (CHATTY_IS_MA_ACCOUNT (self));
 
+  if (error) {
+    self->status = CHATTY_DISCONNECTED;
+    g_object_notify (G_OBJECT (self), "status");
+  }
+
   if (g_error_matches (error, G_IO_ERROR, G_IO_ERROR_NOT_FOUND)) {
     g_warning ("Couldn't connect to ‘/.well-known/matrix/client’ ");
     matrix_api_set_homeserver (self->matrix_api, "https://chat.librem.one");
+  }
+}
+
+static void
+handle_verify_homeserver (ChattyMaAccount *self,
+                          JsonObject      *object,
+                          GError          *error)
+{
+  g_assert (CHATTY_IS_MA_ACCOUNT (self));
+
+  if (error) {
+    self->status = CHATTY_DISCONNECTED;
+    g_object_notify (G_OBJECT (self), "status");
   }
 }
 
@@ -354,6 +372,7 @@ matrix_account_sync_cb (ChattyMaAccount *self,
     return;
 
   case MATRIX_VERIFY_HOMESERVER:
+    handle_verify_homeserver (self, object, error);
     return;
 
   case MATRIX_PASSWORD_LOGIN:
