@@ -31,6 +31,9 @@ struct _ChattyAccountClass
   gboolean     (*get_enabled)           (ChattyAccount *self);
   void         (*set_enabled)           (ChattyAccount *self,
                                          gboolean       enable);
+  void         (*connect)               (ChattyAccount *self,
+                                         gboolean       delay);
+  void         (*disconnect)            (ChattyAccount *self);
   const char  *(*get_password)          (ChattyAccount *self);
   void         (*set_password)          (ChattyAccount *self,
                                          const char    *password);
@@ -51,6 +54,9 @@ GListModel   *chatty_account_get_buddies           (ChattyAccount *self);
 gboolean      chatty_account_get_enabled           (ChattyAccount *self);
 void          chatty_account_set_enabled           (ChattyAccount *self,
                                                     gboolean       enable);
+void          chatty_account_connect               (ChattyAccount *self,
+                                                    gboolean       delay);
+void          chatty_account_disconnect            (ChattyAccount *self);
 const char   *chatty_account_get_password          (ChattyAccount *self);
 void          chatty_account_set_password          (ChattyAccount *self,
                                                     const char    *password);

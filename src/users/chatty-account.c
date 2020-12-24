@@ -95,6 +95,23 @@ chatty_account_real_set_enabled (ChattyAccount *self,
   /* Do Nothing */
 }
 
+static void
+chatty_account_real_connect (ChattyAccount *self,
+                             gboolean       delay)
+{
+  g_assert (CHATTY_IS_ACCOUNT (self));
+
+  /* Do Nothing */
+}
+
+static void
+chatty_account_real_disconnect (ChattyAccount *self)
+{
+  g_assert (CHATTY_IS_ACCOUNT (self));
+
+  /* Do Nothing */
+}
+
 static const char *
 chatty_account_real_get_password (ChattyAccount *self)
 {
@@ -202,6 +219,8 @@ chatty_account_class_init (ChattyAccountClass *klass)
   klass->get_buddies  = chatty_account_real_get_buddies;
   klass->get_enabled  = chatty_account_real_get_enabled;
   klass->set_enabled  = chatty_account_real_set_enabled;
+  klass->connect      = chatty_account_real_connect;
+  klass->disconnect   = chatty_account_real_disconnect;
   klass->get_password = chatty_account_real_get_password;
   klass->set_password = chatty_account_real_set_password;
   klass->get_remember_password = chatty_account_real_get_remember_password;
@@ -297,6 +316,36 @@ chatty_account_set_enabled (ChattyAccount *self,
   g_return_if_fail (CHATTY_IS_ACCOUNT (self));
 
   CHATTY_ACCOUNT_GET_CLASS (self)->set_enabled (self, !!enable);
+}
+
+/**
+ * chatty_account_connect:
+ * @self: A #ChattyAccount
+ * @delay: Whether to delay connection
+ *
+ * connection to @self.  If @delay is %TRUE, the connection
+ * is initiated after some delay, which can be useful when
+ * trying to connect after a connection failure.
+ *
+ * If the account is not enabled, or if account status is
+ * set to offline, or if already connected, the function
+ * simply returns.
+ */
+void
+chatty_account_connect (ChattyAccount *self,
+                        gboolean       delay)
+{
+  g_return_if_fail (CHATTY_IS_ACCOUNT (self));
+
+  CHATTY_ACCOUNT_GET_CLASS (self)->connect (self, delay);
+}
+
+void
+chatty_account_disconnect (ChattyAccount *self)
+{
+  g_return_if_fail (CHATTY_IS_ACCOUNT (self));
+
+  CHATTY_ACCOUNT_GET_CLASS (self)->disconnect (self);
 }
 
 const char *
