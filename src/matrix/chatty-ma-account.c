@@ -503,6 +503,32 @@ chatty_ma_account_set_password (ChattyAccount *account,
   }
 }
 
+/* XXX: @delay is not implemented as we don't need it */
+static void
+chatty_ma_account_connect (ChattyAccount *account,
+                           gboolean       delay)
+{
+  ChattyMaAccount *self = (ChattyMaAccount *)account;
+
+  g_assert (CHATTY_IS_MA_ACCOUNT (self));
+
+  self->status = CHATTY_CONNECTING;
+  matrix_api_start_sync (self->matrix_api);
+  g_object_notify (G_OBJECT (self), "status");
+}
+
+static void
+chatty_ma_account_disconnect (ChattyAccount *account)
+{
+  ChattyMaAccount *self = (ChattyMaAccount *)account;
+
+  g_assert (CHATTY_IS_MA_ACCOUNT (self));
+
+  self->status = CHATTY_DISCONNECTED;
+  matrix_api_stop_sync (self->matrix_api);
+  g_object_notify (G_OBJECT (self), "status");
+}
+
 static gboolean
 chatty_ma_account_get_remember_password (ChattyAccount *self)
 {
@@ -596,6 +622,8 @@ chatty_ma_account_class_init (ChattyMaAccountClass *klass)
   account_class->set_enabled  = chatty_ma_account_set_enabled;
   account_class->get_password = chatty_ma_account_get_password;
   account_class->set_password = chatty_ma_account_set_password;
+  account_class->connect      = chatty_ma_account_connect;
+  account_class->disconnect   = chatty_ma_account_disconnect;
   account_class->get_remember_password = chatty_ma_account_get_remember_password;
   account_class->save = chatty_ma_account_save;
   account_class->delete = chatty_ma_account_delete;
