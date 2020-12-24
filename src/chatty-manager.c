@@ -1309,7 +1309,7 @@ manager_account_connection_failed_cb (PurpleAccount         *pp_account,
   if (error == PURPLE_CONNECTION_ERROR_NETWORK_ERROR &&
       self->network_available &&
       chatty_item_get_protocols (CHATTY_ITEM (account)) != CHATTY_PROTOCOL_SMS)
-    chatty_pp_account_connect (account, TRUE);
+    chatty_account_connect (CHATTY_ACCOUNT (account), TRUE);
 
   if (purple_connection_error_is_fatal (error))
     g_signal_emit (self,  signals[CONNECTION_ERROR], 0, account, error_msg);
@@ -1561,7 +1561,7 @@ manager_sms_modem_added_cb (gint status)
   account = chatty_pp_account_get_object (pp_account);
   g_return_if_fail (CHATTY_IS_PP_ACCOUNT (account));
 
-  chatty_pp_account_connect (account, TRUE);
+  chatty_account_connect (CHATTY_ACCOUNT (account), TRUE);
 }
 
 
@@ -1620,14 +1620,14 @@ manager_network_changed_cb (GNetworkMonitor *network_monitor,
 
   for (guint i = 0; i < n_items; i++)
     {
-      g_autoptr(ChattyPpAccount) account = NULL;
+      g_autoptr(ChattyAccount) account = NULL;
 
       account = g_list_model_get_item (list, i);
 
       if (network_available)
-        chatty_pp_account_connect (account, FALSE);
+        chatty_account_connect (account, FALSE);
       else
-        chatty_pp_account_disconnect (account);
+        chatty_account_disconnect (account);
     }
 }
 
