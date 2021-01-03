@@ -1792,29 +1792,6 @@ matrix_api_upload_group_keys_finish (MatrixApi     *self,
 }
 
 static void
-api_forget_room_cb (GObject      *object,
-                    GAsyncResult *result,
-                    gpointer      user_data)
-{
-  MatrixApi *self = (MatrixApi *)object;
-  g_autoptr(GTask) task = user_data;
-  GError *error = NULL;
-
-  g_assert (MATRIX_IS_API (self));
-  g_assert (G_IS_TASK (task));
-
-  g_debug ("%s %s", G_STRLOC, G_STRFUNC);
-
-  object = g_task_propagate_pointer (G_TASK (result), &error);
-
-  if (error && !g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
-    g_debug ("Error forgetting room: %s", error->message);
-
-  /* always return %TRUE as we have succeeded leaving room in previous step */
-  g_task_return_boolean (task, TRUE);
-}
-
-static void
 api_leave_room_cb (GObject      *object,
                    GAsyncResult *result,
                    gpointer      user_data)
@@ -1830,23 +1807,20 @@ api_leave_room_cb (GObject      *object,
 
   object = g_task_propagate_pointer (G_TASK (result), &error);
 
-  if (error) {
+  if (error && !g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
     g_debug ("Error leaving room: %s", error->message);
+
+  if (error)
     g_task_return_error (task, error);
-  } else {
-    g_autofree char *uri = NULL;
-    uri = g_strdup_printf ("/_matrix/client/r0/rooms/%s/forget",
-                           (char *)g_task_get_task_data (task));
-    queue_data (self, NULL, 0, uri, SOUP_METHOD_POST,
-                NULL, api_forget_room_cb, g_steal_pointer (&task));
-  }
+  else
+    g_task_return_boolean (task, TRUE);
 }
 
 void
-matrix_api_delete_chat_async (MatrixApi           *self,
-                              const char          *room_id,
-                              GAsyncReadyCallback  callback,
-                              gpointer             user_data)
+matrix_api_leave_chat_async (MatrixApi           *self,
+                             const char          *room_id,
+                             GAsyncReadyCallback  callback,
+                             gpointer             user_data)
 {
   GTask *task;
   g_autofree char *uri = NULL;
@@ -1864,9 +1838,9 @@ matrix_api_delete_chat_async (MatrixApi           *self,
 }
 
 gboolean
-matrix_api_delete_chat_finish (MatrixApi     *self,
-                               GAsyncResult  *result,
-                               GError       **error)
+matrix_api_leave_chat_finish (MatrixApi     *self,
+                              GAsyncResult  *result,
+                              GError       **error)
 {
   g_return_val_if_fail (MATRIX_IS_API (self), FALSE);
   g_return_val_if_fail (G_IS_TASK (result), FALSE);

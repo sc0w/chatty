@@ -962,9 +962,9 @@ chatty_ma_account_send_file (ChattyMaAccount *self,
 }
 
 static void
-ma_account_delete_chat_cb (GObject      *object,
-                           GAsyncResult *result,
-                           gpointer      user_data)
+ma_account_leave_chat_cb (GObject      *object,
+                          GAsyncResult *result,
+                          gpointer      user_data)
 {
   ChattyMaAccount *self;
   g_autoptr(GTask) task = user_data;
@@ -976,7 +976,7 @@ ma_account_delete_chat_cb (GObject      *object,
   self = g_task_get_source_object (task);
   g_assert (CHATTY_IS_MA_ACCOUNT (self));
 
-  success = matrix_api_delete_chat_finish (self->matrix_api, result, &error);
+  success = matrix_api_leave_chat_finish (self->matrix_api, result, &error);
 
   if (error && !g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
     g_warning ("Error deleting chat: %s", error->message);
@@ -996,10 +996,10 @@ ma_account_delete_chat_cb (GObject      *object,
 }
 
 void
-chatty_ma_account_delete_chat_async (ChattyMaAccount     *self,
-                                     ChattyChat          *chat,
-                                     GAsyncReadyCallback  callback,
-                                     gpointer             user_data)
+chatty_ma_account_leave_chat_async (ChattyMaAccount     *self,
+                                    ChattyChat          *chat,
+                                    GAsyncReadyCallback  callback,
+                                    gpointer             user_data)
 {
   g_autoptr(GTask) task = NULL;
 
@@ -1015,16 +1015,16 @@ chatty_ma_account_delete_chat_async (ChattyMaAccount     *self,
   if (!chatty_utils_remove_list_item (self->chat_list, chat))
     g_return_if_reached ();
 
-  matrix_api_delete_chat_async (self->matrix_api,
-                                chatty_ma_chat_get_room_id (CHATTY_MA_CHAT (chat)),
-                                ma_account_delete_chat_cb,
-                                g_steal_pointer (&task));
+  matrix_api_leave_chat_async (self->matrix_api,
+                               chatty_ma_chat_get_room_id (CHATTY_MA_CHAT (chat)),
+                               ma_account_leave_chat_cb,
+                               g_steal_pointer (&task));
 }
 
 gboolean
-chatty_ma_account_delete_chat_finish (ChattyMaAccount  *self,
-                                      GAsyncResult     *result,
-                                      GError          **error)
+chatty_ma_account_leave_chat_finish (ChattyMaAccount  *self,
+                                     GAsyncResult     *result,
+                                     GError          **error)
 {
   g_return_val_if_fail (CHATTY_IS_MA_ACCOUNT (self), FALSE);
   g_return_val_if_fail (G_IS_TASK (result), FALSE);

@@ -70,6 +70,7 @@ struct _ChattyWindow
   GtkWidget *header_add_chat_button;
   GtkWidget *header_sub_menu_button;
   GtkWidget *leave_button;
+  GtkWidget *delete_button;
 
   GtkWidget *convs_notebook;
 
@@ -597,12 +598,7 @@ window_delete_buddy_clicked_cb (ChattyWindow *self)
     if (CHATTY_IS_PP_CHAT (self->selected_item)) {
       chatty_pp_chat_delete (CHATTY_PP_CHAT (self->selected_item));
     } else {
-      ChattyAccount *account;
-
-      account = chatty_chat_get_account (CHATTY_CHAT (self->selected_item));
-      chatty_ma_account_delete_chat_async (CHATTY_MA_ACCOUNT (account),
-                                           CHATTY_CHAT (self->selected_item),
-                                           NULL, NULL);
+      g_return_if_reached ();
     }
 
     window_set_item (self, NULL);
@@ -626,6 +622,16 @@ window_leave_chat_clicked_cb (ChattyWindow *self)
     chatty_window_change_view (self, CHATTY_VIEW_CHAT_LIST);
 
     g_return_if_reached ();
+  }
+
+  if (CHATTY_IS_MA_CHAT (self->selected_item)) {
+    ChattyAccount *account;
+
+    account = chatty_chat_get_account (CHATTY_CHAT (self->selected_item));
+    chatty_ma_account_leave_chat_async (CHATTY_MA_ACCOUNT (account),
+                                        CHATTY_CHAT (self->selected_item),
+                                        NULL, NULL);
+    return;
   }
 
   node = (PurpleBlistNode *)chatty_pp_chat_get_purple_buddy (CHATTY_PP_CHAT (self->selected_item));
@@ -994,6 +1000,7 @@ chatty_window_class_init (ChattyWindowClass *klass)
   gtk_widget_class_bind_template_child (widget_class, ChattyWindow, header_add_chat_button);
   gtk_widget_class_bind_template_child (widget_class, ChattyWindow, header_sub_menu_button);
   gtk_widget_class_bind_template_child (widget_class, ChattyWindow, leave_button);
+  gtk_widget_class_bind_template_child (widget_class, ChattyWindow, delete_button);
 
   gtk_widget_class_bind_template_child (widget_class, ChattyWindow, search_button);
   gtk_widget_class_bind_template_child (widget_class, ChattyWindow, chats_search_bar);
@@ -1193,9 +1200,9 @@ chatty_window_open_chat (ChattyWindow *self,
   }
 
   if (CHATTY_IS_PP_CHAT (chat))
-    gtk_widget_show (self->leave_button);
+    gtk_widget_show (self->delete_button);
   else
-    gtk_widget_hide (self->leave_button);
+    gtk_widget_hide (self->delete_button);
 
   page_num = gtk_notebook_page_num (GTK_NOTEBOOK (self->convs_notebook), view);
   gtk_notebook_set_current_page (GTK_NOTEBOOK (self->convs_notebook), page_num);

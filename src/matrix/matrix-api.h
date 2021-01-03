@@ -140,11 +140,11 @@ void         matrix_api_upload_group_keys_async  (MatrixApi      *self,
 gboolean     matrix_api_upload_group_keys_finish (MatrixApi      *self,
                                                   GAsyncResult   *result,
                                                   GError        **error);
-void         matrix_api_delete_chat_async        (MatrixApi      *self,
+void         matrix_api_leave_chat_async         (MatrixApi      *self,
                                                   const char     *room_id,
                                                   GAsyncReadyCallback callback,
                                                   gpointer        user_data);
-gboolean     matrix_api_delete_chat_finish       (MatrixApi      *self,
+gboolean     matrix_api_leave_chat_finish        (MatrixApi      *self,
                                                   GAsyncResult   *result,
                                                   GError        **error);
 
