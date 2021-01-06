@@ -186,8 +186,7 @@ api_get_homeserver_cb (gpointer      object,
     return;
   }
 
-  g_free (self->homeserver);
-  self->homeserver = homeserver;
+  matrix_api_set_homeserver (self, homeserver);
   matrix_verify_homeserver (self);
 }
 
@@ -1146,13 +1145,25 @@ void
 matrix_api_set_homeserver (MatrixApi  *self,
                            const char *homeserver)
 {
+  g_autoptr(SoupURI) uri = NULL;
+  GString *host;
+
   g_return_if_fail (MATRIX_IS_API (self));
 
-  if (!homeserver)
+  uri = soup_uri_new (homeserver);
+  if (!homeserver || !uri ||
+      !SOUP_URI_VALID_FOR_HTTP (uri))
     return;
 
+  host = g_string_new (NULL);
+  g_string_append (host, soup_uri_get_scheme (uri));
+  g_string_append (host, "://");
+  g_string_append (host, uri->host);
+  if (!soup_uri_uses_default_port (uri))
+    g_string_append_printf (host, ":%d", soup_uri_get_port (uri));
+
   g_free (self->homeserver);
-  self->homeserver = g_strdup (homeserver);
+  self->homeserver = g_string_free (host, FALSE);
 
   if (self->is_sync &&
       self->sync_failed &&
