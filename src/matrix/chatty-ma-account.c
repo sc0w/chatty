@@ -269,6 +269,9 @@ handle_password_login (ChattyMaAccount *self,
   if (!error) {
     self->save_password_pending = TRUE;
     chatty_account_save (CHATTY_ACCOUNT (self));
+
+    self->status = CHATTY_CONNECTED;
+    g_object_notify (G_OBJECT (self), "status");
   }
 }
 
