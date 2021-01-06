@@ -859,10 +859,15 @@ ma_account_save_cb (GObject      *object,
   if (error) {
     g_task_return_error (task, error);
   } else if (self->save_account_pending) {
+    char *pickle = NULL;
+
+    if (matrix_api_get_access_token (self->matrix_api))
+      pickle = matrix_enc_get_account_pickle (self->matrix_enc);
+
     self->save_account_pending = FALSE;
     matrix_db_save_account_async (self->matrix_db, CHATTY_ACCOUNT (self),
                                   chatty_account_get_enabled (CHATTY_ACCOUNT (self)),
-                                  matrix_enc_get_account_pickle (self->matrix_enc),
+                                  pickle,
                                   matrix_api_get_device_id (self->matrix_api),
                                   matrix_api_get_next_batch (self->matrix_api),
                                   ma_account_db_save_cb, g_steal_pointer (&task));
@@ -890,7 +895,7 @@ chatty_ma_account_save_async (ChattyMaAccount     *self,
   if (self->save_password_pending || force) {
     char *key = NULL;
 
-    if (self->matrix_enc)
+    if (self->matrix_enc && matrix_api_get_access_token (self->matrix_api))
       key = matrix_enc_get_pickle_key (self->matrix_enc);
 
     self->save_password_pending = FALSE;
@@ -900,10 +905,15 @@ chatty_ma_account_save_async (ChattyMaAccount     *self,
                                     key, cancellable,
                                     ma_account_save_cb, task);
   } else if (self->save_account_pending) {
+    char *pickle = NULL;
+
+    if (matrix_api_get_access_token (self->matrix_api))
+      pickle = matrix_enc_get_account_pickle (self->matrix_enc);
+
     self->save_account_pending = FALSE;
     matrix_db_save_account_async (self->matrix_db, CHATTY_ACCOUNT (self),
                                   chatty_account_get_enabled (CHATTY_ACCOUNT (self)),
-                                  matrix_enc_get_account_pickle (self->matrix_enc),
+                                  pickle,
                                   matrix_api_get_device_id (self->matrix_api),
                                   matrix_api_get_next_batch (self->matrix_api),
                                   ma_account_db_save_cb, task);
