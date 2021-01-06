@@ -151,7 +151,7 @@ api_get_version_cb (GObject      *obj,
       g_warning ("Chatty requires Client-Server API to be ‘r0.5.x’ or ‘r0.6.x’");
   }
 
-  g_debug ("Homeserver verified: %d", self->homeserver_verified);
+  g_debug ("Homeserver %s verified: %d", self->homeserver, self->homeserver_verified);
 
   if (!self->homeserver_verified) {
     self->error = g_error_new (MATRIX_ERROR, M_BAD_HOME_SERVER,
@@ -401,8 +401,6 @@ api_upload_group_keys_cb (GObject      *obj,
   } else {
     g_task_return_boolean (task, TRUE);
   }
-
-  g_warning ("upload keys: %s", matrix_utils_json_object_to_string (object, FALSE));
 }
 
 static void
@@ -549,7 +547,7 @@ handle_one_time_keys (MatrixApi  *self,
 
   /* If we don't have enough onetime keys add some */
   if (count < limit) {
-    g_warning ("generating onetime keys %lu", limit - count);
+    g_debug ("generating %lu onetime keys", limit - count);
     matrix_enc_create_one_time_keys (self->matrix_enc, limit - count);
 
     g_free (self->key);
@@ -590,9 +588,11 @@ matrix_login_cb (GObject      *obj,
       error->code = M_BAD_PASSWORD;
     self->error = error;
     self->callback (self->cb_object, self, MATRIX_PASSWORD_LOGIN, NULL, self->error);
-    g_debug ("Error loggin in: %s", error->message);
+    g_debug ("Error logging in: %s", error->message);
     return;
   }
+
+  g_debug ("login success");
 
   /* https://matrix.org/docs/spec/client_server/r0.6.1#post-matrix-client-r0-login */
   value = matrix_utils_json_object_get_string (root, "user_id");
@@ -613,7 +613,6 @@ matrix_login_cb (GObject      *obj,
   g_free (self->key);
   self->key = matrix_enc_get_device_keys_json (self->matrix_enc);
 
-  g_warning ("updating enc");
   self->callback (self->cb_object, self, MATRIX_PASSWORD_LOGIN, NULL, NULL);
   matrix_upload_key (self);
 }
@@ -646,7 +645,7 @@ matrix_upload_key_cb (GObject      *obj,
     return;
   }
 
-  g_warning ("uploaded key");
+  g_debug ("uploaded key");
   self->callback (self->cb_object, self, MATRIX_UPLOAD_KEY, root, NULL);
 
   object = matrix_utils_json_object_get_object (root, "one_time_key_counts");
@@ -685,6 +684,8 @@ matrix_take_red_pill_cb (GObject      *obj,
     g_debug ("Error syncing with time %s: %s", self->next_batch, error->message);
     return;
   }
+
+  g_debug ("sync success with batch %s", self->next_batch);
 
   object = matrix_utils_json_object_get_object (root, "device_one_time_keys_count");
   handle_one_time_keys (self, object);
@@ -851,6 +852,7 @@ matrix_verify_homeserver (MatrixApi *self)
   g_autofree char *uri = NULL;
 
   g_assert (MATRIX_IS_API (self));
+  g_debug ("verifying homeserver %s", self->homeserver);
 
   self->action = MATRIX_VERIFY_HOMESERVER;
   uri = g_strconcat (self->homeserver, "/_matrix/client/versions", NULL);
@@ -899,6 +901,7 @@ matrix_upload_key (MatrixApi *self)
   g_assert (MATRIX_IS_API (self));
   g_assert (self->key);
 
+  g_debug ("uploading key");
   key = g_steal_pointer (&self->key);
 
   queue_data (self, key, strlen (key), "/_matrix/client/r0/keys/upload",
@@ -919,10 +922,12 @@ matrix_start_sync (MatrixApi *self)
   if (!self->homeserver) {
     self->action = MATRIX_GET_HOMESERVER;
     if (!matrix_utils_username_is_complete (self->username)) {
+      g_debug ("Error: No Homeserver provided");
       self->sync_failed = TRUE;
       self->error = g_error_new (MATRIX_ERROR, M_NO_HOME_SERVER, "No Homeserver provided");
       self->callback (self->cb_object, self, self->action, NULL, self->error);
     } else {
+      g_debug ("Fetching home server details from username");
       matrix_utils_get_homeserver_async (self->username, URI_REQUEST_TIMEOUT, self->cancellable,
                                          (GAsyncReadyCallback)api_get_homeserver_cb,
                                          self);
@@ -942,6 +947,8 @@ matrix_take_red_pill (MatrixApi *self)
   GHashTable *query;
 
   g_assert (MATRIX_IS_API (self));
+  g_debug ("sync with server, full state: %d, next_batch: %s",
+           !self->full_state_loaded, self->next_batch);
 
   self->action = MATRIX_RED_PILL;
   query = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_free);
