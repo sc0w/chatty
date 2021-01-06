@@ -14,6 +14,7 @@ test_items = [
   'history',
   'settings',
   'utils',
+  'matrix-api',
   'matrix-db',
   'matrix-enc',
   'matrix-utils',
