@@ -275,13 +275,34 @@ matrix_db_save_account (MatrixDb *self,
     sqlite3_finalize (stmt);
   }
 
-  status = sqlite3_prepare_v2 (self->db,
-                      "INSERT OR IGNORE INTO users(username,device_id) VALUES(?1,?2)",
-                      -1, &stmt, NULL);
 
-  matrix_bind_text (stmt, 1, username, "binding when updating user");
-  if (device_id)
-    matrix_bind_int (stmt, 2, device_id, "binding when updating user");
+  /* Find user id with no device id set and have an associated account */
+  sqlite3_prepare_v2 (self->db,
+                      "SELECT users.id FROM users "
+                      "INNER JOIN accounts ON user_id=users.id "
+                      "WHERE username=?1 AND device_id IS NULL LIMIT 1",
+                      -1, &stmt, NULL);
+  matrix_bind_text (stmt, 1, username, "binding when getting user");
+
+  if (sqlite3_step (stmt) == SQLITE_ROW)
+    user_id = sqlite3_column_int (stmt, 0);
+
+  if (user_id) {
+    sqlite3_prepare_v2 (self->db,
+                        "UPDATE users SET device_id=? WHERE users.id=?",
+                        -1, &stmt, NULL);
+    if (device_id)
+      matrix_bind_int (stmt, 1, device_id, "binding when updating existing user");
+    matrix_bind_int (stmt, 2, user_id, "binding when updating existing user");
+    user_id = 0;
+  } else {
+    sqlite3_prepare_v2 (self->db,
+                        "INSERT OR IGNORE INTO users(username,device_id) VALUES(?1,?2)",
+                        -1, &stmt, NULL);
+    matrix_bind_text (stmt, 1, username, "binding when updating user");
+    if (device_id)
+      matrix_bind_int (stmt, 2, device_id, "binding when updating user");
+  }
 
   sqlite3_step (stmt);
   sqlite3_finalize (stmt);
