@@ -607,7 +607,7 @@ matrix_login_cb (GObject      *obj,
   object = matrix_utils_json_object_get_object (root, "well_known");
   object = matrix_utils_json_object_get_object (object, "m.homeserver");
   value = matrix_utils_json_object_get_string (object, "base_url");
-  api_set_string_value (&self->homeserver, value);
+  matrix_api_set_homeserver (self, value);
 
   matrix_enc_set_details (self->matrix_enc, self->username, self->device_id);
   g_free (self->key);
