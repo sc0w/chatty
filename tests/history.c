@@ -992,10 +992,11 @@ test_history_migration_db (void)
     sqlite3 *db = NULL;
     int status;
 
-    if (g_str_has_suffix (name, "v2.db"))
+    if (g_str_has_suffix (name, "v3.db"))
       continue;
 
     g_assert_true (g_str_has_suffix (name, "sql"));
+    g_debug ("Migrating %s", name);
 
     if (strstr (name, "DE"))
       chatty_settings_set_country_iso_code (chatty_settings_get_default (), "DE");
@@ -1009,7 +1010,7 @@ test_history_migration_db (void)
     sqlite3_close (db);
 
     /* Export migrated version sql file */
-    expected_file = g_strdelimit (g_strdup (name), "01", '2');
+    expected_file = g_strdelimit (g_strdup (name), "012", '3');
     export_sql_file (path, expected_file, &db);
 
     /* Open history with old db, which will result in db migration */

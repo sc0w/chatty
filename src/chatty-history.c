@@ -25,7 +25,7 @@
 #define STRING_VALUE(arg) #arg
 
 /* increment when DB changes */
-#define HISTORY_VERSION 2
+#define HISTORY_VERSION 3
 
 /* Shouldn't be modified, new values should be appended */
 #define CHATTY_ID_UNKNOWN_VALUE 0
@@ -48,6 +48,12 @@
 /* Chat thread type */
 #define THREAD_DIRECT_CHAT 0
 #define THREAD_GROUP_CHAT  1
+
+/* Chat thread visibility */
+#define THREAD_VISIBILITY_VISIBLE  0
+#define THREAD_VISIBILITY_HIDDEN   1
+#define THREAD_VISIBILITY_ARCHIVED 2
+#define THREAD_VISIBILITY_BLOCKED  3
 
 /* Shouldn't be modified, new values should be appended */
 #define MESSAGE_TYPE_UNKNOWN       0
@@ -455,6 +461,10 @@ chatty_history_create_schema (ChattyHistory *self,
     /* Alter threads after the messages table is created */
     "ALTER TABLE threads ADD COLUMN last_read_id INTEGER REFERENCES messages(id);"
 
+    /* Introduced in Version 3 */
+    "ALTER TABLE threads ADD COLUMN visibility INT NOT NULL DEFAULT "
+    STRING(THREAD_VISIBILITY_VISIBLE) ";"
+
     "COMMIT;";
 
   status = sqlite3_exec (self->db, sql, NULL, NULL, &error);
@@ -804,13 +814,13 @@ history_add_thread (ChattyHistory *self,
 
 /* TODO */
 /* this function works for migration from v0
- * to both v1 and v2 as the tables and columns
+ * to v1, v2, and v3 as the tables and columns
  * used in this function doesn't change in
- * v1 or v2.
+ * v1, v2 or v3.
  */
 static gboolean
-chatty_history_migrate_db_to_v1_v2 (ChattyHistory *self,
-                                    GTask         *task)
+chatty_history_migrate_db_to_v1_to_v3 (ChattyHistory *self,
+                                       GTask         *task)
 {
   char *error = NULL;
   int status;
@@ -1513,6 +1523,47 @@ chatty_history_migrate_db_to_v2 (ChattyHistory *self,
   return FALSE;
 }
 
+/* For migrating from v2 to v3 */
+static gboolean
+chatty_history_migrate_db_to_v3 (ChattyHistory *self,
+                                 GTask         *task)
+{
+  char *error = NULL;
+  int status;
+
+  g_assert (CHATTY_IS_HISTORY (self));
+  g_assert (G_IS_TASK (task));
+  g_assert (g_thread_self () == self->worker_thread);
+
+  chatty_history_backup (self);
+
+  status = sqlite3_exec (self->db,
+                         "BEGIN TRANSACTION;"
+                         "PRAGMA foreign_keys=OFF;"
+
+                         "ALTER TABLE threads ADD COLUMN visibility INT NOT NULL DEFAULT "
+                         STRING(THREAD_VISIBILITY_VISIBLE) ";"
+
+                         "COMMIT;",
+                         NULL, NULL, &error);
+
+  if (status == SQLITE_OK || status == SQLITE_DONE) {
+    /* Update user_version pragma */
+    if (!chatty_history_update_version (self, task))
+      return FALSE;
+    return TRUE;
+  }
+
+  g_task_return_new_error (task,
+                           G_IO_ERROR,
+                           G_IO_ERROR_FAILED,
+                           "Error setting db version. errno: %d, desc: %s. %s",
+                           status, sqlite3_errstr (status), error);
+  sqlite3_free (error);
+
+  return FALSE;
+}
+
 static gboolean
 chatty_history_migrate (ChattyHistory *self,
                         GTask         *task)
@@ -1534,12 +1585,17 @@ chatty_history_migrate (ChattyHistory *self,
     return FALSE;
 
   case 0:
-    if (!chatty_history_migrate_db_to_v1_v2 (self, task))
+    if (!chatty_history_migrate_db_to_v1_to_v3 (self, task))
       return FALSE;
     break;
 
   case 1:
     if (!chatty_history_migrate_db_to_v2 (self, task))
+      return FALSE;
+    /* fallthrough */
+
+  case 2:
+    if (!chatty_history_migrate_db_to_v3 (self, task))
       return FALSE;
     break;
 
