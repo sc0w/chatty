@@ -169,8 +169,11 @@ matrix_parse_room_data (ChattyMaAccount *self,
     for (GList *room_id = left_room_ids; room_id; room_id = room_id->next) {
       chat = matrix_find_chat_with_id (self, room_id->data, NULL);
 
-      if (chat)
+      if (chat) {
+        chatty_item_set_state (CHATTY_ITEM (chat), CHATTY_ITEM_HIDDEN);
+        chatty_history_update_chat (self->history_db, CHATTY_CHAT (chat));
         chatty_utils_remove_list_item (self->chat_list, chat);
+      }
     }
   }
 }
@@ -1018,9 +1021,15 @@ ma_account_leave_chat_cb (GObject      *object,
   /* Failed deleting from server, re-add in local chat list */
   if (!success) {
     ChattyChat *chat;
+    ChattyItemState old_state;
 
     chat = g_task_get_task_data (task);
     g_list_store_append (self->chat_list, chat);
+    chatty_item_set_state (CHATTY_ITEM (chat), CHATTY_ITEM_HIDDEN);
+
+    old_state = GPOINTER_TO_INT (g_object_get_data (G_OBJECT (task), "state"));
+    chatty_item_set_state (CHATTY_ITEM (chat), old_state);
+    chatty_history_update_chat (self->history_db, chat);
   }
 
   if (error)
@@ -1049,6 +1058,10 @@ chatty_ma_account_leave_chat_async (ChattyMaAccount     *self,
   if (!chatty_utils_remove_list_item (self->chat_list, chat))
     g_return_if_reached ();
 
+  g_object_set_data (G_OBJECT (task), "state",
+                     GINT_TO_POINTER (chatty_item_get_state (CHATTY_ITEM (chat))));
+  chatty_item_set_state (CHATTY_ITEM (chat), CHATTY_ITEM_HIDDEN);
+  chatty_history_update_chat (self->history_db, chat);
   matrix_api_leave_chat_async (self->matrix_api,
                                chatty_ma_chat_get_room_id (CHATTY_MA_CHAT (chat)),
                                ma_account_leave_chat_cb,
