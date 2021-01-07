@@ -971,7 +971,11 @@ chatty_ma_chat_is_im (ChattyChat *chat)
 static const char *
 chatty_ma_chat_get_chat_name (ChattyChat *chat)
 {
-  return chatty_item_get_name (CHATTY_ITEM (chat));
+  ChattyMaChat *self = (ChattyMaChat *)chat;
+
+  g_assert (CHATTY_IS_MA_CHAT (self));
+
+  return self->room_id;
 }
 
 static const char *
