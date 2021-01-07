@@ -74,6 +74,7 @@ struct _MatrixApi
   /* Set when error occurs with sync enabled */
   gboolean        sync_failed;
   gboolean        homeserver_verified;
+  gboolean        login_success;
 };
 
 G_DEFINE_TYPE (MatrixApi, matrix_api, G_TYPE_OBJECT)
@@ -521,6 +522,7 @@ handle_common_errors (MatrixApi *self,
 
   if (g_error_matches (error, MATRIX_ERROR, M_UNKNOWN_TOKEN)
       && self->password) {
+    self->login_success = FALSE;
     g_clear_pointer (&self->access_token, matrix_utils_free_buffer);
     matrix_enc_set_details (self->matrix_enc, NULL, NULL);
     matrix_start_sync (self);
@@ -593,6 +595,7 @@ matrix_login_cb (GObject      *obj,
   }
 
   g_debug ("login success");
+  self->login_success = TRUE;
 
   /* https://matrix.org/docs/spec/client_server/r0.6.1#post-matrix-client-r0-login */
   value = matrix_utils_json_object_get_string (root, "user_id");
@@ -686,6 +689,7 @@ matrix_take_red_pill_cb (GObject      *obj,
   }
 
   g_debug ("sync success with batch %s", self->next_batch);
+  self->login_success = TRUE;
 
   object = matrix_utils_json_object_get_object (root, "device_one_time_keys_count");
   handle_one_time_keys (self, object);
@@ -953,7 +957,10 @@ matrix_take_red_pill (MatrixApi *self)
   self->action = MATRIX_RED_PILL;
   query = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_free);
 
-  g_hash_table_insert (query, g_strdup ("timeout"), g_strdup_printf ("%u", SYNC_TIMEOUT));
+  if (self->login_success)
+    g_hash_table_insert (query, g_strdup ("timeout"), g_strdup_printf ("%u", SYNC_TIMEOUT));
+  else
+    g_hash_table_insert (query, g_strdup ("timeout"), g_strdup_printf ("%u", SYNC_TIMEOUT / 1000));
 
   if (self->next_batch)
     g_hash_table_insert (query, g_strdup ("since"), g_strdup (self->next_batch));
