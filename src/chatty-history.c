@@ -246,7 +246,46 @@ history_value_to_message_type (int value)
   g_return_val_if_reached (CHATTY_MESSAGE_HTML);
 }
 
+static int
+history_visibility_to_value (ChattyItemState state)
+{
+  switch (state) {
+  case CHATTY_ITEM_VISIBLE:
+    return THREAD_VISIBILITY_VISIBLE;
+
+  case CHATTY_ITEM_HIDDEN:
+    return THREAD_VISIBILITY_HIDDEN;
+
+  case CHATTY_ITEM_ARCHIVED:
+    return THREAD_VISIBILITY_ARCHIVED;
+
+  case CHATTY_ITEM_BLOCKED:
+    return THREAD_VISIBILITY_BLOCKED;
+
+  default:
+    g_return_val_if_reached (THREAD_VISIBILITY_VISIBLE);
+  }
+
+  g_return_val_if_reached (THREAD_VISIBILITY_VISIBLE);
+}
+
 #if 0
+
+static ChattyItemState
+history_value_to_visibility (int value)
+{
+  if (value == THREAD_VISIBILITY_VISIBLE)
+    return CHATTY_ITEM_VISIBLE;
+  if (value == THREAD_VISIBILITY_HIDDEN)
+    return CHATTY_ITEM_HIDDEN;
+  if (value == THREAD_VISIBILITY_ARCHIVED)
+    return CHATTY_ITEM_ARCHIVED;
+  if (value == THREAD_VISIBILITY_BLOCKED)
+    return CHATTY_ITEM_BLOCKED;
+
+  g_return_val_if_reached (CHATTY_ITEM_VISIBLE);
+}
+
 static int
 id_type_to_value (ChattyIdType type)
 {
@@ -666,13 +705,17 @@ insert_or_ignore_thread (ChattyHistory *self,
     return 0;
 
   sqlite3_prepare_v2 (self->db,
-                      "INSERT INTO threads(name,alias,account_id,type) "
-                      "VALUES(?,?,?,?);",
+                      "INSERT INTO threads(name,alias,account_id,type,visibility) "
+                      "VALUES(?1,?2,?3,?4,?5) "
+                      "ON CONFLICT(name,account_id,type) "
+                      "DO UPDATE SET alias=?2, visibility=?5",
                       -1, &stmt, NULL);
   history_bind_text (stmt, 1, chatty_chat_get_chat_name (chat), "binding when adding thread");
   history_bind_text (stmt, 2, chatty_item_get_name (CHATTY_ITEM (chat)), "binding when adding thread");
   history_bind_int (stmt, 3, account_id, "binding when adding thread");
   history_bind_int (stmt, 4, chatty_chat_is_im (chat) ? THREAD_DIRECT_CHAT : THREAD_GROUP_CHAT,
+                    "binding when adding thread");
+  history_bind_int (stmt, 5, history_visibility_to_value (chatty_item_get_state (CHATTY_ITEM (chat))),
                     "binding when adding thread");
   sqlite3_step (stmt);
   sqlite3_finalize (stmt);
@@ -2089,6 +2132,30 @@ history_add_message (ChattyHistory *self,
 }
 
 static void
+history_update_chat (ChattyHistory *self,
+                     GTask         *task)
+{
+  ChattyChat *chat;
+
+  g_assert (CHATTY_IS_HISTORY (self));
+  g_assert (G_IS_TASK (task));
+  g_assert (g_thread_self () == self->worker_thread);
+
+  if (!self->db) {
+    g_task_return_new_error (task,
+                             G_IO_ERROR, G_IO_ERROR_FAILED,
+                             "Database not opened");
+    return;
+  }
+
+  chat = g_object_get_data (G_OBJECT (task), "chat");
+  g_assert (CHATTY_IS_CHAT (chat));
+
+  if (insert_or_ignore_thread (self, chat, task))
+    g_task_return_boolean (task, TRUE);
+}
+
+static void
 history_delete_chat (ChattyHistory *self,
                      GTask         *task)
 {
@@ -2634,6 +2701,37 @@ chatty_history_add_message_finish  (ChattyHistory  *self,
   g_return_val_if_fail (!error || !*error, FALSE);
 
   return g_task_propagate_boolean (G_TASK (result), error);
+}
+
+gboolean
+chatty_history_update_chat (ChattyHistory *self,
+                            ChattyChat    *chat)
+{
+  g_autoptr(GTask) task = NULL;
+  g_autoptr(GError) error = NULL;
+  gboolean status;
+
+  g_return_val_if_fail (CHATTY_IS_HISTORY (self), FALSE);
+  g_return_val_if_fail (CHATTY_IS_CHAT (chat), FALSE);
+
+  task = g_task_new (NULL, NULL, NULL, NULL);
+  g_object_ref (task);
+  g_task_set_source_tag (task, chatty_history_update_chat);
+  g_task_set_task_data (task, history_update_chat, NULL);
+  g_object_set_data_full (G_OBJECT (task), "chat", g_object_ref (chat), g_object_unref);
+
+  g_async_queue_push (self->queue, task);
+
+  /* Wait until the task is completed */
+  while (!g_task_get_completed (task))
+    g_main_context_iteration (NULL, TRUE);
+
+  status = g_task_propagate_boolean (task, &error);
+
+  if (error)
+    g_warning ("Error updating chat: %s", error->message);
+
+  return status;
 }
 
 /**

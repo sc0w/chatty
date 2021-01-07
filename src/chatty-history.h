@@ -55,6 +55,8 @@ void           chatty_history_add_message_async   (ChattyHistory        *self,
 gboolean       chatty_history_add_message_finish  (ChattyHistory        *self,
                                                    GAsyncResult         *result,
                                                    GError              **error);
+gboolean       chatty_history_update_chat         (ChattyHistory        *self,
+                                                   ChattyChat           *chat);
 void           chatty_history_delete_chat_async   (ChattyHistory        *self,
                                                    ChattyChat           *chat,
                                                    GAsyncReadyCallback   callback,
