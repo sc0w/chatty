@@ -66,6 +66,7 @@ struct _ChattyMaChat
   MatrixDb         *matrix_db;
   ChattyHistory    *history_db;
 
+  ChattyItemState visibility_state;
   gint64          highlight_count;
   int             unread_count;
   int             room_name_update_ts;
@@ -1181,6 +1182,26 @@ chatty_ma_chat_get_name (ChattyItem *item)
   return "";
 }
 
+static ChattyItemState
+chatty_ma_chat_get_state (ChattyItem *item)
+{
+  ChattyMaChat *self = (ChattyMaChat *)item;
+
+  g_assert (CHATTY_IS_MA_CHAT (self));
+
+  return self->visibility_state;
+}
+
+static void
+chatty_ma_chat_set_state (ChattyItem      *item,
+                          ChattyItemState  state)
+{
+  ChattyMaChat *self = (ChattyMaChat *)item;
+
+  g_assert (CHATTY_IS_MA_CHAT (self));
+
+  self->visibility_state = state;
+}
 
 static ChattyProtocol
 chatty_ma_chat_get_protocols (ChattyItem *item)
@@ -1243,6 +1264,8 @@ chatty_ma_chat_class_init (ChattyMaChatClass *klass)
   object_class->finalize = chatty_ma_chat_finalize;
 
   item_class->get_name = chatty_ma_chat_get_name;
+  item_class->get_state = chatty_ma_chat_get_state;
+  item_class->set_state = chatty_ma_chat_set_state;
   item_class->get_protocols = chatty_ma_chat_get_protocols;
 
   chat_class->is_im = chatty_ma_chat_is_im;
