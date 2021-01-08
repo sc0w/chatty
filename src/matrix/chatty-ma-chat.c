@@ -1365,7 +1365,6 @@ chatty_ma_chat_set_data (ChattyMaChat  *self,
 {
   g_return_if_fail (CHATTY_IS_MA_CHAT (self));
   g_return_if_fail (MATRIX_IS_API (api));
-  g_return_if_fail (MATRIX_IS_ENC (enc));
 
   g_set_object (&self->account, account);
   g_set_object (&self->matrix_api, api);
