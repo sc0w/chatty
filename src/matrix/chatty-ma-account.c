@@ -534,6 +534,9 @@ chatty_ma_account_connect (ChattyAccount *account,
 
   g_assert (CHATTY_IS_MA_ACCOUNT (self));
 
+  if (!chatty_account_get_enabled (account))
+    return;
+
   self->status = CHATTY_CONNECTING;
   matrix_api_start_sync (self->matrix_api);
   g_object_notify (G_OBJECT (self), "status");
