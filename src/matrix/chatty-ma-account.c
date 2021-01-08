@@ -49,6 +49,8 @@ struct _ChattyMaAccount
   char           *next_batch;
 
   GListStore     *chat_list;
+  /* this will be moved to chat_list after login succeeds */
+  GPtrArray      *db_chat_list;
   GdkPixbuf      *avatar;
 
   ChattyStatus   status;
@@ -338,6 +340,21 @@ handle_red_pill (ChattyMaAccount *self,
   if (self->status != CHATTY_CONNECTED) {
     self->status = CHATTY_CONNECTED;
     g_object_notify (G_OBJECT (self), "status");
+  }
+
+  /* Copy chat list loaded from db to main chat list */
+  if (self->db_chat_list) {
+    GPtrArray *chats = self->db_chat_list;
+
+    for (guint i = 0; i < chats->len; i++) {
+      ChattyMaChat *chat = chats->pdata[i];
+      chatty_ma_chat_set_matrix_db (chat, self->matrix_db);
+      chatty_ma_chat_set_history_db (chat, self->history_db);
+      chatty_ma_chat_set_data (chat, CHATTY_ACCOUNT (self), self->matrix_api, self->matrix_enc);
+    }
+
+    g_list_store_splice (self->chat_list, 0, 0, chats->pdata, chats->len);
+    g_clear_pointer (&self->db_chat_list, g_ptr_array_unref);
   }
 
   object = matrix_utils_json_object_get_object (root, "to_device");
@@ -643,6 +660,7 @@ chatty_ma_account_finalize (GObject *object)
   g_clear_object (&self->matrix_enc);
   g_clear_object (&self->chat_list);
   g_clear_object (&self->avatar);
+  g_clear_pointer (&self->db_chat_list, g_ptr_array_unref);
 
   G_OBJECT_CLASS (chatty_ma_account_parent_class)->finalize (object);
 }
@@ -822,6 +840,29 @@ db_load_account_cb (GObject      *object,
   self->is_loading = FALSE;
 }
 
+static void
+db_load_chats_cb (GObject      *object,
+                  GAsyncResult *result,
+                  gpointer      user_data)
+{
+  ChattyMaAccount *self = user_data;
+  GTask *task = (GTask *)result;
+  GPtrArray *chats = NULL;
+  g_autoptr(GError) error = NULL;
+
+  g_assert (CHATTY_IS_MA_ACCOUNT (self));
+  g_assert (G_IS_TASK (task));
+
+  chats = chatty_history_get_chats_finish (self->history_db, result, &error);
+  self->db_chat_list = chats;
+
+  if (error)
+    g_warning ("Error getting chats: %s", error->message);
+
+  matrix_db_load_account_async (self->matrix_db, CHATTY_ACCOUNT (self),
+                                db_load_account_cb, self);
+}
+
 void
 chatty_ma_account_set_db (ChattyMaAccount *self,
                           gpointer         matrix_db)
@@ -829,10 +870,11 @@ chatty_ma_account_set_db (ChattyMaAccount *self,
   g_return_if_fail (CHATTY_IS_MA_ACCOUNT (self));
   g_return_if_fail (MATRIX_IS_DB (matrix_db));
   g_return_if_fail (!self->matrix_db);
+  g_return_if_fail (self->history_db);
 
   self->matrix_db = g_object_ref (matrix_db);
-  matrix_db_load_account_async (self->matrix_db, CHATTY_ACCOUNT (self),
-                                db_load_account_cb, self);
+  chatty_history_get_chats_async (self->history_db, CHATTY_ACCOUNT (self),
+                                  db_load_chats_cb, self);
 }
 
 static void
