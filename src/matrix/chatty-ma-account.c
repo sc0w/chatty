@@ -61,6 +61,7 @@ struct _ChattyMaAccount
 
   /* for sending events, incremented for each event */
   int            event_id;
+  guint          connect_id;
 };
 
 G_DEFINE_TYPE (ChattyMaAccount, chatty_ma_account, CHATTY_TYPE_ACCOUNT)
@@ -466,6 +467,8 @@ chatty_ma_account_set_enabled (ChattyAccount *account,
   if (self->account_enabled == enable)
     return;
 
+  g_clear_handle_id (&self->connect_id, g_source_remove);
+
   if (!self->matrix_enc && enable) {
     self->matrix_enc = matrix_enc_new (self->matrix_db, NULL, NULL);
     matrix_api_set_enc (self->matrix_api, self->matrix_enc);
@@ -525,7 +528,22 @@ chatty_ma_account_set_password (ChattyAccount *account,
   }
 }
 
-/* XXX: @delay is not implemented as we don't need it */
+static gboolean
+account_connect (gpointer user_data)
+{
+  g_autoptr(ChattyMaAccount) self = user_data;
+
+  g_assert (CHATTY_IS_MA_ACCOUNT (self));
+
+  self->connect_id = 0;
+  self->status = CHATTY_CONNECTING;
+  matrix_api_start_sync (self->matrix_api);
+  g_object_notify (G_OBJECT (self), "status");
+
+  return G_SOURCE_REMOVE;
+}
+
+/* XXX: We always delay regardless of the value of @delay */
 static void
 chatty_ma_account_connect (ChattyAccount *account,
                            gboolean       delay)
@@ -537,9 +555,8 @@ chatty_ma_account_connect (ChattyAccount *account,
   if (!chatty_account_get_enabled (account))
     return;
 
-  self->status = CHATTY_CONNECTING;
-  matrix_api_start_sync (self->matrix_api);
-  g_object_notify (G_OBJECT (self), "status");
+  g_clear_handle_id (&self->connect_id, g_source_remove);
+  self->connect_id = g_timeout_add (300, account_connect, g_object_ref (account));
 }
 
 static void
@@ -616,6 +633,7 @@ chatty_ma_account_finalize (GObject *object)
 {
   ChattyMaAccount *self = (ChattyMaAccount *)object;
 
+  g_clear_handle_id (&self->connect_id, g_source_remove);
   g_list_store_remove_all (self->chat_list);
 
   g_clear_object (&self->matrix_api);
