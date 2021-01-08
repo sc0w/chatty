@@ -1310,6 +1310,21 @@ chatty_ma_chat_init (ChattyMaChat *self)
   self->message_queue = g_queue_new ();
 }
 
+ChattyMaChat *
+chatty_ma_chat_new (const char *room_id,
+                    const char *name)
+{
+  ChattyMaChat *self;
+
+  g_return_val_if_fail (room_id && *room_id, NULL);
+
+  self = g_object_new (CHATTY_TYPE_MA_CHAT,
+                       "room-id", room_id, NULL);
+  self->room_name = g_strdup (name);
+
+  return self;
+}
+
 void
 chatty_ma_chat_set_history_db (ChattyMaChat *self,
                                gpointer      history_db)
