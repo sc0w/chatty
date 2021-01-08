@@ -1250,6 +1250,9 @@ matrix_api_set_next_batch (MatrixApi  *self,
   g_return_if_fail (MATRIX_IS_API (self));
   g_return_if_fail (!self->next_batch);
 
+  if (next_batch)
+    self->full_state_loaded = TRUE;
+
   self->next_batch = g_strdup (next_batch);
 }
 
