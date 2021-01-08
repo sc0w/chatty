@@ -1120,3 +1120,15 @@ chatty_ma_account_leave_chat_finish (ChattyMaAccount  *self,
 
   return g_task_propagate_boolean (G_TASK (result), error);
 }
+
+void
+chatty_ma_account_add_chat (ChattyMaAccount *self,
+                            ChattyChat      *chat)
+{
+  g_return_if_fail (CHATTY_IS_MA_ACCOUNT (self));
+  g_return_if_fail (CHATTY_IS_MA_CHAT (chat));
+
+  chatty_ma_chat_set_data (CHATTY_MA_CHAT (chat), CHATTY_ACCOUNT (self),
+                           self->matrix_api, self->matrix_enc);
+  g_list_store_append (self->chat_list, chat);
+}

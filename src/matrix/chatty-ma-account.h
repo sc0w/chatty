@@ -53,4 +53,8 @@ gboolean          chatty_ma_account_leave_chat_finish  (ChattyMaAccount *self,
                                                         GAsyncResult    *result,
                                                         GError         **error);
 
+/* For tests */
+void             chatty_ma_account_add_chat            (ChattyMaAccount *self,
+                                                        ChattyChat      *chat);
+
 G_END_DECLS
