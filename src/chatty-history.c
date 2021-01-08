@@ -17,6 +17,9 @@
 
 #include <sqlite3.h>
 
+#include "matrix/chatty-ma-account.h"
+#include "matrix/chatty-ma-chat.h"
+
 #include "chatty-utils.h"
 #include "chatty-settings.h"
 #include "chatty-history.h"
@@ -2132,6 +2135,68 @@ history_add_message (ChattyHistory *self,
 }
 
 static void
+history_get_chats (ChattyHistory *self,
+                   GTask         *task)
+{
+  GPtrArray *threads = NULL;
+  ChattyAccount *account;
+  sqlite3_stmt *stmt;
+  const char *user_id;
+  int protocol;
+
+  g_assert (CHATTY_IS_HISTORY (self));
+  g_assert (G_IS_TASK (task));
+  g_assert (g_thread_self () == self->worker_thread);
+
+  if (!self->db) {
+    g_task_return_new_error (task,
+                             G_IO_ERROR, G_IO_ERROR_FAILED,
+                             "Database not opened");
+    return;
+  }
+
+  account = g_object_get_data (G_OBJECT (task), "account");
+  /* We currently handle only matrix accounts */
+  g_assert (CHATTY_IS_MA_ACCOUNT (account));
+
+  user_id = chatty_account_get_username (account);
+  protocol = PROTOCOL_MATRIX;
+
+  sqlite3_prepare_v2 (self->db,
+                      "SELECT threads.id,threads.name,threads.alias FROM threads "
+                      "INNER JOIN accounts ON accounts.id=threads.account_id "
+                      "INNER JOIN users ON users.id=accounts.user_id "
+                      "AND users.username=? AND accounts.protocol=? "
+                      "WHERE visibility=" STRING(THREAD_VISIBILITY_VISIBLE),
+                      -1, &stmt, NULL);
+  history_bind_text (stmt, 1, user_id, "binding when getting threads");
+  history_bind_int (stmt, 2, protocol, "binding when getting threads");
+
+  while (sqlite3_step (stmt) == SQLITE_ROW) {
+    g_autoptr(GPtrArray) messages = NULL;
+    const char *name, *alias;
+    ChattyChat *chat;
+    int thread_id;
+
+    if (!threads)
+      threads = g_ptr_array_new_full (30, g_object_unref);
+
+    thread_id = sqlite3_column_int (stmt, 0);
+    name = (const char *)sqlite3_column_text (stmt, 1);
+    alias = (const char *)sqlite3_column_text (stmt, 2);
+
+    chat = (gpointer)chatty_ma_chat_new (name, alias);
+    messages = get_messages_before_id (self, chat, thread_id, INT_MAX, INT_MAX, 1);
+    chatty_ma_chat_add_messages (CHATTY_MA_CHAT (chat), messages);
+
+    g_ptr_array_insert (threads, -1, chat);
+  }
+
+  sqlite3_finalize (stmt);
+  g_task_return_pointer (task, threads, (GDestroyNotify)g_ptr_array_unref);
+}
+
+static void
 history_update_chat (ChattyHistory *self,
                      GTask         *task)
 {
@@ -2701,6 +2766,41 @@ chatty_history_add_message_finish  (ChattyHistory  *self,
   g_return_val_if_fail (!error || !*error, FALSE);
 
   return g_task_propagate_boolean (G_TASK (result), error);
+}
+
+void
+chatty_history_get_chats_async (ChattyHistory       *self,
+                                ChattyAccount       *account,
+                                GAsyncReadyCallback  callback,
+                                gpointer             user_data)
+{
+  GTask *task;
+
+  g_return_if_fail (CHATTY_IS_HISTORY (self));
+  g_return_if_fail (CHATTY_IS_ACCOUNT (account));
+
+  /* Currently we handle only matrix accounts */
+  if (!g_str_equal (chatty_account_get_protocol_name (account), "Matrix"))
+    g_return_if_reached ();
+
+  task = g_task_new (self, NULL, callback, user_data);
+  g_task_set_source_tag (task, chatty_history_get_chats_async);
+  g_task_set_task_data (task, history_get_chats, NULL);
+  g_object_set_data_full (G_OBJECT (task), "account", g_object_ref (account), g_object_unref);
+
+  g_async_queue_push (self->queue, task);
+}
+
+GPtrArray *
+chatty_history_get_chats_finish (ChattyHistory  *self,
+                                 GAsyncResult   *result,
+                                 GError        **error)
+{
+  g_return_val_if_fail (CHATTY_IS_HISTORY (self), NULL);
+  g_return_val_if_fail (G_IS_TASK (result), NULL);
+  g_return_val_if_fail (!error || !*error, NULL);
+
+  return g_task_propagate_pointer (G_TASK (result), error);
 }
 
 gboolean
