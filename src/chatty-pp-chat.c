@@ -18,6 +18,7 @@
 #endif
 
 #include "contrib/gtk.h"
+#include "chatty-history.h"
 #include "chatty-settings.h"
 #include "chatty-icons.h"
 #include "chatty-utils.h"
@@ -48,6 +49,9 @@ struct _ChattyPpChat
 {
   ChattyChat          parent_instance;
 
+  ChattyPpAccount    *pp_account;
+  ChattyHistory      *history;
+
   PurpleAccount      *account;
   PurpleBuddy        *buddy;
 
@@ -63,6 +67,8 @@ struct _ChattyPpChat
   guint               last_msg_time;
   ChattyEncryption    encrypt;
   gboolean            buddy_typing;
+  gboolean            initial_history_loaded;
+  gboolean            history_is_loading;
 };
 
 G_DEFINE_TYPE (ChattyPpChat, chatty_pp_chat, CHATTY_TYPE_CHAT)
@@ -246,6 +252,49 @@ chat_find_user (ChattyPpChat *self,
   return NULL;
 }
 
+static void
+pp_chat_load_db_messages_cb (GObject      *object,
+                             GAsyncResult *result,
+                             gpointer      user_data)
+{
+  g_autoptr(ChattyPpChat) self = user_data;
+  g_autoptr(GPtrArray) messages = NULL;
+  g_autoptr(GError) error = NULL;
+
+  g_assert (CHATTY_IS_PP_CHAT (self));
+
+  messages = chatty_history_get_messages_finish (self->history, result, &error);
+  self->history_is_loading = FALSE;
+
+  if (!error && !messages && !self->initial_history_loaded)
+    chatty_pp_chat_set_show_notifications (self, TRUE);
+
+  self->initial_history_loaded = TRUE;
+
+  if (messages && messages->len &&
+      chatty_pp_chat_get_auto_join (self)) {
+    g_list_store_splice (self->message_store, 0, 0, messages->pdata, messages->len);
+    g_signal_emit_by_name (self, "changed", 0);
+  } else if (error && !g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED)) {
+   g_warning ("Error fetching messages: %s,", error->message);
+ }
+}
+
+static void
+chatty_pp_chat_set_data (ChattyChat *chat,
+                         gpointer    account,
+                         gpointer    history)
+{
+  ChattyPpChat *self = (ChattyPpChat *)chat;
+
+  g_assert (CHATTY_IS_PP_CHAT (self));
+  g_return_if_fail (!account || CHATTY_PP_ACCOUNT (account));
+  g_assert (CHATTY_IS_HISTORY (history));
+
+  g_set_object (&self->pp_account, account);
+  g_set_object (&self->history, history);
+}
+
 static gboolean
 chatty_pp_chat_is_im (ChattyChat *chat)
 {
@@ -327,6 +376,28 @@ chatty_pp_chat_get_account (ChattyChat *chat)
     return NULL;
 
   return account->ui_data;
+}
+
+static void
+chatty_pp_chat_real_past_messages (ChattyChat *chat,
+                                   int         count)
+{
+  ChattyPpChat *self = (ChattyPpChat *)chat;
+  GListModel *model;
+
+  g_assert (CHATTY_IS_PP_CHAT (self));
+  g_assert (count > 0);
+
+  if (self->history_is_loading)
+    return;
+
+  self->history_is_loading = TRUE;
+  model = chatty_chat_get_messages (chat);
+
+  chatty_history_get_messages_async (self->history, chat,
+                                     g_list_model_get_item (model, 0),
+                                     count, pp_chat_load_db_messages_cb,
+                                     g_object_ref (self));
 }
 
 static GListModel *
@@ -640,10 +711,12 @@ chatty_pp_chat_class_init (ChattyPpChatClass *klass)
   item_class->get_avatar = chatty_pp_chat_get_avatar;
   item_class->set_avatar_async = chatty_pp_chat_set_avatar_async;
 
+  chat_class->set_data = chatty_pp_chat_set_data;
   chat_class->is_im = chatty_pp_chat_is_im;
   chat_class->get_chat_name = chatty_pp_chat_get_chat_name;
   chat_class->get_username = chatty_pp_chat_get_username;
   chat_class->get_account = chatty_pp_chat_get_account;
+  chat_class->load_past_messages = chatty_pp_chat_real_past_messages;
   chat_class->get_messages = chatty_pp_chat_get_messages;
   chat_class->get_users = chatty_pp_chat_get_users;
   chat_class->get_last_message = chatty_pp_chat_get_last_message;
