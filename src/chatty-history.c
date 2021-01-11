@@ -1744,61 +1744,26 @@ history_close_db (ChattyHistory *self,
   }
 }
 
-static guint
-get_id_for_message (ChattyHistory *self,
-                    ChattyChat    *chat,
-                    ChattyMessage *message,
-                    int           *thread_id)
-{
-  const char *uuid;
-  sqlite3_stmt *stmt;
-  int status;
-  guint id = INT_MAX;
-
-  g_assert (g_thread_self () == self->worker_thread);
-  g_assert (thread_id);
-
-  *thread_id = get_thread_id (self, chat);
-
-  if (!CHATTY_IS_MESSAGE (message) || !CHATTY_IS_CHAT (chat) || !*thread_id)
-    return id;
-
-  uuid = chatty_message_get_uid (message);
-
-  if (!uuid || !*uuid)
-    return id;
-
-  sqlite3_prepare_v2 (self->db, "SELECT id FROM messages WHERE thread_id=? AND uid=?", -1, &stmt, NULL);
-  history_bind_int (stmt, 1, *thread_id, "binding when getting id");
-  history_bind_text (stmt, 2, uuid, "binding when getting id");
-
-  status = sqlite3_step (stmt);
-  warn_if_sql_error (status, "finding message for id");
-  if (status == SQLITE_ROW)
-    id = sqlite3_column_int (stmt, 0);
-
-  status = sqlite3_finalize (stmt);
-  warn_if_sql_error (status, "finalizing when getting id");
-
-  return id;
-}
-
 static GPtrArray *
-get_messages_before_id (ChattyHistory *self,
-                        ChattyChat    *chat,
-                        int            thread_id,
-                        guint          since_id,
-                        guint          since_time,
-                        guint          limit)
+get_messages_before_time (ChattyHistory *self,
+                          ChattyChat    *chat,
+                          ChattyMessage *start,
+                          int            thread_id,
+                          guint          since_time,
+                          guint          limit)
 {
   GPtrArray *messages = NULL;
   sqlite3_stmt *stmt;
   int status;
+  gboolean skip = TRUE;
 
   g_assert (CHATTY_IS_HISTORY (self));
   g_assert (CHATTY_IS_CHAT (chat));
   g_assert (g_thread_self () == self->worker_thread);
   g_assert (limit != 0);
+
+  if (!start)
+    skip = FALSE;
 
   status = sqlite3_prepare_v2 (self->db,
                                "SELECT DISTINCT time,direction,body,uid,users.username,body_type,"
@@ -1824,15 +1789,13 @@ get_messages_before_id (ChattyHistory *self,
                                "LEFT JOIN users "
                                "ON messages.sender_id=users.id "
                                "WHERE thread_id=? "
-                               "AND messages.id < ? "
                                "AND messages.time <= ? "
                                "AND body NOT NULL AND body !='' "
                                "ORDER BY time DESC, messages.id DESC LIMIT ?;",
                                -1, &stmt, NULL);
   history_bind_int (stmt, 1, thread_id, "binding when getting messages");
-  history_bind_int (stmt, 2, since_id, "binding when getting messages");
-  history_bind_int (stmt, 3, since_time, "binding when getting messages");
-  history_bind_int (stmt, 4, limit, "binding when getting messages");
+  history_bind_int (stmt, 2, since_time, "binding when getting messages");
+  history_bind_int (stmt, 3, limit, "binding when getting messages");
 
   while (sqlite3_step (stmt) == SQLITE_ROW) {
     ChattyFileInfo *file = NULL, *preview = NULL;
@@ -1842,6 +1805,19 @@ get_messages_before_id (ChattyHistory *self,
     ChattyMsgType type;
     guint time_stamp;
     int direction;
+
+    uid = (const char *)sqlite3_column_text (stmt, 3);
+
+    /* Skip until we pass the last message already in chat.
+     * This can happen as we load all messages with time <= message,
+     * which is required as there can be multiple messages with
+     * same timestamp.
+     */
+    if (skip && start) {
+      if (g_strcmp0 (uid, chatty_message_get_uid (start)) == 0)
+        skip = FALSE;
+      continue;
+    }
 
     if (!messages)
       messages = g_ptr_array_new_full (30, g_object_unref);
@@ -1879,8 +1855,6 @@ get_messages_before_id (ChattyHistory *self,
     else
       msg = (const char *)sqlite3_column_text (stmt, 2);
 
-    uid = (const char *)sqlite3_column_text (stmt, 3);
-
     if (!chatty_chat_is_im (chat))
       who = (const char *)sqlite3_column_text (stmt, 4);
 
@@ -1904,7 +1878,6 @@ history_get_messages (ChattyHistory *self,
   GPtrArray *messages;
   ChattyMessage *start;
   ChattyChat *chat;
-  guint since_id;
   guint limit;
   int thread_id, since = INT_MAX;
 
@@ -1930,8 +1903,17 @@ history_get_messages (ChattyHistory *self,
   if (start)
     since = chatty_message_get_time (start);
 
-  since_id = get_id_for_message (self, chat, start, &thread_id);
-  messages = get_messages_before_id (self, chat, thread_id, since_id, since, limit);
+  thread_id = get_thread_id (self, chat);
+
+  if (!thread_id) {
+    g_task_return_new_error (task,
+                             G_IO_ERROR, G_IO_ERROR_FAILED,
+                             "Couldn't find chat %s",
+                             chatty_chat_get_chat_name (chat));
+    return;
+  }
+
+  messages = get_messages_before_time (self, chat, start, thread_id, since, limit);
   g_task_return_pointer (task, messages, (GDestroyNotify)g_ptr_array_unref);
 }
 
@@ -2186,7 +2168,7 @@ history_get_chats (ChattyHistory *self,
     alias = (const char *)sqlite3_column_text (stmt, 2);
 
     chat = (gpointer)chatty_ma_chat_new (name, alias);
-    messages = get_messages_before_id (self, chat, thread_id, INT_MAX, INT_MAX, 1);
+    messages = get_messages_before_time (self, chat, NULL, thread_id, INT_MAX, 1);
     chatty_ma_chat_add_messages (CHATTY_MA_CHAT (chat), messages);
 
     g_ptr_array_insert (threads, -1, chat);
