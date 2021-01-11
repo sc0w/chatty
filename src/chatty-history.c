@@ -1837,7 +1837,7 @@ get_messages_before_id (ChattyHistory *self,
   while (sqlite3_step (stmt) == SQLITE_ROW) {
     ChattyFileInfo *file = NULL, *preview = NULL;
     ChattyMessage *message;
-    const char *msg, *uid;
+    const char *msg = NULL, *uid;
     const char *who = NULL;
     ChattyMsgType type;
     guint time_stamp;
