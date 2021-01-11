@@ -76,6 +76,7 @@ struct _ChattyMaChat
   guint          claiming_keys : 1;
   guint          keys_claimed : 1;
   guint          prev_batch_loading : 1;
+  guint          history_is_loading : 1;
 
   guint          room_name_loaded : 1;
   guint          buddy_typing : 1;
@@ -962,6 +963,28 @@ get_messages_cb (GObject      *obj,
     chatty_ma_chat_set_prev_batch (self, g_strdup (matrix_utils_json_object_get_string (root, "end")));
 }
 
+static void
+ma_chat_load_db_messages_cb (GObject      *object,
+                             GAsyncResult *result,
+                             gpointer      user_data)
+{
+  g_autoptr(ChattyMaChat) self = user_data;
+  g_autoptr(GPtrArray) messages = NULL;
+  g_autoptr(GError) error = NULL;
+
+  g_assert (CHATTY_IS_MA_CHAT (self));
+
+  messages = chatty_history_get_messages_finish (self->history_db, result, &error);
+  self->history_is_loading = FALSE;
+
+  if (messages && messages->len) {
+    g_list_store_splice (self->message_list, 0, 0, messages->pdata, messages->len);
+    g_signal_emit_by_name (self, "changed", 0);
+  } else if (error && !g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED)) {
+    g_warning ("Error fetching messages: %s,", error->message);
+  }
+}
+
 static gboolean
 chatty_ma_chat_is_im (ChattyChat *chat)
 {
@@ -986,6 +1009,28 @@ chatty_ma_chat_get_username (ChattyChat *chat)
   g_assert (CHATTY_IS_MA_CHAT (self));
 
   return matrix_api_get_username (self->matrix_api);
+}
+
+static void
+chatty_ma_chat_real_past_messages (ChattyChat *chat,
+                                   int         count)
+{
+  ChattyMaChat *self = (ChattyMaChat *)chat;
+  GListModel *model;
+
+  g_assert (CHATTY_IS_MA_CHAT (self));
+  g_assert (count > 0);
+
+  if (self->history_is_loading)
+    return;
+
+  self->history_is_loading = TRUE;
+  model = chatty_chat_get_messages (chat);
+
+  chatty_history_get_messages_async (self->history_db, chat,
+                                     g_list_model_get_item (model, 0),
+                                     count, ma_chat_load_db_messages_cb,
+                                     g_object_ref (self));
 }
 
 static GListModel *
@@ -1203,6 +1248,7 @@ chatty_ma_chat_class_init (ChattyMaChatClass *klass)
   chat_class->is_im = chatty_ma_chat_is_im;
   chat_class->get_chat_name = chatty_ma_chat_get_chat_name;
   chat_class->get_username = chatty_ma_chat_get_username;
+  chat_class->load_past_messages = chatty_ma_chat_real_past_messages;
   chat_class->get_messages = chatty_ma_chat_get_messages;
   chat_class->get_account  = chatty_ma_chat_get_account;
   chat_class->get_encryption = chatty_ma_chat_get_encryption;
