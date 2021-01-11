@@ -74,6 +74,25 @@ void           matrix_db_load_account_async            (MatrixDb        *db,
 gboolean       matrix_db_load_account_finish           (MatrixDb        *self,
                                                         GAsyncResult    *result,
                                                         GError         **error);
+void           matrix_db_save_room_async               (MatrixDb        *self,
+                                                        ChattyAccount   *account,
+                                                        const char      *account_device,
+                                                        const char      *room_id,
+                                                        const char      *prev_batch,
+                                                        GAsyncReadyCallback callback,
+                                                        gpointer         user_data);
+gboolean       matrix_db_save_room_finish              (MatrixDb        *self,
+                                                        GAsyncResult    *result,
+                                                        GError         **error);
+void           matrix_db_load_room_async               (MatrixDb        *self,
+                                                        ChattyAccount   *account,
+                                                        const char      *account_device,
+                                                        const char      *room_id,
+                                                        GAsyncReadyCallback callback,
+                                                        gpointer         user_data);
+char          *matrix_db_load_room_finish              (MatrixDb        *self,
+                                                        GAsyncResult    *result,
+                                                        GError         **error);
 void           matrix_db_delete_account_async          (MatrixDb        *self,
                                                         ChattyAccount   *account,
                                                         GAsyncReadyCallback callback,

@@ -110,6 +110,13 @@ matrix_db_create_schema (MatrixDb *self,
     "enabled INTEGER DEFAULT 0, "
     "UNIQUE (user_id));"
 
+    "CREATE TABLE IF NOT EXISTS rooms ("
+    "id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, "
+    "account_id INTEGER NOT NULL REFERENCES accounts(id), "
+    "room_name TEXT NOT NULL, "
+    "prev_batch TEXT, "
+    "UNIQUE (account_id, room_name));"
+
     "CREATE TABLE IF NOT EXISTS encryption_keys ("
     "id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, "
     "file_url TEXT NOT NULL, "
@@ -426,6 +433,82 @@ matrix_db_load_account (MatrixDb *self,
 
   sqlite3_finalize (stmt);
   g_task_return_boolean (task, status == SQLITE_ROW);
+}
+
+static void
+matrix_db_save_room (MatrixDb *self,
+                     GTask    *task)
+{
+  sqlite3_stmt *stmt;
+  const char *username, *room_name, *batch, *account_device;
+  int status, account_id;
+
+  g_assert (MATRIX_IS_DB (self));
+  g_assert (G_IS_TASK (task));
+  g_assert (g_thread_self () == self->worker_thread);
+  g_assert (self->db);
+
+  batch = g_object_get_data (G_OBJECT (task), "prev-batch");
+  username = g_object_get_data (G_OBJECT (task), "account-id");
+  room_name = g_object_get_data (G_OBJECT (task), "room");
+  account_device = g_object_get_data (G_OBJECT (task), "account-device");
+
+  account_id = matrix_db_get_account_id (self, task, username, account_device);
+
+  if (!account_id)
+    return;
+
+  sqlite3_prepare_v2 (self->db,
+                      "INSERT INTO rooms(account_id,room_name,prev_batch) "
+                      "VALUES(?1,?2,?3) "
+                      "ON CONFLICT(account_id, room_name) "
+                      "DO UPDATE SET prev_batch=?3",
+                      -1, &stmt, NULL);
+  matrix_bind_int (stmt, 1, account_id, "binding when saving room");
+  matrix_bind_text (stmt, 2, room_name, "binding when saving room");
+  matrix_bind_text (stmt, 3, batch, "binding when saving room");
+
+  status = sqlite3_step (stmt);
+  sqlite3_finalize (stmt);
+  g_task_return_boolean (task, status == SQLITE_DONE);
+}
+
+static void
+matrix_db_load_room (MatrixDb *self,
+                     GTask    *task)
+{
+  const char *username, *room_name, *account_device;
+  sqlite3_stmt *stmt;
+  int account_id;
+
+  g_assert (MATRIX_IS_DB (self));
+  g_assert (G_IS_TASK (task));
+  g_assert (g_thread_self () == self->worker_thread);
+  g_assert (self->db);
+
+  username = g_object_get_data (G_OBJECT (task), "account-id");
+  room_name = g_object_get_data (G_OBJECT (task), "room");
+  account_device = g_object_get_data (G_OBJECT (task), "account-device");
+
+  account_id = matrix_db_get_account_id (self, task, username, account_device);
+
+  if (!account_id)
+    return;
+
+  sqlite3_prepare_v2 (self->db,
+                      "SELECT prev_batch FROM rooms "
+                      "WHERE account_id=? AND room_name=? ",
+                      -1, &stmt, NULL);
+
+  matrix_bind_int (stmt, 1, account_id, "binding when loading room");
+  matrix_bind_text (stmt, 2, room_name, "binding when loading room");
+
+  if (sqlite3_step (stmt) == SQLITE_ROW)
+    g_task_return_pointer (task, g_strdup ((char *)sqlite3_column_text (stmt, 0)), g_free);
+  else
+    g_task_return_pointer (task, NULL, NULL);
+
+  sqlite3_finalize (stmt);
 }
 
 static void
@@ -916,6 +999,88 @@ matrix_db_load_account_finish (MatrixDb      *self,
   g_return_val_if_fail (G_IS_TASK (result), FALSE);
 
   return g_task_propagate_boolean (G_TASK (result), error);
+}
+
+void
+matrix_db_save_room_async (MatrixDb            *self,
+                           ChattyAccount       *account,
+                           const char          *account_device,
+                           const char          *room_id,
+                           const char          *prev_batch,
+                           GAsyncReadyCallback  callback,
+                           gpointer             user_data)
+{
+  GTask *task;
+  const char *username;
+
+  g_return_if_fail (MATRIX_IS_DB (self));
+  g_return_if_fail (CHATTY_IS_ACCOUNT (account));
+  g_return_if_fail (room_id && *room_id == '!');
+
+  task = g_task_new (self, NULL, callback, user_data);
+  g_task_set_source_tag (task, matrix_db_save_room_async);
+  g_task_set_task_data (task, matrix_db_save_room, NULL);
+
+  username = chatty_account_get_username (CHATTY_ACCOUNT (account));
+  g_object_set_data_full (G_OBJECT (task), "room", g_strdup (room_id), g_free);
+  g_object_set_data_full (G_OBJECT (task), "username", g_strdup (username), g_free);
+  g_object_set_data_full (G_OBJECT (task), "account-id", g_strdup (username), g_free);
+  g_object_set_data_full (G_OBJECT (task), "prev-batch", g_strdup (prev_batch), g_free);
+  g_object_set_data_full (G_OBJECT (task), "account", g_object_ref (account), g_object_unref);
+  g_object_set_data_full (G_OBJECT (task), "account-device", g_strdup (account_device), g_free);
+
+  g_async_queue_push (self->queue, task);
+}
+
+gboolean
+matrix_db_save_room_finish (MatrixDb      *self,
+                            GAsyncResult  *result,
+                            GError       **error)
+{
+  g_return_val_if_fail (MATRIX_IS_DB (self), FALSE);
+  g_return_val_if_fail (G_IS_TASK (result), FALSE);
+
+  return g_task_propagate_boolean (G_TASK (result), error);
+}
+
+void
+matrix_db_load_room_async (MatrixDb            *self,
+                           ChattyAccount       *account,
+                           const char          *account_device,
+                           const char          *room_id,
+                           GAsyncReadyCallback  callback,
+                           gpointer             user_data)
+{
+  GTask *task;
+  const char *username;
+
+  g_return_if_fail (MATRIX_IS_DB (self));
+  g_return_if_fail (CHATTY_IS_ACCOUNT (account));
+  g_return_if_fail (room_id && *room_id == '!');
+
+  task = g_task_new (self, NULL, callback, user_data);
+  g_task_set_source_tag (task, matrix_db_load_room_async);
+  g_task_set_task_data (task, matrix_db_load_room, NULL);
+
+  username = chatty_account_get_username (CHATTY_ACCOUNT (account));
+  g_object_set_data_full (G_OBJECT (task), "room", g_strdup (room_id), g_free);
+  g_object_set_data_full (G_OBJECT (task), "username", g_strdup (username), g_free);
+  g_object_set_data_full (G_OBJECT (task), "account-id", g_strdup (username), g_free);
+  g_object_set_data_full (G_OBJECT (task), "account", g_object_ref (account), g_object_unref);
+  g_object_set_data_full (G_OBJECT (task), "account-device", g_strdup (account_device), g_free);
+
+  g_async_queue_push (self->queue, task);
+}
+
+char *
+matrix_db_load_room_finish (MatrixDb      *self,
+                            GAsyncResult  *result,
+                            GError       **error)
+{
+  g_return_val_if_fail (MATRIX_IS_DB (self), FALSE);
+  g_return_val_if_fail (G_IS_TASK (result), FALSE);
+
+  return g_task_propagate_pointer (G_TASK (result), error);
 }
 
 void
