@@ -27,6 +27,9 @@ struct _ChattyChatClass
 {
   ChattyItemClass  parent_class;
 
+  void              (*set_data)           (ChattyChat *self,
+                                           gpointer    account,
+                                           gpointer    history_db);
   gboolean          (*is_im)              (ChattyChat *self);
   const char       *(*get_chat_name)      (ChattyChat *self);
   const char       *(*get_username)       (ChattyChat *self);
@@ -34,6 +37,8 @@ struct _ChattyChatClass
   GListModel       *(*get_messages)       (ChattyChat *self);
   GListModel       *(*get_users)          (ChattyChat *self);
   const char       *(*get_last_message)   (ChattyChat *self);
+  void              (*load_past_messages) (ChattyChat *self,
+                                           int         limit);
   guint             (*get_unread_count)   (ChattyChat *self);
   void              (*set_unread_count)   (ChattyChat *self,
                                            guint       unread_count);
@@ -47,11 +52,16 @@ struct _ChattyChatClass
 ChattyChat         *chatty_chat_new                (const char *account_username,
                                                     const char *chat_name,
                                                     gboolean    is_im);
+void                chatty_chat_set_data           (ChattyChat *self,
+                                                    gpointer    account,
+                                                    gpointer    history_db);
 gboolean            chatty_chat_is_im              (ChattyChat *self);
 const char         *chatty_chat_get_chat_name      (ChattyChat *self);
 const char         *chatty_chat_get_username       (ChattyChat *self);
 ChattyAccount      *chatty_chat_get_account        (ChattyChat *self);
 GListModel         *chatty_chat_get_messages       (ChattyChat *self);
+void                chatty_chat_load_past_messages (ChattyChat *self,
+                                                    int         count);
 GListModel         *chatty_chat_get_users          (ChattyChat *self);
 const char         *chatty_chat_get_last_message   (ChattyChat *self);
 guint               chatty_chat_get_unread_count   (ChattyChat *self);

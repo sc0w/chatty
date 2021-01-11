@@ -18,6 +18,7 @@
 #define _GNU_SOURCE
 #include <string.h>
 
+#include "chatty-history.h"
 #include "chatty-chat.h"
 
 /**
@@ -26,10 +27,15 @@
  * @short_description: The base class for Chats
  */
 
+#define LAZY_LOAD_MSGS_LIMIT 20
+
 typedef struct
 {
   char *chat_name;
   char *user_name;
+
+  gpointer account;
+  gpointer history;
 
   gboolean is_im;
 } ChattyChatPrivate;
@@ -51,6 +57,19 @@ enum {
 static GParamSpec *properties[N_PROPS];
 static guint signals[N_SIGNALS];
 
+
+static void
+chatty_chat_real_set_data (ChattyChat *self,
+                           gpointer    account,
+                           gpointer    history)
+{
+  ChattyChatPrivate *priv = chatty_chat_get_instance_private (self);
+
+  g_assert (CHATTY_IS_CHAT (self));
+
+  g_set_object (&priv->account, account);
+  g_set_object (&priv->history, history);
+}
 
 static gboolean
 chatty_chat_real_is_im (ChattyChat *self)
@@ -91,7 +110,18 @@ chatty_chat_real_get_username (ChattyChat *self)
 static ChattyAccount *
 chatty_chat_real_get_account (ChattyChat *self)
 {
-  return NULL;
+  ChattyChatPrivate *priv = chatty_chat_get_instance_private (self);
+
+  g_assert (CHATTY_IS_CHAT (self));
+
+  return priv->account;
+}
+
+static void
+chatty_chat_real_load_past_messages (ChattyChat *self,
+                                     int         count)
+{
+  /* Do nothing */
 }
 
 static GListModel *
@@ -209,6 +239,9 @@ chatty_chat_finalize (GObject *object)
   g_free (priv->chat_name);
   g_free (priv->user_name);
 
+  g_clear_object (&priv->account);
+  g_clear_object (&priv->history);
+
   G_OBJECT_CLASS (chatty_chat_parent_class)->finalize (object);
 }
 
@@ -224,10 +257,12 @@ chatty_chat_class_init (ChattyChatClass *klass)
 
   item_class->get_name = chatty_chat_real_get_name;
 
+  klass->set_data = chatty_chat_real_set_data;
   klass->is_im = chatty_chat_real_is_im;
   klass->get_chat_name = chatty_chat_real_get_chat_name;
   klass->get_username = chatty_chat_real_get_username;
   klass->get_account = chatty_chat_real_get_account;
+  klass->load_past_messages = chatty_chat_real_load_past_messages;
   klass->get_messages = chatty_chat_real_get_messages;
   klass->get_users = chatty_chat_real_get_users;
   klass->get_last_message = chatty_chat_real_get_last_message;
@@ -287,6 +322,18 @@ chatty_chat_new (const char *account_username,
   priv->is_im = !!is_im;
 
   return self;
+}
+
+void
+chatty_chat_set_data (ChattyChat *self,
+                      gpointer    account,
+                      gpointer    history)
+{
+  g_return_if_fail (CHATTY_IS_CHAT (self));
+  g_return_if_fail (!account || CHATTY_IS_ACCOUNT (account));
+  g_return_if_fail (CHATTY_IS_HISTORY (history));
+
+  CHATTY_CHAT_GET_CLASS (self)->set_data (self, account, history);
 }
 
 /**
@@ -349,6 +396,27 @@ chatty_chat_get_messages (ChattyChat *self)
   g_return_val_if_fail (CHATTY_IS_CHAT (self), NULL);
 
   return CHATTY_CHAT_GET_CLASS (self)->get_messages (self);
+}
+
+/**
+ * chatty_chat_load_past_messages:
+ * @self: A #ChattyChat
+ * @count: number of messages to load
+ *
+ * Load @count number of past messages.
+ * if @count is 0 or less, the default
+ * number of messages shall be loaded
+ */
+void
+chatty_chat_load_past_messages (ChattyChat *self,
+                                int         count)
+{
+  g_return_if_fail (CHATTY_IS_CHAT (self));
+
+  if (count <= 0)
+    count = LAZY_LOAD_MSGS_LIMIT;
+
+  CHATTY_CHAT_GET_CLASS (self)->load_past_messages (self, count);
 }
 
 GListModel *chatty_chat_get_users (ChattyChat *self)
