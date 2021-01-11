@@ -365,7 +365,7 @@ chat_view_edge_overshot_cb (ChattyChatView  *self,
   g_assert (CHATTY_IS_CHAT_VIEW (self));
 
   if (pos == GTK_POS_TOP)
-    chatty_manager_load_more_chat (chatty_manager_get_default (), self->chat, LAZY_LOAD_INITIAL_MSGS_LIMIT);
+    chatty_chat_load_past_messages (self->chat, -1);
 }
 
 
