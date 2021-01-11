@@ -78,6 +78,8 @@ struct _ChattyMaChat
   guint          keys_claimed : 1;
   guint          prev_batch_loading : 1;
   guint          history_is_loading : 1;
+  guint          saving_room_to_db  : 1;
+  guint          room_db_loaded : 1;
 
   guint          room_name_loaded : 1;
   guint          buddy_typing : 1;
@@ -966,6 +968,35 @@ get_messages_cb (GObject      *obj,
 }
 
 static void
+db_room_room_cb (GObject      *object,
+                 GAsyncResult *result,
+                 gpointer      user_data)
+{
+  g_autoptr(ChattyMaChat) self = user_data;
+  g_autoptr(GError) error = NULL;
+
+  g_assert (CHATTY_IS_MA_CHAT (self));
+
+  self->room_db_loaded = TRUE;
+  self->history_is_loading = FALSE;
+
+  g_free (self->prev_batch);
+  self->prev_batch = matrix_db_load_room_finish (self->matrix_db, result, &error);
+
+  if (error)
+    g_warning ("Error loading prev batch: %s", error->message);
+
+  if (self->prev_batch) {
+    self->history_is_loading = TRUE;
+    matrix_api_load_prev_batch_async (self->matrix_api,
+                                      self->room_id,
+                                      self->prev_batch,
+                                      self->last_batch,
+                                      get_messages_cb, self);
+  }
+}
+
+static void
 ma_chat_load_db_messages_cb (GObject      *object,
                              GAsyncResult *result,
                              gpointer      user_data)
@@ -991,6 +1022,13 @@ ma_chat_load_db_messages_cb (GObject      *object,
                                       self->prev_batch,
                                       self->last_batch,
                                       get_messages_cb, self);
+  } else if (!self->room_db_loaded &&
+             matrix_api_get_device_id (self->matrix_api)) {
+    self->history_is_loading = TRUE;
+    matrix_db_load_room_async (self->matrix_db, self->account,
+                               matrix_api_get_device_id (self->matrix_api),
+                               self->room_id,
+                               db_room_room_cb, g_object_ref (self));
   }
 }
 
@@ -1441,6 +1479,18 @@ chatty_ma_chat_send_message (ChattyMaChat *self,
   }
 }
 
+static void
+db_room_saved_cb (GObject      *object,
+                  GAsyncResult *result,
+                  gpointer      user_data)
+{
+  g_autoptr(ChattyMaChat) self = user_data;
+
+  g_assert (CHATTY_IS_MA_CHAT (self));
+
+  self->saving_room_to_db = FALSE;
+}
+
 void
 chatty_ma_chat_set_prev_batch (ChattyMaChat *self,
                                char         *prev_batch)
@@ -1449,6 +1499,15 @@ chatty_ma_chat_set_prev_batch (ChattyMaChat *self,
 
   g_clear_pointer (&self->prev_batch, g_free);
   self->prev_batch = prev_batch;
+
+  if (self->saving_room_to_db)
+    return;
+
+  self->saving_room_to_db = TRUE;
+  matrix_db_save_room_async (self->matrix_db, self->account,
+                             matrix_api_get_device_id (self->matrix_api),
+                             self->room_id, prev_batch,
+                             db_room_saved_cb, g_object_ref (self));
 }
 
 /**
