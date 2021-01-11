@@ -947,6 +947,7 @@ get_messages_cb (GObject      *obj,
 
   root = matrix_api_load_prev_batch_finish (self->matrix_api, result, &error);
   self->prev_batch_loading = FALSE;
+  self->history_is_loading = FALSE;
 
   if (error) {
     if (!g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
@@ -983,6 +984,13 @@ ma_chat_load_db_messages_cb (GObject      *object,
     g_signal_emit_by_name (self, "changed", 0);
   } else if (error && !g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED)) {
     g_warning ("Error fetching messages: %s,", error->message);
+  } else if (!messages && self->prev_batch) {
+    self->history_is_loading = TRUE;
+    matrix_api_load_prev_batch_async (self->matrix_api,
+                                      self->room_id,
+                                      self->prev_batch,
+                                      self->last_batch,
+                                      get_messages_cb, self);
   }
 }
 
