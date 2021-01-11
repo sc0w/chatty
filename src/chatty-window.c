@@ -1196,7 +1196,7 @@ chatty_window_open_chat (ChattyWindow *self,
     gtk_container_add (GTK_CONTAINER (self->convs_notebook), view);
     gtk_notebook_set_tab_label_text (GTK_NOTEBOOK(self->convs_notebook), view, label);
 
-    chatty_manager_load_more_chat (chatty_manager_get_default (), chat, LAZY_LOAD_INITIAL_MSGS_LIMIT);
+    chatty_chat_load_past_messages (chat, -1);
   }
 
   if (CHATTY_IS_PP_CHAT (chat))
