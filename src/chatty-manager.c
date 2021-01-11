@@ -668,6 +668,7 @@ chatty_conv_new (PurpleConversation *conv)
     chat = (ChattyChat *)chatty_pp_chat_new_purple_conv (conv);
 
   chat = chatty_manager_add_chat (chatty_manager_get_default (), chat);
+  chatty_chat_set_data (chat, NULL, chatty_manager_get_default ()->history);
   account = purple_conversation_get_account (conv);
 
   if (conv_type == PURPLE_CONV_TYPE_IM) {
@@ -718,7 +719,7 @@ chatty_conv_new (PurpleConversation *conv)
     messages = chatty_chat_get_messages (chat);
 
     if (g_list_model_get_n_items (messages) == 0)
-      chatty_manager_load_more_chat (chatty_manager_get_default (), chat, 1);
+      chatty_chat_load_past_messages (chat, 1);
   }
 }
 
@@ -2371,6 +2372,7 @@ chatty_manager_update_node (ChattyManager   *self,
   chat = (ChattyChat *)chatty_pp_chat_new_purple_chat (pp_chat);
 
   g_list_store_append (self->chat_list, chat);
+  chatty_chat_set_data (chat, NULL, self->history);
 }
 
 void
@@ -2601,6 +2603,7 @@ chatty_manager_add_chat (ChattyManager *self,
 
   if (!item) {
       g_list_store_append (self->chat_list, chat);
+      chatty_chat_set_data (chat, NULL, self->history);
   }
 
   gtk_sorter_changed (self->chat_sorter, GTK_SORTER_ORDER_TOTAL);
