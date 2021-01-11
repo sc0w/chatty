@@ -33,8 +33,6 @@
 #include "dialogs/chatty-user-info-dialog.h"
 #include "dialogs/chatty-muc-info-dialog.h"
 
-#define LAZY_LOAD_INITIAL_MSGS_LIMIT 20
-
 struct _ChattyWindow
 {
   GtkApplicationWindow parent_instance;

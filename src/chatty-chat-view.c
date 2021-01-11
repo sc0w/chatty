@@ -61,8 +61,6 @@ static GHashTable *ht_sms_id = NULL;
 #define INDICATOR_MARGIN   2
 #define MSG_BUBBLE_MAX_RATIO .3
 
-#define LAZY_LOAD_INITIAL_MSGS_LIMIT 20
-
 G_DEFINE_TYPE (ChattyChatView, chatty_chat_view, GTK_TYPE_BOX)
 
 

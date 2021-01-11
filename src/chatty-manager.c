@@ -50,8 +50,6 @@
  * This class hides all the complexities surrounding it.
  */
 
-#define LAZY_LOAD_MSGS_LIMIT 12
-#define LAZY_LOAD_INITIAL_MSGS_LIMIT 20
 #define MAX_TIMESTAMP_SIZE 256
 #define CHATTY_UI          "chatty-ui"
 
@@ -158,33 +156,6 @@ chatty_conv_add_history_since_component (GHashTable *components,
 
   g_hash_table_steal (components, "history_since");
   g_hash_table_insert (components, "history_since", g_steal_pointer(&iso_timestamp));
-}
-
-static void
-manager_get_messages_cb (GObject      *object,
-                         GAsyncResult *result,
-                         gpointer      user_data)
-{
-  ChattyHistory *history = (ChattyHistory *)object;
-  g_autoptr(ChattyManager) self = user_data;
-  g_autoptr(GPtrArray) messages = NULL;
-  g_autoptr(GError) error = NULL;
-  ChattyChat *chat;
-
-  g_assert (CHATTY_IS_MANAGER (self));
-  g_assert (CHATTY_IS_HISTORY (history));
-
-  messages = chatty_history_get_messages_finish (history, result, &error);
-
-  if (messages) {
-    chat = g_object_get_data (G_OBJECT (result), "chat");
-    g_assert (CHATTY_IS_CHAT (chat));
-
-    if (CHATTY_IS_PP_CHAT (chat))
-      chatty_pp_chat_prepend_messages (CHATTY_PP_CHAT (chat), messages);
-  } else if (error && !g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED)) {
-    g_warning ("Error fetching messages: %s,", error->message);
-  }
 }
 
 static void
@@ -2609,28 +2580,6 @@ chatty_manager_add_chat (ChattyManager *self,
   gtk_sorter_changed (self->chat_sorter, GTK_SORTER_ORDER_TOTAL);
 
   return item ? item : chat;
-}
-
-void
-chatty_manager_load_more_chat (ChattyManager *self,
-                               ChattyChat    *chat,
-                               guint          limit)
-{
-  ChattyMessage *since;
-  GListModel *model;
-
-  g_return_if_fail (CHATTY_IS_MANAGER (self));
-  g_return_if_fail (CHATTY_IS_CHAT (chat));
-  g_return_if_fail (limit != 0);
-
-  model = chatty_chat_get_messages (chat);
-  since = g_list_model_get_item (model, 0);
-  if (since)
-    g_object_unref (since);
-
-  chatty_history_get_messages_async (self->history, chat, since, limit,
-                                     manager_get_messages_cb,
-                                     g_object_ref (self));
 }
 
 /**
