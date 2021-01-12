@@ -758,6 +758,7 @@ chatty_ma_account_new_secret (gpointer secret_item)
   SecretValue *value;
   const char *username, *homeserver, *credentials;
   char *password, *token, *device_id;
+  char *password_str, *token_str;
 
   g_return_val_if_fail (SECRET_IS_ITEM (item), NULL);
 
@@ -770,20 +771,26 @@ chatty_ma_account_new_secret (gpointer secret_item)
 
   password = ma_account_get_value (credentials, "\"password\"");
   g_return_val_if_fail (password, NULL);
+  password_str = g_strcompress (password);
 
-  self = chatty_ma_account_new (username, password);
+  self = chatty_ma_account_new (username, password_str);
   token = ma_account_get_value (credentials, "\"access-token\"");
   device_id = ma_account_get_value (credentials, "\"device-id\"");
   chatty_ma_account_set_homeserver (self, homeserver);
 
+  if (token)
+    token_str = g_strcompress (token);
+
   if (token && device_id) {
     self->pickle_key = ma_account_get_value (credentials, "\"pickle-key\"");
-    matrix_api_set_access_token (self->matrix_api, token, device_id);
+    matrix_api_set_access_token (self->matrix_api, token_str, device_id);
   }
 
   matrix_utils_free_buffer (device_id);
   matrix_utils_free_buffer (password);
+  matrix_utils_free_buffer (password_str);
   matrix_utils_free_buffer (token);
+  matrix_utils_free_buffer (token_str);
 
   return self;
 }
