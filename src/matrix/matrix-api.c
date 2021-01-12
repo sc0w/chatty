@@ -38,6 +38,7 @@
  * user REST APIs.
  */
 
+#define MAX_CONNECTIONS     6
 #define URI_REQUEST_TIMEOUT 60    /* seconds */
 #define SYNC_TIMEOUT        30000 /* milliseconds */
 #define TYPING_TIMEOUT      10000 /* milliseconds */
@@ -1000,7 +1001,9 @@ matrix_api_class_init (MatrixApiClass *klass)
 static void
 matrix_api_init (MatrixApi *self)
 {
-  self->soup_session = soup_session_new ();
+  self->soup_session = g_object_new (SOUP_TYPE_SESSION,
+                                     "max-conns-per-host", MAX_CONNECTIONS,
+                                     NULL);
   self->cancellable = g_cancellable_new ();
 }
 
