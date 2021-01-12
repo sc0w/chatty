@@ -202,6 +202,16 @@
             ]
         },
         {
+          "name": "olm",
+          "buildsystem": "cmake-ninja",
+          "sources": [
+            {
+              "type": "git",
+              "url": "https://gitlab.matrix.org/matrix-org/olm.git"
+            }
+          ]
+        },
+        {
             "name": "purism-chatty",
             "buildsystem": "meson",
             "builddir": true,
