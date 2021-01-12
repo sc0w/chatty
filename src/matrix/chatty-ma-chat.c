@@ -1534,22 +1534,6 @@ chatty_ma_chat_set_last_batch (ChattyMaChat *self,
 }
 
 void
-chatty_ma_chat_load_past_messages (ChattyMaChat *self)
-{
-  g_return_if_fail (CHATTY_IS_MA_CHAT (self));
-
-  if (!self->prev_batch || self->prev_batch_loading)
-    return;
-
-  self->prev_batch_loading = TRUE;
-  matrix_api_load_prev_batch_async (self->matrix_api,
-                                    self->room_id,
-                                    self->prev_batch,
-                                    self->last_batch,
-                                    get_messages_cb, self);
-}
-
-void
 chatty_ma_chat_add_messages (ChattyMaChat *self,
                              GPtrArray    *messages)
 {

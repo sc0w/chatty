@@ -47,7 +47,6 @@ void          chatty_ma_chat_set_prev_batch     (ChattyMaChat  *self,
                                                  char          *prev_batch);
 void          chatty_ma_chat_set_last_batch     (ChattyMaChat  *self,
                                                  const char    *last_batch);
-void          chatty_ma_chat_load_past_messages (ChattyMaChat  *self);
 void          chatty_ma_chat_add_messages       (ChattyMaChat  *self,
                                                  GPtrArray     *messages);
 
