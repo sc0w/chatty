@@ -843,6 +843,8 @@ get_room_state_cb (GObject      *obj,
 
   g_object_notify (G_OBJECT (self), "name");
   g_signal_emit_by_name (self, "avatar-changed");
+
+  chatty_history_update_chat (self->history_db, CHATTY_CHAT (self));
 }
 
 static void
