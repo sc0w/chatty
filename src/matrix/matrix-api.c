@@ -199,21 +199,25 @@ api_send_message_cb (GObject      *obj,
 {
   g_autoptr(GTask) task = user_data;
   g_autoptr(JsonObject) object = NULL;
-  g_autoptr(GError) error = NULL;
   ChattyMessage *message;
+  GError *error = NULL;
 
   g_assert (G_IS_TASK (task));
 
   g_debug ("%s %s", G_STRLOC, G_STRFUNC);
   object = g_task_propagate_pointer (G_TASK (result), &error);
+  g_object_set_data (G_OBJECT (task), "retry-after",
+                     g_object_get_data (G_OBJECT (result), "retry-after"));
 
   message = g_object_get_data (G_OBJECT (task), "message");
 
   if (error) {
     g_debug ("Error set typing: %s", error->message);
     chatty_message_set_status (message, CHATTY_STATUS_SENDING_FAILED, 0);
+    g_task_return_error (task, error);
   } else {
     chatty_message_set_status (message, CHATTY_STATUS_SENT, 0);
+    g_task_return_boolean (task, !!object);
   }
 }
 
@@ -736,6 +740,16 @@ api_load_from_stream_cb (JsonParser   *parser,
   }
 
   if (error) {
+    if (g_error_matches (error, MATRIX_ERROR, M_LIMIT_EXCEEDED) &&
+        JSON_NODE_HOLDS_OBJECT (root)) {
+      JsonObject *obj;
+      guint retry;
+
+      obj = json_node_get_object (root);
+      retry = matrix_utils_json_object_get_int (obj, "retry_after_ms");
+      g_object_set_data (G_OBJECT (task), "retry-after", GINT_TO_POINTER (retry));
+    }
+
     g_task_return_error (task, error);
     return;
   }
@@ -1644,9 +1658,9 @@ static void
 api_send_message_encrypted (MatrixApi     *self,
                             const char    *room_id,
                             ChattyMessage *message,
-                            JsonObject    *content)
+                            JsonObject    *content,
+                            GTask         *task)
 {
-  GTask *task;
   g_autofree char *encrypted = NULL;
   g_autofree char *text = NULL;
   g_autofree char *uri = NULL;
@@ -1673,14 +1687,13 @@ api_send_message_encrypted (MatrixApi     *self,
                         self->event_id);
   g_object_set_data_full (G_OBJECT (message), "event-id", id, g_free);
 
-  task = g_task_new (self, NULL, NULL, NULL);
   g_object_set_data_full (G_OBJECT (task), "message", g_object_ref (message),
                           g_object_unref);
 
   uri = g_strdup_printf ("/_matrix/client/r0/rooms/%s/send/m.room.encrypted/%s", room_id, id);
 
   queue_json_object (self, root, uri, SOUP_METHOD_PUT,
-                     NULL, api_send_message_cb, task);
+                     NULL, api_send_message_cb, g_object_ref (task));
   json_object_unref (root);
 }
 
@@ -1688,9 +1701,9 @@ static void
 api_send_message (MatrixApi     *self,
                   const char    *room_id,
                   ChattyMessage *message,
-                  JsonObject    *content)
+                  JsonObject    *content,
+                  GTask         *task)
 {
-  GTask *task;
   g_autofree char *uri = NULL;
   char *id;
 
@@ -1705,36 +1718,51 @@ api_send_message (MatrixApi     *self,
                         self->event_id);
   g_object_set_data_full (G_OBJECT (message), "event-id", id, g_free);
 
-  task = g_task_new (self, NULL, NULL, NULL);
   g_object_set_data_full (G_OBJECT (task), "message", g_object_ref (message),
                           g_object_unref);
   /* https://matrix.org/docs/spec/client_server/r0.6.1#put-matrix-client-r0-rooms-roomid-send-eventtype-txnid */
   uri = g_strdup_printf ("/_matrix/client/r0/rooms/%s/send/m.room.message/%s", room_id, id);
   queue_json_object (self, content, uri, SOUP_METHOD_PUT,
-                     NULL, api_send_message_cb, task);
+                     NULL, api_send_message_cb, g_object_ref (task));
 }
 
 void
-matrix_api_send_message (MatrixApi     *self,
-                         ChattyChat    *chat,
-                         const char    *room_id,
-                         ChattyMessage *message)
+matrix_api_send_message_async (MatrixApi           *self,
+                               ChattyChat          *chat,
+                               const char          *room_id,
+                               ChattyMessage       *message,
+                               GAsyncReadyCallback  callback,
+                               gpointer             user_data)
 {
   g_autoptr(JsonObject) object = NULL;
+  g_autoptr(GTask) task = NULL;
 
   g_return_if_fail (MATRIX_IS_API (self));
   g_return_if_fail (CHATTY_IS_MESSAGE (message));
 
   g_debug ("%s %s", G_STRLOC, G_STRFUNC);
 
+  task = g_task_new (self, self->cancellable, callback, user_data);
   object = json_object_new ();
   json_object_set_string_member (object, "msgtype", "m.text");
   json_object_set_string_member (object, "body", chatty_message_get_text (message));
 
   if (chatty_chat_get_encryption (chat) == CHATTY_ENCRYPTION_ENABLED)
-    api_send_message_encrypted (self, room_id, message, object);
+    api_send_message_encrypted (self, room_id, message, object, task);
   else
-    api_send_message (self, room_id, message, object);
+    api_send_message (self, room_id, message, object, task);
+}
+
+gboolean
+matrix_api_send_message_finish (MatrixApi     *self,
+                                GAsyncResult  *result,
+                                GError       **error)
+{
+  g_return_val_if_fail (MATRIX_IS_API (self), FALSE);
+  g_return_val_if_fail (G_IS_TASK (result), FALSE);
+  g_return_val_if_fail (!error || !*error, FALSE);
+
+  return g_task_propagate_boolean (G_TASK (result), error);
 }
 
 void

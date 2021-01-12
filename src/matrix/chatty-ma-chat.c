@@ -71,6 +71,9 @@ struct _ChattyMaChat
   int             unread_count;
   int             room_name_update_ts;
 
+  int            message_timeout_id;
+  guint          is_sending_message : 1;
+
   guint          state_is_sync    : 1;
   guint          state_is_syncing : 1;
   /* Set if the complete buddy list is loaded */
@@ -100,6 +103,8 @@ enum {
 };
 
 static GParamSpec *properties[N_PROPS];
+
+static void matrix_send_message_from_queue (ChattyMaChat *self);
 
 static int
 sort_message (gconstpointer a,
@@ -568,20 +573,77 @@ handle_m_room_encrypted (ChattyMaChat  *self,
   }
 }
 
+static gboolean
+chat_resend_message (gpointer user_data)
+{
+  ChattyMaChat *self = user_data;
+
+  g_assert (CHATTY_IS_MA_CHAT (self));
+
+  self->message_timeout_id = 0;
+  matrix_send_message_from_queue (self);
+
+  return G_SOURCE_REMOVE;
+}
+
+static void
+ma_chat_send_message_cb (GObject      *object,
+                         GAsyncResult *result,
+                         gpointer      user_data)
+{
+  g_autoptr(ChattyMaChat) self = user_data;
+  g_autoptr(GError) error = NULL;
+  ChattyMessage *message;
+
+  g_assert (CHATTY_IS_MA_CHAT (self));
+
+  self->is_sending_message = FALSE;
+
+  matrix_api_send_message_finish (self->matrix_api, result, &error);
+  message = g_object_get_data (G_OBJECT (result), "message");
+
+  if (error) {
+    if (!g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
+      g_warning ("Error sending message: %s", error->message);
+
+    if (g_error_matches (error, MATRIX_ERROR, M_LIMIT_EXCEEDED) &&
+        !self->message_timeout_id) {
+      int timeout;
+
+      timeout = GPOINTER_TO_INT (g_object_get_data (G_OBJECT (result), "retry-after"));
+
+      if (!timeout)
+        timeout = 2000;
+
+      self->message_timeout_id = g_timeout_add (timeout, chat_resend_message, self);
+    }
+
+    g_queue_push_head (self->message_queue, g_object_ref (message));
+    return;
+  }
+
+  matrix_send_message_from_queue (self);
+}
+
 static void
 matrix_send_message_from_queue (ChattyMaChat *self)
 {
+  g_autoptr(ChattyMessage) message = NULL;
+
   g_assert (CHATTY_IS_MA_CHAT (self));
 
-  while (self->message_queue->length) {
-    g_autoptr(ChattyMessage) message = NULL;
+  if (self->is_sending_message ||
+      !self->message_queue ||
+      !self->message_queue->length ||
+      self->message_timeout_id)
+    return;
 
-    /* TODO: The server may reject if messages are send
-     * too soon, so send messages after some delay.
-     */
-    message = g_queue_pop_head (self->message_queue);
-    matrix_api_send_message (self->matrix_api, CHATTY_CHAT (self), self->room_id, message);
-  }
+  message = g_queue_pop_head (self->message_queue);
+  self->is_sending_message = TRUE;
+  matrix_api_send_message_async (self->matrix_api, CHATTY_CHAT (self),
+                                 self->room_id, message,
+                                 ma_chat_send_message_cb,
+                                 g_object_ref (self));
 }
 
 static void
@@ -1285,6 +1347,8 @@ chatty_ma_chat_finalize (GObject *object)
 {
   ChattyMaChat *self = (ChattyMaChat *)object;
 
+  g_clear_handle_id (&self->message_timeout_id, g_source_remove);
+
   g_list_store_remove_all (self->message_list);
   g_clear_object (&self->message_list);
   g_clear_object (&self->matrix_api);
@@ -1469,11 +1533,12 @@ chatty_ma_chat_send_message (ChattyMaChat *self,
                                 msg, NULL, time (NULL), CHATTY_MESSAGE_TEXT,
                                 CHATTY_DIRECTION_OUT, CHATTY_STATUS_SENDING);
   g_list_store_append (self->message_list, message);
+  g_queue_push_tail (self->message_queue, g_object_ref (message));
+
   if (chatty_chat_get_encryption (chat) != CHATTY_ENCRYPTION_ENABLED ||
       self->keys_claimed) {
-    matrix_api_send_message (self->matrix_api, chat, self->room_id, message);
+    matrix_send_message_from_queue (self);
   } else {
-    g_queue_push_tail (self->message_queue, g_object_ref (message));
     if (!self->state_is_syncing && !self->claiming_keys)
       matrix_api_query_keys_async (self->matrix_api,
                                    G_LIST_MODEL (self->buddy_list),

@@ -120,10 +120,15 @@ void          matrix_api_send_file_async         (MatrixApi      *self,
 gboolean     matrix_api_send_file_finish         (MatrixApi      *self,
                                                   GAsyncResult   *result,
                                                   GError        **error);
-void         matrix_api_send_message             (MatrixApi      *self,
+void         matrix_api_send_message_async       (MatrixApi      *self,
                                                   ChattyChat     *chat,
                                                   const char     *room_id,
-                                                  ChattyMessage  *message);
+                                                  ChattyMessage  *message,
+                                                  GAsyncReadyCallback callback,
+                                                  gpointer        user_data);
+gboolean     matrix_api_send_message_finish      (MatrixApi      *self,
+                                                  GAsyncResult   *result,
+                                                  GError        **error);
 void         matrix_api_set_read_marker_async    (MatrixApi      *self,
                                                   const char     *room_id,
                                                   ChattyMessage  *message,
