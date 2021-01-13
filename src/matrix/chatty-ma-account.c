@@ -1112,7 +1112,7 @@ chatty_ma_account_leave_chat_async (ChattyMaAccount     *self,
   chatty_item_set_state (CHATTY_ITEM (chat), CHATTY_ITEM_HIDDEN);
   chatty_history_update_chat (self->history_db, chat);
   matrix_api_leave_chat_async (self->matrix_api,
-                               chatty_ma_chat_get_room_id (CHATTY_MA_CHAT (chat)),
+                               chatty_chat_get_chat_name (chat),
                                ma_account_leave_chat_cb,
                                g_steal_pointer (&task));
 }
