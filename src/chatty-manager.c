@@ -34,7 +34,7 @@
 #include "chatty-chat.h"
 #include "chatty-pp-chat.h"
 #include "chatty-icons.h"
-#include "chatty-notify.h"
+#include "chatty-notification.h"
 #include "chatty-purple-request.h"
 #include "chatty-purple-notify.h"
 #include "chatty-history.h"
@@ -66,6 +66,8 @@ struct _ChattyManager
   GtkFlattenListModel *contact_list;
   GtkSortListModel    *sorted_chat_list;
   GtkSorter           *chat_sorter;
+
+  ChattyNotification  *notification;
 
   PurplePlugin    *sms_plugin;
   PurplePlugin    *lurch_plugin;
@@ -551,21 +553,6 @@ static PurpleBlistUiOps blist_ui_ops =
 };
 
 
-static void
-on_feedback_triggered (LfbEvent      *event,
-		       GAsyncResult  *res,
-		       LfbEvent     **cmp)
-{
-  g_autoptr (GError) err = NULL;
-
-  g_return_if_fail (LFB_IS_EVENT (event));
-
-  if (!lfb_event_trigger_feedback_finish (event, res, &err)) {
-    g_warning ("Failed to trigger feedback for %s",
-	       lfb_event_get_event (event));
-  }
-}
-
 static ChattyChat *
 chatty_conv_find_chat (PurpleConversation *conv)
 {
@@ -719,49 +706,6 @@ chatty_conv_write_im (PurpleConversation *conv,
   purple_conversation_write (conv, who, message, flags, mtime);
 }
 
-
-static GdkPixbuf *
-chatty_manager_round_pixbuf (GdkPixbuf *pixbuf)
-{
-  g_autoptr(GdkPixbuf) image = NULL;
-  cairo_surface_t *surface;
-  GdkPixbuf *round;
-  cairo_t *cr;
-  int width, height, size;
-
-  if (!pixbuf)
-    return NULL;
-
-  g_assert (GDK_IS_PIXBUF (pixbuf));
-
-  width  = gdk_pixbuf_get_width (pixbuf);
-  height = gdk_pixbuf_get_height (pixbuf);
-  size   = MIN (width, height);
-  image  = gdk_pixbuf_new (GDK_COLORSPACE_RGB, TRUE, 8, size, size);
-
-  gdk_pixbuf_scale (pixbuf, image, 0, 0,
-                    size, size,
-                    0, 0,
-                    (double)size / width,
-                    (double)size / height,
-                    GDK_INTERP_BILINEAR);
-
-  surface = cairo_image_surface_create (CAIRO_FORMAT_ARGB32, size, size);
-  cr = cairo_create (surface);
-  gdk_cairo_set_source_pixbuf (cr, image, 0, 0);
-
-  cairo_arc (cr, size / 2.0, size / 2.0, size / 2.0, 0, 2 * G_PI);
-  cairo_clip (cr);
-  cairo_paint (cr);
-
-  round = gdk_pixbuf_get_from_surface (surface, 0, 0, size, size);
-
-  cairo_surface_destroy (surface);
-  cairo_destroy (cr);
-
-  return round;
-}
-
 static void
 chatty_conv_write_conversation (PurpleConversation *conv,
                                 const char         *who,
@@ -778,9 +722,7 @@ chatty_conv_write_conversation (PurpleConversation *conv,
   PurpleAccount            *account;
   PurpleBuddy              *buddy = NULL;
   PurpleBlistNode          *node;
-  GdkPixbuf                *avatar = NULL;
   const char               *buddy_name;
-  gchar                    *titel;
   g_autofree char          *uuid = NULL;
   PurpleConvMessage        pcm = {
                                    NULL,
@@ -872,30 +814,15 @@ chatty_conv_write_conversation (PurpleConversation *conv,
 
       active_chat = chatty_application_get_active_chat (CHATTY_APPLICATION_DEFAULT ());
 
-      if (buddy && purple_blist_node_get_bool (node, "chatty-notifications") &&
-          active_chat != chat) {
-        g_autoptr(GdkPixbuf) image = NULL;
-        ChattyPpBuddy *pp_buddy;
-
-        event = lfb_event_new ("message-new-instant");
-        lfb_event_trigger_feedback_async (event, NULL,
-                                          (GAsyncReadyCallback)on_feedback_triggered,
-                                          NULL);
-
-        pp_buddy = chatty_pp_buddy_get_object (buddy);
-        buddy_name = purple_buddy_get_alias (buddy);
-
-        titel = g_strdup_printf (_("New message from %s"), buddy_name);
-        avatar = chatty_item_get_avatar (CHATTY_ITEM (pp_buddy));
-        image = chatty_manager_round_pixbuf (avatar);
-
-        chatty_notify_show_notification (titel, message, CHATTY_NOTIFY_MESSAGE_RECEIVED, conv, image);
-
-        g_free (titel);
-      }
-
       chat_message = chatty_message_new (NULL, who, message, uuid, mtime, msg_type, CHATTY_DIRECTION_IN, 0);
       chatty_pp_chat_append_message (CHATTY_PP_CHAT (chat), chat_message);
+
+      if (buddy && purple_blist_node_get_bool (node, "chatty-notifications") &&
+          active_chat != chat) {
+        buddy_name = purple_buddy_get_alias (buddy);
+        chatty_notification_show_message (self->notification, chat,
+                                          chat_message, buddy_name);
+      }
     } else if (flags & PURPLE_MESSAGE_SEND && pcm.flags & PURPLE_MESSAGE_SEND) {
       // normal send
       chat_message = chatty_message_new (NULL, NULL, message, uuid, 0, msg_type, CHATTY_DIRECTION_OUT, 0);
@@ -1965,6 +1892,7 @@ chatty_manager_init (ChattyManager *self)
 {
   g_autoptr(GtkFlattenListModel) flatten_list = NULL;
 
+  self->notification = chatty_notification_new ();
   self->chatty_eds = chatty_eds_new (CHATTY_PROTOCOL_SMS);
 
   self->account_list = g_list_store_new (CHATTY_TYPE_ACCOUNT);
