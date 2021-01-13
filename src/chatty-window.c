@@ -633,6 +633,10 @@ window_leave_chat_clicked_cb (ChattyWindow *self)
     chatty_ma_account_leave_chat_async (CHATTY_MA_ACCOUNT (account),
                                         CHATTY_CHAT (self->selected_item),
                                         NULL, NULL);
+    window_set_item (self, NULL);
+    chatty_window_chat_list_select_first (self);
+    chatty_window_change_view (self, CHATTY_VIEW_CHAT_LIST);
+
     return;
   }
 
