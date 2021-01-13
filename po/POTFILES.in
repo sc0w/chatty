@@ -23,6 +23,8 @@ src/chatty-manager.h
 src/chatty-message-row.c
 src/chatty-message.c
 src/chatty-message.h
+src/chatty-notification.c
+src/chatty-notification.h
 src/chatty-notify.c
 src/chatty-notify.h
 src/chatty-purple-notify.c
