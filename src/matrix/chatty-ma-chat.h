@@ -36,7 +36,6 @@ void          chatty_ma_chat_set_data           (ChattyMaChat  *self,
                                                  ChattyAccount *account,
                                                  gpointer       api,
                                                  gpointer       enc);
-const char   *chatty_ma_chat_get_room_id        (ChattyMaChat  *self);
 gboolean      chatty_ma_chat_matches_id         (ChattyMaChat  *self,
                                                  const char    *room_id);
 void          chatty_ma_chat_set_typing         (ChattyMaChat  *self,

@@ -1495,14 +1495,6 @@ chatty_ma_chat_matches_id (ChattyMaChat *self,
   return g_strcmp0 (self->room_id, room_id) == 0;
 }
 
-const char *
-chatty_ma_chat_get_room_id (ChattyMaChat *self)
-{
-  g_return_val_if_fail (CHATTY_IS_MA_CHAT (self), NULL);
-
-  return self->room_id;
-}
-
 void
 chatty_ma_chat_set_typing (ChattyMaChat *self,
                            gboolean      is_typing)
