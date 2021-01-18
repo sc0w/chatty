@@ -28,6 +28,7 @@
 #include "chatty-utils.h"
 #include "matrix/chatty-ma-account.h"
 #include "matrix/chatty-ma-chat.h"
+#include "dialogs/chatty-info-dialog.h"
 #include "dialogs/chatty-settings-dialog.h"
 #include "dialogs/chatty-new-chat-dialog.h"
 #include "dialogs/chatty-new-muc-dialog.h"
@@ -53,6 +54,7 @@ struct _ChattyWindow
   GtkWidget *sub_header_label;
 
   GtkWidget *new_chat_dialog;
+  GtkWidget *chat_info_dialog;
 
   GtkWidget *search_button;
   GtkWidget *chats_search_bar;
@@ -727,25 +729,15 @@ window_add_in_contacts_clicked_cb (ChattyWindow *self)
 static void
 window_show_chat_info_clicked_cb (ChattyWindow *self)
 {
-  ChattyChat *chat;
-  GtkWidget *dialog;
+  ChattyInfoDialog *dialog;
 
   g_assert (CHATTY_IS_WINDOW (self));
   g_return_if_fail (CHATTY_IS_CHAT (self->selected_item));
 
-  chat = CHATTY_CHAT (self->selected_item);
+  dialog = CHATTY_INFO_DIALOG (self->chat_info_dialog);
 
-  if (chatty_chat_is_im (chat)) {
-    dialog = chatty_user_info_dialog_new (GTK_WINDOW (self));
-    chatty_user_info_dialog_set_chat (CHATTY_USER_INFO_DIALOG (dialog), chat);
-  } else {
-    dialog = chatty_muc_info_dialog_new (GTK_WINDOW (self));
-    chatty_muc_info_dialog_set_chat (CHATTY_MUC_INFO_DIALOG (dialog), chat);
-  }
-
+  chatty_info_dialog_set_chat (dialog, CHATTY_CHAT (self->selected_item));
   gtk_dialog_run (GTK_DIALOG (dialog));
-
-  gtk_widget_destroy (dialog);
 }
 
 static void
@@ -923,6 +915,7 @@ chatty_window_constructed (GObject *object)
     gtk_window_maximize (window);
 
   self->new_chat_dialog = chatty_new_chat_dialog_new (GTK_WINDOW (self));
+  self->chat_info_dialog = chatty_info_dialog_new (GTK_WINDOW (self));
 
   hdy_leaflet_set_visible_child_name (HDY_LEAFLET (self->content_box), "sidebar");
 
