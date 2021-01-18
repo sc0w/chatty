@@ -879,7 +879,8 @@ chatty_pp_chat_init (ChattyPpChat *self)
 
 ChattyPpChat *
 chatty_pp_chat_new_im_chat (PurpleAccount *account,
-                            PurpleBuddy   *buddy)
+                            PurpleBuddy   *buddy,
+                            gboolean       supports_encryption)
 {
   ChattyPpChat *self;
 
@@ -888,28 +889,33 @@ chatty_pp_chat_new_im_chat (PurpleAccount *account,
 
   self = g_object_new (CHATTY_TYPE_PP_CHAT, NULL);
   self->account = account;
+  self->supports_encryption = !!supports_encryption;
   chatty_pp_chat_set_purple_buddy (self, buddy);
 
   return self;
 }
 
 ChattyPpChat *
-chatty_pp_chat_new_purple_chat (PurpleChat *pp_chat)
+chatty_pp_chat_new_purple_chat (PurpleChat *pp_chat,
+                                gboolean    supports_encryption)
 {
   ChattyPpChat *self;
 
   self = g_object_new (CHATTY_TYPE_PP_CHAT, NULL);
+  self->supports_encryption = !!supports_encryption;
   chatty_pp_chat_set_purple_chat (self, pp_chat);
 
   return self;
 }
 
 ChattyPpChat *
-chatty_pp_chat_new_purple_conv (PurpleConversation *conv)
+chatty_pp_chat_new_purple_conv (PurpleConversation *conv,
+                                gboolean            supports_encryption)
 {
   ChattyPpChat *self;
 
   self = g_object_new (CHATTY_TYPE_PP_CHAT, NULL);
+  self->supports_encryption = !!supports_encryption;
   chatty_pp_chat_set_purple_conv (self, conv);
 
   return self;

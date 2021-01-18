@@ -27,9 +27,12 @@ G_BEGIN_DECLS
 G_DECLARE_FINAL_TYPE (ChattyPpChat, chatty_pp_chat, CHATTY, PP_CHAT, ChattyChat)
 
 ChattyPpChat       *chatty_pp_chat_new_im_chat            (PurpleAccount      *account,
-                                                           PurpleBuddy        *buddy);
-ChattyPpChat       *chatty_pp_chat_new_purple_chat        (PurpleChat         *pp_chat);
-ChattyPpChat       *chatty_pp_chat_new_purple_conv        (PurpleConversation *conv);
+                                                           PurpleBuddy        *buddy,
+                                                           gboolean            supports_encryption);
+ChattyPpChat       *chatty_pp_chat_new_purple_chat        (PurpleChat         *pp_chat,
+                                                           gboolean            supports_encryption);
+ChattyPpChat       *chatty_pp_chat_new_purple_conv        (PurpleConversation *conv,
+                                                           gboolean            supports_encryption);
 void                chatty_pp_chat_set_purple_conv        (ChattyPpChat       *self,
                                                            PurpleConversation *conv);
 ChattyProtocol      chatty_pp_chat_get_protocol           (ChattyPpChat       *self);

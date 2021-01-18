@@ -1139,7 +1139,7 @@ chatty_window_set_uri (ChattyWindow *self,
   if (pp_buddy && contact)
     chatty_pp_buddy_set_contact (pp_buddy, contact);
 
-  chat = (ChattyChat *)chatty_pp_chat_new_im_chat (account, buddy);
+  chat = (ChattyChat *)chatty_pp_chat_new_im_chat (account, buddy, FALSE);
   item = chatty_manager_add_chat (chatty_manager_get_default (), chat);
 
   purple_blist_node_set_bool (PURPLE_BLIST_NODE(buddy), "chatty-autojoin", TRUE);

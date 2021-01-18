@@ -591,6 +591,7 @@ chatty_conv_find_chat (PurpleConversation *conv)
 static void
 chatty_conv_new (PurpleConversation *conv)
 {
+  ChattyManager      *self;
   ChattyChat         *chat = NULL;
   PurpleAccount      *account;
   PurpleBuddy        *buddy;
@@ -609,6 +610,7 @@ chatty_conv_new (PurpleConversation *conv)
     return;
   }
 
+  self = chatty_manager_get_default ();
   conv_node = chatty_utils_get_conv_blist_node (conv);
 
   if (conv_node && conv_node->ui_data) {
@@ -623,7 +625,7 @@ chatty_conv_new (PurpleConversation *conv)
   }
 
   if (!chat)
-    chat = (ChattyChat *)chatty_pp_chat_new_purple_conv (conv);
+    chat = (ChattyChat *)chatty_pp_chat_new_purple_conv (conv, !!self->lurch_plugin);
 
   chat = chatty_manager_add_chat (chatty_manager_get_default (), chat);
   chatty_chat_set_data (chat, NULL, chatty_manager_get_default ()->history);
@@ -1041,7 +1043,8 @@ manager_buddy_added_cb (PurpleBuddy   *pp_buddy,
     g_object_ref (chat);
     chatty_pp_chat_set_purple_conv (CHATTY_PP_CHAT (chat), conv);
   } else {
-    chat = (ChattyChat *)chatty_pp_chat_new_im_chat (pp_account, pp_buddy);
+    chat = (ChattyChat *)chatty_pp_chat_new_im_chat (pp_account, pp_buddy,
+                                                     !!self->lurch_plugin);
   }
 
   chatty_history_get_messages_async (self->history, chat, NULL, 1,
@@ -2273,7 +2276,8 @@ chatty_manager_update_node (ChattyManager   *self,
     return;
   }
 
-  chat = (ChattyChat *)chatty_pp_chat_new_purple_chat (pp_chat);
+  chat = (ChattyChat *)chatty_pp_chat_new_purple_chat (pp_chat,
+                                                       !!self->lurch_plugin);
 
   g_list_store_append (self->chat_list, chat);
   chatty_chat_set_data (chat, NULL, self->history);
