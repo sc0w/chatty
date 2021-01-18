@@ -38,6 +38,9 @@ struct _ChattyChatClass
   GListModel       *(*get_messages)       (ChattyChat *self);
   GListModel       *(*get_users)          (ChattyChat *self);
   const char       *(*get_last_message)   (ChattyChat *self);
+  const char       *(*get_topic)          (ChattyChat *self);
+  void              (*set_topic)          (ChattyChat *self,
+                                           const char *topic);
   void              (*load_past_messages) (ChattyChat *self,
                                            int         limit);
   gboolean          (*is_loading_history) (ChattyChat *self);
@@ -75,6 +78,9 @@ void                chatty_chat_load_past_messages (ChattyChat *self,
                                                     int         count);
 gboolean            chatty_chat_is_loading_history (ChattyChat *self);
 GListModel         *chatty_chat_get_users          (ChattyChat *self);
+const char         *chatty_chat_get_topic          (ChattyChat *self);
+void                chatty_chat_set_topic          (ChattyChat *self,
+                                                    const char *topic);
 const char         *chatty_chat_get_last_message   (ChattyChat *self);
 guint               chatty_chat_get_unread_count   (ChattyChat *self);
 void                chatty_chat_set_unread_count   (ChattyChat *self,

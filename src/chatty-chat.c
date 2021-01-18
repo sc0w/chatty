@@ -144,6 +144,19 @@ chatty_chat_real_get_users (ChattyChat *self)
 }
 
 static const char *
+chatty_chat_real_get_topic (ChattyChat *self)
+{
+  return "";
+}
+
+static void
+chatty_chat_real_set_topic (ChattyChat *self,
+                            const char *topic)
+{
+  /* Do nothing */
+}
+
+static const char *
 chatty_chat_real_get_last_message (ChattyChat *self)
 {
   return "";
@@ -311,6 +324,8 @@ chatty_chat_class_init (ChattyChatClass *klass)
   klass->is_loading_history = chatty_chat_real_is_loading_history;
   klass->get_messages = chatty_chat_real_get_messages;
   klass->get_users = chatty_chat_real_get_users;
+  klass->get_topic = chatty_chat_real_get_topic;
+  klass->set_topic = chatty_chat_real_set_topic;
   klass->get_last_message = chatty_chat_real_get_last_message;
   klass->get_unread_count = chatty_chat_real_get_unread_count;
   klass->set_unread_count = chatty_chat_real_set_unread_count;
@@ -488,6 +503,26 @@ GListModel *chatty_chat_get_users (ChattyChat *self)
   g_return_val_if_fail (CHATTY_IS_CHAT (self), NULL);
 
   return CHATTY_CHAT_GET_CLASS (self)->get_users (self);
+}
+
+const char *
+chatty_chat_get_topic (ChattyChat *self)
+{
+  g_return_val_if_fail (CHATTY_IS_CHAT (self), "");
+
+  return CHATTY_CHAT_GET_CLASS (self)->get_topic (self);
+}
+
+void
+chatty_chat_set_topic (ChattyChat *self,
+                       const char *topic)
+{
+  g_return_if_fail (CHATTY_IS_CHAT (self));
+
+  if (!topic)
+    topic = "";
+
+  CHATTY_CHAT_GET_CLASS (self)->set_topic (self, topic);
 }
 
 const char *
