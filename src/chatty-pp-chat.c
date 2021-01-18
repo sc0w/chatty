@@ -70,6 +70,7 @@ struct _ChattyPpChat
   gboolean            buddy_typing;
   gboolean            initial_history_loaded;
   gboolean            history_is_loading;
+  gboolean            supports_encryption;
 };
 
 G_DEFINE_TYPE (ChattyPpChat, chatty_pp_chat, CHATTY_TYPE_CHAT)
@@ -142,9 +143,16 @@ chatty_pp_chat_set_purple_buddy (ChattyPpChat *self,
 static gboolean
 chatty_pp_chat_has_encryption_support (ChattyPpChat *self)
 {
+  ChattyProtocol protocol;
   PurpleConversationType type = PURPLE_CONV_TYPE_UNKNOWN;
 
   g_assert (CHATTY_IS_PP_CHAT (self));
+
+  protocol = chatty_item_get_protocols (CHATTY_ITEM (self));
+
+  if (protocol == CHATTY_PROTOCOL_XMPP &&
+      !self->supports_encryption)
+    return FALSE;
 
   if (self->conv)
     type = purple_conversation_get_type (self->conv);
@@ -152,7 +160,7 @@ chatty_pp_chat_has_encryption_support (ChattyPpChat *self)
   /* Currently we support only XMPP IM chats */
   if (self->conv &&
       type == PURPLE_CONV_TYPE_IM &&
-      chatty_item_get_protocols (CHATTY_ITEM (self)) == CHATTY_PROTOCOL_XMPP)
+      protocol == CHATTY_PROTOCOL_XMPP)
     return TRUE;
 
   return FALSE;
@@ -866,6 +874,7 @@ chatty_pp_chat_init (ChattyPpChat *self)
   self->sorted_chat_users = gtk_sort_list_model_new (G_LIST_MODEL (self->chat_users), sorter);
 
   self->message_store = g_list_store_new (CHATTY_TYPE_MESSAGE);
+  self->encrypt = CHATTY_ENCRYPTION_UNSUPPORTED;
 }
 
 ChattyPpChat *
