@@ -61,6 +61,7 @@ void                chatty_pp_chat_emit_user_changed      (ChattyPpChat       *s
 void                chatty_pp_chat_load_encryption_status (ChattyPpChat       *self);
 void                chatty_pp_chat_set_show_notifications (ChattyPpChat       *self,
                                                            gboolean            show);
+const char         *chatty_pp_chat_get_status             (ChattyPpChat       *self);
 gboolean            chatty_pp_chat_get_auto_join          (ChattyPpChat       *self);
 void                chatty_pp_chat_set_buddy_typing       (ChattyPpChat       *self,
                                                            gboolean            is_typing);

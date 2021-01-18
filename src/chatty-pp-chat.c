@@ -1310,6 +1310,28 @@ chatty_pp_chat_set_show_notifications (ChattyPpChat *self,
   purple_blist_node_set_bool (node, "chatty-notifications", !!show);
 }
 
+const char *
+chatty_pp_chat_get_status (ChattyPpChat *self)
+{
+  PurplePresence *presence;
+  PurpleStatus *status = NULL;
+
+  g_return_val_if_fail (CHATTY_IS_PP_CHAT (self), "");
+
+  if (!self->buddy)
+    return "";
+
+  presence = purple_buddy_get_presence (self->buddy);
+
+  if (presence)
+    status = purple_presence_get_active_status (presence);
+
+  if (status)
+    return purple_status_get_name (status);
+
+  return "";
+}
+
 gboolean
 chatty_pp_chat_get_auto_join (ChattyPpChat *self)
 {
