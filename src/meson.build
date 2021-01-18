@@ -42,6 +42,9 @@ libsrc = [
 ui_files = files (
   'ui/chatty-chat-view.ui',
   'ui/chatty-contact-row.ui',
+  # FIXME: Testing this fails in CI,
+  # but works fine locally
+  # 'ui/chatty-info-dialog.ui',
   'ui/chatty-dialog-join-muc.ui',
   'ui/chatty-dialog-muc-info.ui',
   'ui/chatty-dialog-new-chat.ui',
@@ -58,6 +61,7 @@ chatty_sources = [
   'chatty-manager.c',
   'chatty-application.c',
   'chatty-window.c',
+  'dialogs/chatty-info-dialog.c',
   'dialogs/chatty-settings-dialog.c',
   'dialogs/chatty-new-chat-dialog.c',
   'dialogs/chatty-new-muc-dialog.c',

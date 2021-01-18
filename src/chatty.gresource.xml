@@ -5,6 +5,7 @@
     <file>ui/chatty-chat-view.ui</file>
     <file>ui/chatty-contact-row.ui</file>
     <file>ui/chatty-message-row.ui</file>
+    <file>ui/chatty-info-dialog.ui</file>
     <file>ui/chatty-settings-dialog.ui</file>
     <file>ui/chatty-dialog-new-chat.ui</file>
     <file>ui/chatty-dialog-join-muc.ui</file>
