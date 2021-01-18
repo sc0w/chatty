@@ -46,9 +46,7 @@ ui_files = files (
   # but works fine locally
   # 'ui/chatty-info-dialog.ui',
   'ui/chatty-dialog-join-muc.ui',
-  'ui/chatty-dialog-muc-info.ui',
   'ui/chatty-dialog-new-chat.ui',
-  'ui/chatty-dialog-user-info.ui',
   'ui/chatty-list-row.ui',
   'ui/chatty-message-row.ui',
   'ui/chatty-settings-dialog.ui',
@@ -65,8 +63,6 @@ chatty_sources = [
   'dialogs/chatty-settings-dialog.c',
   'dialogs/chatty-new-chat-dialog.c',
   'dialogs/chatty-new-muc-dialog.c',
-  'dialogs/chatty-user-info-dialog.c',
-  'dialogs/chatty-muc-info-dialog.c',
   'chatty-message-row.c',
   './xeps/xeps.c',
   './xeps/chatty-xep-0184.c',

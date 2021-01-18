@@ -39,16 +39,12 @@ src/chatty-window.c
 src/chatty-window.h
 src/dialogs/chatty-info-dialog.c
 src/dialogs/chatty-info-dialog.h
-src/dialogs/chatty-muc-info-dialog.c
-src/dialogs/chatty-muc-info-dialog.h
 src/dialogs/chatty-new-chat-dialog.c
 src/dialogs/chatty-new-chat-dialog.h
 src/dialogs/chatty-new-muc-dialog.c
 src/dialogs/chatty-new-muc-dialog.h
 src/dialogs/chatty-settings-dialog.c
 src/dialogs/chatty-settings-dialog.h
-src/dialogs/chatty-user-info-dialog.c
-src/dialogs/chatty-user-info-dialog.h
 src/main.c
 src/matrix/chatty-ma-account.c
 src/matrix/chatty-ma-account.h
@@ -58,9 +54,7 @@ src/matrix/matrix-utils.c
 src/matrix/matrix-utils.h
 src/ui/chatty-contact-row.ui
 src/ui/chatty-dialog-join-muc.ui
-src/ui/chatty-dialog-muc-info.ui
 src/ui/chatty-dialog-new-chat.ui
-src/ui/chatty-dialog-user-info.ui
 src/ui/chatty-info-dialog.ui
 src/ui/chatty-list-row.ui
 src/ui/chatty-settings-dialog.ui
