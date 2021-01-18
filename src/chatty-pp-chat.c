@@ -24,6 +24,7 @@
 #include "chatty-utils.h"
 #include "users/chatty-pp-buddy.h"
 #include "users/chatty-pp-account.h"
+#include "chatty-manager.h"
 #include "chatty-pp-chat.h"
 
 #define CHATTY_COLOR_BLUE "4A8FD9"
@@ -434,6 +435,44 @@ chatty_pp_chat_get_users (ChattyChat *chat)
 }
 
 static const char *
+chatty_pp_chat_get_topic (ChattyChat *chat)
+{
+  ChattyPpChat *self = (ChattyPpChat *)chat;
+
+  g_assert (CHATTY_IS_PP_CHAT (self));
+
+  if (!self->conv)
+    return "";
+
+  return purple_conv_chat_get_topic (PURPLE_CONV_CHAT (self->conv));
+}
+
+static void
+chatty_pp_chat_set_topic (ChattyChat *chat,
+                          const char *topic)
+{
+  ChattyPpChat *self = (ChattyPpChat *)chat;
+  PurplePluginProtocolInfo *prpl_info = NULL;
+  PurpleConnection *gc;
+  int chat_id;
+
+  g_assert (CHATTY_IS_PP_CHAT (self));
+
+  if (!self->conv)
+    return;
+
+  gc = purple_conversation_get_gc (self->conv);
+  prpl_info = PURPLE_PLUGIN_PROTOCOL_INFO (gc->prpl);
+
+  if (!gc || !prpl_info ||
+      !prpl_info->set_chat_topic)
+    return;
+
+  chat_id = purple_conv_chat_get_id (PURPLE_CONV_CHAT (self->conv));
+  prpl_info->set_chat_topic (gc, chat_id, topic);
+}
+
+static const char *
 chatty_pp_chat_get_last_message (ChattyChat *chat)
 {
   ChattyPpChat *self = (ChattyPpChat *)chat;
@@ -804,6 +843,8 @@ chatty_pp_chat_class_init (ChattyPpChatClass *klass)
   chat_class->is_loading_history = chatty_pp_chat_is_loading_history;
   chat_class->get_messages = chatty_pp_chat_get_messages;
   chat_class->get_users = chatty_pp_chat_get_users;
+  chat_class->get_topic = chatty_pp_chat_get_topic;
+  chat_class->set_topic = chatty_pp_chat_set_topic;
   chat_class->get_last_message = chatty_pp_chat_get_last_message;
   chat_class->get_unread_count = chatty_pp_chat_get_unread_count;
   chat_class->set_unread_count = chatty_pp_chat_set_unread_count;
