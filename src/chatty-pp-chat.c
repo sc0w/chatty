@@ -1307,6 +1307,24 @@ chatty_pp_chat_load_encryption_status (ChattyPpChat *self)
 
 }
 
+gboolean
+chatty_pp_chat_get_show_notifications (ChattyPpChat *self)
+{
+  PurpleBlistNode *node;
+
+  g_return_val_if_fail (CHATTY_IS_PP_CHAT (self), FALSE);
+
+  if (!self->buddy && !self->pp_chat)
+    return FALSE;
+
+  node = PURPLE_BLIST_NODE (self->buddy);
+
+  if (!node)
+    node = PURPLE_BLIST_NODE (self->pp_chat);
+
+  return purple_blist_node_get_bool (node, "chatty-notifications");
+}
+
 void
 chatty_pp_chat_set_show_notifications (ChattyPpChat *self,
                                        gboolean      show)

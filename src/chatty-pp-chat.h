@@ -62,6 +62,7 @@ char               *chatty_pp_chat_get_buddy_name         (ChattyPpChat       *c
 void                chatty_pp_chat_emit_user_changed      (ChattyPpChat       *self,
                                                            const char         *user);
 void                chatty_pp_chat_load_encryption_status (ChattyPpChat       *self);
+gboolean            chatty_pp_chat_get_show_notifications (ChattyPpChat       *self);
 void                chatty_pp_chat_set_show_notifications (ChattyPpChat       *self,
                                                            gboolean            show);
 const char         *chatty_pp_chat_get_status             (ChattyPpChat       *self);
