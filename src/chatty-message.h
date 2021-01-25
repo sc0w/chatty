@@ -66,6 +66,9 @@ void                chatty_message_set_uid         (ChattyMessage      *self,
 const char         *chatty_message_get_id          (ChattyMessage      *self);
 void                chatty_message_set_id          (ChattyMessage      *self,
                                                     const char         *id);
+guint               chatty_message_get_sms_id      (ChattyMessage      *self);
+void                chatty_message_set_sms_id      (ChattyMessage      *self,
+                                                    guint               id);
 const char         *chatty_message_get_text        (ChattyMessage      *self);
 ChattyItem         *chatty_message_get_user        (ChattyMessage      *self);
 const char         *chatty_message_get_user_name   (ChattyMessage      *self);

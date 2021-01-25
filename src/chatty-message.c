@@ -45,6 +45,7 @@ struct _ChattyMessage
   time_t           time;
 
   gboolean encrypted;
+  guint            sms_id;
 };
 
 G_DEFINE_TYPE (ChattyMessage, chatty_message, G_TYPE_OBJECT)
@@ -214,6 +215,24 @@ chatty_message_set_id (ChattyMessage *self,
 
   g_free (self->id);
   self->id = g_strdup (id);
+}
+
+guint
+chatty_message_get_sms_id (ChattyMessage *self)
+{
+  g_return_val_if_fail (CHATTY_IS_MESSAGE (self), 0);
+
+  return self->sms_id;
+}
+
+void
+chatty_message_set_sms_id (ChattyMessage *self,
+                           guint          id)
+{
+  g_return_if_fail (CHATTY_IS_MESSAGE (self));
+
+  if (id)
+    self->sms_id = id;
 }
 
 const char *
