@@ -2142,6 +2142,17 @@ history_add_message (ChattyHistory *self,
 
   sender_id = insert_or_ignore_user (self, chatty_item_get_protocols (CHATTY_ITEM (chat)), who, task);
 
+  if (sender_id && direction == CHATTY_DIRECTION_IN) {
+    sqlite3_prepare_v2 (self->db,
+                        "INSERT OR IGNORE INTO thread_members(thread_id,user_id) "
+                        "VALUES(?1,?2)",
+                        -1, &stmt, NULL);
+    history_bind_int (stmt, 1, thread_id, "binding when adding thread member");
+    history_bind_int (stmt, 2, sender_id, "binding when adding thread member");
+    sqlite3_step (stmt);
+    sqlite3_finalize (stmt);
+  }
+
   if (type == CHATTY_MESSAGE_IMAGE ||
       type == CHATTY_MESSAGE_AUDIO ||
       type == CHATTY_MESSAGE_VIDEO ||
