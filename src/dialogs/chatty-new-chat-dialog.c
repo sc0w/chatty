@@ -135,7 +135,7 @@ dialog_filter_item_cb (ChattyItem          *item,
 
     account = chatty_chat_get_account (CHATTY_CHAT (item));
 
-    if (chatty_account_get_status (account) != CHATTY_CONNECTED)
+    if (!account || chatty_account_get_status (account) != CHATTY_CONNECTED)
       return FALSE;
   }
 
