@@ -77,6 +77,16 @@
 #define FILE_STATUS_MISSING        2
 #define FILE_STATUS_DECRYPT_FAILED 3
 
+/* Shouldn't be modified, new values should be appended */
+#define MESSAGE_STATUS_UNKNOWN          0
+#define MESSAGE_STATUS_DRAFT            1
+#define MESSAGE_STATUS_RECIEVED         2
+#define MESSAGE_STATUS_SENT             3
+#define MESSAGE_STATUS_DELIVERED        4
+#define MESSAGE_STATUS_READ             5
+#define MESSAGE_STATUS_SENDING_FAILED   6
+#define MESSAGE_STATUS_DELIVERY_FAILED  7
+
 struct _ChattyHistory
 {
   GObject      parent_instance;
@@ -270,6 +280,62 @@ history_visibility_to_value (ChattyItemState state)
   }
 
   g_return_val_if_reached (THREAD_VISIBILITY_VISIBLE);
+}
+
+static int
+history_msg_status_to_value (ChattyMsgStatus status)
+{
+  switch (status) {
+  case CHATTY_STATUS_RECIEVED:
+    return MESSAGE_STATUS_RECIEVED;
+
+  case CHATTY_STATUS_UNKNOWN:
+  case CHATTY_STATUS_SENDING:
+    return MESSAGE_STATUS_UNKNOWN;
+
+  case CHATTY_STATUS_SENT:
+    return MESSAGE_STATUS_SENT;
+
+  case CHATTY_STATUS_DELIVERED:
+    return MESSAGE_STATUS_DELIVERED;
+
+  case CHATTY_STATUS_READ:
+    return MESSAGE_STATUS_READ;
+
+  case CHATTY_STATUS_SENDING_FAILED:
+    return MESSAGE_STATUS_SENDING_FAILED;
+
+  case CHATTY_STATUS_DELIVERY_FAILED:
+    return MESSAGE_STATUS_DELIVERY_FAILED;
+
+  default:
+    g_return_val_if_reached (MESSAGE_STATUS_UNKNOWN);
+  }
+
+  g_return_val_if_reached (MESSAGE_STATUS_UNKNOWN);
+}
+
+static ChattyMsgStatus
+history_msg_status_from_value (int value)
+{
+  if (value == MESSAGE_STATUS_UNKNOWN)
+    return CHATTY_STATUS_UNKNOWN;
+  if (value == MESSAGE_STATUS_DRAFT)
+    return CHATTY_STATUS_UNKNOWN;
+  if (value == MESSAGE_STATUS_RECIEVED)
+    return CHATTY_STATUS_RECIEVED;
+  if (value == MESSAGE_STATUS_SENT)
+    return CHATTY_STATUS_SENT;
+  if (value == MESSAGE_STATUS_DELIVERED)
+    return CHATTY_STATUS_DELIVERED;
+  if (value == MESSAGE_STATUS_READ)
+    return CHATTY_STATUS_READ;
+  if (value == MESSAGE_STATUS_SENDING_FAILED)
+    return CHATTY_STATUS_SENDING_FAILED;
+  if (value == MESSAGE_STATUS_DELIVERY_FAILED)
+    return CHATTY_STATUS_DELIVERY_FAILED;
+
+  return CHATTY_STATUS_UNKNOWN;
 }
 
 #if 0
@@ -1766,15 +1832,20 @@ get_messages_before_time (ChattyHistory *self,
     skip = FALSE;
 
   status = sqlite3_prepare_v2 (self->db,
+                                               /* 0      1      2    3         4           5 */
                                "SELECT DISTINCT time,direction,body,uid,users.username,body_type,"
+                               /*    6         7          8           9            10          11 */
                                "files.name,files.url,files.path,mime_type.name,files.size,files.status,"
-                               "coalesce(video.width,image.width),"
-                               "coalesce(video.height,image.height),"
-                               "coalesce(video.duration,audio.duration),"
+                               "coalesce(video.width,image.width)," /* 12 */
+                               "coalesce(video.height,image.height)," /* 13 */
+                               "coalesce(video.duration,audio.duration)," /* 14 */
+                               /*     15          16          17              18           19             20 */
                                "p_files.name,p_files.url,p_files.path,p_mime_type.name,p_files.size,p_files.status,"
-                               "coalesce(p_video.width,p_image.width),"
-                               "coalesce(p_video.height,p_image.height),"
-                               "coalesce(p_video.duration,p_audio.duration) "
+                               "coalesce(p_video.width,p_image.width)," /* 21 */
+                               "coalesce(p_video.height,p_image.height)," /* 22 */
+                               "coalesce(p_video.duration,p_audio.duration)," /* 23 */
+                               /* 24 */
+                               "messages.status "
                                "FROM messages "
                                "LEFT JOIN files ON body_type>=8 AND body_type<=11 AND files.id=body "
                                "LEFT JOIN mime_type ON body_type>=8 AND body_type<=11 AND files.mime_type_id=mime_type.id "
@@ -1858,8 +1929,10 @@ get_messages_before_time (ChattyHistory *self,
     if (!chatty_chat_is_im (chat))
       who = (const char *)sqlite3_column_text (stmt, 4);
 
+    status = sqlite3_column_int (stmt, 24);
     message = chatty_message_new (NULL, who, msg, uid, time_stamp, type,
-                                  history_direction_from_value (direction), 0);
+                                  history_direction_from_value (direction),
+                                  history_msg_status_from_value (status));
     chatty_message_set_file (message, file);
     chatty_message_set_preview (message, preview);
     g_ptr_array_insert (messages, 0, message);
@@ -2078,14 +2151,16 @@ history_add_message (ChattyHistory *self,
   }
 
   sqlite3_prepare_v2 (self->db,
-                      "INSERT OR IGNORE INTO messages(uid,thread_id,sender_id,body,body_type,direction,time,preview_id,encrypted) "
+                      "INSERT INTO messages(uid,thread_id,sender_id,body,body_type,direction,time,preview_id,encrypted,status) "
                       "VALUES(?1,?2,?3,"
                       "CASE "
-                      "WHEN ?5>="STRING (MESSAGE_TYPE_FILE) " AND ?5<="STRING (MESSAGE_TYPE_AUDIO) " "
-                      "THEN ?8 "
-                      "ELSE ?4 "
+                      "  WHEN ?5>="STRING (MESSAGE_TYPE_FILE) " AND ?5<="STRING (MESSAGE_TYPE_AUDIO) " "
+                      "  THEN ?8 "
+                      "  ELSE ?4 "
                       "END,"
-                      "?5,?6,?7,?9,?10);",
+                      "?5,?6,?7,?9,?10,?11) "
+                      "ON CONFLICT (uid,thread_id,body,time) DO UPDATE "
+                      "SET status=?11",
                       -1, &stmt, NULL);
 
   history_bind_text (stmt, 1, uid, "binding when adding message");
@@ -2103,6 +2178,9 @@ history_add_message (ChattyHistory *self,
     history_bind_int (stmt, 9, preview_id, "binding when adding message");
   history_bind_int (stmt, 10, chatty_message_get_encrypted (message),
                     "binding when adding message");
+  status = history_msg_status_to_value (chatty_message_get_status (message));
+  if (status != MESSAGE_STATUS_UNKNOWN)
+    history_bind_int (stmt, 11, status, "binding when adding message");
 
   status = sqlite3_step (stmt);
   sqlite3_finalize (stmt);
