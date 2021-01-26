@@ -1014,6 +1014,7 @@ get_messages_cb (GObject      *obj,
   root = matrix_api_load_prev_batch_finish (self->matrix_api, result, &error);
   self->prev_batch_loading = FALSE;
   self->history_is_loading = FALSE;
+  g_object_notify (G_OBJECT (self), "loading-history");
 
   if (error) {
     if (!g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
@@ -1041,8 +1042,11 @@ db_room_room_cb (GObject      *object,
 
   g_assert (CHATTY_IS_MA_CHAT (self));
 
+  g_object_freeze_notify (G_OBJECT (self));
+
   self->room_db_loaded = TRUE;
   self->history_is_loading = FALSE;
+  g_object_notify (G_OBJECT (self), "loading-history");
 
   g_free (self->prev_batch);
   self->prev_batch = matrix_db_load_room_finish (self->matrix_db, result, &error);
@@ -1052,12 +1056,15 @@ db_room_room_cb (GObject      *object,
 
   if (self->prev_batch) {
     self->history_is_loading = TRUE;
+    g_object_notify (G_OBJECT (self), "loading-history");
     matrix_api_load_prev_batch_async (self->matrix_api,
                                       self->room_id,
                                       self->prev_batch,
                                       self->last_batch,
                                       get_messages_cb, self);
   }
+
+  g_object_thaw_notify (G_OBJECT (self));
 }
 
 static void
@@ -1071,8 +1078,11 @@ ma_chat_load_db_messages_cb (GObject      *object,
 
   g_assert (CHATTY_IS_MA_CHAT (self));
 
+  g_object_freeze_notify (G_OBJECT (self));
+
   messages = chatty_history_get_messages_finish (self->history_db, result, &error);
   self->history_is_loading = FALSE;
+  g_object_notify (G_OBJECT (self), "loading-history");
 
   if (messages && messages->len) {
     g_list_store_splice (self->message_list, 0, 0, messages->pdata, messages->len);
@@ -1081,6 +1091,7 @@ ma_chat_load_db_messages_cb (GObject      *object,
     g_warning ("Error fetching messages: %s,", error->message);
   } else if (!messages && self->prev_batch) {
     self->history_is_loading = TRUE;
+    g_object_notify (G_OBJECT (self), "loading-history");
     matrix_api_load_prev_batch_async (self->matrix_api,
                                       self->room_id,
                                       self->prev_batch,
@@ -1089,11 +1100,14 @@ ma_chat_load_db_messages_cb (GObject      *object,
   } else if (!self->room_db_loaded &&
              matrix_api_get_device_id (self->matrix_api)) {
     self->history_is_loading = TRUE;
+    g_object_notify (G_OBJECT (self), "loading-history");
     matrix_db_load_room_async (self->matrix_db, self->account,
                                matrix_api_get_device_id (self->matrix_api),
                                self->room_id,
                                db_room_room_cb, g_object_ref (self));
   }
+
+  g_object_thaw_notify (G_OBJECT (self));
 }
 
 static gboolean
@@ -1136,12 +1150,24 @@ chatty_ma_chat_real_past_messages (ChattyChat *chat,
     return;
 
   self->history_is_loading = TRUE;
+  g_object_notify (G_OBJECT (self), "loading-history");
+
   model = chatty_chat_get_messages (chat);
 
   chatty_history_get_messages_async (self->history_db, chat,
                                      g_list_model_get_item (model, 0),
                                      count, ma_chat_load_db_messages_cb,
                                      g_object_ref (self));
+}
+
+static gboolean
+chatty_ma_chat_is_loading_history (ChattyChat *chat)
+{
+  ChattyMaChat *self = (ChattyMaChat *)chat;
+
+  g_assert (CHATTY_IS_MA_CHAT (self));
+
+  return self->history_is_loading;
 }
 
 static GListModel *
@@ -1384,6 +1410,7 @@ chatty_ma_chat_class_init (ChattyMaChatClass *klass)
   chat_class->get_chat_name = chatty_ma_chat_get_chat_name;
   chat_class->get_username = chatty_ma_chat_get_username;
   chat_class->load_past_messages = chatty_ma_chat_real_past_messages;
+  chat_class->is_loading_history = chatty_ma_chat_is_loading_history;
   chat_class->get_messages = chatty_ma_chat_get_messages;
   chat_class->get_account  = chatty_ma_chat_get_account;
   chat_class->get_encryption = chatty_ma_chat_get_encryption;
