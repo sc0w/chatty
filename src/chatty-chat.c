@@ -46,6 +46,7 @@ enum {
   PROP_0,
   PROP_ENCRYPT,
   PROP_BUDDY_TYPING,
+  PROP_LOADING_HISTORY,
   N_PROPS
 };
 
@@ -122,6 +123,12 @@ chatty_chat_real_load_past_messages (ChattyChat *self,
                                      int         count)
 {
   /* Do nothing */
+}
+
+static gboolean
+chatty_chat_real_is_loading_history (ChattyChat *self)
+{
+  return FALSE;
 }
 
 static GListModel *
@@ -205,6 +212,10 @@ chatty_chat_get_property (GObject    *object,
       g_value_set_boolean (value, chatty_chat_get_buddy_typing (self));
       break;
 
+    case PROP_LOADING_HISTORY:
+      g_value_set_boolean (value, chatty_chat_is_loading_history (self));
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
       break;
@@ -263,6 +274,7 @@ chatty_chat_class_init (ChattyChatClass *klass)
   klass->get_username = chatty_chat_real_get_username;
   klass->get_account = chatty_chat_real_get_account;
   klass->load_past_messages = chatty_chat_real_load_past_messages;
+  klass->is_loading_history = chatty_chat_real_is_loading_history;
   klass->get_messages = chatty_chat_real_get_messages;
   klass->get_users = chatty_chat_real_get_users;
   klass->get_last_message = chatty_chat_real_get_last_message;
@@ -283,6 +295,13 @@ chatty_chat_class_init (ChattyChatClass *klass)
     g_param_spec_boolean ("buddy-typing",
                           "Buddy typing",
                           "Whether the buddy in chat is typing",
+                          FALSE,
+                          G_PARAM_READABLE | G_PARAM_STATIC_STRINGS);
+
+  properties[PROP_LOADING_HISTORY] =
+    g_param_spec_boolean ("loading-history",
+                          "Loading history",
+                          "Whether the chat history is being loading",
                           FALSE,
                           G_PARAM_READABLE | G_PARAM_STATIC_STRINGS);
 
@@ -417,6 +436,14 @@ chatty_chat_load_past_messages (ChattyChat *self,
     count = LAZY_LOAD_MSGS_LIMIT;
 
   CHATTY_CHAT_GET_CLASS (self)->load_past_messages (self, count);
+}
+
+gboolean
+chatty_chat_is_loading_history (ChattyChat *self)
+{
+  g_return_val_if_fail (CHATTY_IS_CHAT (self), FALSE);
+
+  return CHATTY_CHAT_GET_CLASS (self)->is_loading_history (self);
 }
 
 GListModel *chatty_chat_get_users (ChattyChat *self)
