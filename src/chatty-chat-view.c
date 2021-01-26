@@ -30,6 +30,7 @@ struct _ChattyChatView
   GtkBox      parent_instance;
 
   GtkWidget  *message_list;
+  GtkWidget  *loading_spinner;
   GtkWidget  *typing_revealer;
   GtkWidget  *typing_indicator;
   GtkWidget  *chatty_message_list;
@@ -910,6 +911,7 @@ chatty_chat_view_class_init (ChattyChatViewClass *klass)
                                                "ui/chatty-chat-view.ui");
 
   gtk_widget_class_bind_template_child (widget_class, ChattyChatView, message_list);
+  gtk_widget_class_bind_template_child (widget_class, ChattyChatView, loading_spinner);
   gtk_widget_class_bind_template_child (widget_class, ChattyChatView, typing_revealer);
   gtk_widget_class_bind_template_child (widget_class, ChattyChatView, typing_indicator);
   gtk_widget_class_bind_template_child (widget_class, ChattyChatView, input_frame);
@@ -1008,6 +1010,12 @@ chatty_chat_view_set_chat (ChattyChatView *self,
                            G_CALLBACK (chat_buddy_typing_changed_cb),
                            self,
                            G_CONNECT_SWAPPED);
+  g_object_bind_property (self->chat, "loading-history",
+                          self->loading_spinner, "active",
+                          G_BINDING_SYNC_CREATE);
+  g_object_bind_property (self->chat, "loading-history",
+                          self->loading_spinner, "visible",
+                          G_BINDING_SYNC_CREATE);
 
   chat_encrypt_changed_cb (self);
   chat_buddy_typing_changed_cb (self);
