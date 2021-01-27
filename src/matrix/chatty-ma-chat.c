@@ -1085,7 +1085,8 @@ db_room_room_cb (GObject      *object,
                                       self->room_id,
                                       self->prev_batch,
                                       self->last_batch,
-                                      get_messages_cb, self);
+                                      get_messages_cb,
+                                      g_steal_pointer (&task));
   }
 
   g_object_thaw_notify (G_OBJECT (self));
