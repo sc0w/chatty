@@ -549,6 +549,45 @@ chatty_pp_chat_get_buddy_typing (ChattyChat *chat)
   return self->buddy_typing;
 }
 
+static void
+chatty_pp_chat_set_typing (ChattyChat *chat,
+                           gboolean    is_typing)
+{
+  ChattyPpChat *self = (ChattyPpChat *)chat;
+  PurpleConvIm *im;
+
+  g_assert (CHATTY_IS_PP_CHAT (self));
+
+  if (!self->conv || !chatty_chat_is_im (chat))
+    return;
+
+  im = PURPLE_CONV_IM (self->conv);
+
+  if (is_typing) {
+    gboolean send = (purple_conv_im_get_send_typed_timeout (im) == 0);
+
+    purple_conv_im_stop_send_typed_timeout (im);
+    purple_conv_im_start_send_typed_timeout (im);
+
+    if (send || (purple_conv_im_get_type_again (im) != 0 &&
+                 time (NULL) > purple_conv_im_get_type_again (im))) {
+      unsigned int timeout;
+
+      timeout = serv_send_typing (purple_conversation_get_gc (self->conv),
+                                  purple_conversation_get_name (self->conv),
+                                  PURPLE_TYPING);
+
+      purple_conv_im_set_type_again (im, timeout);
+    }
+  } else {
+    purple_conv_im_stop_send_typed_timeout (im);
+
+    serv_send_typing (purple_conversation_get_gc (self->conv),
+                      purple_conversation_get_name (self->conv),
+                      PURPLE_NOT_TYPING);
+  }
+}
+
 static const char *
 chatty_pp_chat_get_name (ChattyItem *item)
 {
@@ -741,6 +780,7 @@ chatty_pp_chat_class_init (ChattyPpChatClass *klass)
   chat_class->get_encryption = chatty_pp_chat_get_encryption;
   chat_class->set_encryption = chatty_pp_chat_set_encryption;
   chat_class->get_buddy_typing = chatty_pp_chat_get_buddy_typing;
+  chat_class->set_typing = chatty_pp_chat_set_typing;
 }
 
 static void
