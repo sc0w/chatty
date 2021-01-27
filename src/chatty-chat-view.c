@@ -281,8 +281,16 @@ chatty_chat_view_update (ChattyChatView *self)
       chatty_item_get_protocols (CHATTY_ITEM (self->chat)) == CHATTY_PROTOCOL_XMPP)
     chat_view_setup_file_upload (self);
 
-  if (CHATTY_IS_MA_CHAT (self->chat))
+  if (CHATTY_IS_MA_CHAT (self->chat)) {
     gtk_widget_show (self->send_file_button);
+    gtk_widget_hide (self->empty_label0);
+    gtk_widget_hide (self->empty_label1);
+    gtk_widget_hide (self->empty_label2);
+  } else {
+    gtk_widget_show (self->empty_label0);
+    gtk_widget_show (self->empty_label1);
+    gtk_widget_show (self->empty_label2);
+  }
 
   if (self->message_type == CHATTY_MSG_TYPE_IM)
     index = 0;
