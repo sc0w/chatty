@@ -180,6 +180,13 @@ chatty_chat_real_get_buddy_typing (ChattyChat *self)
   return FALSE;
 }
 
+static void
+chatty_chat_real_set_typing (ChattyChat *self,
+                             gboolean    is_typing)
+{
+  /* Do nothing */
+}
+
 static const char *
 chatty_chat_real_get_name (ChattyItem *item)
 {
@@ -283,6 +290,7 @@ chatty_chat_class_init (ChattyChatClass *klass)
   klass->get_last_msg_time = chatty_chat_real_get_last_msg_time;
   klass->get_encryption = chatty_chat_real_get_encryption;
   klass->get_buddy_typing = chatty_chat_real_get_buddy_typing;
+  klass->set_typing = chatty_chat_real_set_typing;
 
   properties[PROP_ENCRYPT] =
     g_param_spec_boolean ("encrypt",
@@ -501,6 +509,25 @@ chatty_chat_set_encryption (ChattyChat *self,
   g_return_if_fail (CHATTY_IS_CHAT (self));
 
   CHATTY_CHAT_GET_CLASS (self)->set_encryption (self, !!enable);
+}
+
+/**
+ * chatty_chat_set_typing:
+ * @self: A #ChattyChat
+ * @is_typing: Whether self is typing or not
+ *
+ * Set whether the username associated with @self
+ * is typing or not.  This change is propagated
+ * to the real chat (ie, this information is send
+ * to the server), and not just locally set.
+ */
+void
+chatty_chat_set_typing (ChattyChat *self,
+                        gboolean    is_typing)
+{
+  g_return_if_fail (CHATTY_IS_CHAT (self));
+
+  CHATTY_CHAT_GET_CLASS (self)->set_typing (self, !!is_typing);
 }
 
 gboolean

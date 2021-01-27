@@ -48,6 +48,8 @@ struct _ChattyChatClass
   void              (*set_encryption)     (ChattyChat *self,
                                            gboolean    enable);
   gboolean          (*get_buddy_typing)   (ChattyChat *self);
+  void              (*set_typing)         (ChattyChat *self,
+                                           gboolean    is_typing);
 };
 
 ChattyChat         *chatty_chat_new                (const char *account_username,
@@ -74,5 +76,7 @@ ChattyEncryption    chatty_chat_get_encryption     (ChattyChat *self);
 void                chatty_chat_set_encryption     (ChattyChat *self,
                                                     gboolean    enable);
 gboolean            chatty_chat_get_buddy_typing   (ChattyChat *self);
+void                chatty_chat_set_typing         (ChattyChat *self,
+                                                    gboolean    is_typing);
 
 G_END_DECLS
