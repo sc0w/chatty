@@ -315,54 +315,17 @@ chatty_chat_view_update (ChattyChatView *self)
 static void
 chatty_update_typing_status (ChattyChatView *self)
 {
-  PurpleConversation     *conv;
-  PurpleConvIm           *im;
   GtkTextIter             start, end;
   g_autofree char         *text = NULL;
   gboolean                empty;
 
   g_assert (CHATTY_IS_CHAT_VIEW (self));
 
-  conv = self->conv;
-
-  if (!chatty_chat_is_im (self->chat))
-    return;
-
   gtk_text_buffer_get_bounds (self->message_input_buffer, &start, &end);
   text = gtk_text_buffer_get_text (self->message_input_buffer, &start, &end, FALSE);
 
   empty = !text || !*text || *text == '/';
-
-  if (CHATTY_IS_MA_CHAT (self->chat)) {
-    chatty_ma_chat_set_typing (CHATTY_MA_CHAT (self->chat), !empty);
-    return;
-  }
-
-  im = PURPLE_CONV_IM (conv);
-
-  if (!empty) {
-    gboolean send = (purple_conv_im_get_send_typed_timeout (im) == 0);
-
-    purple_conv_im_stop_send_typed_timeout (im);
-    purple_conv_im_start_send_typed_timeout (im);
-
-    if (send || (purple_conv_im_get_type_again (im) != 0 &&
-                 time (NULL) > purple_conv_im_get_type_again (im))) {
-      unsigned int timeout;
-
-      timeout = serv_send_typing (purple_conversation_get_gc (conv),
-                                  purple_conversation_get_name (conv),
-                                  PURPLE_TYPING);
-
-      purple_conv_im_set_type_again (im, timeout);
-    }
-  } else {
-    purple_conv_im_stop_send_typed_timeout (im);
-
-    serv_send_typing (purple_conversation_get_gc (conv),
-                      purple_conversation_get_name (conv),
-                      PURPLE_NOT_TYPING);
-  }
+  chatty_chat_set_typing (self->chat, !empty);
 }
 
 static void
