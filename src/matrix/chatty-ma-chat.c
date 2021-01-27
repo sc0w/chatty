@@ -1331,6 +1331,23 @@ chatty_ma_chat_get_buddy_typing (ChattyChat *chat)
   return self->buddy_typing;
 }
 
+static void
+chatty_ma_chat_set_typing (ChattyChat *chat,
+                           gboolean    is_typing)
+{
+  ChattyMaChat *self = (ChattyMaChat *)chat;
+
+  g_assert (CHATTY_IS_MA_CHAT (self));
+
+  if (self->self_typing == is_typing &&
+      (g_get_monotonic_time () - self->self_typing_set_time) < G_TIME_SPAN_SECOND * 5)
+    return;
+
+  self->self_typing = is_typing;
+  self->self_typing_set_time = g_get_monotonic_time ();
+  matrix_api_set_typing (self->matrix_api, self->room_id, is_typing);
+}
+
 static const char *
 chatty_ma_chat_get_name (ChattyItem *item)
 {
@@ -1456,6 +1473,7 @@ chatty_ma_chat_class_init (ChattyMaChatClass *klass)
   chat_class->get_unread_count = chatty_ma_chat_get_unread_count;
   chat_class->set_unread_count = chatty_ma_chat_set_unread_count;
   chat_class->get_buddy_typing = chatty_ma_chat_get_buddy_typing;
+  chat_class->set_typing = chatty_ma_chat_set_typing;
 
   properties[PROP_JSON_DATA] =
     g_param_spec_boxed ("json-data",
@@ -1558,22 +1576,6 @@ chatty_ma_chat_matches_id (ChattyMaChat *self,
     return FALSE;
 
   return g_strcmp0 (self->room_id, room_id) == 0;
-}
-
-void
-chatty_ma_chat_set_typing (ChattyMaChat *self,
-                           gboolean      is_typing)
-{
-  g_return_if_fail (CHATTY_IS_MA_CHAT (self));
-
-  /* Send typing request atmost once every 5 seconds */
-  if (self->self_typing == !!is_typing &&
-      (g_get_monotonic_time () - self->self_typing_set_time) < G_TIME_SPAN_SECOND * 5)
-    return;
-
-  self->self_typing = !!is_typing;
-  self->self_typing_set_time = g_get_monotonic_time ();
-  matrix_api_set_typing (self->matrix_api, self->room_id, !!is_typing);
 }
 
 void
