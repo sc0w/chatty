@@ -1005,10 +1005,14 @@ get_messages_cb (GObject      *obj,
                  GAsyncResult *result,
                  gpointer      user_data)
 {
-  ChattyMaChat *self = user_data;
+  ChattyMaChat *self;
+  g_autoptr(GTask) task = user_data;
   g_autoptr(JsonObject) root = NULL;
   g_autoptr(GError) error = NULL;
 
+  g_assert (G_IS_TASK (task));
+
+  self = g_task_get_source_object (task);
   g_assert (CHATTY_IS_MA_CHAT (self));
 
   root = matrix_api_load_prev_batch_finish (self->matrix_api, result, &error);
@@ -1019,6 +1023,7 @@ get_messages_cb (GObject      *obj,
   if (error) {
     if (!g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
       g_warning ("error: %s", error->message);
+    g_task_return_boolean (task, FALSE);
     return;
   }
 
@@ -1030,6 +1035,21 @@ get_messages_cb (GObject      *obj,
     chatty_ma_chat_set_prev_batch (self, NULL);
   else
     chatty_ma_chat_set_prev_batch (self, g_strdup (matrix_utils_json_object_get_string (root, "end")));
+
+  if (self->prev_batch) {
+    GListModel *model;
+    guint message_count;
+
+    model = G_LIST_MODEL (chatty_chat_get_messages (CHATTY_CHAT (self)));
+    message_count = GPOINTER_TO_UINT(g_object_get_data (G_OBJECT (task), "count"));
+
+    /* Load more items if no message was loaded.  This can happen
+     * when no event in the loaded events was a room message.
+     */
+    if (chatty_chat_get_encryption (CHATTY_CHAT (self)) != CHATTY_ENCRYPTION_ENABLED &&
+        g_list_model_get_n_items (model) == message_count)
+      chatty_chat_load_past_messages (CHATTY_CHAT (self), -1);
+  }
 }
 
 static void
@@ -1037,9 +1057,13 @@ db_room_room_cb (GObject      *object,
                  GAsyncResult *result,
                  gpointer      user_data)
 {
-  g_autoptr(ChattyMaChat) self = user_data;
+  ChattyMaChat *self;
+  g_autoptr(GTask) task = user_data;
   g_autoptr(GError) error = NULL;
 
+  g_assert (G_IS_TASK (task));
+
+  self = g_task_get_source_object (task);
   g_assert (CHATTY_IS_MA_CHAT (self));
 
   g_object_freeze_notify (G_OBJECT (self));
@@ -1072,10 +1096,14 @@ ma_chat_load_db_messages_cb (GObject      *object,
                              GAsyncResult *result,
                              gpointer      user_data)
 {
-  g_autoptr(ChattyMaChat) self = user_data;
+  ChattyMaChat *self;
+  g_autoptr(GTask) task = user_data;
   g_autoptr(GPtrArray) messages = NULL;
   g_autoptr(GError) error = NULL;
 
+  g_assert (G_IS_TASK (task));
+
+  self = g_task_get_source_object (task);
   g_assert (CHATTY_IS_MA_CHAT (self));
 
   g_object_freeze_notify (G_OBJECT (self));
@@ -1084,11 +1112,13 @@ ma_chat_load_db_messages_cb (GObject      *object,
   self->history_is_loading = FALSE;
   g_object_notify (G_OBJECT (self), "loading-history");
 
+  if (error && !g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
+    g_warning ("Error fetching messages from db: %s,", error->message);
+
   if (messages && messages->len) {
     g_list_store_splice (self->message_list, 0, 0, messages->pdata, messages->len);
     g_signal_emit_by_name (self, "changed", 0);
-  } else if (error && !g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED)) {
-    g_warning ("Error fetching messages: %s,", error->message);
+    g_task_return_boolean (task, TRUE);
   } else if (!messages && self->prev_batch) {
     self->history_is_loading = TRUE;
     g_object_notify (G_OBJECT (self), "loading-history");
@@ -1096,7 +1126,8 @@ ma_chat_load_db_messages_cb (GObject      *object,
                                       self->room_id,
                                       self->prev_batch,
                                       self->last_batch,
-                                      get_messages_cb, self);
+                                      get_messages_cb,
+                                      g_steal_pointer (&task));
   } else if (!self->room_db_loaded &&
              matrix_api_get_device_id (self->matrix_api)) {
     self->history_is_loading = TRUE;
@@ -1104,7 +1135,8 @@ ma_chat_load_db_messages_cb (GObject      *object,
     matrix_db_load_room_async (self->matrix_db, self->account,
                                matrix_api_get_device_id (self->matrix_api),
                                self->room_id,
-                               db_room_room_cb, g_object_ref (self));
+                               db_room_room_cb,
+                               g_steal_pointer (&task));
   }
 
   g_object_thaw_notify (G_OBJECT (self));
@@ -1142,6 +1174,8 @@ chatty_ma_chat_real_past_messages (ChattyChat *chat,
 {
   ChattyMaChat *self = (ChattyMaChat *)chat;
   GListModel *model;
+  GTask *task;
+  guint n_items;
 
   g_assert (CHATTY_IS_MA_CHAT (self));
   g_assert (count > 0);
@@ -1153,11 +1187,15 @@ chatty_ma_chat_real_past_messages (ChattyChat *chat,
   g_object_notify (G_OBJECT (self), "loading-history");
 
   model = chatty_chat_get_messages (chat);
+  n_items = g_list_model_get_n_items (model);
+
+  task = g_task_new (self, NULL, NULL, NULL);
+  g_object_set_data (G_OBJECT (task), "count", GUINT_TO_POINTER (n_items));
 
   chatty_history_get_messages_async (self->history_db, chat,
                                      g_list_model_get_item (model, 0),
                                      count, ma_chat_load_db_messages_cb,
-                                     g_object_ref (self));
+                                     task);
 }
 
 static gboolean
