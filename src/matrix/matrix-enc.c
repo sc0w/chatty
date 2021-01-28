@@ -9,7 +9,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-#define G_LOG_DOMAIN "matrix-enc"
+#define G_LOG_DOMAIN "chatty-matrix-enc"
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
