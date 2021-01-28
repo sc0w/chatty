@@ -24,6 +24,7 @@ configure_file(
 add_project_arguments([
   '-I' + meson.build_root(),
   '-DGLIB_DISABLE_DEPRECATION_WARNINGS',
+  '-DG_LOG_USE_STRUCTURED',
 ], language: 'c')
 
 global_c_args = []

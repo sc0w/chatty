@@ -10,6 +10,7 @@
 #include "chatty-config.h"
 #include "chatty-application.h"
 #include "chatty-manager.h"
+#include "chatty-log.h"
 
 
 int
@@ -17,7 +18,9 @@ main (int   argc,
       char *argv[])
 {
   g_autoptr(ChattyApplication) application = NULL;
+  int status;
 
+  chatty_log_init ();
   textdomain (GETTEXT_PACKAGE);
   bindtextdomain (GETTEXT_PACKAGE, LOCALEDIR);
   bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
@@ -25,5 +28,8 @@ main (int   argc,
   g_set_prgname (CHATTY_APP_ID);
   application = chatty_application_new ();
 
-  return g_application_run (G_APPLICATION (application), argc, argv);
+  status = g_application_run (G_APPLICATION (application), argc, argv);
+  chatty_log_finalize ();
+
+  return status;
 }

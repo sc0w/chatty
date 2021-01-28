@@ -34,6 +34,7 @@
 #include "chatty-application.h"
 #include "chatty-settings.h"
 #include "chatty-history.h"
+#include "chatty-log.h"
 
 #define LIBFEEDBACK_USE_UNSTABLE_API
 #include <libfeedback.h>
@@ -60,19 +61,38 @@ struct _ChattyApplication
   gboolean daemon;
   gboolean show_window;
   gboolean enable_debug;
-  gboolean enable_verbose;
 };
 
 G_DEFINE_TYPE (ChattyApplication, chatty_application, GTK_TYPE_APPLICATION)
+
+static gboolean    cmd_verbose_cb   (const char *option_name,
+                                     const char *value,
+                                     gpointer    data,
+                                     GError     **error);
 
 static GOptionEntry cmd_options[] = {
   { "version", 'v', G_OPTION_FLAG_NONE, G_OPTION_ARG_NONE, NULL, N_("Show release version"), NULL },
   { "daemon", 'D', G_OPTION_FLAG_NONE, G_OPTION_ARG_NONE, NULL, N_("Start in daemon mode"), NULL },
   { "nologin", 'n', G_OPTION_FLAG_NONE, G_OPTION_ARG_NONE, NULL, N_("Disable all accounts"), NULL },
   { "debug", 'd', G_OPTION_FLAG_NONE, G_OPTION_ARG_NONE, NULL, N_("Enable libpurple debug messages"), NULL },
-  { "verbose", 'V', G_OPTION_FLAG_NONE, G_OPTION_ARG_NONE, NULL, N_("Enable verbose libpurple debug messages"), NULL },
+  { "verbose", 'V', G_OPTION_FLAG_NO_ARG, G_OPTION_ARG_CALLBACK, cmd_verbose_cb,
+    N_("Enable verbose libpurple debug messages"), NULL },
   { NULL }
 };
+
+static gboolean
+cmd_verbose_cb (const char  *option_name,
+                const char  *value,
+                gpointer     data,
+                GError     **error)
+{
+  chatty_log_increase_verbosity ();
+
+  purple_debug_set_enabled (TRUE);
+  purple_debug_set_verbose (TRUE);
+
+  return TRUE;
+}
 
 static int
 run_dialog_and_destroy (GtkDialog *dialog)
@@ -266,13 +286,10 @@ chatty_application_command_line (GApplication            *application,
     chatty_manager_disable_auto_login (chatty_manager_get_default (), TRUE);
   } else if (g_variant_dict_contains (options, "debug")) {
     self->enable_debug = TRUE;
-  } else if (g_variant_dict_contains (options, "verbose")) {
-    self->enable_debug = TRUE;
-    self->enable_verbose = TRUE;
   }
 
   purple_debug_set_enabled (self->enable_debug);
-  purple_debug_set_verbose (self->enable_verbose);
+  purple_debug_set_verbose (chatty_log_get_verbosity () > 0);
 
   arguments = g_application_command_line_get_arguments (command_line, &argc);
 
