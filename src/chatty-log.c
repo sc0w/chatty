@@ -60,6 +60,10 @@ chatty_log_handler (GLogLevelFlags   log_level,
 {
   const char *log_domain = NULL;
 
+  /* If domain is “all” show logs upto debug regardless of the verbosity */
+  if (any_domain && domain && log_level <= G_LOG_LEVEL_DEBUG)
+    return chatty_log_write (log_level, log_domain, fields, n_fields, user_data);
+
   switch ((int)log_level)
     {
     case G_LOG_LEVEL_MESSAGE:
