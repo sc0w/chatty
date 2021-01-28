@@ -25,6 +25,7 @@ libsrc = [
   'users/chatty-account.c',
   'users/chatty-pp-account.c',
   'chatty-list-row.c',
+  'chatty-log.c',
   'chatty-avatar.c',
   'chatty-chat.c',
   'chatty-pp-chat.c',
