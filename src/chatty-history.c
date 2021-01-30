@@ -201,7 +201,7 @@ history_message_type_to_value (ChattyMsgType type)
 {
   switch (type) {
   case CHATTY_MESSAGE_UNKNOWN:
-    g_return_val_if_reached (MESSAGE_TYPE_UNKNOWN);
+    return MESSAGE_TYPE_UNKNOWN;
 
   case CHATTY_MESSAGE_TEXT:
     return MESSAGE_TYPE_TEXT;
@@ -237,7 +237,7 @@ static ChattyMsgType
 history_value_to_message_type (int value)
 {
   if (value == MESSAGE_TYPE_UNKNOWN)
-    g_return_val_if_reached (CHATTY_MESSAGE_UNKNOWN);
+    return CHATTY_MESSAGE_UNKNOWN;
   else if (value == MESSAGE_TYPE_TEXT)
     return CHATTY_MESSAGE_TEXT;
   else if (value == MESSAGE_TYPE_HTML_ESCAPED ||
