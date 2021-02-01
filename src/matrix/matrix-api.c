@@ -77,6 +77,8 @@ struct _MatrixApi
   gboolean        sync_failed;
   gboolean        homeserver_verified;
   gboolean        login_success;
+
+  guint           resync_id;
 };
 
 G_DEFINE_TYPE (MatrixApi, matrix_api, G_TYPE_OBJECT)
@@ -86,6 +88,8 @@ static void matrix_login             (MatrixApi *self);
 static void matrix_upload_key        (MatrixApi *self);
 static void matrix_start_sync        (MatrixApi *self);
 static void matrix_take_red_pill     (MatrixApi *self);
+static gboolean handle_common_errors (MatrixApi *self,
+                                      GError    *error);
 
 static void
 api_set_string_value (char       **strp,
@@ -119,6 +123,9 @@ api_get_version_cb (GObject      *obj,
 
   if (!error)
     error = matrix_utils_json_node_get_error (root);
+
+  if (handle_common_errors (self, error))
+    CHATTY_EXIT;
 
   if (!root) {
     CHATTY_TRACE_MSG ("Error verifying home server: %s", error->message);
@@ -528,6 +535,24 @@ matrix_keys_claim_cb (GObject      *obj,
   }
 }
 
+static gboolean
+schedule_resync (gpointer user_data)
+{
+  MatrixApi *self = user_data;
+  GNetworkMonitor *network_monitor;
+
+  CHATTY_ENTRY;
+
+  g_assert (MATRIX_IS_API (self));
+  self->resync_id = 0;
+
+  network_monitor = g_network_monitor_get_default ();
+  if (g_network_monitor_get_connectivity (network_monitor) == G_NETWORK_CONNECTIVITY_FULL)
+    matrix_start_sync (self);
+
+  CHATTY_RETURN (G_SOURCE_REMOVE);
+}
+
 /*
  * Handle Self fixable errors.
  *
@@ -551,6 +576,31 @@ handle_common_errors (MatrixApi *self,
     matrix_start_sync (self);
 
     CHATTY_RETURN (TRUE);
+  }
+
+  /*
+   * The G_RESOLVER_ERROR may be suggesting that the hostname is wrong, but we don't
+   * know if it's network/DNS/Proxy error. So keep retrying.
+   */
+  if ((error->domain == SOUP_HTTP_ERROR &&
+       error->code <= SOUP_STATUS_TLS_FAILED &&
+       error->code > SOUP_STATUS_CANCELLED) ||
+      g_error_matches (error, G_IO_ERROR, G_IO_ERROR_NETWORK_UNREACHABLE) ||
+      g_error_matches (error, G_IO_ERROR, G_IO_ERROR_TIMED_OUT) ||
+      error->domain == G_RESOLVER_ERROR) {
+    GNetworkMonitor *network_monitor;
+
+    network_monitor = g_network_monitor_get_default ();
+
+    /* Distributions may advertise to have full network support
+     * even when connected only to local network */
+    if (g_network_monitor_get_connectivity (network_monitor) == G_NETWORK_CONNECTIVITY_FULL) {
+      g_clear_handle_id (&self->resync_id, g_source_remove);
+
+      self->resync_id = g_timeout_add_seconds (URI_REQUEST_TIMEOUT,
+                                               schedule_resync, self);
+      CHATTY_RETURN (TRUE);
+    }
   }
 
   CHATTY_RETURN (FALSE);
@@ -964,6 +1014,7 @@ matrix_start_sync (MatrixApi *self)
   self->is_sync = TRUE;
   self->sync_failed = FALSE;
   g_clear_error (&self->error);
+  g_clear_handle_id (&self->resync_id, g_source_remove);
 
   if (!self->homeserver) {
     self->action = MATRIX_GET_HOMESERVER;
@@ -1018,6 +1069,7 @@ matrix_api_finalize (GObject *object)
 {
   MatrixApi *self = (MatrixApi *)object;
 
+  g_clear_handle_id (&self->resync_id, g_source_remove);
   soup_session_abort (self->soup_session);
   g_object_unref (self->soup_session);
 
