@@ -320,6 +320,8 @@ chatty_application_startup (GApplication *application)
 
   G_APPLICATION_CLASS (chatty_application_parent_class)->startup (application);
 
+  g_info ("%s %s, git version: %s", PACKAGE_NAME, PACKAGE_VERSION, GIT_VERSION);
+
   hdy_init ();
 
   g_set_application_name (_("Chats"));
