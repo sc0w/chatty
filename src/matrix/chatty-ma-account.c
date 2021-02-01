@@ -23,6 +23,7 @@
 #include "chatty-utils.h"
 #include "chatty-ma-chat.h"
 #include "chatty-ma-account.h"
+#include "chatty-log.h"
 
 /**
  * SECTION: chatty-mat-account
@@ -105,6 +106,8 @@ matrix_parse_device_data (ChattyMaAccount *self,
   JsonArray *array;
   guint length = 0;
 
+  CHATTY_ENTRY;
+
   g_assert (CHATTY_IS_MA_ACCOUNT (self));
   g_assert (to_device);
 
@@ -121,6 +124,8 @@ matrix_parse_device_data (ChattyMaAccount *self,
     if (g_strcmp0 (type, "m.room.encrypted") == 0)
       matrix_enc_handle_room_encrypted (self->matrix_enc, object);
   }
+
+  CHATTY_EXIT;
 }
 
 static void
@@ -129,6 +134,8 @@ matrix_parse_room_data (ChattyMaAccount *self,
 {
   JsonObject *joined_rooms, *left_rooms;
   ChattyMaChat *chat;
+
+  CHATTY_ENTRY;
 
   g_assert (CHATTY_IS_MA_ACCOUNT (self));
   g_assert (rooms);
@@ -178,6 +185,8 @@ matrix_parse_room_data (ChattyMaAccount *self,
       }
     }
   }
+
+  CHATTY_EXIT;
 }
 
 static void
@@ -185,6 +194,8 @@ handle_get_homeserver (ChattyMaAccount *self,
                        JsonObject      *object,
                        GError          *error)
 {
+  CHATTY_ENTRY;
+
   g_assert (CHATTY_IS_MA_ACCOUNT (self));
 
   if (error) {
@@ -196,6 +207,8 @@ handle_get_homeserver (ChattyMaAccount *self,
     g_warning ("Couldn't connect to ‘/.well-known/matrix/client’ ");
     matrix_api_set_homeserver (self->matrix_api, "https://chat.librem.one");
   }
+
+  CHATTY_EXIT;
 }
 
 static void
@@ -203,6 +216,8 @@ handle_verify_homeserver (ChattyMaAccount *self,
                           JsonObject      *object,
                           GError          *error)
 {
+  CHATTY_ENTRY;
+
   g_assert (CHATTY_IS_MA_ACCOUNT (self));
 
   if (error) {
@@ -216,6 +231,8 @@ handle_password_login (ChattyMaAccount *self,
                        JsonObject      *object,
                        GError          *error)
 {
+  CHATTY_ENTRY;
+
   g_assert (CHATTY_IS_MA_ACCOUNT (self));
 
   /* If no error, Api is informing us that logging in succeeded.
@@ -279,6 +296,8 @@ handle_password_login (ChattyMaAccount *self,
     self->status = CHATTY_CONNECTED;
     g_object_notify (G_OBJECT (self), "status");
   }
+
+  CHATTY_EXIT;
 }
 
 static void
@@ -305,6 +324,8 @@ handle_get_joined_rooms (ChattyMaAccount *self,
   JsonArray *array;
   guint length = 0;
 
+  CHATTY_ENTRY;
+
   g_assert (CHATTY_IS_MA_ACCOUNT (self));
 
   array = matrix_utils_json_object_get_array (object, "joined_rooms");
@@ -323,6 +344,8 @@ handle_get_joined_rooms (ChattyMaAccount *self,
     chatty_ma_chat_set_data (chat, CHATTY_ACCOUNT (self), self->matrix_api, self->matrix_enc);
     g_list_store_append (self->chat_list, chat);
   }
+
+  CHATTY_EXIT;
 }
 
 static void
@@ -332,10 +355,12 @@ handle_red_pill (ChattyMaAccount *self,
 {
   JsonObject *object;
 
+  CHATTY_ENTRY;
+
   g_assert (CHATTY_IS_MA_ACCOUNT (self));
 
   if (error)
-    return;
+    CHATTY_EXIT;
 
   if (self->status != CHATTY_CONNECTED) {
     self->status = CHATTY_CONNECTED;
@@ -367,6 +392,7 @@ handle_red_pill (ChattyMaAccount *self,
 
   self->save_account_pending = TRUE;
   chatty_account_save (CHATTY_ACCOUNT (self));
+  CHATTY_EXIT;
 }
 
 static void
@@ -376,12 +402,14 @@ matrix_account_sync_cb (ChattyMaAccount *self,
                         JsonObject      *object,
                         GError          *error)
 {
+  CHATTY_ENTRY;
+
   g_assert (CHATTY_IS_MA_ACCOUNT (self));
   g_assert (MATRIX_IS_API (api));
   g_assert (self->matrix_api == api);
 
   if (g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
-    return;
+    CHATTY_EXIT;
 
   if (error)
     g_debug ("%s Error %d: %s", g_quark_to_string (error->domain),
@@ -389,31 +417,31 @@ matrix_account_sync_cb (ChattyMaAccount *self,
 
   switch (action) {
   case MATRIX_BLUE_PILL:
-    return;
+    CHATTY_EXIT;
 
   case MATRIX_GET_HOMESERVER:
     handle_get_homeserver (self, object, error);
-    return;
+    CHATTY_EXIT;
 
   case MATRIX_VERIFY_HOMESERVER:
     handle_verify_homeserver (self, object, error);
-    return;
+    CHATTY_EXIT;
 
   case MATRIX_PASSWORD_LOGIN:
     handle_password_login (self, object, error);
-    return;
+    CHATTY_EXIT;
 
   case MATRIX_UPLOAD_KEY:
     handle_upload_key (self, object, error);
-    return;
+    CHATTY_EXIT;
 
   case MATRIX_GET_JOINED_ROOMS:
     handle_get_joined_rooms (self, object, error);
-    return;
+    CHATTY_EXIT;
 
   case MATRIX_RED_PILL:
     handle_red_pill (self, object, error);
-    return;
+    CHATTY_EXIT;
 
   case MATRIX_ACCESS_TOKEN_LOGIN:
   case MATRIX_SET_TYPING:
@@ -424,6 +452,8 @@ matrix_account_sync_cb (ChattyMaAccount *self,
   default:
     break;
   }
+
+  CHATTY_EXIT;
 }
 
 static const char *
@@ -483,10 +513,12 @@ chatty_ma_account_set_enabled (ChattyAccount *account,
   ChattyMaAccount *self = (ChattyMaAccount *)account;
   GNetworkMonitor *network_monitor;
 
+  CHATTY_ENTRY;
+
   g_assert (CHATTY_IS_MA_ACCOUNT (self));
 
   if (self->account_enabled == enable)
-    return;
+    CHATTY_EXIT;
 
   g_clear_handle_id (&self->connect_id, g_source_remove);
 
@@ -514,6 +546,8 @@ chatty_ma_account_set_enabled (ChattyAccount *account,
     self->save_account_pending = TRUE;
     chatty_account_save (account);
   }
+
+  CHATTY_EXIT;
 }
 
 static const char *
@@ -573,13 +607,16 @@ chatty_ma_account_connect (ChattyAccount *account,
 {
   ChattyMaAccount *self = (ChattyMaAccount *)account;
 
+  CHATTY_ENTRY;
+
   g_assert (CHATTY_IS_MA_ACCOUNT (self));
 
   if (!chatty_account_get_enabled (account))
-    return;
+    CHATTY_EXIT;
 
   g_clear_handle_id (&self->connect_id, g_source_remove);
   self->connect_id = g_timeout_add (300, account_connect, g_object_ref (account));
+  CHATTY_EXIT;
 }
 
 static void
@@ -819,6 +856,8 @@ db_load_account_cb (GObject      *object,
   g_autoptr(GError) error = NULL;
   gboolean enabled;
 
+  CHATTY_ENTRY;
+
   g_assert (CHATTY_IS_MA_ACCOUNT (self));
   g_assert (G_IS_TASK (task));
 
@@ -838,7 +877,7 @@ db_load_account_cb (GObject      *object,
       g_warning ("Error loading account %s: %s",
                  chatty_account_get_username (CHATTY_ACCOUNT (self)),
                  error->message);
-    return;
+    CHATTY_EXIT;
   }
 
   enabled = GPOINTER_TO_INT (g_object_get_data (G_OBJECT (task), "enabled"));
@@ -848,6 +887,7 @@ db_load_account_cb (GObject      *object,
   matrix_api_set_next_batch (self->matrix_api, self->next_batch);
   chatty_account_set_enabled (CHATTY_ACCOUNT (self), enabled);
   self->is_loading = FALSE;
+  CHATTY_EXIT;
 }
 
 static void
@@ -860,6 +900,8 @@ db_load_chats_cb (GObject      *object,
   GPtrArray *chats = NULL;
   g_autoptr(GError) error = NULL;
 
+  CHATTY_ENTRY;
+
   g_assert (CHATTY_IS_MA_ACCOUNT (self));
   g_assert (G_IS_TASK (task));
 
@@ -871,6 +913,7 @@ db_load_chats_cb (GObject      *object,
 
   matrix_db_load_account_async (self->matrix_db, CHATTY_ACCOUNT (self),
                                 db_load_account_cb, self);
+  CHATTY_EXIT;
 }
 
 void
@@ -897,6 +940,8 @@ ma_account_db_save_cb (GObject      *object,
   GError *error = NULL;
   gboolean status;
 
+  CHATTY_ENTRY;
+
   g_assert (G_IS_ASYNC_RESULT (result));
   g_assert (G_IS_TASK (task));
 
@@ -912,6 +957,8 @@ ma_account_db_save_cb (GObject      *object,
     g_task_return_error (task, error);
   else
     g_task_return_boolean (task, status);
+
+  CHATTY_EXIT;
 }
 
 static void
@@ -923,6 +970,8 @@ ma_account_save_cb (GObject      *object,
   g_autoptr(GTask) task = user_data;
   GError *error = NULL;
   gboolean status;
+
+  CHATTY_ENTRY;
 
   g_assert (G_IS_ASYNC_RESULT (result));
   g_assert (G_IS_TASK (task));
@@ -953,6 +1002,8 @@ ma_account_save_cb (GObject      *object,
   } else {
     g_task_return_boolean (task, status);
   }
+
+  CHATTY_EXIT;
 }
 
 void
@@ -963,6 +1014,8 @@ chatty_ma_account_save_async (ChattyMaAccount     *self,
                               gpointer             user_data)
 {
   GTask *task;
+
+  CHATTY_ENTRY;
 
   g_return_if_fail (CHATTY_IS_MA_ACCOUNT (self));
   g_return_if_fail (!cancellable || G_IS_CANCELLABLE (cancellable));
@@ -997,6 +1050,8 @@ chatty_ma_account_save_async (ChattyMaAccount     *self,
                                   matrix_api_get_next_batch (self->matrix_api),
                                   ma_account_db_save_cb, task);
   }
+
+  CHATTY_EXIT;
 }
 
 gboolean
@@ -1004,10 +1059,12 @@ chatty_ma_account_save_finish (ChattyMaAccount  *self,
                                GAsyncResult     *result,
                                GError          **error)
 {
+  CHATTY_ENTRY;
+
   g_return_val_if_fail (CHATTY_IS_MA_ACCOUNT (self), FALSE);
   g_return_val_if_fail (G_IS_TASK (result), FALSE);
 
-  return g_task_propagate_boolean (G_TASK (result), error);
+  CHATTY_RETURN (g_task_propagate_boolean (G_TASK (result), error));
 }
 
 const char *
@@ -1060,6 +1117,8 @@ ma_account_leave_chat_cb (GObject      *object,
   GError *error = NULL;
   gboolean success;
 
+  CHATTY_ENTRY;
+
   g_assert (G_IS_TASK (task));
 
   self = g_task_get_source_object (task);
@@ -1088,6 +1147,7 @@ ma_account_leave_chat_cb (GObject      *object,
     g_task_return_error (task, error);
   else
     g_task_return_boolean (task, success);
+  CHATTY_EXIT;
 }
 
 void
@@ -1097,6 +1157,8 @@ chatty_ma_account_leave_chat_async (ChattyMaAccount     *self,
                                     gpointer             user_data)
 {
   g_autoptr(GTask) task = NULL;
+
+  CHATTY_ENTRY;
 
   g_return_if_fail (CHATTY_IS_MA_ACCOUNT (self));
   g_return_if_fail (CHATTY_IS_MA_CHAT (chat));
@@ -1118,6 +1180,7 @@ chatty_ma_account_leave_chat_async (ChattyMaAccount     *self,
                                chatty_chat_get_chat_name (chat),
                                ma_account_leave_chat_cb,
                                g_steal_pointer (&task));
+  CHATTY_EXIT;
 }
 
 gboolean
@@ -1125,10 +1188,12 @@ chatty_ma_account_leave_chat_finish (ChattyMaAccount  *self,
                                      GAsyncResult     *result,
                                      GError          **error)
 {
+  CHATTY_ENTRY;
+
   g_return_val_if_fail (CHATTY_IS_MA_ACCOUNT (self), FALSE);
   g_return_val_if_fail (G_IS_TASK (result), FALSE);
 
-  return g_task_propagate_boolean (G_TASK (result), error);
+  CHATTY_RETURN (g_task_propagate_boolean (G_TASK (result), error));
 }
 
 void
