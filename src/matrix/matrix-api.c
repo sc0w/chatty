@@ -27,6 +27,7 @@
 #include "matrix-enums.h"
 #include "matrix-utils.h"
 #include "matrix-api.h"
+#include "chatty-log.h"
 
 /**
  * SECTION: chatty-api
@@ -109,9 +110,9 @@ api_get_version_cb (GObject      *obj,
   JsonArray *array = NULL;
   GError *error = NULL;
 
-  g_assert (MATRIX_IS_API (self));
+  CHATTY_ENTRY;
 
-  g_debug ("%s %s", G_STRLOC, G_STRFUNC);
+  g_assert (MATRIX_IS_API (self));
 
   root = matrix_utils_read_uri_finish (result, &error);
   g_clear_error (&self->error);
@@ -123,7 +124,7 @@ api_get_version_cb (GObject      *obj,
     g_debug ("Error verifying home server: %s", error->message);
     self->error = error;
     self->callback (self->cb_object, self, self->action, NULL, self->error);
-    return;
+    CHATTY_EXIT;
   }
 
   object = json_node_get_object (root);
@@ -163,6 +164,8 @@ api_get_version_cb (GObject      *obj,
   } else {
     matrix_start_sync (self);
   }
+
+  CHATTY_EXIT;
 }
 
 static void
@@ -174,9 +177,9 @@ api_get_homeserver_cb (gpointer      object,
   GError *error = NULL;
   char *homeserver;
 
-  g_assert (MATRIX_IS_API (self));
+  CHATTY_ENTRY;
 
-  g_debug ("%s %s", G_STRLOC, G_STRFUNC);
+  g_assert (MATRIX_IS_API (self));
 
   homeserver = matrix_utils_get_homeserver_finish (result, &error);
   g_clear_error (&self->error);
@@ -185,11 +188,12 @@ api_get_homeserver_cb (gpointer      object,
     self->sync_failed = TRUE;
     self->error = error;
     self->callback (self->cb_object, self, self->action, NULL, self->error);
-    return;
+    CHATTY_EXIT;
   }
 
   matrix_api_set_homeserver (self, homeserver);
   matrix_verify_homeserver (self);
+  CHATTY_EXIT;
 }
 
 static void
@@ -202,9 +206,10 @@ api_send_message_cb (GObject      *obj,
   ChattyMessage *message;
   GError *error = NULL;
 
+  CHATTY_ENTRY;
+
   g_assert (G_IS_TASK (task));
 
-  g_debug ("%s %s", G_STRLOC, G_STRFUNC);
   object = g_task_propagate_pointer (G_TASK (result), &error);
   g_object_set_data (G_OBJECT (task), "retry-after",
                      g_object_get_data (G_OBJECT (result), "retry-after"));
@@ -219,6 +224,8 @@ api_send_message_cb (GObject      *obj,
     chatty_message_set_status (message, CHATTY_STATUS_SENT, 0);
     g_task_return_boolean (task, !!object);
   }
+
+  CHATTY_EXIT;
 }
 
 static void
@@ -290,7 +297,7 @@ api_get_file_stream_cb  (GObject      *obj,
 
   g_assert (G_IS_TASK (task));
 
-  g_debug ("%s %s", G_STRLOC, G_STRFUNC);
+  CHATTY_ENTRY;
 
   stream = soup_session_send_finish (SOUP_SESSION (obj), result, &error);
   file = g_object_get_data (user_data, "file");
@@ -319,7 +326,7 @@ api_get_file_stream_cb  (GObject      *obj,
 
   if (error) {
     g_task_return_error (task, error);
-    return;
+    CHATTY_EXIT;
   }
 
   self = g_task_get_source_object (task);
@@ -352,6 +359,7 @@ api_get_file_stream_cb  (GObject      *obj,
 
   g_input_stream_read_async (stream, buffer, 1024 * 8, G_PRIORITY_DEFAULT, cancellable,
                              api_download_stream_cb, g_steal_pointer (&task));
+  CHATTY_EXIT;
 }
 
 static void
@@ -377,7 +385,7 @@ api_set_read_marker_cb (GObject      *object,
   g_autoptr(GTask) task = user_data;
   GError *error = NULL;
 
-  g_debug ("%s %s", G_STRLOC, G_STRFUNC);
+  CHATTY_ENTRY;
 
   object = g_task_propagate_pointer (G_TASK (result), &error);
 
@@ -387,6 +395,8 @@ api_set_read_marker_cb (GObject      *object,
   } else {
     g_task_return_boolean (task, TRUE);
   }
+
+  CHATTY_EXIT;
 }
 
 static void
@@ -398,7 +408,8 @@ api_upload_group_keys_cb (GObject      *obj,
   g_autoptr(JsonObject) object = NULL;
   GError *error = NULL;
 
-  g_debug ("%s %s", G_STRLOC, G_STRFUNC);
+  CHATTY_ENTRY;
+
   object = g_task_propagate_pointer (G_TASK (result), &error);
 
   if (error) {
@@ -407,6 +418,8 @@ api_upload_group_keys_cb (GObject      *obj,
   } else {
     g_task_return_boolean (task, TRUE);
   }
+
+  CHATTY_EXIT;
 }
 
 static void
@@ -418,7 +431,7 @@ matrix_get_room_state_cb (GObject      *obj,
   JsonArray *array;
   GError *error = NULL;
 
-  g_debug ("%s %s", G_STRLOC, G_STRFUNC);
+  CHATTY_ENTRY;
 
   array = g_task_propagate_pointer (G_TASK (result), &error);
 
@@ -428,6 +441,8 @@ matrix_get_room_state_cb (GObject      *obj,
   } else {
     g_task_return_pointer (task, array, (GDestroyNotify)json_array_unref);
   }
+
+  CHATTY_EXIT;
 }
 
 static void
@@ -439,7 +454,7 @@ matrix_get_members_cb (GObject      *obj,
   JsonObject *object = NULL;
   GError *error = NULL;
 
-  g_debug ("%s %s", G_STRLOC, G_STRFUNC);
+  CHATTY_ENTRY;
 
   object = g_task_propagate_pointer (G_TASK (result), &error);
 
@@ -449,6 +464,8 @@ matrix_get_members_cb (GObject      *obj,
   } else {
     g_task_return_pointer (task, object, (GDestroyNotify)json_object_unref);
   }
+
+  CHATTY_EXIT;
 }
 
 static void
@@ -479,7 +496,7 @@ matrix_keys_query_cb (GObject      *obj,
   JsonObject *object = NULL;
   GError *error = NULL;
 
-  g_debug ("%s %s", G_STRLOC, G_STRFUNC);
+  CHATTY_ENTRY;
 
   object = g_task_propagate_pointer (G_TASK (result), &error);
 
@@ -489,6 +506,8 @@ matrix_keys_query_cb (GObject      *obj,
   } else {
     g_task_return_pointer (task, object, (GDestroyNotify)json_object_unref);
   }
+
+  CHATTY_EXIT;
 }
 
 static void
@@ -520,10 +539,10 @@ static gboolean
 handle_common_errors (MatrixApi *self,
                       GError    *error)
 {
-  if (!error)
-    return FALSE;
+  CHATTY_ENTRY;
 
-  g_debug ("%s %s", G_STRLOC, G_STRFUNC);
+  if (!error)
+    CHATTY_RETURN (FALSE);
 
   if (g_error_matches (error, MATRIX_ERROR, M_UNKNOWN_TOKEN)
       && self->password) {
@@ -532,10 +551,10 @@ handle_common_errors (MatrixApi *self,
     matrix_enc_set_details (self->matrix_enc, NULL, NULL);
     matrix_start_sync (self);
 
-    return TRUE;
+    CHATTY_RETURN (TRUE);
   }
 
-  return FALSE;
+  CHATTY_RETURN (FALSE);
 }
 
 static gboolean
@@ -544,10 +563,12 @@ handle_one_time_keys (MatrixApi  *self,
 {
   size_t count, limit;
 
+  CHATTY_ENTRY;
+
   g_assert (MATRIX_IS_API (self));
 
   if (!object)
-    return FALSE;
+    CHATTY_RETURN (FALSE);
 
   count = matrix_utils_json_object_get_int (object, "signed_curve25519");
   limit = matrix_enc_max_one_time_keys (self->matrix_enc) / 2;
@@ -561,10 +582,10 @@ handle_one_time_keys (MatrixApi  *self,
     self->key = matrix_enc_get_one_time_keys_json (self->matrix_enc);
     matrix_upload_key (self);
 
-    return TRUE;
+    CHATTY_RETURN (TRUE);
   }
 
-  return FALSE;
+  CHATTY_RETURN (FALSE);
 }
 
 static void
@@ -578,9 +599,9 @@ matrix_login_cb (GObject      *obj,
   GError *error = NULL;
   const char *value;
 
-  g_assert (G_IS_TASK (result));
+  CHATTY_ENTRY;
 
-  g_debug ("%s %s", G_STRLOC, G_STRFUNC);
+  g_assert (G_IS_TASK (result));
 
   self = g_task_get_source_object (G_TASK (result));
   g_assert (MATRIX_IS_API (self));
@@ -596,7 +617,7 @@ matrix_login_cb (GObject      *obj,
     self->error = error;
     self->callback (self->cb_object, self, MATRIX_PASSWORD_LOGIN, NULL, self->error);
     g_debug ("Error logging in: %s", error->message);
-    return;
+    CHATTY_EXIT;
   }
 
   g_debug ("login success");
@@ -623,6 +644,7 @@ matrix_login_cb (GObject      *obj,
 
   self->callback (self->cb_object, self, MATRIX_PASSWORD_LOGIN, NULL, NULL);
   matrix_upload_key (self);
+  CHATTY_EXIT;
 }
 
 static void
@@ -635,9 +657,9 @@ matrix_upload_key_cb (GObject      *obj,
   JsonObject *object = NULL;
   GError *error = NULL;
 
-  g_assert (G_IS_TASK (result));
+  CHATTY_ENTRY;
 
-  g_debug ("%s %s", G_STRLOC, G_STRFUNC);
+  g_assert (G_IS_TASK (result));
 
   self = g_task_get_source_object (G_TASK (result));
   g_assert (MATRIX_IS_API (self));
@@ -650,7 +672,7 @@ matrix_upload_key_cb (GObject      *obj,
     self->error = error;
     self->callback (self->cb_object, self, MATRIX_UPLOAD_KEY, NULL, self->error);
     g_debug ("Error uploading key: %s", error->message);
-    return;
+    CHATTY_EXIT;
   }
 
   g_debug ("uploaded key");
@@ -661,6 +683,7 @@ matrix_upload_key_cb (GObject      *obj,
   if (!handle_one_time_keys (self, object) &&
        self->action != MATRIX_RED_PILL)
     matrix_take_red_pill (self);
+  CHATTY_EXIT;
 }
 
 /* sync callback */
@@ -724,10 +747,10 @@ api_load_from_stream_cb (JsonParser   *parser,
   JsonNode *root;
   GError *error = NULL;
 
+  CHATTY_ENTRY;
+
   g_assert (JSON_IS_PARSER (parser));
   g_assert (G_IS_TASK (task));
-
-  g_debug ("%s %s", G_STRLOC, G_STRFUNC);
 
   self = g_task_get_source_object (task);
   g_assert (MATRIX_IS_API (self));
@@ -751,7 +774,7 @@ api_load_from_stream_cb (JsonParser   *parser,
     }
 
     g_task_return_error (task, error);
-    return;
+    CHATTY_EXIT;
   }
 
   if (JSON_NODE_HOLDS_OBJECT (root))
@@ -763,7 +786,7 @@ api_load_from_stream_cb (JsonParser   *parser,
   else
     g_task_return_new_error (task, G_IO_ERROR, G_IO_ERROR_INVALID_DATA,
                              "Received invalid data");
-
+  CHATTY_EXIT;
 }
 
 static void
@@ -873,6 +896,8 @@ matrix_verify_homeserver (MatrixApi *self)
 {
   g_autofree char *uri = NULL;
 
+  CHATTY_ENTRY;
+
   g_assert (MATRIX_IS_API (self));
   g_debug ("verifying homeserver %s", self->homeserver);
 
@@ -881,6 +906,7 @@ matrix_verify_homeserver (MatrixApi *self)
   matrix_utils_read_uri_async (uri, URI_REQUEST_TIMEOUT,
                                self->cancellable,
                                api_get_version_cb, self);
+  CHATTY_EXIT;
 }
 
 static void
@@ -889,13 +915,13 @@ matrix_login (MatrixApi *self)
   g_autoptr(JsonObject) object = NULL;
   JsonObject *child;
 
+  CHATTY_ENTRY;
+
   g_assert (MATRIX_IS_API (self));
   g_assert (self->username);
   g_assert (self->homeserver);
   g_assert (!self->access_token);
   g_assert (self->password && *self->password);
-
-  g_debug ("%s %s", G_STRLOC, G_STRFUNC);
 
   g_debug ("logging in to account '%s' on server '%s'",
            self->username, self->homeserver);
@@ -913,6 +939,7 @@ matrix_login (MatrixApi *self)
 
   queue_json_object (self, object, "/_matrix/client/r0/login",
                      SOUP_METHOD_POST, NULL, matrix_login_cb, NULL);
+  CHATTY_EXIT;
 }
 
 static void
@@ -935,7 +962,7 @@ matrix_start_sync (MatrixApi *self)
 {
   g_assert (MATRIX_IS_API (self));
 
-  g_debug ("%s %s", G_STRLOC, G_STRFUNC);
+  CHATTY_ENTRY;
 
   self->is_sync = TRUE;
   self->sync_failed = FALSE;
@@ -961,6 +988,8 @@ matrix_start_sync (MatrixApi *self)
   } else {
     matrix_take_red_pill (self);
   }
+
+  CHATTY_EXIT;
 }
 
 static void
@@ -1121,13 +1150,16 @@ void
 matrix_api_set_password (MatrixApi  *self,
                          const char *password)
 {
+  CHATTY_ENTRY;
+
   g_return_if_fail (MATRIX_IS_API (self));
 
   if (!password || !*password)
-    return;
+    CHATTY_EXIT;
 
   matrix_utils_free_buffer (self->password);
   self->password = g_strdup (password);
+  CHATTY_EXIT;
 }
 
 /**
@@ -1182,12 +1214,14 @@ matrix_api_set_homeserver (MatrixApi  *self,
   g_autoptr(SoupURI) uri = NULL;
   GString *host;
 
+  CHATTY_ENTRY;
+
   g_return_if_fail (MATRIX_IS_API (self));
 
   uri = soup_uri_new (homeserver);
   if (!homeserver || !uri ||
       !SOUP_URI_VALID_FOR_HTTP (uri))
-    return;
+    CHATTY_EXIT;
 
   host = g_string_new (NULL);
   g_string_append (host, soup_uri_get_scheme (uri));
@@ -1205,6 +1239,8 @@ matrix_api_set_homeserver (MatrixApi  *self,
     self->sync_failed = FALSE;
     matrix_verify_homeserver (self);
   }
+
+  CHATTY_EXIT;
 }
 
 /**
@@ -1294,20 +1330,25 @@ matrix_api_set_next_batch (MatrixApi  *self,
 void
 matrix_api_start_sync (MatrixApi *self)
 {
+  CHATTY_ENTRY;
+
   g_return_if_fail (MATRIX_IS_API (self));
   g_return_if_fail (self->callback);
   g_return_if_fail (self->username);
   g_return_if_fail (self->password || self->access_token);
 
   if (self->is_sync && !self->sync_failed)
-    return;
+    CHATTY_EXIT;
 
   matrix_start_sync (self);
+  CHATTY_EXIT;
 }
 
 void
 matrix_api_stop_sync (MatrixApi *self)
 {
+  CHATTY_ENTRY;
+
   g_return_if_fail (MATRIX_IS_API (self));
 
   g_cancellable_cancel (self->cancellable);
@@ -1318,12 +1359,15 @@ matrix_api_stop_sync (MatrixApi *self)
      one for further use */
   g_object_unref (self->cancellable);
   self->cancellable = g_cancellable_new ();
+  CHATTY_EXIT;
 }
 
 void
 matrix_api_set_upload_key (MatrixApi *self,
                            char      *key)
 {
+  CHATTY_ENTRY;
+
   g_return_if_fail (MATRIX_IS_API (self));
   g_return_if_fail (key && *key);
 
@@ -1332,6 +1376,7 @@ matrix_api_set_upload_key (MatrixApi *self,
 
   if (self->is_sync && self->action == MATRIX_RED_PILL)
     matrix_upload_key (self);
+  CHATTY_EXIT;
 }
 
 void
@@ -1342,9 +1387,9 @@ matrix_api_set_typing (MatrixApi  *self,
   g_autoptr(JsonObject) object = NULL;
   g_autofree char *uri = NULL;
 
-  g_return_if_fail (MATRIX_IS_API (self));
+  CHATTY_ENTRY;
 
-  g_debug ("%s %s", G_STRLOC, G_STRFUNC);
+  g_return_if_fail (MATRIX_IS_API (self));
 
   /* https://matrix.org/docs/spec/client_server/r0.6.1#put-matrix-client-r0-rooms-roomid-typing-userid */
   object = json_object_new ();
@@ -1357,6 +1402,7 @@ matrix_api_set_typing (MatrixApi  *self,
 
   queue_json_object (self, object, uri, SOUP_METHOD_PUT,
                      NULL, matrix_send_typing_cb, NULL);
+  CHATTY_EXIT;
 }
 
 void
@@ -1368,16 +1414,17 @@ matrix_api_get_room_state_async (MatrixApi           *self,
   g_autofree char *uri = NULL;
   GTask *task;
 
+  CHATTY_ENTRY;
+
   g_return_if_fail (MATRIX_IS_API (self));
   g_return_if_fail (room_id && *room_id);
-
-  g_debug ("%s %s", G_STRLOC, G_STRFUNC);
 
   task = g_task_new (self, self->cancellable, callback, user_data);
 
   uri = g_strconcat ("/_matrix/client/r0/rooms/", room_id, "/state", NULL);
   queue_data (self, NULL, 0, uri, SOUP_METHOD_GET,
               NULL, matrix_get_room_state_cb, task);
+  CHATTY_EXIT;
 }
 
 JsonArray *
@@ -1385,11 +1432,13 @@ matrix_api_get_room_state_finish (MatrixApi     *self,
                                   GAsyncResult  *result,
                                   GError       **error)
 {
+  CHATTY_ENTRY;
+
   g_return_val_if_fail (MATRIX_IS_API (self), NULL);
   g_return_val_if_fail (G_IS_TASK (result), NULL);
   g_return_val_if_fail (!error || !*error, NULL);
 
-  return g_task_propagate_pointer (G_TASK (result), error);
+  CHATTY_RETURN (g_task_propagate_pointer (G_TASK (result), error));
 }
 
 
@@ -1403,9 +1452,9 @@ matrix_api_get_members_async (MatrixApi           *self,
   g_autofree char *uri = NULL;
   GHashTable *query;
 
-  g_return_if_fail (MATRIX_IS_API (self));
+  CHATTY_ENTRY;
 
-  g_debug ("%s %s", G_STRLOC, G_STRFUNC);
+  g_return_if_fail (MATRIX_IS_API (self));
 
   task = g_task_new (self, self->cancellable, callback, user_data);
 
@@ -1419,6 +1468,7 @@ matrix_api_get_members_async (MatrixApi           *self,
   uri = g_strconcat ("/_matrix/client/r0/rooms/", room_id, "/members", NULL);
   queue_data (self, NULL, 0, uri, SOUP_METHOD_GET,
               query, matrix_get_members_cb, g_steal_pointer (&task));
+  CHATTY_EXIT;
 }
 
 JsonObject *
@@ -1426,11 +1476,13 @@ matrix_api_get_members_finish (MatrixApi     *self,
                                GAsyncResult  *result,
                                GError       **error)
 {
+  CHATTY_ENTRY;
+
   g_return_val_if_fail (MATRIX_IS_API (self), NULL);
   g_return_val_if_fail (G_IS_TASK (result), NULL);
   g_return_val_if_fail (!error || !*error, NULL);
 
-  return g_task_propagate_pointer (G_TASK (result), error);
+  CHATTY_RETURN (g_task_propagate_pointer (G_TASK (result), error));
 }
 
 void
@@ -1445,10 +1497,10 @@ matrix_api_load_prev_batch_async (MatrixApi           *self,
   GHashTable *query;
   GTask *task;
 
-  if (!prev_batch)
-    return;
+  CHATTY_ENTRY;
 
-  g_debug ("%s %s", G_STRLOC, G_STRFUNC);
+  if (!prev_batch)
+    CHATTY_EXIT;
 
   g_return_if_fail (MATRIX_IS_API (self));
 
@@ -1467,6 +1519,7 @@ matrix_api_load_prev_batch_async (MatrixApi           *self,
   uri = g_strconcat ("/_matrix/client/r0/rooms/", room_id, "/messages", NULL);
   queue_data (self, NULL, 0, uri, SOUP_METHOD_GET,
               query, matrix_get_messages_cb, task);
+  CHATTY_EXIT;
 }
 
 JsonObject *
@@ -1474,11 +1527,13 @@ matrix_api_load_prev_batch_finish (MatrixApi     *self,
                                    GAsyncResult  *result,
                                    GError       **error)
 {
+  CHATTY_ENTRY;
+
   g_return_val_if_fail (MATRIX_IS_API (self), NULL);
   g_return_val_if_fail (G_IS_TASK (result), NULL);
   g_return_val_if_fail (!error || !*error, NULL);
 
-  return g_task_propagate_pointer (G_TASK (result), error);
+  CHATTY_RETURN (g_task_propagate_pointer (G_TASK (result), error));
 }
 
 /**
@@ -1507,12 +1562,12 @@ matrix_api_query_keys_async (MatrixApi           *self,
   JsonObject *object, *child;
   GTask *task;
 
+  CHATTY_ENTRY;
+
   g_return_if_fail (MATRIX_IS_API (self));
   g_return_if_fail (G_IS_LIST_MODEL (member_list));
   g_return_if_fail (g_list_model_get_item_type (member_list) == CHATTY_TYPE_MA_BUDDY);
   g_return_if_fail (g_list_model_get_n_items (member_list) > 0);
-
-  g_debug ("%s %s", G_STRLOC, G_STRFUNC);
 
   /* https://matrix.org/docs/spec/client_server/r0.6.1#post-matrix-client-r0-keys-query */
   object = json_object_new ();
@@ -1537,6 +1592,7 @@ matrix_api_query_keys_async (MatrixApi           *self,
 
   queue_json_object (self, object, "/_matrix/client/r0/keys/query",
                      SOUP_METHOD_POST, NULL, matrix_keys_query_cb, task);
+  CHATTY_EXIT;
 }
 
 JsonObject *
@@ -1544,11 +1600,13 @@ matrix_api_query_keys_finish (MatrixApi    *self,
                               GAsyncResult *result,
                               GError       **error)
 {
+  CHATTY_ENTRY;
+
   g_return_val_if_fail (MATRIX_IS_API (self), NULL);
   g_return_val_if_fail (G_IS_TASK (result), NULL);
   g_return_val_if_fail (!error || !*error, NULL);
 
-  return g_task_propagate_pointer (G_TASK (result), error);
+  CHATTY_RETURN (g_task_propagate_pointer (G_TASK (result), error));
 }
 
 /**
@@ -1569,12 +1627,12 @@ matrix_api_claim_keys_async (MatrixApi           *self,
   JsonObject *object, *child;
   GTask *task;
 
+  CHATTY_ENTRY;
+
   g_return_if_fail (MATRIX_IS_API (self));
   g_return_if_fail (G_IS_LIST_MODEL (member_list));
   g_return_if_fail (g_list_model_get_item_type (member_list) == CHATTY_TYPE_MA_BUDDY);
   g_return_if_fail (g_list_model_get_n_items (member_list) > 0);
-
-  g_debug ("%s %s", G_STRLOC, G_STRFUNC);
 
   /* https://matrix.org/docs/spec/client_server/r0.6.1#post-matrix-client-r0-keys-claim */
   object = json_object_new ();
@@ -1601,6 +1659,7 @@ matrix_api_claim_keys_async (MatrixApi           *self,
 
   queue_json_object (self, object, "/_matrix/client/r0/keys/claim",
                      SOUP_METHOD_POST, NULL, matrix_keys_claim_cb, task);
+  CHATTY_EXIT;
 }
 
 JsonObject *
@@ -1608,11 +1667,13 @@ matrix_api_claim_keys_finish (MatrixApi     *self,
                               GAsyncResult  *result,
                               GError       **error)
 {
+  CHATTY_ENTRY;
+
   g_return_val_if_fail (MATRIX_IS_API (self), NULL);
   g_return_val_if_fail (G_IS_TASK (result), NULL);
   g_return_val_if_fail (!error || !*error, NULL);
 
-  return g_task_propagate_pointer (G_TASK (result), error);
+  CHATTY_RETURN (g_task_propagate_pointer (G_TASK (result), error));
 }
 
 void
@@ -1627,10 +1688,10 @@ matrix_api_get_file_async (MatrixApi             *self,
   g_autoptr(SoupMessage) msg = NULL;
   GTask *task;
 
+  CHATTY_ENTRY;
+
   g_return_if_fail (MATRIX_IS_API (self));
   g_return_if_fail (CHATTY_IS_MESSAGE (message));
-
-  g_debug ("%s %s", G_STRLOC, G_STRFUNC);
 
   task = g_task_new (self, self->cancellable, callback, user_data);
   g_object_set_data (G_OBJECT (task), "progress", progress_callback);
@@ -1643,6 +1704,7 @@ matrix_api_get_file_async (MatrixApi             *self,
   soup_session_send_async (self->soup_session, msg, self->cancellable,
                            (GAsyncReadyCallback)api_get_file_stream_cb,
                            g_steal_pointer (&task));
+  CHATTY_EXIT;
 }
 
 gboolean
@@ -1650,11 +1712,13 @@ matrix_api_get_file_finish (MatrixApi     *self,
                             GAsyncResult  *result,
                             GError       **error)
 {
+  CHATTY_ENTRY;
+
   g_return_val_if_fail (MATRIX_IS_API (self), FALSE);
   g_return_val_if_fail (G_IS_TASK (result), FALSE);
   g_return_val_if_fail (!error || !*error, FALSE);
 
-  return g_task_propagate_boolean (G_TASK (result), error);
+  CHATTY_RETURN (g_task_propagate_boolean (G_TASK (result), error));
 }
 
 static void
@@ -1670,10 +1734,10 @@ api_send_message_encrypted (MatrixApi     *self,
   JsonObject *root;
   char *id;
 
+  CHATTY_ENTRY;
+
   g_assert (MATRIX_IS_API (self));
   g_assert (content);
-
-  g_debug ("%s %s", G_STRLOC, G_STRFUNC);
 
   root = json_object_new ();
   json_object_set_string_member (root, "type", "m.room.message");
@@ -1698,6 +1762,7 @@ api_send_message_encrypted (MatrixApi     *self,
   queue_json_object (self, root, uri, SOUP_METHOD_PUT,
                      NULL, api_send_message_cb, g_object_ref (task));
   json_object_unref (root);
+  CHATTY_EXIT;
 }
 
 static void
@@ -1710,10 +1775,10 @@ api_send_message (MatrixApi     *self,
   g_autofree char *uri = NULL;
   char *id;
 
+  CHATTY_ENTRY;
+
   g_assert (MATRIX_IS_API (self));
   g_assert (content);
-
-  g_debug ("%s %s", G_STRLOC, G_STRFUNC);
 
   self->event_id++;
   id = g_strdup_printf ("m%"G_GINT64_FORMAT".%d",
@@ -1727,6 +1792,7 @@ api_send_message (MatrixApi     *self,
   uri = g_strdup_printf ("/_matrix/client/r0/rooms/%s/send/m.room.message/%s", room_id, id);
   queue_json_object (self, content, uri, SOUP_METHOD_PUT,
                      NULL, api_send_message_cb, g_object_ref (task));
+  CHATTY_EXIT;
 }
 
 void
@@ -1740,10 +1806,10 @@ matrix_api_send_message_async (MatrixApi           *self,
   g_autoptr(JsonObject) object = NULL;
   g_autoptr(GTask) task = NULL;
 
+  CHATTY_ENTRY;
+
   g_return_if_fail (MATRIX_IS_API (self));
   g_return_if_fail (CHATTY_IS_MESSAGE (message));
-
-  g_debug ("%s %s", G_STRLOC, G_STRFUNC);
 
   task = g_task_new (self, self->cancellable, callback, user_data);
   object = json_object_new ();
@@ -1754,6 +1820,7 @@ matrix_api_send_message_async (MatrixApi           *self,
     api_send_message_encrypted (self, room_id, message, object, task);
   else
     api_send_message (self, room_id, message, object, task);
+  CHATTY_EXIT;
 }
 
 gboolean
@@ -1761,11 +1828,13 @@ matrix_api_send_message_finish (MatrixApi     *self,
                                 GAsyncResult  *result,
                                 GError       **error)
 {
+  CHATTY_ENTRY;
+
   g_return_val_if_fail (MATRIX_IS_API (self), FALSE);
   g_return_val_if_fail (G_IS_TASK (result), FALSE);
   g_return_val_if_fail (!error || !*error, FALSE);
 
-  return g_task_propagate_boolean (G_TASK (result), error);
+  CHATTY_RETURN (g_task_propagate_boolean (G_TASK (result), error));
 }
 
 void
@@ -1779,10 +1848,10 @@ matrix_api_set_read_marker_async (MatrixApi           *self,
   JsonObject *root;
   GTask *task;
 
+  CHATTY_ENTRY;
+
   g_return_if_fail (MATRIX_IS_API (self));
   g_return_if_fail (CHATTY_IS_MESSAGE (message));
-
-  g_debug ("%s %s", G_STRLOC, G_STRFUNC);
 
   root = json_object_new ();
   json_object_set_string_member (root, "m.fully_read",
@@ -1795,6 +1864,7 @@ matrix_api_set_read_marker_async (MatrixApi           *self,
   uri = g_strdup_printf ("/_matrix/client/r0/rooms/%s/read_markers", room_id);
   queue_json_object (self, root, uri, SOUP_METHOD_POST,
                      NULL, api_set_read_marker_cb, task);
+  CHATTY_EXIT;
 }
 
 gboolean
@@ -1802,11 +1872,13 @@ matrix_api_set_read_marker_finish (MatrixApi     *self,
                                    GAsyncResult  *result,
                                    GError       **error)
 {
+  CHATTY_ENTRY;
+
   g_return_val_if_fail (MATRIX_IS_API (self), FALSE);
   g_return_val_if_fail (G_IS_TASK (result), FALSE);
   g_return_val_if_fail (!error || !*error, FALSE);
 
-  return g_task_propagate_boolean (G_TASK (result), error);
+  CHATTY_RETURN (g_task_propagate_boolean (G_TASK (result), error));
 }
 
 void
@@ -1820,12 +1892,12 @@ matrix_api_upload_group_keys_async (MatrixApi           *self,
   JsonObject *root, *object;
   GTask *task;
 
+  CHATTY_ENTRY;
+
   g_return_if_fail (MATRIX_IS_API (self));
   g_return_if_fail (G_IS_LIST_MODEL (member_list));
   g_return_if_fail (g_list_model_get_item_type (member_list) == CHATTY_TYPE_MA_BUDDY);
   g_return_if_fail (g_list_model_get_n_items (member_list) > 0);
-
-  g_debug ("%s %s", G_STRLOC, G_STRFUNC);
 
   root = json_object_new ();
   object = matrix_enc_create_out_group_keys (self->matrix_enc, room_id, member_list);
@@ -1839,6 +1911,7 @@ matrix_api_upload_group_keys_async (MatrixApi           *self,
                          self->event_id);
   queue_json_object (self, root, uri, SOUP_METHOD_PUT,
                      NULL, api_upload_group_keys_cb, task);
+  CHATTY_EXIT;
 }
 
 gboolean
@@ -1846,11 +1919,13 @@ matrix_api_upload_group_keys_finish (MatrixApi     *self,
                                      GAsyncResult  *result,
                                      GError       **error)
 {
+  CHATTY_ENTRY;
+
   g_return_val_if_fail (MATRIX_IS_API (self), FALSE);
   g_return_val_if_fail (G_IS_TASK (result), FALSE);
   g_return_val_if_fail (!error || !*error, FALSE);
 
-  return g_task_propagate_boolean (G_TASK (result), error);
+  CHATTY_RETURN (g_task_propagate_boolean (G_TASK (result), error));
 }
 
 static void
@@ -1862,10 +1937,10 @@ api_leave_room_cb (GObject      *object,
   g_autoptr(GTask) task = user_data;
   GError *error = NULL;
 
+  CHATTY_ENTRY;
+
   g_assert (MATRIX_IS_API (self));
   g_assert (G_IS_TASK (task));
-
-  g_debug ("%s %s", G_STRLOC, G_STRFUNC);
 
   object = g_task_propagate_pointer (G_TASK (result), &error);
 
@@ -1876,6 +1951,7 @@ api_leave_room_cb (GObject      *object,
     g_task_return_error (task, error);
   else
     g_task_return_boolean (task, TRUE);
+  CHATTY_EXIT;
 }
 
 void
@@ -1887,16 +1963,17 @@ matrix_api_leave_chat_async (MatrixApi           *self,
   GTask *task;
   g_autofree char *uri = NULL;
 
+  CHATTY_ENTRY;
+
   g_return_if_fail (MATRIX_IS_API (self));
   g_return_if_fail (room_id && *room_id == '!');
-
-  g_debug ("%s %s", G_STRLOC, G_STRFUNC);
 
   task = g_task_new (self, self->cancellable, callback, user_data);
   g_task_set_task_data (task, g_strdup (room_id), g_free);
   uri = g_strdup_printf ("/_matrix/client/r0/rooms/%s/leave", room_id);
   queue_data (self, NULL, 0, uri, SOUP_METHOD_POST,
               NULL, api_leave_room_cb, task);
+  CHATTY_EXIT;
 }
 
 gboolean
@@ -1904,9 +1981,11 @@ matrix_api_leave_chat_finish (MatrixApi     *self,
                               GAsyncResult  *result,
                               GError       **error)
 {
+  CHATTY_ENTRY;
+
   g_return_val_if_fail (MATRIX_IS_API (self), FALSE);
   g_return_val_if_fail (G_IS_TASK (result), FALSE);
   g_return_val_if_fail (!error || !*error, FALSE);
 
-  return g_task_propagate_boolean (G_TASK (result), error);
+  CHATTY_RETURN (g_task_propagate_boolean (G_TASK (result), error));
 }
