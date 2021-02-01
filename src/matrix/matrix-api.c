@@ -833,6 +833,9 @@ queue_data (MatrixApi           *self,
   message = soup_message_new_from_uri (method, uri);
   soup_message_headers_append (message->request_headers, "Accept-Encoding", "gzip");
 
+  if (callback == matrix_take_red_pill_cb)
+    soup_message_set_priority (message, SOUP_MESSAGE_PRIORITY_VERY_HIGH);
+
   if (data && size == -1)
     size = strlen (data);
 
