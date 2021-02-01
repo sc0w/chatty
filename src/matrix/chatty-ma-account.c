@@ -12,6 +12,7 @@
 #define G_LOG_DOMAIN "chatty-ma-account"
 
 #include <libsecret/secret.h>
+#include <libsoup/soup.h>
 #include <glib/gi18n.h>
 
 #include "chatty-secret-store.h"
@@ -414,6 +415,18 @@ matrix_account_sync_cb (ChattyMaAccount *self,
   if (error)
     g_debug ("%s Error %d: %s", g_quark_to_string (error->domain),
              error->code, error->message);
+
+  if (error &&
+      ((error->domain == SOUP_HTTP_ERROR &&
+        error->code <= SOUP_STATUS_TLS_FAILED &&
+        error->code > SOUP_STATUS_CANCELLED) ||
+       g_error_matches (error, G_IO_ERROR, G_IO_ERROR_NETWORK_UNREACHABLE) ||
+       g_error_matches (error, G_IO_ERROR, G_IO_ERROR_TIMED_OUT) ||
+       error->domain == G_RESOLVER_ERROR)) {
+    self->status = CHATTY_DISCONNECTED;
+    g_object_notify (G_OBJECT (self), "status");
+    CHATTY_EXIT;
+  }
 
   switch (action) {
   case MATRIX_BLUE_PILL:
