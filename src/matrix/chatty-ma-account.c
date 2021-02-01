@@ -481,6 +481,7 @@ chatty_ma_account_set_enabled (ChattyAccount *account,
                                gboolean       enable)
 {
   ChattyMaAccount *self = (ChattyMaAccount *)account;
+  GNetworkMonitor *network_monitor;
 
   g_assert (CHATTY_IS_MA_ACCOUNT (self));
 
@@ -495,11 +496,13 @@ chatty_ma_account_set_enabled (ChattyAccount *account,
   }
 
   self->account_enabled = enable;
+  network_monitor = g_network_monitor_get_default ();
 
-  if (self->account_enabled) {
+  if (self->account_enabled &&
+      g_network_monitor_get_connectivity (network_monitor) == G_NETWORK_CONNECTIVITY_FULL) {
     self->status = CHATTY_CONNECTING;
     matrix_api_start_sync (self->matrix_api);
-  } else {
+  } else if (!self->account_enabled){
     self->status = CHATTY_DISCONNECTED;
     matrix_api_stop_sync (self->matrix_api);
   }
