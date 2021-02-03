@@ -15,6 +15,7 @@
 
 #include "users/chatty-item.h"
 #include "users/chatty-account.h"
+#include "chatty-message.h"
 #include "chatty-enums.h"
 
 G_BEGIN_DECLS
@@ -44,6 +45,13 @@ struct _ChattyChatClass
   void              (*set_unread_count)   (ChattyChat *self,
                                            guint       unread_count);
   time_t            (*get_last_msg_time)  (ChattyChat *self);
+  void              (*send_message_async) (ChattyChat    *chat,
+                                           ChattyMessage *message,
+                                           GAsyncReadyCallback callback,
+                                           gpointer       user_data);
+  gboolean         (*send_message_finish) (ChattyChat    *chat,
+                                           GAsyncResult  *result,
+                                           GError       **error);
   ChattyEncryption  (*get_encryption)     (ChattyChat *self);
   void              (*set_encryption)     (ChattyChat *self,
                                            gboolean    enable);
@@ -72,6 +80,13 @@ guint               chatty_chat_get_unread_count   (ChattyChat *self);
 void                chatty_chat_set_unread_count   (ChattyChat *self,
                                                     guint       unread_count);
 time_t              chatty_chat_get_last_msg_time  (ChattyChat *self);
+void                chatty_chat_send_message_async (ChattyChat    *chat,
+                                                    ChattyMessage *message,
+                                                    GAsyncReadyCallback callback,
+                                                    gpointer       user_data);
+gboolean           chatty_chat_send_message_finish (ChattyChat    *self,
+                                                    GAsyncResult  *result,
+                                                    GError       **error);
 ChattyEncryption    chatty_chat_get_encryption     (ChattyChat *self);
 void                chatty_chat_set_encryption     (ChattyChat *self,
                                                     gboolean    enable);

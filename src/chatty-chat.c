@@ -168,6 +168,33 @@ chatty_chat_real_get_last_msg_time (ChattyChat *self)
   return 0;
 }
 
+static void
+chatty_chat_real_send_message_async (ChattyChat          *self,
+                                     ChattyMessage       *message,
+                                     GAsyncReadyCallback  callback,
+                                     gpointer             user_data)
+{
+  g_assert (CHATTY_IS_CHAT (self));
+  g_assert (CHATTY_IS_MESSAGE (message));
+
+  g_task_report_new_error (self, callback, user_data,
+                           chatty_chat_real_send_message_async,
+                           G_IO_ERROR,
+                           G_IO_ERROR_NOT_SUPPORTED,
+                           "Sending messages not supported");
+}
+
+static gboolean
+chatty_chat_real_send_message_finish (ChattyChat    *self,
+                                      GAsyncResult  *result,
+                                      GError       **error)
+{
+  g_assert (CHATTY_IS_CHAT (self));
+  g_assert (G_IS_TASK (result));
+
+  return g_task_propagate_boolean (G_TASK (result), error);
+}
+
 static ChattyEncryption
 chatty_chat_real_get_encryption (ChattyChat *self)
 {
@@ -288,6 +315,8 @@ chatty_chat_class_init (ChattyChatClass *klass)
   klass->get_unread_count = chatty_chat_real_get_unread_count;
   klass->set_unread_count = chatty_chat_real_set_unread_count;
   klass->get_last_msg_time = chatty_chat_real_get_last_msg_time;
+  klass->send_message_async = chatty_chat_real_send_message_async;
+  klass->send_message_finish = chatty_chat_real_send_message_finish;
   klass->get_encryption = chatty_chat_real_get_encryption;
   klass->get_buddy_typing = chatty_chat_real_get_buddy_typing;
   klass->set_typing = chatty_chat_real_set_typing;
@@ -492,6 +521,29 @@ chatty_chat_get_last_msg_time (ChattyChat *self)
   g_return_val_if_fail (CHATTY_IS_CHAT (self), 0);
 
   return CHATTY_CHAT_GET_CLASS (self)->get_last_msg_time (self);
+}
+
+void
+chatty_chat_send_message_async (ChattyChat          *self,
+                                ChattyMessage       *message,
+                                GAsyncReadyCallback  callback,
+                                gpointer             user_data)
+{
+  g_return_if_fail (CHATTY_IS_CHAT (self));
+  g_return_if_fail (CHATTY_IS_MESSAGE (message));
+
+  CHATTY_CHAT_GET_CLASS (self)->send_message_async (self, message, callback, user_data);
+}
+
+gboolean
+chatty_chat_send_message_finish (ChattyChat    *self,
+                                 GAsyncResult  *result,
+                                 GError       **error)
+{
+  g_return_val_if_fail (CHATTY_IS_CHAT (self), FALSE);
+  g_return_val_if_fail (G_IS_ASYNC_RESULT (result), FALSE);
+
+  return CHATTY_CHAT_GET_CLASS (self)->send_message_finish (self, result, error);
 }
 
 ChattyEncryption
