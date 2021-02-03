@@ -500,6 +500,37 @@ chatty_pp_chat_get_last_msg_time (ChattyChat *chat)
   return chatty_message_get_time (message);
 }
 
+static void
+chatty_pp_chat_send_message_async (ChattyChat          *chat,
+                                   ChattyMessage       *message,
+                                   GAsyncReadyCallback  callback,
+                                   gpointer             user_data)
+{
+  ChattyPpChat *self = (ChattyPpChat *)chat;
+  g_autoptr(GTask) task = NULL;
+  const char *msg;
+
+  g_assert (CHATTY_IS_PP_CHAT (self));
+  g_assert (CHATTY_IS_MESSAGE (message));
+
+  task = g_task_new (self, NULL, callback, user_data);
+
+  if (!self->conv) {
+    g_task_return_new_error (task, G_IO_ERROR, G_IO_ERROR_NOT_CONNECTED,
+                             "PurpleConversation not found");
+    return;
+  }
+
+  msg = chatty_message_get_text (message);
+
+  if (purple_conversation_get_type (self->conv) == PURPLE_CONV_TYPE_IM)
+    purple_conv_im_send (PURPLE_CONV_IM (self->conv), msg);
+  else if (purple_conversation_get_type (self->conv) == PURPLE_CONV_TYPE_CHAT)
+    purple_conv_chat_send (PURPLE_CONV_CHAT (self->conv), msg);
+
+  g_task_return_boolean (task, TRUE);
+}
+
 static ChattyEncryption
 chatty_pp_chat_get_encryption (ChattyChat *chat)
 {
@@ -777,6 +808,7 @@ chatty_pp_chat_class_init (ChattyPpChatClass *klass)
   chat_class->get_unread_count = chatty_pp_chat_get_unread_count;
   chat_class->set_unread_count = chatty_pp_chat_set_unread_count;
   chat_class->get_last_msg_time = chatty_pp_chat_get_last_msg_time;
+  chat_class->send_message_async = chatty_pp_chat_send_message_async;
   chat_class->get_encryption = chatty_pp_chat_get_encryption;
   chat_class->set_encryption = chatty_pp_chat_set_encryption;
   chat_class->get_buddy_typing = chatty_pp_chat_get_buddy_typing;
