@@ -124,7 +124,7 @@ secret_load_cb (GObject      *object,
   }
 
   for (GList *item = secrets; item; item = item->next) {
-    g_autoptr(ChattyMaAccount) account = NULL;
+    ChattyMaAccount *account;
 
     if (!accounts)
       accounts = g_ptr_array_new_full (5, g_object_unref);
