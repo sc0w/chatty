@@ -246,6 +246,17 @@ chatty_message_get_text (ChattyMessage *self)
   return self->message;
 }
 
+void
+chatty_message_set_user (ChattyMessage *self,
+                         ChattyItem    *sender)
+{
+  g_return_if_fail (CHATTY_IS_MESSAGE (self));
+  g_return_if_fail (!sender || CHATTY_IS_ITEM (sender));
+  g_return_if_fail (!self->user);
+
+  g_set_object (&self->user, sender);
+}
+
 ChattyItem *
 chatty_message_get_user (ChattyMessage *self)
 {
