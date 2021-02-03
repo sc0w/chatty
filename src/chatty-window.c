@@ -72,10 +72,6 @@ struct _ChattyWindow
 
   GtkWidget *convs_notebook;
 
-  GtkWidget *overlay_icon;
-  GtkWidget *overlay_label_1;
-  GtkWidget *overlay_label_2;
-
 
   ChattyItem    *selected_item;
   ChattyManager *manager;
@@ -245,10 +241,10 @@ window_chat_changed_cb (ChattyWindow *self)
   else if (has_im)
     mode = CHATTY_OVERLAY_EMPTY_CHAT_NO_SMS;
 
-  gtk_label_set_markup (GTK_LABEL (self->overlay_label_1),
-                        gettext (OverlayContent[mode].title));
-  gtk_label_set_markup (GTK_LABEL (self->overlay_label_2),
-                        gettext (OverlayContent[mode].description));
+  hdy_status_page_set_title (HDY_STATUS_PAGE (self->empty_view),
+                             gettext (OverlayContent[mode].title));
+  hdy_status_page_set_description (HDY_STATUS_PAGE (self->empty_view),
+                                   gettext (OverlayContent[mode].description));
 }
 
 static void
@@ -955,9 +951,6 @@ chatty_window_class_init (ChattyWindowClass *klass)
   gtk_widget_class_bind_template_child (widget_class, ChattyWindow, chats_listbox);
 
   gtk_widget_class_bind_template_child (widget_class, ChattyWindow, convs_notebook);
-  gtk_widget_class_bind_template_child (widget_class, ChattyWindow, overlay_icon);
-  gtk_widget_class_bind_template_child (widget_class, ChattyWindow, overlay_label_1);
-  gtk_widget_class_bind_template_child (widget_class, ChattyWindow, overlay_label_2);
   gtk_widget_class_bind_template_child (widget_class, ChattyWindow, header_chat_list_new_msg_popover);
 
   gtk_widget_class_bind_template_callback (widget_class, notify_fold_cb);
