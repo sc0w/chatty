@@ -161,7 +161,7 @@ message_row_update_message (ChattyMessageRow *self)
       type == CHATTY_MESSAGE_AUDIO ||
       type == CHATTY_MESSAGE_FILE) {
     ChattyFileInfo *file;
-    const char *name;
+    const char *name = NULL;
 
     file = chatty_message_get_file (self->message);
     if (file)
