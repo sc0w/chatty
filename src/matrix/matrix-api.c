@@ -744,7 +744,7 @@ api_load_from_stream_cb (JsonParser   *parser,
 {
   MatrixApi *self;
   g_autoptr(GTask) task = user_data;
-  JsonNode *root;
+  JsonNode *root = NULL;
   GError *error = NULL;
 
   CHATTY_ENTRY;
@@ -764,6 +764,7 @@ api_load_from_stream_cb (JsonParser   *parser,
 
   if (error) {
     if (g_error_matches (error, MATRIX_ERROR, M_LIMIT_EXCEEDED) &&
+        root &&
         JSON_NODE_HOLDS_OBJECT (root)) {
       JsonObject *obj;
       guint retry;
