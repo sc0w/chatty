@@ -1296,7 +1296,7 @@ auto_join_chat_cb (gpointer data)
 
       if (purple_chat_get_account (chat) == account &&
           purple_blist_node_get_bool (node, "chatty-autojoin")) {
-        g_autofree char *chat_name;
+        g_autofree char *chat_name = NULL;
 
         prpl_info = PURPLE_PLUGIN_PROTOCOL_INFO(purple_find_prpl (purple_account_get_protocol_id (account)));
         components = purple_chat_get_components (chat);
