@@ -46,10 +46,10 @@ static gchar *
 chatty_msg_list_escape_message (ChattyMessageRow *self,
                                 const char       *message)
 {
-  g_autofree char *nl_2_br;
-  g_autofree char *striped;
-  g_autofree char *escaped;
-  g_autofree char *linkified;
+  g_autofree char *nl_2_br = NULL;
+  g_autofree char *striped = NULL;
+  g_autofree char *escaped = NULL;
+  g_autofree char *linkified = NULL;
   char *result;
 
   nl_2_br = purple_strdup_withhtml (message);
