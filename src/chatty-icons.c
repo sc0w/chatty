@@ -232,7 +232,7 @@ chatty_icon_get_buddy_icon (PurpleBlistNode *node,
     int                  pango_width, pango_height;
     char                 tmp[4];
     char                *initial_char;
-    g_autofree gchar    *font;
+    g_autofree char     *font = NULL;
 
     g_utf8_strncpy (tmp, name, 1);
     initial_char = g_utf8_strup (tmp, 1);
