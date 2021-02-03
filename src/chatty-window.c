@@ -95,8 +95,6 @@ static void chatty_window_show_new_muc_dialog (ChattyWindow *self);
 typedef struct {
   const char *title;
   const char *description;
-  const char *icon_name;
-  int         icon_size;
 } overlay_content_t;
 
 overlay_content_t OverlayContent[6] = {
