@@ -667,7 +667,7 @@ chat_view_send_message_button_clicked_cb (ChattyChatView *self)
     protocol = chatty_item_get_protocols (CHATTY_ITEM (self->chat));
 
     /* provide a msg-id to the sms-plugin for send-receipts */
-    if (chatty_item_get_protocols (CHATTY_ITEM (self->chat)) == CHATTY_PROTOCOL_SMS) {
+    if (conv && chatty_item_get_protocols (CHATTY_ITEM (self->chat)) == CHATTY_PROTOCOL_SMS) {
       sms_id = g_random_int ();
 
       sms_id_str = g_strdup_printf ("%i", sms_id);
