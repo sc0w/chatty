@@ -94,21 +94,21 @@ typedef struct {
 } overlay_content_t;
 
 overlay_content_t OverlayContent[6] = {
-  {.title       = N_("Choose a contact"),
+  {.title       = N_("Choose a Contact"),
    .description = N_("Select an <b>SMS</b> or <b>Instant Message</b> "
                      "contact with the <b>\"+\"</b> button in the titlebar."),
   },
-  {.title       = N_("Choose a contact"),
+  {.title       = N_("Choose a Contact"),
    .description = N_("Select an <b>Instant Message</b> contact with "
                      "the \"+\" button in the titlebar."),
   },
-  {.title       = N_("Choose a contact"),
+  {.title       = N_("Choose a Contact"),
    .description = N_("Start a <b>SMS</b> chat with the \"+\" button in the "
                      "titlebar.\n\n"
                      "For <b>Instant Messaging</b> add or activate "
                      "an account in <i>\"preferences\"</i>."),
   },
-  {.title       = N_("Start chatting"),
+  {.title       = N_("Start Chatting"),
    .description = N_("For <b>Instant Messaging</b> add or activate "
                      "an account in <i>\"preferences\"</i>."),
   }
