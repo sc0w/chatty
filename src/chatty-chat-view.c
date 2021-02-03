@@ -630,6 +630,7 @@ chat_view_send_message_button_clicked_cb (ChattyChatView *self)
 {
   PurpleConversation  *conv;
   ChattyAccount *account;
+  g_autoptr(ChattyMessage) msg = NULL;
   GtkTextIter    start, end;
   gchar         *message = NULL;
   gchar         *sms_id_str;
@@ -688,14 +689,11 @@ chat_view_send_message_button_clicked_cb (ChattyChatView *self)
         protocol == CHATTY_PROTOCOL_TELEGRAM)
       escaped = purple_markup_escape_text (message, -1);
 
-    if (conv && purple_conversation_get_type (conv) == PURPLE_CONV_TYPE_IM) {
-      purple_conv_im_send (PURPLE_CONV_IM(conv), escaped ? escaped : message);
-    } else if (conv && purple_conversation_get_type (conv) == PURPLE_CONV_TYPE_CHAT) {
-      purple_conv_chat_send (PURPLE_CONV_CHAT (conv), escaped ? escaped : message);
-    }
-
-    if (CHATTY_IS_MA_CHAT (self->chat))
-      chatty_ma_chat_send_message (CHATTY_MA_CHAT (self->chat), message);
+    msg = chatty_message_new (NULL, NULL, escaped ? escaped : message,
+                              NULL, time (NULL),
+                              escaped ? CHATTY_MESSAGE_HTML_ESCAPED : CHATTY_MESSAGE_TEXT,
+                              CHATTY_DIRECTION_OUT, 0);
+    chatty_chat_send_message_async (self->chat, msg, NULL, NULL);
 
     gtk_widget_hide (self->send_message_button);
   }
