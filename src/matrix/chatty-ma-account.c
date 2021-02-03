@@ -798,7 +798,7 @@ chatty_ma_account_new_secret (gpointer secret_item)
   SecretValue *value;
   const char *username, *homeserver, *credentials;
   char *password, *token, *device_id;
-  char *password_str, *token_str;
+  char *password_str, *token_str = NULL;
 
   g_return_val_if_fail (SECRET_IS_ITEM (item), NULL);
 
