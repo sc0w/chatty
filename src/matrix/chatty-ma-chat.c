@@ -226,8 +226,6 @@ handle_m_room_member (ChattyMaChat *self,
   JsonObject *content;
   const char *value, *membership, *sender, *name;
 
-  CHATTY_ENTRY;
-
   g_assert (CHATTY_IS_MA_CHAT (self));
   g_assert (object);
   g_assert (G_IS_LIST_STORE (members_list));
@@ -235,7 +233,7 @@ handle_m_room_member (ChattyMaChat *self,
   value = matrix_utils_json_object_get_string (object, "room_id");
   if (g_strcmp0 (value, self->room_id) != 0) {
     g_warning ("room_id '%s' doesn't match '%s", value, self->room_id);
-    CHATTY_EXIT;
+    return;
   }
 
   sender = matrix_utils_json_object_get_string (object, "sender");
@@ -256,7 +254,7 @@ handle_m_room_member (ChattyMaChat *self,
 
   if (g_strcmp0 (membership, "join") == 0) {
     if (buddy && model == (gpointer)members_list)
-      CHATTY_EXIT;
+      return;
 
     if (buddy)
       g_list_store_append (members_list, buddy);
@@ -269,8 +267,6 @@ handle_m_room_member (ChattyMaChat *self,
     chatty_utils_remove_list_item (members_list, buddy);
     g_clear_pointer (&self->generated_name, g_free);
   }
-
-  CHATTY_EXIT;
 }
 
 static void
@@ -1404,18 +1400,15 @@ chatty_ma_chat_set_typing (ChattyChat *chat,
 {
   ChattyMaChat *self = (ChattyMaChat *)chat;
 
-  CHATTY_ENTRY;
-
   g_assert (CHATTY_IS_MA_CHAT (self));
 
   if (self->self_typing == is_typing &&
       (g_get_monotonic_time () - self->self_typing_set_time) < G_TIME_SPAN_SECOND * 5)
-    CHATTY_EXIT;
+    return;
 
   self->self_typing = is_typing;
   self->self_typing_set_time = g_get_monotonic_time ();
   matrix_api_set_typing (self->matrix_api, self->room_id, is_typing);
-  CHATTY_EXIT;
 }
 
 static const char *
