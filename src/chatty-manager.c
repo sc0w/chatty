@@ -2155,6 +2155,9 @@ chatty_manager_load_plugins (ChattyManager *self)
 
   chatty_xeps_init ();
 
+  if (chatty_settings_get_experimental_features (chatty_settings_get_default ()))
+    chatty_manager_unload_plugin (purple_plugins_find_with_id ("prpl-matrix"));
+
   if (chatty_manager_load_plugin (self->sms_plugin))
     chatty_manager_enable_sms_account (self);
 
