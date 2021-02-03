@@ -25,7 +25,7 @@ get_json_object_for_file (const char *dir,
 {
   g_autoptr(JsonParser) parser = NULL;
   g_autoptr(GError) error = NULL;
-  g_autofree char *path;
+  g_autofree char *path = NULL;
 
   path = g_build_filename (dir, file_name, NULL);
   parser = json_parser_new ();
