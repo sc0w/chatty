@@ -75,7 +75,6 @@ struct _ChattyWindow
   GtkWidget *overlay_icon;
   GtkWidget *overlay_label_1;
   GtkWidget *overlay_label_2;
-  GtkWidget *overlay_label_3;
 
 
   ChattyItem    *selected_item;
@@ -95,32 +94,29 @@ static void chatty_window_show_new_muc_dialog (ChattyWindow *self);
 
 typedef struct {
   const char *title;
-  const char *text_1;
-  const char *text_2;
+  const char *description;
   const char *icon_name;
   int         icon_size;
 } overlay_content_t;
 
 overlay_content_t OverlayContent[6] = {
-  {.title  = N_("Choose a contact"),
-   .text_1 = N_("Select an <b>SMS</b> or <b>Instant Message</b> "
-                "contact with the <b>\"+\"</b> button in the titlebar."),
-   .text_2 = NULL,
+  {.title       = N_("Choose a contact"),
+   .description = N_("Select an <b>SMS</b> or <b>Instant Message</b> "
+                     "contact with the <b>\"+\"</b> button in the titlebar."),
   },
-  {.title  = N_("Choose a contact"),
-   .text_1 = N_("Select an <b>Instant Message</b> contact with "
-                "the \"+\" button in the titlebar."),
-   .text_2 = NULL,
+  {.title       = N_("Choose a contact"),
+   .description = N_("Select an <b>Instant Message</b> contact with "
+                     "the \"+\" button in the titlebar."),
   },
-  {.title  = N_("Choose a contact"),
-   .text_1 = N_("Start a <b>SMS</b> chat with the \"+\" button in the titlebar."),
-   .text_2 = N_("For <b>Instant Messaging</b> add or activate "
-                "an account in <i>\"preferences\"</i>."),
+  {.title       = N_("Choose a contact"),
+   .description = N_("Start a <b>SMS</b> chat with the \"+\" button in the "
+                     "titlebar.\n\n"
+                     "For <b>Instant Messaging</b> add or activate "
+                     "an account in <i>\"preferences\"</i>."),
   },
-  {.title  = N_("Start chatting"),
-   .text_1 = N_("For <b>Instant Messaging</b> add or activate "
-                "an account in <i>\"preferences\"</i>."),
-   .text_2 = NULL,
+  {.title       = N_("Start chatting"),
+   .description = N_("For <b>Instant Messaging</b> add or activate "
+                     "an account in <i>\"preferences\"</i>."),
   }
 };
 
@@ -254,9 +250,7 @@ window_chat_changed_cb (ChattyWindow *self)
   gtk_label_set_markup (GTK_LABEL (self->overlay_label_1),
                         gettext (OverlayContent[mode].title));
   gtk_label_set_markup (GTK_LABEL (self->overlay_label_2),
-                        gettext (OverlayContent[mode].text_1));
-  gtk_label_set_markup (GTK_LABEL (self->overlay_label_3),
-                        gettext (OverlayContent[mode].text_2));
+                        gettext (OverlayContent[mode].description));
 }
 
 static void
@@ -966,7 +960,6 @@ chatty_window_class_init (ChattyWindowClass *klass)
   gtk_widget_class_bind_template_child (widget_class, ChattyWindow, overlay_icon);
   gtk_widget_class_bind_template_child (widget_class, ChattyWindow, overlay_label_1);
   gtk_widget_class_bind_template_child (widget_class, ChattyWindow, overlay_label_2);
-  gtk_widget_class_bind_template_child (widget_class, ChattyWindow, overlay_label_3);
   gtk_widget_class_bind_template_child (widget_class, ChattyWindow, header_chat_list_new_msg_popover);
 
   gtk_widget_class_bind_template_callback (widget_class, notify_fold_cb);

@@ -451,18 +451,6 @@
                             <property name="wrap">True</property>
                           </object>
                         </child>
-                        <child>
-                          <object class="GtkLabel" id="overlay_label_3">
-                            <property name="visible">True</property>
-                            <property name="can_focus">False</property>
-                            <property name="opacity">0.5</property>
-                            <property name="margin_top">24</property>
-                            <property name="margin_bottom">64</property>
-                            <property name="xalign">0</property>
-                            <property name="justify">left</property>
-                            <property name="wrap">True</property>
-                          </object>
-                        </child>
                       </object>
                     </child>
 
