@@ -38,8 +38,6 @@ void          chatty_ma_chat_set_data           (ChattyMaChat  *self,
                                                  gpointer       enc);
 gboolean      chatty_ma_chat_matches_id         (ChattyMaChat  *self,
                                                  const char    *room_id);
-void          chatty_ma_chat_send_message       (ChattyMaChat  *self,
-                                                 const char    *msg);
 void          chatty_ma_chat_set_prev_batch     (ChattyMaChat  *self,
                                                  char          *prev_batch);
 void          chatty_ma_chat_set_last_batch     (ChattyMaChat  *self,

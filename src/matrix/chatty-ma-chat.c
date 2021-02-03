@@ -1649,37 +1649,6 @@ chatty_ma_chat_matches_id (ChattyMaChat *self,
   return g_strcmp0 (self->room_id, room_id) == 0;
 }
 
-void
-chatty_ma_chat_send_message (ChattyMaChat *self,
-                             const char   *msg)
-{
-  ChattyChat *chat = (ChattyChat *)self;
-  g_autoptr(ChattyMessage) message = NULL;
-
-  CHATTY_ENTRY;
-
-  g_return_if_fail (CHATTY_IS_MA_CHAT (self));
-  g_return_if_fail (msg && *msg);
-
-  message = chatty_message_new (CHATTY_ITEM (self->self_buddy), NULL,
-                                msg, NULL, time (NULL), CHATTY_MESSAGE_TEXT,
-                                CHATTY_DIRECTION_OUT, CHATTY_STATUS_SENDING);
-  g_list_store_append (self->message_list, message);
-  g_queue_push_tail (self->message_queue, g_object_ref (message));
-
-  if (chatty_chat_get_encryption (chat) != CHATTY_ENCRYPTION_ENABLED ||
-      self->keys_claimed) {
-    matrix_send_message_from_queue (self);
-  } else {
-    if (!self->state_is_syncing && !self->claiming_keys)
-      matrix_api_query_keys_async (self->matrix_api,
-                                   G_LIST_MODEL (self->buddy_list),
-                                   NULL, query_key_cb, self);
-  }
-
-  CHATTY_ENTRY;
-}
-
 static void
 db_room_saved_cb (GObject      *object,
                   GAsyncResult *result,
