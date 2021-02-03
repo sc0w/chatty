@@ -1359,6 +1359,35 @@ chatty_ma_chat_set_unread_count (ChattyChat *chat,
   }
 }
 
+static void
+chatty_ma_chat_send_message_async (ChattyChat          *chat,
+                                   ChattyMessage       *message,
+                                   GAsyncReadyCallback  callback,
+                                   gpointer             user_data)
+{
+  ChattyMaChat *self = (ChattyMaChat *)chat;
+
+  CHATTY_ENTRY;
+
+  g_assert (CHATTY_IS_MA_CHAT (self));
+  g_assert (CHATTY_IS_MESSAGE (message));
+
+  chatty_message_set_user (message, CHATTY_ITEM (self->self_buddy));
+  chatty_message_set_status (message, CHATTY_STATUS_SENDING, 0);
+
+  g_list_store_append (self->message_list, message);
+  g_queue_push_tail (self->message_queue, g_object_ref (message));
+
+  if (chatty_chat_get_encryption (chat) != CHATTY_ENCRYPTION_ENABLED ||
+      self->keys_claimed)
+    matrix_send_message_from_queue (self);
+  else if (!self->state_is_syncing && !self->claiming_keys)
+    matrix_api_query_keys_async (self->matrix_api,
+                                 G_LIST_MODEL (self->buddy_list),
+                                 NULL, query_key_cb, self);
+  CHATTY_EXIT;
+}
+
 static gboolean
 chatty_ma_chat_get_buddy_typing (ChattyChat *chat)
 {
@@ -1513,6 +1542,7 @@ chatty_ma_chat_class_init (ChattyMaChatClass *klass)
   chat_class->get_last_message = chatty_ma_chat_get_last_message;
   chat_class->get_unread_count = chatty_ma_chat_get_unread_count;
   chat_class->set_unread_count = chatty_ma_chat_set_unread_count;
+  chat_class->send_message_async = chatty_ma_chat_send_message_async;
   chat_class->get_buddy_typing = chatty_ma_chat_get_buddy_typing;
   chat_class->set_typing = chatty_ma_chat_set_typing;
 
