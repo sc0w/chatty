@@ -198,6 +198,7 @@ chatty_eds_load_contact (ChattyEds     *self,
     g_warn_if_reached ();
   }
 
+  /* Only container should be freed, attribute is freed in ChattyContact */
   attributes = e_contact_get_attributes (contact, field_id);
 
   for (GSList *l = (GSList *)attributes; l != NULL; l = l->next) {
@@ -364,6 +365,7 @@ chatty_eds_client_connected_cb (GObject      *object,
     {
       if (!g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
         g_warning ("Error: %s", error->message);
+      g_clear_object (&client);
 
       return;
     }
@@ -378,6 +380,7 @@ chatty_eds_client_connected_cb (GObject      *object,
                           NULL,
                           chatty_eds_get_view_cb,
                           g_object_ref (self));
+  g_clear_object (&client);
 }
 
 
@@ -495,6 +498,10 @@ chatty_eds_finalize (GObject *object)
 
   g_cancellable_cancel (self->cancellable);
   g_clear_object (&self->cancellable);
+  g_clear_object (&self->eds_view_list);
+  g_clear_object (&self->contacts_list);
+  if (self->contacts_array)
+    g_ptr_array_free (self->contacts_array, TRUE);
 
   G_OBJECT_CLASS (chatty_eds_parent_class)->finalize (object);
 }
