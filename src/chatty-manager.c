@@ -1750,6 +1750,11 @@ chatty_manager_dispose (GObject *object)
   ChattyManager *self = (ChattyManager *)object;
 
   purple_signals_disconnect_by_handle (self);
+  g_clear_object (&self->notification);
+  g_clear_object (&self->chatty_eds);
+  g_clear_object (&self->chat_list);
+  g_clear_object (&self->list_of_chat_list);
+  g_clear_object (&self->list_of_user_list);
   g_clear_object (&self->contact_list);
   g_clear_object (&self->list_of_user_list);
   g_clear_object (&self->account_list);
