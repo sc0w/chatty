@@ -47,7 +47,6 @@ chatty_secret_store_save_async (ChattyAccount       *account,
                                 gpointer             user_data)
 {
   const SecretSchema *schema;
-  GHashTable *attr;
   g_autofree char *label = NULL;
   const char *server, *old_pass;
   char *password = NULL, *token = NULL, *key = NULL;
@@ -79,13 +78,13 @@ chatty_secret_store_save_async (ChattyAccount       *account,
   schema = secret_store_get_schema ();
   server = chatty_ma_account_get_homeserver (CHATTY_MA_ACCOUNT (account));
   label = g_strdup_printf (_("Chatty password for \"%s\""), chatty_account_get_username (account));
-  attr = secret_attributes_build (schema,
-                                  CHATTY_USERNAME_ATTRIBUTE, chatty_account_get_username (account),
-                                  CHATTY_SERVER_ATTRIBUTE, server,
-                                  CHATTY_PROTOCOL_ATTRIBUTE, PROTOCOL_MATRIX_STR,
-                                  NULL);
-  secret_password_storev (schema, attr, NULL, label, credentials,
-                          cancellable, callback, user_data);
+
+  secret_password_store (schema, NULL, label, credentials,
+                         cancellable, callback, user_data,
+                         CHATTY_USERNAME_ATTRIBUTE, chatty_account_get_username (account),
+                         CHATTY_SERVER_ATTRIBUTE, server,
+                         CHATTY_PROTOCOL_ATTRIBUTE, PROTOCOL_MATRIX_STR,
+                         NULL);
 
   matrix_utils_free_buffer (access_token);
   matrix_utils_free_buffer (credentials);
