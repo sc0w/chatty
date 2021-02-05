@@ -239,6 +239,9 @@ create_new_details (MatrixEnc *self)
   self->account = g_malloc (olm_account_size ());
   olm_account (self->account);
 
+  matrix_utils_free_buffer (self->pickle_key);
+  self->pickle_key = g_uuid_string_random ();
+
   length = olm_create_account_random_length (self->account);
   buffer = g_malloc (length);
   getrandom (buffer, length, GRND_NONBLOCK);
@@ -368,7 +371,6 @@ matrix_enc_new (gpointer    matrix_db,
     }
   } else {
     create_new_details (self);
-    self->pickle_key = g_uuid_string_random ();
   }
 
   matrix_enc_load_identity_keys (self);
