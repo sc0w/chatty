@@ -114,8 +114,6 @@ api_get_version_cb (GObject      *obj,
   JsonArray *array = NULL;
   GError *error = NULL;
 
-  CHATTY_ENTRY;
-
   g_assert (MATRIX_IS_API (self));
 
   root = matrix_utils_read_uri_finish (result, &error);
@@ -125,13 +123,13 @@ api_get_version_cb (GObject      *obj,
     error = matrix_utils_json_node_get_error (root);
 
   if (handle_common_errors (self, error))
-    CHATTY_EXIT;
+    return;
 
   if (!root) {
     CHATTY_TRACE_MSG ("Error verifying home server: %s", error->message);
     self->error = error;
     self->callback (self->cb_object, self, self->action, NULL, self->error);
-    CHATTY_EXIT;
+    return;
   }
 
   object = json_node_get_object (root);
@@ -170,8 +168,6 @@ api_get_version_cb (GObject      *obj,
   } else {
     matrix_start_sync (self);
   }
-
-  CHATTY_EXIT;
 }
 
 static void
@@ -538,17 +534,20 @@ schedule_resync (gpointer user_data)
 {
   MatrixApi *self = user_data;
   GNetworkMonitor *network_monitor;
-
-  CHATTY_ENTRY;
+  GNetworkConnectivity connectivity;
 
   g_assert (MATRIX_IS_API (self));
   self->resync_id = 0;
 
   network_monitor = g_network_monitor_get_default ();
-  if (g_network_monitor_get_connectivity (network_monitor) == G_NETWORK_CONNECTIVITY_FULL)
+  connectivity = g_network_monitor_get_connectivity (network_monitor);
+
+  CHATTY_TRACE_MSG ("Schedule sync for user %s, sync now: %d", self->username,
+                    connectivity == G_NETWORK_CONNECTIVITY_FULL);
+  if (connectivity == G_NETWORK_CONNECTIVITY_FULL)
     matrix_start_sync (self);
 
-  CHATTY_RETURN (G_SOURCE_REMOVE);
+  return G_SOURCE_REMOVE;
 }
 
 /*
@@ -564,16 +563,15 @@ handle_common_errors (MatrixApi *self,
   if (!error)
     return FALSE;
 
-  CHATTY_ENTRY;
-
   if (g_error_matches (error, MATRIX_ERROR, M_UNKNOWN_TOKEN)
       && self->password) {
+    CHATTY_TRACE_MSG ("Re-logging in %s", self->username);
     self->login_success = FALSE;
     g_clear_pointer (&self->access_token, matrix_utils_free_buffer);
     matrix_enc_set_details (self->matrix_enc, NULL, NULL);
     matrix_start_sync (self);
 
-    CHATTY_RETURN (TRUE);
+    return TRUE;
   }
 
   /*
@@ -595,13 +593,14 @@ handle_common_errors (MatrixApi *self,
     if (g_network_monitor_get_connectivity (network_monitor) == G_NETWORK_CONNECTIVITY_FULL) {
       g_clear_handle_id (&self->resync_id, g_source_remove);
 
+      CHATTY_TRACE_MSG ("Schedule sync for user %s", self->username);
       self->resync_id = g_timeout_add_seconds (URI_REQUEST_TIMEOUT,
                                                schedule_resync, self);
-      CHATTY_RETURN (TRUE);
+      return TRUE;
     }
   }
 
-  CHATTY_RETURN (FALSE);
+  return FALSE;
 }
 
 static gboolean
@@ -644,8 +643,6 @@ matrix_login_cb (GObject      *obj,
   GError *error = NULL;
   const char *value;
 
-  CHATTY_ENTRY;
-
   g_assert (G_IS_TASK (result));
 
   self = g_task_get_source_object (G_TASK (result));
@@ -654,6 +651,7 @@ matrix_login_cb (GObject      *obj,
   root = g_task_propagate_pointer (G_TASK (result), &error);
   g_clear_error (&self->error);
 
+  CHATTY_TRACE_MSG ("login complete. success: %d", !error);
   if (error) {
     self->sync_failed = TRUE;
     /* use a better code to inform invalid password */
@@ -662,10 +660,9 @@ matrix_login_cb (GObject      *obj,
     self->error = error;
     self->callback (self->cb_object, self, MATRIX_PASSWORD_LOGIN, NULL, self->error);
     g_debug ("Error logging in: %s", error->message);
-    CHATTY_EXIT;
+    return;
   }
 
-  g_debug ("login success");
   self->login_success = TRUE;
 
   /* https://matrix.org/docs/spec/client_server/r0.6.1#post-matrix-client-r0-login */
@@ -689,7 +686,6 @@ matrix_login_cb (GObject      *obj,
 
   self->callback (self->cb_object, self, MATRIX_PASSWORD_LOGIN, NULL, NULL);
   matrix_upload_key (self);
-  CHATTY_EXIT;
 }
 
 static void
@@ -701,8 +697,6 @@ matrix_upload_key_cb (GObject      *obj,
   g_autoptr(JsonObject) root = NULL;
   JsonObject *object = NULL;
   GError *error = NULL;
-
-  CHATTY_ENTRY;
 
   g_assert (G_IS_TASK (result));
 
@@ -720,15 +714,15 @@ matrix_upload_key_cb (GObject      *obj,
     CHATTY_EXIT;
   }
 
-  g_debug ("uploaded key");
   self->callback (self->cb_object, self, MATRIX_UPLOAD_KEY, root, NULL);
 
   object = matrix_utils_json_object_get_object (root, "one_time_key_counts");
+  CHATTY_TRACE_MSG ("Uploaded %d keys",
+                    matrix_utils_json_object_get_int (object, "signed_curve25519"));
 
   if (!handle_one_time_keys (self, object) &&
        self->action != MATRIX_RED_PILL)
     matrix_take_red_pill (self);
-  CHATTY_EXIT;
 }
 
 /* sync callback */
@@ -960,16 +954,14 @@ matrix_login (MatrixApi *self)
   g_autoptr(JsonObject) object = NULL;
   JsonObject *child;
 
-  CHATTY_ENTRY;
-
   g_assert (MATRIX_IS_API (self));
   g_assert (self->username);
   g_assert (self->homeserver);
   g_assert (!self->access_token);
   g_assert (self->password && *self->password);
 
-  g_debug ("logging in to account '%s' on server '%s'",
-           self->username, self->homeserver);
+  CHATTY_TRACE_MSG ("logging in to account '%s' on server '%s'",
+                    self->username, self->homeserver);
 
   /* https://matrix.org/docs/spec/client_server/r0.6.1#post-matrix-client-r0-login */
   object = json_object_new ();
@@ -984,7 +976,6 @@ matrix_login (MatrixApi *self)
 
   queue_json_object (self, object, "/_matrix/client/r0/login",
                      SOUP_METHOD_POST, NULL, matrix_login_cb, NULL);
-  CHATTY_EXIT;
 }
 
 static void
@@ -995,7 +986,6 @@ matrix_upload_key (MatrixApi *self)
   g_assert (MATRIX_IS_API (self));
   g_assert (self->key);
 
-  g_debug ("uploading key");
   key = g_steal_pointer (&self->key);
 
   queue_data (self, key, strlen (key), "/_matrix/client/r0/keys/upload",
@@ -1006,8 +996,6 @@ static void
 matrix_start_sync (MatrixApi *self)
 {
   g_assert (MATRIX_IS_API (self));
-
-  CHATTY_ENTRY;
 
   self->is_sync = TRUE;
   self->sync_failed = FALSE;
@@ -1034,8 +1022,6 @@ matrix_start_sync (MatrixApi *self)
   } else {
     matrix_take_red_pill (self);
   }
-
-  CHATTY_EXIT;
 }
 
 static void
@@ -1195,16 +1181,13 @@ void
 matrix_api_set_password (MatrixApi  *self,
                          const char *password)
 {
-  CHATTY_ENTRY;
-
   g_return_if_fail (MATRIX_IS_API (self));
 
   if (!password || !*password)
-    CHATTY_EXIT;
+    return;
 
   matrix_utils_free_buffer (self->password);
   self->password = g_strdup (password);
-  CHATTY_EXIT;
 }
 
 /**
@@ -1259,14 +1242,12 @@ matrix_api_set_homeserver (MatrixApi  *self,
   g_autoptr(SoupURI) uri = NULL;
   GString *host;
 
-  CHATTY_ENTRY;
-
   g_return_if_fail (MATRIX_IS_API (self));
 
   uri = soup_uri_new (homeserver);
   if (!homeserver || !uri ||
       !SOUP_URI_VALID_FOR_HTTP (uri))
-    CHATTY_EXIT;
+    return;
 
   host = g_string_new (NULL);
   g_string_append (host, soup_uri_get_scheme (uri));
@@ -1284,8 +1265,6 @@ matrix_api_set_homeserver (MatrixApi  *self,
     self->sync_failed = FALSE;
     matrix_verify_homeserver (self);
   }
-
-  CHATTY_EXIT;
 }
 
 /**
@@ -1375,25 +1354,20 @@ matrix_api_set_next_batch (MatrixApi  *self,
 void
 matrix_api_start_sync (MatrixApi *self)
 {
-  CHATTY_ENTRY;
-
   g_return_if_fail (MATRIX_IS_API (self));
   g_return_if_fail (self->callback);
   g_return_if_fail (self->username);
   g_return_if_fail (self->password || self->access_token);
 
   if (self->is_sync && !self->sync_failed)
-    CHATTY_EXIT;
+    return;
 
   matrix_start_sync (self);
-  CHATTY_EXIT;
 }
 
 void
 matrix_api_stop_sync (MatrixApi *self)
 {
-  CHATTY_ENTRY;
-
   g_return_if_fail (MATRIX_IS_API (self));
 
   g_cancellable_cancel (self->cancellable);
@@ -1404,15 +1378,12 @@ matrix_api_stop_sync (MatrixApi *self)
      one for further use */
   g_object_unref (self->cancellable);
   self->cancellable = g_cancellable_new ();
-  CHATTY_EXIT;
 }
 
 void
 matrix_api_set_upload_key (MatrixApi *self,
                            char      *key)
 {
-  CHATTY_ENTRY;
-
   g_return_if_fail (MATRIX_IS_API (self));
   g_return_if_fail (key && *key);
 
@@ -1421,7 +1392,6 @@ matrix_api_set_upload_key (MatrixApi *self,
 
   if (self->is_sync && self->action == MATRIX_RED_PILL)
     matrix_upload_key (self);
-  CHATTY_EXIT;
 }
 
 void
@@ -1462,7 +1432,6 @@ matrix_api_get_room_state_async (MatrixApi           *self,
 
   task = g_task_new (self, self->cancellable, callback, user_data);
 
-  CHATTY_TRACE_MSG ("Getting room state of '%s'", room_id);
   uri = g_strconcat ("/_matrix/client/r0/rooms/", room_id, "/state", NULL);
   queue_data (self, NULL, 0, uri, SOUP_METHOD_GET,
               NULL, matrix_get_room_state_cb, task);
@@ -1491,8 +1460,6 @@ matrix_api_get_members_async (MatrixApi           *self,
   g_autofree char *uri = NULL;
   GHashTable *query;
 
-  CHATTY_ENTRY;
-
   g_return_if_fail (MATRIX_IS_API (self));
 
   task = g_task_new (self, self->cancellable, callback, user_data);
@@ -1507,7 +1474,6 @@ matrix_api_get_members_async (MatrixApi           *self,
   uri = g_strconcat ("/_matrix/client/r0/rooms/", room_id, "/members", NULL);
   queue_data (self, NULL, 0, uri, SOUP_METHOD_GET,
               query, matrix_get_members_cb, g_steal_pointer (&task));
-  CHATTY_EXIT;
 }
 
 JsonObject *
@@ -1515,13 +1481,11 @@ matrix_api_get_members_finish (MatrixApi     *self,
                                GAsyncResult  *result,
                                GError       **error)
 {
-  CHATTY_ENTRY;
-
   g_return_val_if_fail (MATRIX_IS_API (self), NULL);
   g_return_val_if_fail (G_IS_TASK (result), NULL);
   g_return_val_if_fail (!error || !*error, NULL);
 
-  CHATTY_RETURN (g_task_propagate_pointer (G_TASK (result), error));
+  return g_task_propagate_pointer (G_TASK (result), error);
 }
 
 void
