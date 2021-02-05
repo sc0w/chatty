@@ -1434,10 +1434,9 @@ matrix_api_set_typing (MatrixApi  *self,
   g_autoptr(JsonObject) object = NULL;
   g_autofree char *uri = NULL;
 
-  CHATTY_ENTRY;
-
   g_return_if_fail (MATRIX_IS_API (self));
 
+  CHATTY_TRACE_MSG ("Update typing: %d", !!is_typing);
   /* https://matrix.org/docs/spec/client_server/r0.6.1#put-matrix-client-r0-rooms-roomid-typing-userid */
   object = json_object_new ();
   json_object_set_boolean_member (object, "typing", !!is_typing);
@@ -1449,7 +1448,6 @@ matrix_api_set_typing (MatrixApi  *self,
 
   queue_json_object (self, object, uri, SOUP_METHOD_PUT,
                      NULL, matrix_send_typing_cb, NULL);
-  CHATTY_EXIT;
 }
 
 void
