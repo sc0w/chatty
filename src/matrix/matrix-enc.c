@@ -232,7 +232,7 @@ create_new_details (MatrixEnc *self)
 
   g_assert (MATRIX_ENC (self));
 
-  g_debug ("creating new account");
+  CHATTY_TRACE_MSG ("Creating new encryption keys");
 
   free_all_details (self);
 
@@ -976,6 +976,8 @@ matrix_enc_handle_room_encrypted (MatrixEnc  *self,
     }
 
     plaintext[length] = '\0';
+  } else {
+    CHATTY_TRACE_MSG ("normal message received ");
   }
 
   if (plaintext) {
@@ -984,6 +986,8 @@ matrix_enc_handle_room_encrypted (MatrixEnc  *self,
 
     content = matrix_utils_string_to_json_object (plaintext);
     message_type = matrix_utils_json_object_get_string (content, "type");
+
+    CHATTY_TRACE_MSG ("message decrypted. type: %s", message_type);
 
     if (g_strcmp0 (sender, matrix_utils_json_object_get_string (content, "sender")) != 0) {
       g_warning ("Sender mismatch in encrypted content");
@@ -1021,6 +1025,8 @@ matrix_enc_handle_join_room_encrypted (MatrixEnc  *self,
   if (session_id)
     session = g_hash_table_lookup (self->in_group_sessions, session_id);
 
+  CHATTY_TRACE_MSG ("Got room encrypted. session exits: %d", !!session);
+
   if (!session) {
     g_autofree char *pickle = NULL;
 
@@ -1039,6 +1045,7 @@ matrix_enc_handle_join_room_encrypted (MatrixEnc  *self,
         session = NULL;
       } else {
         g_hash_table_insert (self->in_group_sessions, g_strdup (session_id), session);
+        CHATTY_TRACE_MSG ("Got session from matrix db");
       }
     }
   }
