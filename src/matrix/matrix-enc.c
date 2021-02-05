@@ -278,8 +278,6 @@ matrix_enc_finalize (GObject *object)
 {
   MatrixEnc *self = (MatrixEnc *)object;
 
-  g_free (self->pickle_key);
-
   olm_clear_account (self->account);
   g_free (self->account);
 
