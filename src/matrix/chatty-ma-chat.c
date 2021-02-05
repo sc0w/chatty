@@ -1127,8 +1127,6 @@ ma_chat_load_db_messages_cb (GObject      *object,
   g_autoptr(GPtrArray) messages = NULL;
   g_autoptr(GError) error = NULL;
 
-  CHATTY_ENTRY;
-
   g_assert (G_IS_TASK (task));
 
   self = g_task_get_source_object (task);
@@ -1170,7 +1168,6 @@ ma_chat_load_db_messages_cb (GObject      *object,
   }
 
   g_object_thaw_notify (G_OBJECT (self));
-  CHATTY_EXIT;
 }
 
 static gboolean
