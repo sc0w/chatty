@@ -397,8 +397,6 @@ matrix_enc_set_details (MatrixEnc  *self,
   g_autofree char *old_device = NULL;
 
   g_return_if_fail (MATRIX_IS_ENC (self));
-
-  g_return_if_fail (user_id);
   g_return_if_fail (!user_id || *user_id == '@');
 
   old_user = self->user_id;
@@ -407,7 +405,8 @@ matrix_enc_set_details (MatrixEnc  *self,
   self->user_id = g_strdup (user_id);
   self->device_id = g_strdup (device_id);
 
-  if (old_device && g_strcmp0 (device_id, old_device) == 0) {
+  if (self->user_id && old_device &&
+      g_strcmp0 (device_id, old_device) == 0) {
     create_new_details (self);
     matrix_enc_load_identity_keys (self);
   }
