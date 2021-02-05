@@ -24,6 +24,7 @@
 #include "matrix-utils.h"
 #include "matrix-db.h"
 #include "matrix-enc.h"
+#include "chatty-log.h"
 
 #define KEY_LABEL_SIZE    6
 #define STRING_ALLOCATION 512
@@ -902,6 +903,8 @@ matrix_enc_handle_room_encrypted (MatrixEnc  *self,
   size_t error;
   int type;
 
+  CHATTY_ENTRY;
+
   g_return_if_fail (MATRIX_IS_ENC (self));
   g_return_if_fail (object);
 
@@ -924,7 +927,7 @@ matrix_enc_handle_room_encrypted (MatrixEnc  *self,
   type = matrix_utils_json_object_get_int (object, "type");
 
   if (!body)
-    return;
+    CHATTY_EXIT;
 
   if (type == OLM_MESSAGE_TYPE_PRE_KEY) {
     OlmSession *session;
@@ -932,6 +935,7 @@ matrix_enc_handle_room_encrypted (MatrixEnc  *self,
     size_t length;
 
     session = g_hash_table_find (self->in_olm_sessions, in_olm_matches, body);
+    CHATTY_TRACE_MSG ("message with pre key received, session exits: %d", !!session);
 
     if (!session) {
       session = g_malloc (olm_session_size ());
@@ -945,7 +949,7 @@ matrix_enc_handle_room_encrypted (MatrixEnc  *self,
       if (error == olm_error ()) {
         g_warning ("Error creating session: %s", olm_session_last_error (session));
 
-        return;
+        CHATTY_EXIT;
       }
 
       g_hash_table_insert (self->in_olm_sessions, session, g_strdup (sender_key));
@@ -963,7 +967,7 @@ matrix_enc_handle_room_encrypted (MatrixEnc  *self,
     if (length == olm_error ()) {
       g_warning ("Error getting max length: %s", olm_session_last_error (session));
 
-      return;
+      CHATTY_EXIT;
     }
 
     plaintext = g_malloc (length + 1);
@@ -972,7 +976,7 @@ matrix_enc_handle_room_encrypted (MatrixEnc  *self,
       g_free (copy);
       g_warning ("Error decrypt session: %s", olm_session_last_error (session));
 
-      return;
+      CHATTY_EXIT;
     }
 
     plaintext[length] = '\0';
@@ -987,12 +991,14 @@ matrix_enc_handle_room_encrypted (MatrixEnc  *self,
 
     if (g_strcmp0 (sender, matrix_utils_json_object_get_string (content, "sender")) != 0) {
       g_warning ("Sender mismatch in encrypted content");
-      return;
+      CHATTY_EXIT;
     }
 
     if (g_strcmp0 (message_type, "m.room_key") == 0)
       handle_m_room_key (self, content, sender_key);
   }
+
+  CHATTY_EXIT;
 }
 
 char *
