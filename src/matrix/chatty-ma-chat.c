@@ -370,12 +370,12 @@ chat_handle_m_media (ChattyMaChat  *self,
   JsonObject *object;
   const char *url;
 
-  CHATTY_ENTRY;
-
   g_assert (CHATTY_IS_MA_CHAT (self));
   g_assert (CHATTY_IS_MESSAGE (message));
   g_assert (content);
   g_assert (type);
+
+  CHATTY_TRACE_MSG ("Got media, type: %s, encrypted: %d", type, !!encrypted);
 
   if (encrypted)
     object = matrix_utils_json_object_get_object (content, "file");
@@ -383,13 +383,13 @@ chat_handle_m_media (ChattyMaChat  *self,
     object = content;
 
   if (!matrix_utils_json_object_get_string (object, "url"))
-    CHATTY_EXIT;
+    return;
 
   if (!g_str_equal (type, "m.image") &&
       !g_str_equal (type, "m.video") &&
       !g_str_equal (type, "m.file") &&
       !g_str_equal (type, "m.audio"))
-    CHATTY_EXIT;
+    return;
 
   url = matrix_utils_json_object_get_string (object, "url");
 
@@ -418,7 +418,7 @@ chat_handle_m_media (ChattyMaChat  *self,
         g_strcmp0 (matrix_utils_json_object_get_string (json_key, "alg"), "A256CTR") != 0 ||
         !matrix_utils_json_object_get_bool (json_key, "ext") ||
         g_strcmp0 (matrix_utils_json_object_get_string (json_key, "kty"), "oct") != 0)
-      CHATTY_EXIT;
+      return;
 
     info = g_new0 (MatrixFileEncInfo, 1);
     info->aes_iv_base64 = g_strdup (matrix_utils_json_object_get_string (object, "iv"));
@@ -444,13 +444,13 @@ chat_handle_m_media (ChattyMaChat  *self,
   }
 
   if (!file)
-    CHATTY_EXIT;
+    return;
 
   g_object_set_data_full (G_OBJECT (message), "file-url", g_strdup (file->url), g_free);
   matrix_api_get_file_async (self->matrix_api, message, file, NULL, NULL,
                              ma_chat_download_cb, self);
   chatty_message_set_file (message, file);
-  CHATTY_EXIT;
+  return;
 }
 
 static void
@@ -469,8 +469,6 @@ matrix_add_message_from_data (ChattyMaChat  *self,
   const char *uuid;
   time_t ts;
 
-  CHATTY_ENTRY;
-
   g_assert (CHATTY_IS_MA_CHAT (self));
   g_assert (object);
 
@@ -478,7 +476,7 @@ matrix_add_message_from_data (ChattyMaChat  *self,
   type = matrix_utils_json_object_get_string (content, "msgtype");
 
   if (!type)
-    CHATTY_EXIT;
+    return;
 
   if (g_str_equal (type, "m.image"))
     msg_type = CHATTY_MESSAGE_IMAGE;
@@ -505,6 +503,9 @@ matrix_add_message_from_data (ChattyMaChat  *self,
 
   if (buddy == self->self_buddy)
     direction = CHATTY_DIRECTION_OUT;
+
+  CHATTY_TRACE_MSG ("Got message, direction: %s, type %s",
+                    direction == CHATTY_DIRECTION_OUT ? "out" : "in", type);
 
   if (direction == CHATTY_DIRECTION_OUT && uuid) {
     JsonObject *data_unsigned;
@@ -536,7 +537,7 @@ matrix_add_message_from_data (ChattyMaChat  *self,
       if (event_id && g_str_equal (event_id, transaction_id)) {
         chatty_message_set_uid (msg, uuid);
         chatty_history_add_message (self->history_db, CHATTY_CHAT (self), msg);
-        CHATTY_EXIT;
+        return;
       }
     }
   }
@@ -867,6 +868,8 @@ get_room_state_cb (GObject      *obj,
   array = matrix_api_get_room_state_finish (self->matrix_api, result, &error);
   self->state_is_syncing = FALSE;
 
+  CHATTY_TRACE_MSG ("Got room state, room: %s (%s), success: %d",
+                    self->room_id, chatty_item_get_name (CHATTY_ITEM (self)), !error);
   if (error) {
     if (!g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
       g_warning ("error: %s", error->message);
@@ -937,6 +940,7 @@ parse_chat_array (ChattyMaChat *self,
     return;
 
   events = json_array_get_elements (array);
+  CHATTY_TRACE_MSG ("Got %u events", json_array_get_length (array));
 
   for (GList *event = events; event; event = event->next) {
     ChattyMaBuddy *buddy;
@@ -991,6 +995,8 @@ matrix_chat_set_json_data (ChattyMaChat *self,
 
   if (!self->state_is_sync && !self->state_is_syncing) {
     self->state_is_syncing = TRUE;
+    CHATTY_TRACE_MSG ("Getting room state of '%s(%s)'", self->room_id,
+                      chatty_item_get_name (CHATTY_ITEM (self)));
     matrix_api_get_room_state_async (self->matrix_api,
                                      self->room_id,
                                      get_room_state_cb,
@@ -1028,8 +1034,6 @@ get_messages_cb (GObject      *obj,
   g_autoptr(JsonObject) root = NULL;
   g_autoptr(GError) error = NULL;
 
-  CHATTY_ENTRY;
-
   g_assert (G_IS_TASK (task));
 
   self = g_task_get_source_object (task);
@@ -1044,7 +1048,7 @@ get_messages_cb (GObject      *obj,
     if (!g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
       g_warning ("error: %s", error->message);
     g_task_return_boolean (task, FALSE);
-    CHATTY_EXIT;
+    return;
   }
 
   parse_chat_array (self, matrix_utils_json_object_get_array (root, "chunk"));
@@ -1070,8 +1074,6 @@ get_messages_cb (GObject      *obj,
         g_list_model_get_n_items (model) == message_count)
       chatty_chat_load_past_messages (CHATTY_CHAT (self), -1);
   }
-
-  CHATTY_EXIT;
 }
 
 static void
@@ -1082,8 +1084,6 @@ db_room_room_cb (GObject      *object,
   ChattyMaChat *self;
   g_autoptr(GTask) task = user_data;
   g_autoptr(GError) error = NULL;
-
-  CHATTY_ENTRY;
 
   g_assert (G_IS_TASK (task));
 
@@ -1098,6 +1098,8 @@ db_room_room_cb (GObject      *object,
 
   g_free (self->prev_batch);
   self->prev_batch = matrix_db_load_room_finish (self->matrix_db, result, &error);
+  CHATTY_TRACE_MSG ("Load chat %s from db, success: %d, has prev-batch: %d",
+                    self->room_id, !error, !!self->prev_batch);
 
   if (error)
     g_warning ("Error loading prev batch: %s", error->message);
@@ -1114,7 +1116,6 @@ db_room_room_cb (GObject      *object,
   }
 
   g_object_thaw_notify (G_OBJECT (self));
-  CHATTY_EXIT;
 }
 
 static void
@@ -1205,13 +1206,14 @@ chatty_ma_chat_real_past_messages (ChattyChat *chat,
   GTask *task;
   guint n_items;
 
-  CHATTY_ENTRY;
-
   g_assert (CHATTY_IS_MA_CHAT (self));
   g_assert (count > 0);
 
   if (self->history_is_loading)
-    CHATTY_EXIT;
+    return;
+
+  CHATTY_TRACE_MSG ("Loading %d past messages from %s(%s)", count, self->room_id,
+                    chatty_item_get_name (CHATTY_ITEM (chat)));
 
   self->history_is_loading = TRUE;
   g_object_notify (G_OBJECT (self), "loading-history");
@@ -1226,7 +1228,6 @@ chatty_ma_chat_real_past_messages (ChattyChat *chat,
                                      g_list_model_get_item (model, 0),
                                      count, ma_chat_load_db_messages_cb,
                                      task);
-  CHATTY_EXIT;
 }
 
 static gboolean
