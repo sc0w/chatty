@@ -437,18 +437,16 @@ matrix_get_room_state_cb (GObject      *obj,
   JsonArray *array;
   GError *error = NULL;
 
-  CHATTY_ENTRY;
+  g_assert (G_IS_TASK (task));
 
   array = g_task_propagate_pointer (G_TASK (result), &error);
 
   if (error) {
-    g_debug ("Error getting members: %s", error->message);
+    g_debug ("Error getting room state: %s", error->message);
     g_task_return_error (task, error);
   } else {
     g_task_return_pointer (task, array, (GDestroyNotify)json_array_unref);
   }
-
-  CHATTY_EXIT;
 }
 
 static void
@@ -1978,8 +1976,6 @@ api_leave_room_cb (GObject      *object,
   g_autoptr(GTask) task = user_data;
   GError *error = NULL;
 
-  CHATTY_ENTRY;
-
   g_assert (MATRIX_IS_API (self));
   g_assert (G_IS_TASK (task));
 
@@ -1992,7 +1988,6 @@ api_leave_room_cb (GObject      *object,
     g_task_return_error (task, error);
   else
     g_task_return_boolean (task, TRUE);
-  CHATTY_EXIT;
 }
 
 void
@@ -2004,8 +1999,6 @@ matrix_api_leave_chat_async (MatrixApi           *self,
   GTask *task;
   g_autofree char *uri = NULL;
 
-  CHATTY_ENTRY;
-
   g_return_if_fail (MATRIX_IS_API (self));
   g_return_if_fail (room_id && *room_id == '!');
 
@@ -2014,7 +2007,6 @@ matrix_api_leave_chat_async (MatrixApi           *self,
   uri = g_strdup_printf ("/_matrix/client/r0/rooms/%s/leave", room_id);
   queue_data (self, NULL, 0, uri, SOUP_METHOD_POST,
               NULL, api_leave_room_cb, task);
-  CHATTY_EXIT;
 }
 
 gboolean
