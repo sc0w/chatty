@@ -121,7 +121,7 @@ api_get_version_cb (GObject      *obj,
     error = matrix_utils_json_node_get_error (root);
 
   if (!root) {
-    g_debug ("Error verifying home server: %s", error->message);
+    CHATTY_TRACE_MSG ("Error verifying home server: %s", error->message);
     self->error = error;
     self->callback (self->cb_object, self, self->action, NULL, self->error);
     CHATTY_EXIT;
@@ -131,30 +131,29 @@ api_get_version_cb (GObject      *obj,
   array = matrix_utils_json_object_get_array (object, "versions");
 
   if (array) {
+    g_autoptr(GString) versions = NULL;
     guint length;
 
+    versions = g_string_new ("");
     length = json_array_get_length (array);
 
     for (guint i = 0; i < length; i++) {
       const char *version;
 
       version = json_array_get_string_element (array, i);
-      g_debug ("Server supports Matrix API version: %s", version);
+      g_string_append_printf (versions, " %s", version);
 
       /* We have tested only with r0.6.x and r0.5.0 */
-      if (!g_str_has_prefix (version, "r0.5.") &&
-          !g_str_has_prefix (version, "r0.6."))
-        continue;
-
-      self->homeserver_verified = TRUE;
-      break;
+      if (g_str_has_prefix (version, "r0.5.") ||
+          g_str_has_prefix (version, "r0.6."))
+        self->homeserver_verified = TRUE;
     }
+
+    CHATTY_TRACE_MSG ("%s has versions:%s", self->homeserver, versions->str);
 
     if (!self->homeserver_verified)
       g_warning ("Chatty requires Client-Server API to be ‘r0.5.x’ or ‘r0.6.x’");
   }
-
-  g_debug ("Homeserver %s verified: %d", self->homeserver, self->homeserver_verified);
 
   if (!self->homeserver_verified) {
     self->error = g_error_new (MATRIX_ERROR, M_BAD_HOME_SERVER,
@@ -539,10 +538,10 @@ static gboolean
 handle_common_errors (MatrixApi *self,
                       GError    *error)
 {
-  CHATTY_ENTRY;
-
   if (!error)
-    CHATTY_RETURN (FALSE);
+    return FALSE;
+
+  CHATTY_ENTRY;
 
   if (g_error_matches (error, MATRIX_ERROR, M_UNKNOWN_TOKEN)
       && self->password) {
@@ -563,29 +562,27 @@ handle_one_time_keys (MatrixApi  *self,
 {
   size_t count, limit;
 
-  CHATTY_ENTRY;
-
   g_assert (MATRIX_IS_API (self));
 
   if (!object)
-    CHATTY_RETURN (FALSE);
+    return FALSE;
 
   count = matrix_utils_json_object_get_int (object, "signed_curve25519");
   limit = matrix_enc_max_one_time_keys (self->matrix_enc) / 2;
 
   /* If we don't have enough onetime keys add some */
   if (count < limit) {
-    g_debug ("generating %lu onetime keys", limit - count);
+    CHATTY_TRACE_MSG ("generating %lu onetime keys", limit - count);
     matrix_enc_create_one_time_keys (self->matrix_enc, limit - count);
 
     g_free (self->key);
     self->key = matrix_enc_get_one_time_keys_json (self->matrix_enc);
     matrix_upload_key (self);
 
-    CHATTY_RETURN (TRUE);
+    return TRUE;
   }
 
-  CHATTY_RETURN (FALSE);
+  return FALSE;
 }
 
 static void
@@ -705,6 +702,9 @@ matrix_take_red_pill_cb (GObject      *obj,
   root = g_task_propagate_pointer (G_TASK (result), &error);
   g_clear_error (&self->error);
 
+  CHATTY_TRACE_MSG ("sync success: %d, full-state: %d, next-batch: %s",
+                    !error, !self->full_state_loaded, self->next_batch);
+
   if (handle_common_errors (self, error))
     return;
 
@@ -716,7 +716,6 @@ matrix_take_red_pill_cb (GObject      *obj,
     return;
   }
 
-  g_debug ("sync success with batch %s", self->next_batch);
   self->login_success = TRUE;
 
   object = matrix_utils_json_object_get_object (root, "device_one_time_keys_count");
@@ -747,8 +746,6 @@ api_load_from_stream_cb (JsonParser   *parser,
   JsonNode *root = NULL;
   GError *error = NULL;
 
-  CHATTY_ENTRY;
-
   g_assert (JSON_IS_PARSER (parser));
   g_assert (G_IS_TASK (task));
 
@@ -772,10 +769,12 @@ api_load_from_stream_cb (JsonParser   *parser,
       obj = json_node_get_object (root);
       retry = matrix_utils_json_object_get_int (obj, "retry_after_ms");
       g_object_set_data (G_OBJECT (task), "retry-after", GINT_TO_POINTER (retry));
+    } else {
+      CHATTY_TRACE_MSG ("Error loading from stream: %s", error->message);
     }
 
     g_task_return_error (task, error);
-    CHATTY_EXIT;
+    return;
   }
 
   if (JSON_NODE_HOLDS_OBJECT (root))
@@ -787,7 +786,6 @@ api_load_from_stream_cb (JsonParser   *parser,
   else
     g_task_return_new_error (task, G_IO_ERROR, G_IO_ERROR_INVALID_DATA,
                              "Received invalid data");
-  CHATTY_EXIT;
 }
 
 static void
@@ -810,6 +808,7 @@ session_send_cb (SoupSession  *session,
   stream = soup_session_send_finish (session, result, &error);
 
   if (error) {
+    CHATTY_TRACE_MSG ("Error session send: %s", error->message);
     g_task_return_error (task, error);
     return;
   }
@@ -897,17 +896,14 @@ matrix_verify_homeserver (MatrixApi *self)
 {
   g_autofree char *uri = NULL;
 
-  CHATTY_ENTRY;
-
   g_assert (MATRIX_IS_API (self));
-  g_debug ("verifying homeserver %s", self->homeserver);
+  CHATTY_TRACE_MSG ("verifying homeserver %s", self->homeserver);
 
   self->action = MATRIX_VERIFY_HOMESERVER;
   uri = g_strconcat (self->homeserver, "/_matrix/client/versions", NULL);
   matrix_utils_read_uri_async (uri, URI_REQUEST_TIMEOUT,
                                self->cancellable,
                                api_get_version_cb, self);
-  CHATTY_EXIT;
 }
 
 static void
@@ -999,8 +995,6 @@ matrix_take_red_pill (MatrixApi *self)
   GHashTable *query;
 
   g_assert (MATRIX_IS_API (self));
-  g_debug ("sync with server, full state: %d, next_batch: %s",
-           !self->full_state_loaded, self->next_batch);
 
   self->action = MATRIX_RED_PILL;
   query = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_free);
@@ -1415,17 +1409,15 @@ matrix_api_get_room_state_async (MatrixApi           *self,
   g_autofree char *uri = NULL;
   GTask *task;
 
-  CHATTY_ENTRY;
-
   g_return_if_fail (MATRIX_IS_API (self));
   g_return_if_fail (room_id && *room_id);
 
   task = g_task_new (self, self->cancellable, callback, user_data);
 
+  CHATTY_TRACE_MSG ("Getting room state of '%s'", room_id);
   uri = g_strconcat ("/_matrix/client/r0/rooms/", room_id, "/state", NULL);
   queue_data (self, NULL, 0, uri, SOUP_METHOD_GET,
               NULL, matrix_get_room_state_cb, task);
-  CHATTY_EXIT;
 }
 
 JsonArray *
@@ -1433,13 +1425,11 @@ matrix_api_get_room_state_finish (MatrixApi     *self,
                                   GAsyncResult  *result,
                                   GError       **error)
 {
-  CHATTY_ENTRY;
-
   g_return_val_if_fail (MATRIX_IS_API (self), NULL);
   g_return_val_if_fail (G_IS_TASK (result), NULL);
   g_return_val_if_fail (!error || !*error, NULL);
 
-  CHATTY_RETURN (g_task_propagate_pointer (G_TASK (result), error));
+  return g_task_propagate_pointer (G_TASK (result), error);
 }
 
 
