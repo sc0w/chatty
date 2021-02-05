@@ -328,14 +328,15 @@ matrix_enc_init (MatrixEnc *self)
  *
  * If @pickle is non-null, the olm account is created
  * using the pickled data.  Otherwise a new olm account
- * is created.
+ * is created. If @pickle is non-null and invalid
+ * %NULL is returned.
  *
  * For @self to be ready for use, the details of @self
  * should be set with matrix_enc_set_details().
  *
  * Also see matrix_enc_get_pickle().
  *
- * Returns: (transfer full): A new #MatrixEnc.
+ * Returns: (transfer full) (nullable): A new #MatrixEnc.
  * Free with g_object_unref()
  */
 MatrixEnc *
@@ -343,8 +344,7 @@ matrix_enc_new (gpointer    matrix_db,
                 const char *pickle,
                 const char *key)
 {
-  MatrixEnc *self;
-  size_t err = 0;
+  g_autoptr(MatrixEnc) self = NULL;
 
   g_return_val_if_fail (!pickle || (*pickle && key && *key), NULL);
 
@@ -354,8 +354,7 @@ matrix_enc_new (gpointer    matrix_db,
   /* Deserialize the pickle to create the account */
   if (pickle && *pickle) {
     g_autofree char *duped = NULL;
-
-    g_assert (MATRIX_ENC (self));
+    size_t err;
 
     self->pickle_key = g_strdup (key);
     self->account = g_malloc (olm_account_size ());
@@ -365,19 +364,18 @@ matrix_enc_new (gpointer    matrix_db,
     err = olm_unpickle_account (self->account, key, strlen (key),
                                 duped, strlen (duped));
 
-    if (err == olm_error ())
+    if (err == olm_error ()) {
       g_warning ("Error account unpickle: %s", olm_account_last_error (self->account));
-  }
-
-  if (!pickle || !*pickle || err == olm_error ())
+      return NULL;
+    }
+  } else {
     create_new_details (self);
-
-  if (!self->pickle_key)
     self->pickle_key = g_uuid_string_random ();
+  }
 
   matrix_enc_load_identity_keys (self);
 
-  return self;
+  return g_steal_pointer (&self);
 }
 
 /**
