@@ -525,6 +525,8 @@ chatty_ma_account_set_enabled (ChattyAccount *account,
   g_clear_handle_id (&self->connect_id, g_source_remove);
 
   if (!self->matrix_enc && enable) {
+    CHATTY_TRACE_MSG ("Create new enc. user: %s has pickle: %d, has key: %d",
+                      chatty_account_get_username (account), FALSE, FALSE);
     self->matrix_enc = matrix_enc_new (self->matrix_db, NULL, NULL);
     matrix_api_set_enc (self->matrix_api, self->matrix_enc);
   }
@@ -859,8 +861,6 @@ db_load_account_cb (GObject      *object,
   g_autoptr(GError) error = NULL;
   gboolean enabled;
 
-  CHATTY_ENTRY;
-
   g_assert (CHATTY_IS_MA_ACCOUNT (self));
   g_assert (G_IS_TASK (task));
 
@@ -868,6 +868,9 @@ db_load_account_cb (GObject      *object,
     const char *pickle;
 
     pickle = g_object_get_data (G_OBJECT (task), "pickle");
+    CHATTY_TRACE_MSG ("Create new enc. user: %s has pickle: %d, has key: %d",
+                      chatty_account_get_username (CHATTY_ACCOUNT (self)),
+                      !!pickle, !!self->pickle_key);
     self->matrix_enc = matrix_enc_new (self->matrix_db, pickle, self->pickle_key);
     matrix_api_set_enc (self->matrix_api, self->matrix_enc);
     if (!pickle)
@@ -880,17 +883,19 @@ db_load_account_cb (GObject      *object,
       g_warning ("Error loading account %s: %s",
                  chatty_account_get_username (CHATTY_ACCOUNT (self)),
                  error->message);
-    CHATTY_EXIT;
+    return;
   }
 
   enabled = GPOINTER_TO_INT (g_object_get_data (G_OBJECT (task), "enabled"));
   self->next_batch = g_strdup (g_object_get_data (G_OBJECT (task), "batch"));
+  CHATTY_TRACE_MSG ("Loaded %s from db. enabled: %d, has next-batch: %d",
+                    chatty_account_get_username (CHATTY_ACCOUNT (self)),
+                    !!enabled, !!self->next_batch);
 
   self->is_loading = TRUE;
   matrix_api_set_next_batch (self->matrix_api, self->next_batch);
   chatty_account_set_enabled (CHATTY_ACCOUNT (self), enabled);
   self->is_loading = FALSE;
-  CHATTY_EXIT;
 }
 
 static void
@@ -908,7 +913,9 @@ db_load_chats_cb (GObject      *object,
 
   chats = chatty_history_get_chats_finish (self->history_db, result, &error);
   self->db_chat_list = chats;
-  CHATTY_TRACE_MSG ("Loaded %u chats from db", !chats ? 0 : chats->len);
+  CHATTY_TRACE_MSG ("%s Loaded %u chats from db",
+                    chatty_account_get_username (CHATTY_ACCOUNT (self)),
+                    !chats ? 0 : chats->len);
 
   if (error)
     g_warning ("Error getting chats: %s", error->message);

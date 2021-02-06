@@ -1500,10 +1500,8 @@ matrix_api_load_prev_batch_async (MatrixApi           *self,
   GHashTable *query;
   GTask *task;
 
-  CHATTY_ENTRY;
-
   if (!prev_batch)
-    CHATTY_EXIT;
+    return;
 
   g_return_if_fail (MATRIX_IS_API (self));
 
@@ -1517,12 +1515,11 @@ matrix_api_load_prev_batch_async (MatrixApi           *self,
   if (last_batch)
     g_hash_table_insert (query, g_strdup ("to"), g_strdup (last_batch));
 
-
+  CHATTY_TRACE_MSG ("Load prev-batch");
   /* https://matrix.org/docs/spec/client_server/r0.6.1#get-matrix-client-r0-rooms-roomid-messages */
   uri = g_strconcat ("/_matrix/client/r0/rooms/", room_id, "/messages", NULL);
   queue_data (self, NULL, 0, uri, SOUP_METHOD_GET,
               query, matrix_get_messages_cb, task);
-  CHATTY_EXIT;
 }
 
 JsonObject *
@@ -1530,13 +1527,11 @@ matrix_api_load_prev_batch_finish (MatrixApi     *self,
                                    GAsyncResult  *result,
                                    GError       **error)
 {
-  CHATTY_ENTRY;
-
   g_return_val_if_fail (MATRIX_IS_API (self), NULL);
   g_return_val_if_fail (G_IS_TASK (result), NULL);
   g_return_val_if_fail (!error || !*error, NULL);
 
-  CHATTY_RETURN (g_task_propagate_pointer (G_TASK (result), error));
+  return g_task_propagate_pointer (G_TASK (result), error);
 }
 
 /**
