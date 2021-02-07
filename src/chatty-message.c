@@ -46,6 +46,8 @@ struct _ChattyMessage
   time_t           time;
 
   gboolean encrypted;
+  /* Set if files are created with file path string */
+  gboolean         files_are_path;
   guint            sms_id;
 };
 
@@ -194,6 +196,36 @@ chatty_message_set_files (ChattyMessage *self,
   g_return_if_fail (!self->files);
 
   self->files = files;
+}
+
+/**
+ * chatty_message_add_file_from_path:
+ * @self: A #ChattyMessage
+ * @files: A local file path
+ *
+ * Append a file to message using the file’s absolute
+ * path. @file_path should point to an existing file.
+ * Multiple files can be added.
+ *
+ * This API can’t be mixed with chatty_message_set_files().
+ * You can only use either of them.
+ */
+void
+chatty_message_add_file_from_path (ChattyMessage *self,
+                                   const char    *file_path)
+{
+  ChattyFileInfo *file;
+
+  g_return_if_fail (CHATTY_IS_MESSAGE (self));
+  g_return_if_fail (file_path && *file_path);
+  g_return_if_fail (!self->files || self->files_are_path);
+  g_return_if_fail (g_file_test (file_path, G_FILE_TEST_EXISTS));
+
+  self->files_are_path = TRUE;
+  file = g_new0 (ChattyFileInfo, 1);
+  file->path = g_strdup (file_path);
+
+  self->files = g_list_append (self->files, file);
 }
 
 ChattyFileInfo *
