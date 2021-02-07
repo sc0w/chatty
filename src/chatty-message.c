@@ -72,6 +72,9 @@ chatty_message_finalize (GObject *object)
   g_free (self->user_name);
   g_free (self->id);
 
+  if (self->files)
+    g_list_free_full (self->files, (GDestroyNotify)chatty_file_info_free);
+
   G_OBJECT_CLASS (chatty_message_parent_class)->finalize (object);
 }
 
