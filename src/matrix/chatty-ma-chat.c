@@ -449,7 +449,7 @@ chat_handle_m_media (ChattyMaChat  *self,
   g_object_set_data_full (G_OBJECT (message), "file-url", g_strdup (file->url), g_free);
   matrix_api_get_file_async (self->matrix_api, message, file, NULL, NULL,
                              ma_chat_download_cb, self);
-  chatty_message_set_file (message, file);
+  chatty_message_set_files (message, g_list_append (NULL, file));
   return;
 }
 

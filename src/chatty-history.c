@@ -1933,7 +1933,7 @@ get_messages_before_time (ChattyHistory *self,
     message = chatty_message_new (NULL, who, msg, uid, time_stamp, type,
                                   history_direction_from_value (direction),
                                   history_msg_status_from_value (status));
-    chatty_message_set_file (message, file);
+    chatty_message_set_files (message, g_list_append (NULL, file));
     chatty_message_set_preview (message, preview);
     g_ptr_array_insert (messages, 0, message);
   }
@@ -2157,8 +2157,11 @@ history_add_message (ChattyHistory *self,
       type == CHATTY_MESSAGE_AUDIO ||
       type == CHATTY_MESSAGE_VIDEO ||
       type == CHATTY_MESSAGE_FILE) {
+    GList *files = NULL;
+
+    files = chatty_message_get_files (message);
     preview_id = add_file_info (self, chatty_message_get_preview (message));
-    file_id = add_file_info (self, chatty_message_get_file (message));
+    file_id = add_file_info (self, files ? files->data : NULL);
   }
 
   sqlite3_prepare_v2 (self->db,

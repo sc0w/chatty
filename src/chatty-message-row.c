@@ -162,8 +162,10 @@ message_row_update_message (ChattyMessageRow *self)
       type == CHATTY_MESSAGE_FILE) {
     ChattyFileInfo *file;
     const char *name = NULL;
+    GList *files = NULL;
 
-    file = chatty_message_get_file (self->message);
+    files = chatty_message_get_files (self->message);
+    file = g_list_nth_data (files, 0);
     if (file)
       name = file->file_name ? file->file_name : chatty_message_get_text (self->message);
     if (file && file->url) {

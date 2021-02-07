@@ -327,7 +327,7 @@ new_message (const char         *account,
       file->height = height;
     }
 
-    chatty_message_set_file (message->message, file);
+    chatty_message_set_files (message->message, g_list_append (NULL, file));
   }
 
   message->account = g_strdup (account);
@@ -388,8 +388,8 @@ compare_message (Message       *message,
   g_assert_cmpint (message->when, ==, chatty_message_get_time (chatty_message));
   g_assert_cmpint (direction, ==, chatty_message_get_msg_direction (chatty_message));
   g_assert_cmpint (type, ==, chatty_message_get_msg_type (chatty_message));
-  compare_file (chatty_message_get_file (chatty_message),
-                chatty_message_get_file (message->message));
+  compare_file (g_list_nth_data (chatty_message_get_files (chatty_message), 0),
+                g_list_nth_data (chatty_message_get_files (message->message), 0));
   compare_file (chatty_message_get_preview (chatty_message),
                 chatty_message_get_preview (message->message));
 }
