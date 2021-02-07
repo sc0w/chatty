@@ -38,6 +38,7 @@ struct _ChattyMessage
 
   ChattyFileInfo  *file;
   ChattyFileInfo  *preview;
+  GList           *files;
 
   ChattyMsgType    type;
   ChattyMsgStatus  status;
@@ -161,6 +162,38 @@ chatty_message_set_file (ChattyMessage  *self,
   g_return_if_fail (!self->file);
 
   self->file = file;
+}
+
+/**
+ * chatty_message_set_files:
+ * @self: A #ChattyMessage
+ *
+ * Get List of files
+ *
+ * Returns: (transfer none) (nullable): Get the list
+ * of files or %NULL if no file is set.
+ */
+GList *
+chatty_message_get_files (ChattyMessage *self)
+{
+  g_return_val_if_fail (CHATTY_IS_MESSAGE (self), NULL);
+
+  return self->files;
+}
+
+/**
+ * chatty_message_set_files:
+ * @self: A #ChattyMessage
+ * @files: (transfer full): A #GList of #ChattyFileInfo
+ */
+void
+chatty_message_set_files (ChattyMessage *self,
+                          GList         *files)
+{
+  g_return_if_fail (CHATTY_IS_MESSAGE (self));
+  g_return_if_fail (!self->files);
+
+  self->files = files;
 }
 
 ChattyFileInfo *

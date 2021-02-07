@@ -56,6 +56,10 @@ void                chatty_message_set_encrypted   (ChattyMessage      *self,
 ChattyFileInfo     *chatty_message_get_file        (ChattyMessage      *self);
 void                chatty_message_set_file        (ChattyMessage      *self,
                                                     ChattyFileInfo     *file);
+
+GList              *chatty_message_get_files       (ChattyMessage      *self);
+void                chatty_message_set_files       (ChattyMessage      *self,
+                                                    GList              *files);
 ChattyFileInfo     *chatty_message_get_preview     (ChattyMessage      *self);
 void                chatty_message_set_preview     (ChattyMessage      *self,
                                                     ChattyFileInfo     *info);
