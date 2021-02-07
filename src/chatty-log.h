@@ -18,7 +18,11 @@
 /* XXX: Should we use the semi-private g_log_structured_standard() API? */
 #define CHATTY_TRACE_MSG(fmt, ...)                              \
   g_log_structured (G_LOG_DOMAIN, CHATTY_LOG_LEVEL_TRACE,       \
-                    "MESSAGE", "  MSG: %s():%d: " fmt,          \
+                    "MESSAGE", "%s():%d: " fmt,                 \
+                    G_STRFUNC, __LINE__, ##__VA_ARGS__)
+#define CHATTY_DEBUG_MSG(fmt, ...)                              \
+  g_log_structured (G_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,            \
+                    "MESSAGE", "%s():%d: " fmt,                 \
                     G_STRFUNC, __LINE__, ##__VA_ARGS__)
 #define CHATTY_PROBE                                            \
   g_log_strucutured (G_LOG_DOMAIN, CHATTY_LOG_LEVEL_TRACE,      \
