@@ -166,6 +166,7 @@ chatty_mat_chat_update_name (ChattyMaChat *self)
                                                          "%s and %u others", count - 1),
                                             name_a, count - 1);
   g_signal_emit_by_name (self, "avatar-changed");
+  chatty_history_update_chat (self->history_db, CHATTY_CHAT (self));
 }
 
 static ChattyMaBuddy *
