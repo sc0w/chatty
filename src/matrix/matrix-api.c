@@ -77,6 +77,7 @@ struct _MatrixApi
   gboolean        sync_failed;
   gboolean        homeserver_verified;
   gboolean        login_success;
+  gboolean        room_list_loaded;
 
   guint           resync_id;
 };
@@ -567,6 +568,7 @@ handle_common_errors (MatrixApi *self,
       && self->password) {
     CHATTY_TRACE_MSG ("Re-logging in %s", self->username);
     self->login_success = FALSE;
+    self->room_list_loaded = FALSE;
     g_clear_pointer (&self->access_token, matrix_utils_free_buffer);
     matrix_enc_set_details (self->matrix_enc, NULL, NULL);
     matrix_start_sync (self);
@@ -993,6 +995,45 @@ matrix_upload_key (MatrixApi *self)
 }
 
 static void
+get_joined_rooms_cb (GObject      *obj,
+                     GAsyncResult *result,
+                     gpointer      user_data)
+{
+  MatrixApi *self;
+  g_autoptr(JsonObject) root = NULL;
+  GError *error = NULL;
+
+  g_assert (G_IS_TASK (result));
+
+  self = g_task_get_source_object (G_TASK (result));
+  g_assert (MATRIX_IS_API (self));
+
+  if (handle_common_errors (self, error))
+    return;
+
+  root = g_task_propagate_pointer (G_TASK (result), &error);
+  g_clear_error (&self->error);
+  self->error = error;
+
+  self->callback (self->cb_object, self, MATRIX_GET_JOINED_ROOMS, root, error);
+
+  if (!error) {
+    self->room_list_loaded = TRUE;
+    matrix_start_sync (self);
+  }
+}
+
+static void
+matrix_get_joined_rooms (MatrixApi *self)
+{
+  g_assert (MATRIX_IS_API (self));
+  g_assert (!self->room_list_loaded);
+
+  queue_data (self, NULL, 0, "/_matrix/client/r0/joined_rooms",
+              SOUP_METHOD_GET, NULL, get_joined_rooms_cb, NULL);
+}
+
+static void
 matrix_start_sync (MatrixApi *self)
 {
   g_assert (MATRIX_IS_API (self));
@@ -1019,6 +1060,8 @@ matrix_start_sync (MatrixApi *self)
     matrix_verify_homeserver (self);
   } else if (!self->access_token) {
     matrix_login (self);
+  } else if (!self->room_list_loaded) {
+    matrix_get_joined_rooms (self);
   } else {
     matrix_take_red_pill (self);
   }
