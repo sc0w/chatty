@@ -149,7 +149,9 @@ matrix_parse_room_data (ChattyMaAccount *self,
     joined_room_ids = json_object_get_members (joined_rooms);
 
     for (GList *room_id = joined_room_ids; room_id; room_id = room_id->next) {
-      chat = matrix_find_chat_with_id (self, room_id->data, NULL);
+      guint index = 0;
+
+      chat = matrix_find_chat_with_id (self, room_id->data, &index);
       room_data = matrix_utils_json_object_get_object (joined_rooms, room_id->data);
 
       CHATTY_TRACE_MSG ("joined room: %s, new: %d", room_id->data, !!chat);
@@ -166,6 +168,7 @@ matrix_parse_room_data (ChattyMaAccount *self,
         g_object_unref (chat);
       } else if (room_data) {
         g_object_set (chat, "json-data", room_data, NULL);
+        g_list_model_items_changed (G_LIST_MODEL (self->chat_list), index, 1, 1);
       }
     }
   }
