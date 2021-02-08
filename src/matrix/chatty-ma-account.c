@@ -314,6 +314,28 @@ handle_upload_key (ChattyMaAccount *self,
   }
 }
 
+static ChattyMaChat *
+ma_account_find_chat (ChattyMaAccount *self,
+                      const char      *room_id)
+{
+  GPtrArray *chats = self->db_chat_list;
+
+  g_assert (CHATTY_IS_MA_ACCOUNT (self));
+
+  if (!room_id || !*room_id || !chats)
+    return NULL;
+
+  for (guint i = 0; i < chats->len; i++) {
+    const char *chat_name;
+
+    chat_name = chatty_chat_get_chat_name (chats->pdata[i]);
+    if (g_strcmp0 (chat_name, room_id) == 0)
+      return g_object_ref (chats->pdata[i]);
+  }
+
+  return NULL;
+}
+
 static void
 handle_get_joined_rooms (ChattyMaAccount *self,
                          JsonObject      *object,
@@ -321,8 +343,6 @@ handle_get_joined_rooms (ChattyMaAccount *self,
 {
   JsonArray *array;
   guint length = 0;
-
-  CHATTY_ENTRY;
 
   g_assert (CHATTY_IS_MA_ACCOUNT (self));
 
@@ -336,14 +356,16 @@ handle_get_joined_rooms (ChattyMaAccount *self,
     const char *room_id;
 
     room_id = json_array_get_string_element (array, i);
-    chat = g_object_new (CHATTY_TYPE_MA_CHAT, "room-id", room_id, NULL);
+    chat = ma_account_find_chat (self, room_id);
+    if (!chat)
+      chat = g_object_new (CHATTY_TYPE_MA_CHAT, "room-id", room_id, NULL);
     chatty_ma_chat_set_matrix_db (chat, self->matrix_db);
     chatty_ma_chat_set_history_db (chat, self->history_db);
     chatty_ma_chat_set_data (chat, CHATTY_ACCOUNT (self), self->matrix_api, self->matrix_enc);
     g_list_store_append (self->chat_list, chat);
   }
 
-  CHATTY_EXIT;
+  g_clear_pointer (&self->db_chat_list, g_ptr_array_unref);
 }
 
 static void
@@ -361,22 +383,6 @@ handle_red_pill (ChattyMaAccount *self,
   if (self->status != CHATTY_CONNECTED) {
     self->status = CHATTY_CONNECTED;
     g_object_notify (G_OBJECT (self), "status");
-  }
-
-  /* Copy chat list loaded from db to main chat list */
-  if (self->db_chat_list) {
-    GPtrArray *chats = self->db_chat_list;
-
-    CHATTY_TRACE_MSG ("Adding %u chats loaded from db", chats->len);
-    for (guint i = 0; i < chats->len; i++) {
-      ChattyMaChat *chat = chats->pdata[i];
-      chatty_ma_chat_set_matrix_db (chat, self->matrix_db);
-      chatty_ma_chat_set_history_db (chat, self->history_db);
-      chatty_ma_chat_set_data (chat, CHATTY_ACCOUNT (self), self->matrix_api, self->matrix_enc);
-    }
-
-    g_list_store_splice (self->chat_list, 0, 0, chats->pdata, chats->len);
-    g_clear_pointer (&self->db_chat_list, g_ptr_array_unref);
   }
 
   object = matrix_utils_json_object_get_object (root, "to_device");
