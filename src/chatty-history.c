@@ -1926,7 +1926,7 @@ get_messages_before_time (ChattyHistory *self,
     else
       msg = (const char *)sqlite3_column_text (stmt, 2);
 
-    if (!chatty_chat_is_im (chat))
+    if (!chatty_chat_is_im (chat) || CHATTY_IS_MA_CHAT (chat))
       who = (const char *)sqlite3_column_text (stmt, 4);
 
     status = sqlite3_column_int (stmt, 24);
