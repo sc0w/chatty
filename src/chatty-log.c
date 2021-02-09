@@ -19,6 +19,36 @@ char *domain;
 static int verbosity;
 gboolean any_domain;
 
+static void
+log_str_append_log_domain (GString    *log_str,
+                           const char *log_domain,
+                           gboolean    color)
+{
+  static const char *colors[] = {
+    "\033[1;32m",
+    "\033[1;33m",
+    "\033[1;35m",
+    "\033[1;36m",
+    "\033[1;91m",
+    "\033[1;92m",
+    "\033[1;93m",
+    "\033[1;94m",
+    "\033[1;95m",
+    "\033[1;96m",
+  };
+  guint i;
+
+  g_assert (log_domain && *log_domain);
+
+  i = g_str_hash (log_domain) % G_N_ELEMENTS (colors);
+
+  if (color)
+    g_string_append (log_str, colors[i]);
+  g_string_append_printf (log_str, "%20s", log_domain);
+
+  if (color)
+    g_string_append (log_str, "\033[0m");
+}
 
 static const char *
 get_log_level_prefix (GLogLevelFlags log_level,
@@ -90,9 +120,10 @@ chatty_log_write (GLogLevelFlags   log_level,
                             (int)((now % G_USEC_PER_SEC) / 100));
   }
 
-  g_string_append_printf (log_str, "%20s[%5d]:", log_domain, getpid ());
-
   can_color = g_log_writer_supports_color (fileno (stream));
+  log_str_append_log_domain (log_str, log_domain, can_color);
+  g_string_append_printf (log_str, "[%5d]:", getpid ());
+
   g_string_append_printf (log_str, "%s: ", get_log_level_prefix (log_level, can_color));
   g_string_append (log_str, log_message);
 
