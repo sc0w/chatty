@@ -318,7 +318,7 @@ matrix_enc_init (MatrixEnc *self)
   olm_utility (self->utility);
 
   self->in_olm_sessions = g_hash_table_new_full (g_str_hash, g_direct_equal,
-                                                 free_olm_session, g_free);
+                                                 g_free, free_olm_session);
   self->out_olm_sessions = g_hash_table_new_full (g_str_hash, g_direct_equal,
                                                   free_olm_session, g_free);
   self->in_group_sessions = g_hash_table_new_full (g_str_hash, g_str_equal,
@@ -836,7 +836,7 @@ in_olm_matches (gpointer key,
   size_t match;
 
   body = g_strdup (user_data);
-  match = olm_matches_inbound_session (key, body, strlen (body));
+  match = olm_matches_inbound_session (value, body, strlen (body));
 
   if (match == olm_error ()) {
     g_warning ("Error matching inbound session: %s", olm_session_last_error (key));
@@ -956,7 +956,7 @@ matrix_enc_handle_room_encrypted (MatrixEnc  *self,
         CHATTY_EXIT;
       }
 
-      g_hash_table_insert (self->in_olm_sessions, session, g_strdup (sender_key));
+      g_hash_table_insert (self->in_olm_sessions, g_strdup (sender_key), session);
     }
 
     /* Remove old used keys */
