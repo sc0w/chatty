@@ -288,6 +288,8 @@ matrix_enc_finalize (GObject *object)
   g_free (self->utility);
 
   g_hash_table_unref (self->in_olm_sessions);
+  g_hash_table_unref (self->out_olm_sessions);
+  g_hash_table_unref (self->out_group_sessions);
   g_hash_table_unref (self->out_group_sessions);
   g_free (self->user_id);
   g_free (self->device_id);
@@ -896,7 +898,7 @@ matrix_enc_handle_room_encrypted (MatrixEnc  *self,
 {
   const char *algorithm, *sender, *sender_key;
   g_autofree char *plaintext = NULL;
-  char *body;
+  g_autofree char *body = NULL;
   size_t error;
   int type;
 
