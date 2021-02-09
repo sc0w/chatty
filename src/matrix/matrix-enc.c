@@ -956,13 +956,13 @@ matrix_enc_handle_room_encrypted (MatrixEnc  *self,
         CHATTY_EXIT;
       }
 
+      /* Remove old used keys */
+      error = olm_remove_one_time_keys (self->account, session);
+      if (error == olm_error ())
+        g_warning ("Error removing key: %s", olm_account_last_error (self->account));
+
       g_hash_table_insert (self->in_olm_sessions, g_strdup (sender_key), session);
     }
-
-    /* Remove old used keys */
-    error = olm_remove_one_time_keys (self->account, session);
-    if (error == olm_error ())
-      g_warning ("Error removing key: %s", olm_account_last_error (self->account));
 
     copy = g_strdup (body);
     length = olm_decrypt_max_plaintext_length (session, type, copy, strlen (copy));
