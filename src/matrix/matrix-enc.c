@@ -977,7 +977,6 @@ matrix_enc_handle_room_encrypted (MatrixEnc  *self,
     plaintext = g_malloc (length + 1);
     length = olm_decrypt (session, type, body, strlen (body), plaintext, length);
     if (length == olm_error ()) {
-      g_free (copy);
       g_warning ("Error decrypt session: %s", olm_session_last_error (session));
 
       CHATTY_EXIT;
