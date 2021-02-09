@@ -294,6 +294,9 @@ matrix_enc_finalize (GObject *object)
   g_free (self->user_id);
   g_free (self->device_id);
   matrix_utils_free_buffer (self->pickle_key);
+  matrix_utils_free_buffer (self->curve_key);
+  matrix_utils_free_buffer (self->ed_key);
+  g_clear_object (&self->matrix_db);
 
   G_OBJECT_CLASS (matrix_enc_parent_class)->finalize (object);
 }
