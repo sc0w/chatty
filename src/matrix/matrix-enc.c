@@ -875,7 +875,7 @@ handle_m_room_key (MatrixEnc  *self,
       g_warning ("Error creating group session from key: %s", olm_inbound_group_session_last_error (session));
 
     if (!error) {
-      char *pickle;
+      g_autofree char *pickle = NULL;
       int length;
 
       length = olm_pickle_inbound_group_session_length (session);
@@ -885,9 +885,11 @@ handle_m_room_key (MatrixEnc  *self,
                                         pickle, length);
       pickle[length] = '\0';
       CHATTY_TRACE_MSG ("saving session, room id: %s", room_id);
-      matrix_db_add_session_async (self->matrix_db, self->user_id, self->device_id,
-                                   room_id, session_id, sender_key, pickle,
-                                   SESSION_MEGOLM_V1_IN, NULL, NULL);
+      if (self->matrix_db)
+        matrix_db_add_session_async (self->matrix_db, self->user_id, self->device_id,
+                                     room_id, session_id, sender_key,
+                                     g_steal_pointer (&pickle),
+                                     SESSION_MEGOLM_V1_IN, NULL, NULL);
       g_hash_table_insert (self->in_group_sessions, g_strdup (session_id),
                            g_steal_pointer (&session));
 
@@ -1036,9 +1038,10 @@ matrix_enc_handle_join_room_encrypted (MatrixEnc  *self,
   if (!session) {
     g_autofree char *pickle = NULL;
 
-    pickle = matrix_db_lookup_session (self->matrix_db, self->user_id,
-                                       self->device_id, session_id,
-                                       sender_key, SESSION_MEGOLM_V1_IN);
+    if (self->matrix_db)
+      pickle = matrix_db_lookup_session (self->matrix_db, self->user_id,
+                                         self->device_id, session_id,
+                                         sender_key, SESSION_MEGOLM_V1_IN);
     if (pickle) {
       int err;
       session = g_malloc (olm_inbound_group_session_size ());
