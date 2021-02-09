@@ -884,7 +884,7 @@ handle_m_room_key (MatrixEnc  *self,
                                         strlen (self->pickle_key),
                                         pickle, length);
       pickle[length] = '\0';
-      g_warning ("saving session");
+      CHATTY_TRACE_MSG ("saving session, room id: %s", room_id);
       matrix_db_add_session_async (self->matrix_db, self->user_id, self->device_id,
                                    room_id, session_id, sender_key, pickle,
                                    SESSION_MEGOLM_V1_IN, NULL, NULL);
