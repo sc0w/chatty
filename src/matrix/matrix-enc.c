@@ -307,7 +307,7 @@ matrix_enc_class_init (MatrixEncClass *klass)
 {
   GObjectClass *object_class  = G_OBJECT_CLASS (klass);
 
-  object_class->dispose = matrix_enc_finalize;
+  object_class->finalize = matrix_enc_finalize;
 }
 
 
