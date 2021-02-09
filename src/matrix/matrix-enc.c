@@ -289,7 +289,7 @@ matrix_enc_finalize (GObject *object)
 
   g_hash_table_unref (self->in_olm_sessions);
   g_hash_table_unref (self->out_olm_sessions);
-  g_hash_table_unref (self->out_group_sessions);
+  g_hash_table_unref (self->in_group_sessions);
   g_hash_table_unref (self->out_group_sessions);
   g_free (self->user_id);
   g_free (self->device_id);
