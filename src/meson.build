@@ -80,8 +80,6 @@ purple = dependency('purple')
 purple_plugdir = purple.get_pkgconfig_variable('plugindir')
 jabber = meson.get_compiler('c').find_library('jabber', dirs: purple_plugdir)
 jabber_incdir = include_directories('xeps/prpl/jabber')
-# TODO: Use has_headers: 'olm/olm.h' when we bump meson requirement
-libolm_dep = cc.find_library('olm', required: true)
 
 chatty_deps = [
   dependency('gio-2.0', version: '>= 2.50'),

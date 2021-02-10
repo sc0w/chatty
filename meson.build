@@ -17,6 +17,16 @@ config_h.set_quoted('GETTEXT_PACKAGE', 'purism-chatty')
 config_h.set_quoted('LOCALEDIR', join_paths(get_option('prefix'), get_option('localedir')))
 config_h.set_quoted('PACKAGE_NAME', meson.project_name())
 config_h.set_quoted('PACKAGE_VERSION', meson.project_version())
+
+# TODO: Use has_headers: 'olm/olm.h' when we bump meson requirement
+libolm_dep = cc.find_library('olm', required: true)
+
+if (cc.has_function('olm_pk_key_from_private', dependencies: libolm_dep))
+  config_h.set('HAVE_OLM3', true)
+else
+  config_h.set('HAVE_OLM2', true)
+endif
+
 configure_file(
   output: 'chatty-config.h',
   configuration: config_h,
