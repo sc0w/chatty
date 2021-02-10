@@ -1096,6 +1096,10 @@ matrix_api_finalize (GObject *object)
 {
   MatrixApi *self = (MatrixApi *)object;
 
+  if (self->cancellable)
+    g_cancellable_cancel (self->cancellable);
+  g_clear_object (&self->cancellable);
+
   g_clear_handle_id (&self->resync_id, g_source_remove);
   soup_session_abort (self->soup_session);
   g_object_unref (self->soup_session);

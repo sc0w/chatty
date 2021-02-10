@@ -55,6 +55,8 @@ test_matrix_api_new (void)
   g_assert_cmpstr (matrix_api_get_homeserver (api), ==, "http://example.com");
   matrix_api_set_homeserver (api, "https://talk.example.net:80");
   g_assert_cmpstr (matrix_api_get_homeserver (api), ==, "https://talk.example.net:80");
+
+  g_object_unref (api);
 }
 
 int
