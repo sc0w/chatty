@@ -1087,13 +1087,13 @@ chatty_window_set_uri (ChattyWindow *self,
                        const char   *uri)
 {
   g_autoptr(ChattyChat) chat = NULL;
+  g_autofree char *who = NULL;
   ChattyChat    *item;
   ChattyEds     *chatty_eds;
   ChattyContact *contact;
   PurpleAccount *account;
   ChattyPpBuddy *pp_buddy;
   PurpleBuddy   *buddy;
-  char          *who = NULL;
   const char    *alias;
 
   account = purple_accounts_find ("SMS", "prpl-mm-sms");
@@ -1150,8 +1150,6 @@ chatty_window_set_uri (ChattyWindow *self,
 
   chatty_window_change_view (self, CHATTY_VIEW_MESSAGE_LIST);
   g_signal_emit_by_name (item, "changed");
-
-  g_free (who);
 }
 
 ChattyChat *
