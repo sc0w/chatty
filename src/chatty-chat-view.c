@@ -44,6 +44,7 @@ struct _ChattyChatView
   GtkWidget  *empty_label0;
   GtkWidget  *empty_label1;
   GtkWidget  *empty_label2;
+  GtkWidget  *scroll_down_button;
   GtkTextBuffer *message_input_buffer;
   GtkAdjustment *vadjustment;
 
@@ -326,6 +327,15 @@ chatty_update_typing_status (ChattyChatView *self)
 
   empty = !text || !*text || *text == '/';
   chatty_chat_set_typing (self->chat, !empty);
+}
+
+static void
+chat_view_scroll_down_clicked_cb (ChattyChatView *self)
+{
+  g_assert (CHATTY_IS_CHAT_VIEW (self));
+
+  gtk_adjustment_set_value (self->vadjustment,
+                            gtk_adjustment_get_upper (self->vadjustment));
 }
 
 static void
@@ -736,6 +746,7 @@ chat_view_message_input_changed_cb (ChattyChatView *self)
     chatty_check_for_emoticon (self);
 }
 
+static void chat_view_adjustment_value_changed_cb (ChattyChatView *self);
 static void
 list_page_size_changed_cb (ChattyChatView *self)
 {
@@ -755,6 +766,20 @@ list_page_size_changed_cb (ChattyChatView *self)
     gtk_adjustment_set_value (self->vadjustment, upper);
 
   self->first_scroll_to_bottom = TRUE;
+  chat_view_adjustment_value_changed_cb (self);
+}
+
+static void
+chat_view_adjustment_value_changed_cb (ChattyChatView *self)
+{
+  gdouble value, upper, page_size;
+
+  upper = gtk_adjustment_get_upper (self->vadjustment);
+  value = gtk_adjustment_get_value (self->vadjustment);
+  page_size = gtk_adjustment_get_page_size (self->vadjustment);
+
+  gtk_widget_set_visible (self->scroll_down_button,
+                          (upper - value) > page_size + 1.0);
 }
 
 static void
@@ -785,6 +810,8 @@ chat_view_adjustment_changed_cb (GtkAdjustment  *adjustment,
     gtk_widget_set_visible (vscroll, FALSE);
     gtk_widget_show (self->encrypt_icon);
   }
+
+  chat_view_adjustment_value_changed_cb (self);
 }
 
 static void
@@ -874,6 +901,7 @@ chatty_chat_view_class_init (ChattyChatViewClass *klass)
                                                "/sm/puri/Chatty/"
                                                "ui/chatty-chat-view.ui");
 
+  gtk_widget_class_bind_template_child (widget_class, ChattyChatView, scroll_down_button);
   gtk_widget_class_bind_template_child (widget_class, ChattyChatView, message_list);
   gtk_widget_class_bind_template_child (widget_class, ChattyChatView, loading_spinner);
   gtk_widget_class_bind_template_child (widget_class, ChattyChatView, typing_revealer);
@@ -891,6 +919,7 @@ chatty_chat_view_class_init (ChattyChatViewClass *klass)
   gtk_widget_class_bind_template_child (widget_class, ChattyChatView, message_input_buffer);
   gtk_widget_class_bind_template_child (widget_class, ChattyChatView, vadjustment);
 
+  gtk_widget_class_bind_template_callback (widget_class, chat_view_scroll_down_clicked_cb);
   gtk_widget_class_bind_template_callback (widget_class, chat_view_edge_overshot_cb);
   gtk_widget_class_bind_template_callback (widget_class, chat_view_typing_indicator_draw_cb);
   gtk_widget_class_bind_template_callback (widget_class, chat_view_input_focus_in_cb);
@@ -900,6 +929,7 @@ chatty_chat_view_class_init (ChattyChatViewClass *klass)
   gtk_widget_class_bind_template_callback (widget_class, chat_view_input_key_pressed_cb);
   gtk_widget_class_bind_template_callback (widget_class, chat_view_message_input_changed_cb);
   gtk_widget_class_bind_template_callback (widget_class, list_page_size_changed_cb);
+  gtk_widget_class_bind_template_callback (widget_class, chat_view_adjustment_value_changed_cb);
 }
 
 static void
@@ -984,6 +1014,7 @@ chatty_chat_view_set_chat (ChattyChatView *self,
   chat_encrypt_changed_cb (self);
   chat_buddy_typing_changed_cb (self);
   chatty_chat_view_update (self);
+  chat_view_adjustment_value_changed_cb (self);
 }
 
 ChattyChat *
