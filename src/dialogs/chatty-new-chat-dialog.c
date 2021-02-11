@@ -435,6 +435,7 @@ chatty_new_chat_add_account_to_list (ChattyNewChatDialog *self,
   }
 
   row = HDY_ACTION_ROW (hdy_action_row_new ());
+  gtk_list_box_row_set_activatable (GTK_LIST_BOX_ROW (row), TRUE);
   g_object_set_data (G_OBJECT (row), "row-account", (gpointer)account);
 
   prefix_radio_button = gtk_radio_button_new_from_widget (GTK_RADIO_BUTTON (self->dummy_prefix_radio));
