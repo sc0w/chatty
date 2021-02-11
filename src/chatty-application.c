@@ -52,7 +52,6 @@ struct _ChattyApplication
 
   GtkWidget      *main_window;
   ChattySettings *settings;
-  GtkCssProvider *css_provider;
   ChattyManager  *manager;
 
   char *uri;
@@ -241,7 +240,6 @@ chatty_application_finalize (GObject *object)
   ChattyApplication *self = (ChattyApplication *)object;
 
   g_clear_handle_id (&self->open_uri_id, g_source_remove);
-  g_clear_object (&self->css_provider);
   g_clear_object (&self->manager);
 
   G_OBJECT_CLASS (chatty_application_parent_class)->finalize (object);
@@ -309,6 +307,7 @@ static void
 chatty_application_startup (GApplication *application)
 {
   ChattyApplication *self = (ChattyApplication *)application;
+  g_autoptr(GtkCssProvider) provider = NULL;
   g_autofree char *db_path = NULL;
   g_autofree char *dir = NULL;
   static const GActionEntry app_entries[] = {
@@ -336,16 +335,16 @@ chatty_application_startup (GApplication *application)
 
   self->settings = chatty_settings_get_default ();
 
-  self->css_provider = gtk_css_provider_new ();
-  gtk_css_provider_load_from_resource (self->css_provider,
+  provider = gtk_css_provider_new ();
+  gtk_css_provider_load_from_resource (provider,
                                        "/sm/puri/Chatty/css/style.css");
+  gtk_style_context_add_provider_for_screen (gdk_screen_get_default(),
+                                             GTK_STYLE_PROVIDER (provider),
+                                             GTK_STYLE_PROVIDER_PRIORITY_USER);
 
   g_action_map_add_action_entries (G_ACTION_MAP (self), app_entries,
                                    G_N_ELEMENTS (app_entries), self);
 
-  gtk_style_context_add_provider_for_screen (gdk_screen_get_default(),
-                                             GTK_STYLE_PROVIDER (self->css_provider),
-                                             GTK_STYLE_PROVIDER_PRIORITY_USER);
   g_signal_connect_object (self->manager, "authorize-buddy",
                            G_CALLBACK (application_authorize_buddy_cb), self,
                            G_CONNECT_SWAPPED);
