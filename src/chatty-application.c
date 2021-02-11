@@ -282,11 +282,11 @@ chatty_application_command_line (GApplication            *application,
     g_debug ("Enable daemon mode");
   }
 
-  if (g_variant_dict_contains (options, "nologin")) {
+  if (g_variant_dict_contains (options, "nologin"))
     chatty_manager_disable_auto_login (chatty_manager_get_default (), TRUE);
-  } else if (g_variant_dict_contains (options, "debug")) {
+
+  if (g_variant_dict_contains (options, "debug"))
     self->enable_debug = TRUE;
-  }
 
   purple_debug_set_enabled (self->enable_debug);
   purple_debug_set_verbose (chatty_log_get_verbosity () > 0);
