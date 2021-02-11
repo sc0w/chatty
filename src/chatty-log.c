@@ -207,6 +207,12 @@ chatty_log_handler (GLogLevelFlags   log_level,
   return G_LOG_WRITER_HANDLED;
 }
 
+static void
+chatty_log_finalize (void)
+{
+  g_clear_pointer (&domain, g_free);
+}
+
 void
 chatty_log_init (void)
 {
@@ -221,13 +227,8 @@ chatty_log_init (void)
 
       g_log_set_writer_func (chatty_log_handler, NULL, NULL);
       g_once_init_leave (&initialized, 1);
+      atexit (chatty_log_finalize);
     }
-}
-
-void
-chatty_log_finalize (void)
-{
-  g_clear_pointer (&domain, g_free);
 }
 
 void

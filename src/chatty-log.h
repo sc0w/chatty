@@ -59,6 +59,5 @@
   } G_STMT_END
 
 void chatty_log_init               (void);
-void chatty_log_finalize           (void);
 void chatty_log_increase_verbosity (void);
 int  chatty_log_get_verbosity      (void);

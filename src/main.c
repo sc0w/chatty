@@ -18,7 +18,6 @@ main (int   argc,
       char *argv[])
 {
   g_autoptr(ChattyApplication) application = NULL;
-  int status;
 
   chatty_log_init ();
   textdomain (GETTEXT_PACKAGE);
@@ -28,8 +27,5 @@ main (int   argc,
   g_set_prgname (CHATTY_APP_ID);
   application = chatty_application_new ();
 
-  status = g_application_run (G_APPLICATION (application), argc, argv);
-  chatty_log_finalize ();
-
-  return status;
+  return g_application_run (G_APPLICATION (application), argc, argv);
 }
