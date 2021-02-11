@@ -419,11 +419,6 @@ chatty_new_chat_add_account_to_list (ChattyNewChatDialog *self,
 
   g_return_if_fail (CHATTY_IS_NEW_CHAT_DIALOG (self));
 
-  row = HDY_ACTION_ROW (hdy_action_row_new ());
-  g_object_set_data (G_OBJECT (row),
-                     "row-account",
-                     (gpointer)account);
-
   protocol = chatty_item_get_protocols (CHATTY_ITEM (account));
 
   // TODO list supported protocols here
@@ -438,6 +433,9 @@ chatty_new_chat_add_account_to_list (ChattyNewChatDialog *self,
   if (chatty_account_get_status (CHATTY_ACCOUNT (account)) == CHATTY_DISCONNECTED) {
     return;
   }
+
+  row = HDY_ACTION_ROW (hdy_action_row_new ());
+  g_object_set_data (G_OBJECT (row), "row-account", (gpointer)account);
 
   prefix_radio_button = gtk_radio_button_new_from_widget (GTK_RADIO_BUTTON (self->dummy_prefix_radio));
   gtk_widget_show (GTK_WIDGET (prefix_radio_button));
