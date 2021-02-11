@@ -62,7 +62,7 @@ struct _ChattyNewChatDialog
   GtkFilter *filter;
   char      *search_str;
 
-  ChattyPpAccount *selected_account;
+  ChattyAccount   *selected_account;
   ChattyManager   *manager;
   ChattyProtocol   active_protocols;
 
@@ -309,12 +309,12 @@ add_contact_button_clicked_cb (ChattyNewChatDialog *self)
   if (!gtk_widget_get_sensitive (self->add_contact_button))
     return;
 
-  account = chatty_pp_account_get_account (self->selected_account);
+  account = chatty_pp_account_get_account (CHATTY_PP_ACCOUNT (self->selected_account));
 
   who = g_strdup (gtk_entry_get_text (GTK_ENTRY (self->contact_name_entry)));
   alias = gtk_entry_get_text (GTK_ENTRY (self->contact_alias_entry));
 
-  chatty_pp_account_add_buddy (self->selected_account, who, alias);
+  chatty_pp_account_add_buddy (CHATTY_PP_ACCOUNT (self->selected_account), who, alias);
   chatty_conv_im_with_buddy (account, g_strdup (who));
 
   gtk_widget_hide (GTK_WIDGET (self));
@@ -344,7 +344,7 @@ account_list_row_activated_cb (ChattyNewChatDialog *self,
                                GtkListBoxRow       *row,
                                GtkListBox          *box)
 {
-  ChattyPpAccount *account;
+  ChattyAccount *account;
   GtkWidget       *prefix_radio;
 
   g_assert (CHATTY_IS_NEW_CHAT_DIALOG (self));
@@ -377,7 +377,7 @@ chatty_new_chat_name_check (ChattyNewChatDialog *self,
 
   name = gtk_entry_get_text (entry);
 
-  account = chatty_pp_account_get_account (self->selected_account);
+  account = chatty_pp_account_get_account (CHATTY_PP_ACCOUNT (self->selected_account));
 
   if ((*name != '\0') && account) {
     buddy = purple_find_buddy (account, name);
@@ -411,7 +411,7 @@ chatty_new_chat_set_edit_mode (ChattyNewChatDialog *self,
 
 static void
 chatty_new_chat_add_account_to_list (ChattyNewChatDialog *self,
-                                     ChattyPpAccount     *account)
+                                     ChattyAccount     *account)
 {
   HdyActionRow   *row;
   GtkWidget      *prefix_radio_button;
@@ -430,7 +430,7 @@ chatty_new_chat_add_account_to_list (ChattyNewChatDialog *self,
                    CHATTY_PROTOCOL_THREEPL))
     return;
 
-  if (chatty_account_get_status (CHATTY_ACCOUNT (account)) == CHATTY_DISCONNECTED) {
+  if (chatty_account_get_status (account) == CHATTY_DISCONNECTED) {
     return;
   }
 
@@ -448,7 +448,7 @@ chatty_new_chat_add_account_to_list (ChattyNewChatDialog *self,
                      (gpointer)prefix_radio_button);
 
   hdy_action_row_add_prefix (row, GTK_WIDGET (prefix_radio_button ));
-  hdy_preferences_row_set_title (HDY_PREFERENCES_ROW (row), chatty_account_get_username (CHATTY_ACCOUNT (account)));
+  hdy_preferences_row_set_title (HDY_PREFERENCES_ROW (row), chatty_account_get_username (account));
 
   gtk_container_add (GTK_CONTAINER (self->accounts_list), GTK_WIDGET (row));
 
@@ -490,7 +490,7 @@ chatty_new_chat_populate_account_list (ChattyNewChatDialog *self)
   n_items = g_list_model_get_n_items (model);
 
   for (guint i = 0; i < n_items; i++) {
-    g_autoptr(ChattyPpAccount) account = NULL;
+    g_autoptr(ChattyAccount) account = NULL;
 
     account = g_list_model_get_item (model, i);
 
