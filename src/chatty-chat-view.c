@@ -477,7 +477,7 @@ static gboolean
 chatty_conv_check_for_command (ChattyChatView *self)
 {
   PurpleConversation *conv;
-  gchar              *cmd;
+  g_autofree char *cmd = NULL;
   gboolean            retval = FALSE;
   GtkTextIter         start, end;
   PurpleMessageFlags  flags = 0;
@@ -490,8 +490,9 @@ chatty_conv_check_for_command (ChattyChatView *self)
   cmd = gtk_text_buffer_get_text (self->message_input_buffer, &start, &end, FALSE);
 
   if (cmd && *cmd == '/') {
+    g_autofree char *error = NULL;
     PurpleCmdStatus status;
-    gchar *error, *cmdline;
+    char *cmdline;
 
     cmdline = cmd + strlen ("/");
 
@@ -501,8 +502,6 @@ chatty_conv_check_for_command (ChattyChatView *self)
                                  "Nothing happens",
                                  flags,
                                  time(NULL));
-
-      g_free (cmd);
       return TRUE;
     }
 
@@ -563,7 +562,6 @@ chatty_conv_check_for_command (ChattyChatView *self)
                                  error ? error : "The command failed.",
                                  flags,
                                  time(NULL));
-      g_free(error);
       retval = TRUE;
       break;
     case PURPLE_CMD_STATUS_WRONG_TYPE:
@@ -594,7 +592,6 @@ chatty_conv_check_for_command (ChattyChatView *self)
     }
   }
 
-  g_free (cmd);
   return retval;
 }
 
@@ -631,8 +628,8 @@ chat_view_send_message_button_clicked_cb (ChattyChatView *self)
   PurpleConversation  *conv;
   ChattyAccount *account;
   g_autoptr(ChattyMessage) msg = NULL;
+  g_autofree char *message = NULL;
   GtkTextIter    start, end;
-  gchar         *message = NULL;
   gchar         *sms_id_str;
   guint          sms_id;
 
@@ -699,8 +696,6 @@ chat_view_send_message_button_clicked_cb (ChattyChatView *self)
   }
 
   gtk_text_buffer_delete (self->message_input_buffer, &start, &end);
-
-  g_free (message);
 }
 
 static gboolean
