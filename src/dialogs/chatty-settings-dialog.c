@@ -114,8 +114,8 @@ get_fp_list_own_cb (int         err,
                     GHashTable *id_fp_table,
                     gpointer    user_data)
 {
-  GList       *key_list = NULL;
-  GList       *filtered_list = NULL;
+  g_autoptr(GList) key_list = NULL;
+  g_autoptr(GList) filtered_list = NULL;
   const GList *curr_p = NULL;
   const char  *fp = NULL;
   GtkWidget   *row;
@@ -167,9 +167,6 @@ get_fp_list_own_cb (int         err,
       gtk_widget_hide (GTK_WIDGET(self->fingerprint_device_list));
     }
   }
-
-  g_list_free (key_list);
-  g_list_free (filtered_list);
 }
 
 
