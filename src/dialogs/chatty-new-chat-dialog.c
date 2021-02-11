@@ -20,6 +20,7 @@
 #include "users/chatty-contact.h"
 #include "contrib/gtk.h"
 #include "users/chatty-pp-account.h"
+#include "matrix/chatty-ma-account.h"
 #include "chatty-list-row.h"
 #include "chatty-dbus.h"
 #include "chatty-utils.h"
@@ -433,6 +434,10 @@ chatty_new_chat_add_account_to_list (ChattyNewChatDialog *self,
   if (chatty_account_get_status (account) == CHATTY_DISCONNECTED) {
     return;
   }
+
+  /* We don't handle native matrix accounts here  */
+  if (CHATTY_IS_MA_ACCOUNT (account))
+    return;
 
   row = HDY_ACTION_ROW (hdy_action_row_new ());
   gtk_list_box_row_set_activatable (GTK_LIST_BOX_ROW (row), TRUE);
