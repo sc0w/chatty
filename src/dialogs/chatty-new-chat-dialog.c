@@ -303,7 +303,6 @@ add_contact_button_clicked_cb (ChattyNewChatDialog *self)
   PurpleAccount     *account;
   char              *who;
   const char        *alias;
-  g_autoptr(GError)  err = NULL;
 
   g_assert (CHATTY_IS_NEW_CHAT_DIALOG (self));
 

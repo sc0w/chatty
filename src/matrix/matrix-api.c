@@ -1773,7 +1773,6 @@ api_send_message_encrypted (MatrixApi     *self,
                             JsonObject    *content,
                             GTask         *task)
 {
-  g_autofree char *encrypted = NULL;
   g_autofree char *text = NULL;
   g_autofree char *uri = NULL;
   JsonObject *root;

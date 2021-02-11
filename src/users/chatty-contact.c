@@ -127,7 +127,6 @@ static GdkPixbuf *
 chatty_contact_get_avatar (ChattyItem *item)
 {
   ChattyContact *self = (ChattyContact *)item;
-  g_autoptr(GError) error = NULL;
   EContactPhoto *photo;
 
   g_assert (CHATTY_IS_CONTACT (self));

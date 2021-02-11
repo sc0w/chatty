@@ -123,7 +123,6 @@ sort_message (gconstpointer a,
 static void
 chatty_mat_chat_update_name (ChattyMaChat *self)
 {
-  g_autoptr(ChattyMaBuddy) buddy_b = NULL;
   const char *name_a = NULL, *name_b = NULL;
   guint n_items, count;
 
@@ -462,7 +461,6 @@ matrix_add_message_from_data (ChattyMaChat  *self,
                               gboolean       encrypted)
 {
   g_autoptr(ChattyMessage) message = NULL;
-  g_autofree char *value = NULL;
   JsonObject *content;
   const char *body, *type;
   ChattyMsgDirection direction = CHATTY_DIRECTION_IN;
@@ -759,7 +757,6 @@ claim_key_cb (GObject      *obj,
   g_autoptr(JsonObject) root = NULL;
   g_autoptr(GList) members = NULL;
   g_autoptr(GError) error = NULL;
-  g_autofree char *room_key = NULL;
   JsonObject *object;
 
   CHATTY_ENTRY;

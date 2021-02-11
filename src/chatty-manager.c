@@ -731,8 +731,6 @@ chatty_conv_write_conversation (PurpleConversation *conv,
                                    mtime,
                                    conv,
                                    NULL};
-  g_autoptr(GError)         err = NULL;
-  g_autoptr(LfbEvent)       event = NULL;
   ChattyProtocol            protocol;
   ChattyMsgType             msg_type;
 
@@ -775,7 +773,6 @@ chatty_conv_write_conversation (PurpleConversation *conv,
 
     if (protocol == CHATTY_PROTOCOL_XMPP &&
         !g_str_has_prefix (pcm.who, conv->name)) {
-      g_autofree char *temp = pcm.who;
       pcm.who = chatty_utils_jabber_id_strip (pcm.who);
     }
   }

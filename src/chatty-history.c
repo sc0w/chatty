@@ -1728,7 +1728,6 @@ history_open_db (ChattyHistory *self,
                  GTask         *task)
 {
   const char *dir, *file_name;
-  g_autofree char *db_path = NULL;
   sqlite3 *db;
   int status;
   gboolean db_exists;

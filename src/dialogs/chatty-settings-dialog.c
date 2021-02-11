@@ -315,8 +315,6 @@ chatty_settings_save_matrix (ChattySettingsDialog *self,
                              const char           *user_id,
                              const char           *password)
 {
-  g_autoptr(GCancellable) cancellable = NULL;
-
   g_assert (CHATTY_IS_SETTINGS_DIALOG (self));
   g_return_if_fail (user_id && *user_id);
   g_return_if_fail (password && *password);

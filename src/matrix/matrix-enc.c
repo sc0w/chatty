@@ -1091,7 +1091,6 @@ matrix_enc_encrypt_for_chat (MatrixEnc  *self,
   OlmOutboundGroupSession *session;
   g_autofree char *encrypted = NULL;
   g_autofree char *session_id = NULL;
-  g_autofree char *text = NULL;
   JsonObject *root;
   size_t message_len, length;
 
