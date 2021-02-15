@@ -187,7 +187,7 @@ chatty_window_update_sidebar_view (ChattyWindow *self)
 
   g_assert (CHATTY_IS_WINDOW (self));
 
-  model = chatty_manager_get_chat_list (self->manager);
+  model = G_LIST_MODEL (self->filter_model);
   has_child = g_list_model_get_n_items (model) > 0;
 
   if (has_child)
@@ -213,7 +213,7 @@ window_chat_changed_cb (ChattyWindow *self)
 
   g_assert (CHATTY_IS_WINDOW (self));
 
-  model = chatty_manager_get_chat_list (self->manager);
+  model = G_LIST_MODEL (self->filter_model);
   has_child = g_list_model_get_n_items (model) > 0;
 
   gtk_widget_set_sensitive (self->header_sub_menu_button, !!self->selected_item);
