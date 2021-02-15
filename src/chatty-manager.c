@@ -848,7 +848,7 @@ chatty_conv_write_conversation (PurpleConversation *conv,
       chatty_history_add_message (self->history, chat, chat_message);
 
     chatty_chat_set_unread_count (chat, chatty_chat_get_unread_count (chat) + 1);
-    gtk_sorter_changed (self->chat_sorter, GTK_SORTER_ORDER_TOTAL);
+    gtk_sorter_changed (self->chat_sorter, GTK_SORTER_CHANGE_DIFFERENT);
   }
 
   if (chat) {
@@ -2510,7 +2510,7 @@ chatty_manager_add_chat (ChattyManager *self,
       chatty_chat_set_data (chat, NULL, self->history);
   }
 
-  gtk_sorter_changed (self->chat_sorter, GTK_SORTER_ORDER_TOTAL);
+  gtk_sorter_changed (self->chat_sorter, GTK_SORTER_CHANGE_DIFFERENT);
 
   return item ? item : chat;
 }
