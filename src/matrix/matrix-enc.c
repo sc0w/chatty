@@ -317,9 +317,9 @@ matrix_enc_init (MatrixEnc *self)
   self->utility = g_malloc (olm_utility_size ());
   olm_utility (self->utility);
 
-  self->in_olm_sessions = g_hash_table_new_full (g_str_hash, g_direct_equal,
+  self->in_olm_sessions = g_hash_table_new_full (g_str_hash, g_str_equal,
                                                  g_free, free_olm_session);
-  self->out_olm_sessions = g_hash_table_new_full (g_str_hash, g_direct_equal,
+  self->out_olm_sessions = g_hash_table_new_full (g_str_hash, g_str_equal,
                                                   free_olm_session, g_free);
   self->in_group_sessions = g_hash_table_new_full (g_str_hash, g_str_equal,
                                                    g_free, free_in_group_session);
@@ -904,10 +904,10 @@ matrix_enc_handle_room_encrypted (MatrixEnc  *self,
   const char *algorithm, *sender, *sender_key;
   g_autofree char *plaintext = NULL;
   g_autofree char *body = NULL;
-  size_t error;
+  g_autofree char *copy = NULL;
+  OlmSession *session;
+  size_t error, length;
   int type;
-
-  CHATTY_ENTRY;
 
   g_return_if_fail (MATRIX_IS_ENC (self));
   g_return_if_fail (object);
@@ -931,29 +931,26 @@ matrix_enc_handle_room_encrypted (MatrixEnc  *self,
   type = matrix_utils_json_object_get_int (object, "type");
 
   if (!body)
-    CHATTY_EXIT;
+    return;
 
   if (type == OLM_MESSAGE_TYPE_PRE_KEY) {
-    OlmSession *session;
-    char *copy;
-    size_t length;
-
     session = g_hash_table_find (self->in_olm_sessions, in_olm_matches, body);
     CHATTY_TRACE_MSG ("message with pre key received, session exits: %d", !!session);
 
     if (!session) {
+      g_autofree char *body_copy = NULL;
       session = g_malloc (olm_session_size ());
       olm_session (session);
 
-      copy = g_strdup (body);
+      body_copy = g_strdup (body);
       error = olm_create_inbound_session_from (session, self->account,
                                                sender_key, strlen (sender_key),
-                                               copy, strlen (copy));
-      g_free (copy);
+                                               body_copy, strlen (body_copy));
       if (error == olm_error ()) {
         g_warning ("Error creating session: %s", olm_session_last_error (session));
+        free_olm_session (session);
 
-        CHATTY_EXIT;
+        return;
       }
 
       /* Remove old used keys */
@@ -963,30 +960,38 @@ matrix_enc_handle_room_encrypted (MatrixEnc  *self,
 
       g_hash_table_insert (self->in_olm_sessions, g_strdup (sender_key), session);
     }
-
-    copy = g_strdup (body);
-    length = olm_decrypt_max_plaintext_length (session, type, copy, strlen (copy));
-    g_free (copy);
-
-    if (length == olm_error ()) {
-      g_warning ("Error getting max length: %s", olm_session_last_error (session));
-
-      CHATTY_EXIT;
-    }
-
-    plaintext = g_malloc (length + 1);
-    length = olm_decrypt (session, type, body, strlen (body), plaintext, length);
-    if (length == olm_error ()) {
-      g_warning ("Error decrypt session: %s", olm_session_last_error (session));
-
-      CHATTY_EXIT;
-    }
-
-    plaintext[length] = '\0';
   } else {
     CHATTY_TRACE_MSG ("normal message received ");
+
+    session = g_hash_table_lookup (self->in_olm_sessions, sender_key);
+
+    if (!session)
+      session = g_hash_table_lookup (self->out_olm_sessions, sender_key);
+
+    if (!session) {
+      g_warning ("Couldn't find session for normal message");
+      return;
+    }
   }
 
+  copy = g_strdup (body);
+  length = olm_decrypt_max_plaintext_length (session, type, copy, strlen (copy));
+
+  if (length == olm_error ()) {
+    g_warning ("Error getting max length: %s", olm_session_last_error (session));
+
+    return;
+  }
+
+  plaintext = g_malloc (length + 1);
+  length = olm_decrypt (session, type, body, strlen (body), plaintext, length);
+  if (length == olm_error ()) {
+    g_warning ("Error decrypt session: %s", olm_session_last_error (session));
+
+    return;
+  }
+
+  plaintext[length] = '\0';
   if (plaintext) {
     g_autoptr(JsonObject) content = NULL;
     const char *message_type;
@@ -998,14 +1003,12 @@ matrix_enc_handle_room_encrypted (MatrixEnc  *self,
 
     if (g_strcmp0 (sender, matrix_utils_json_object_get_string (content, "sender")) != 0) {
       g_warning ("Sender mismatch in encrypted content");
-      CHATTY_EXIT;
+      return;
     }
 
     if (g_strcmp0 (message_type, "m.room_key") == 0)
       handle_m_room_key (self, content, sender_key);
   }
-
-  CHATTY_EXIT;
 }
 
 char *
@@ -1202,7 +1205,7 @@ matrix_enc_create_out_group_keys (MatrixEnc  *self,
     json_object_set_object_member (root, chatty_ma_buddy_get_id (buddy), user);
 
     for (GList *node = devices; node; node = node->next) {
-      g_autofree OlmSession *olm_session = NULL;
+      OlmSession *olm_session = NULL;
       g_autofree char *one_time_key = NULL;
       JsonObject *content;
 
@@ -1214,6 +1217,8 @@ matrix_enc_create_out_group_keys (MatrixEnc  *self,
 
       if (!one_time_key || !curve_key || !olm_session)
         continue;
+
+      g_hash_table_insert (self->out_olm_sessions, g_strdup (curve_key), olm_session);
 
       /* Create per device object */
       child = json_object_new ();
