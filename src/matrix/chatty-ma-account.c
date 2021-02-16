@@ -11,6 +11,7 @@
 
 #define G_LOG_DOMAIN "chatty-ma-account"
 
+#include <json-glib/json-glib.h>
 #include <libsecret/secret.h>
 #include <libsoup/soup.h>
 #include <glib/gi18n.h>
@@ -424,7 +425,8 @@ matrix_account_sync_cb (ChattyMaAccount *self,
         error->code > SOUP_STATUS_CANCELLED) ||
        g_error_matches (error, G_IO_ERROR, G_IO_ERROR_NETWORK_UNREACHABLE) ||
        g_error_matches (error, G_IO_ERROR, G_IO_ERROR_TIMED_OUT) ||
-       error->domain == G_RESOLVER_ERROR)) {
+       error->domain == G_RESOLVER_ERROR ||
+       error->domain == JSON_PARSER_ERROR)) {
     self->status = CHATTY_DISCONNECTED;
     g_object_notify (G_OBJECT (self), "status");
     return;

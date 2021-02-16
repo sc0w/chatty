@@ -584,7 +584,8 @@ handle_common_errors (MatrixApi *self,
        error->code > SOUP_STATUS_CANCELLED) ||
       g_error_matches (error, G_IO_ERROR, G_IO_ERROR_NETWORK_UNREACHABLE) ||
       g_error_matches (error, G_IO_ERROR, G_IO_ERROR_TIMED_OUT) ||
-      error->domain == G_RESOLVER_ERROR) {
+      error->domain == G_RESOLVER_ERROR ||
+      error->domain == JSON_PARSER_ERROR) {
     GNetworkMonitor *network_monitor;
 
     network_monitor = g_network_monitor_get_default ();
