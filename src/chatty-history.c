@@ -763,8 +763,19 @@ insert_or_ignore_thread (ChattyHistory *self,
                                    chatty_item_get_protocols (CHATTY_ITEM (chat)),
                                    chatty_chat_get_username (chat),
                                    task);
-  if (!user_id)
+  if (!user_id) {
+    const char *who;
+
+    who = chatty_chat_get_username (chat);
+
+    if (!who || !*who)
+      g_task_return_new_error (task,
+                               G_IO_ERROR,
+                               G_IO_ERROR_FAILED,
+                               "Username empty");
+
     return 0;
+  }
 
   account_id = insert_or_ignore_account (self,
                                          chatty_item_get_protocols (CHATTY_ITEM (chat)),
@@ -2598,15 +2609,21 @@ chatty_history_open_async (ChattyHistory       *self,
                            GAsyncReadyCallback  callback,
                            gpointer             user_data)
 {
-  GTask *task;
+  g_autoptr(GTask) task = NULL;
   const char *country;
 
   g_return_if_fail (CHATTY_IS_HISTORY (self));
   g_return_if_fail (dir && *dir);
   g_return_if_fail (file_name && *file_name);
 
+  task = g_task_new (self, NULL, callback, user_data);
+  g_task_set_source_tag (task, chatty_history_open_async);
+  g_task_set_task_data (task, history_open_db, NULL);
+
   if (self->db) {
     g_warning ("A DataBase is already open");
+    g_task_return_new_error (task, G_IO_ERROR, G_IO_ERROR_ALREADY_MOUNTED,
+                             "Database is already open");
     return;
   }
 
@@ -2616,14 +2633,11 @@ chatty_history_open_async (ChattyHistory       *self,
                                         self);
 
   country = chatty_settings_get_country_iso_code (chatty_settings_get_default ());
-  task = g_task_new (self, NULL, callback, user_data);
-  g_task_set_source_tag (task, chatty_history_open_async);
-  g_task_set_task_data (task, history_open_db, NULL);
   g_object_set_data_full (G_OBJECT (task), "dir", dir, g_free);
   g_object_set_data_full (G_OBJECT (task), "file-name", g_strdup (file_name), g_free);
   g_object_set_data_full (G_OBJECT (task), "country-code", g_strdup (country), g_free);
 
-  g_async_queue_push (self->queue, task);
+  g_async_queue_push (self->queue, g_steal_pointer (&task));
 }
 
 /**
