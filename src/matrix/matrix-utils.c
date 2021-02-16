@@ -407,9 +407,9 @@ cancel_read_uri (gpointer user_data)
     return G_SOURCE_REMOVE;
 
   g_task_set_task_data (task, GINT_TO_POINTER (TRUE), NULL);
-  g_cancellable_cancel (g_task_get_cancellable (task));
   g_task_return_new_error (task, G_IO_ERROR, G_IO_ERROR_TIMED_OUT,
                            "Request timeout");
+  g_cancellable_cancel (g_task_get_cancellable (task));
 
   return G_SOURCE_REMOVE;
 }
