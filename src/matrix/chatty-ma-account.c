@@ -964,8 +964,9 @@ ma_account_db_save_cb (GObject      *object,
   g_assert (CHATTY_IS_MA_ACCOUNT (self));
 
   status = matrix_db_save_account_finish (self->matrix_db, result, &error);
-  CHATTY_TRACE_MSG ("Saved %s, success: %d",
-                    chatty_account_get_username (CHATTY_ACCOUNT (self)), !!status);
+  if (error || !status)
+    CHATTY_TRACE_MSG ("Saving %s failed",
+                      chatty_account_get_username (CHATTY_ACCOUNT (self)));
 
   if (error || !status)
     self->save_account_pending = TRUE;
@@ -1035,9 +1036,6 @@ chatty_ma_account_save_async (ChattyMaAccount     *self,
   g_return_if_fail (*chatty_account_get_username (CHATTY_ACCOUNT (self)));
   g_return_if_fail (*chatty_account_get_password (CHATTY_ACCOUNT (self)));
   g_return_if_fail (*chatty_ma_account_get_homeserver (self));
-
-  CHATTY_TRACE_MSG ("Saving %s, force: %d",
-                    chatty_account_get_username (CHATTY_ACCOUNT (self)), !!force);
 
   task = g_task_new (self, cancellable, callback, user_data);
   if (self->save_password_pending || force) {

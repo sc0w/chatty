@@ -334,6 +334,8 @@ chatty_application_startup (GApplication *application)
                        db_path, "chatty-history.db");
 
   self->settings = chatty_settings_get_default ();
+  if (chatty_settings_get_experimental_features (self->settings))
+    g_warning ("Experimental features enabled");
 
   provider = gtk_css_provider_new ();
   gtk_css_provider_load_from_resource (provider,
