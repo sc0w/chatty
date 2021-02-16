@@ -2602,8 +2602,8 @@ chatty_history_open_async (ChattyHistory       *self,
   const char *country;
 
   g_return_if_fail (CHATTY_IS_HISTORY (self));
-  g_return_if_fail (dir || !*dir);
-  g_return_if_fail (file_name || !*file_name);
+  g_return_if_fail (dir && *dir);
+  g_return_if_fail (file_name && *file_name);
 
   if (self->db) {
     g_warning ("A DataBase is already open");
