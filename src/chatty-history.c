@@ -436,8 +436,8 @@ chatty_history_get_db_version (ChattyHistory *self,
     g_task_return_new_error (task,
                              G_IO_ERROR,
                              G_IO_ERROR_FAILED,
-                             "Error getting database version errno: %d, desc: %s",
-                             status, sqlite3_errstr (status));
+                             "Couldn't get database version. errno: %d, desc: %s",
+                             status, sqlite3_errmsg (self->db));
   sqlite3_finalize (stmt);
 
   return version;
@@ -581,12 +581,12 @@ chatty_history_create_schema (ChattyHistory *self,
     return TRUE;
 
   db = g_steal_pointer (&self->db);
-  sqlite3_close (db);
   g_task_return_new_error (task,
                            G_IO_ERROR,
                            G_IO_ERROR_FAILED,
-                           "Error creating tables. errno: %d, desc: %s. %s",
-                           status, sqlite3_errstr (status), error);
+                           "Couldn't create tables. errno: %d, desc: %s. %s",
+                           status, sqlite3_errmsg (db), error);
+  sqlite3_close (db);
   sqlite3_free (error);
 
   return FALSE;
@@ -615,8 +615,8 @@ chatty_history_update_version (ChattyHistory *self,
   g_task_return_new_error (task,
                            G_IO_ERROR,
                            G_IO_ERROR_FAILED,
-                           "Error setting db version. errno: %d, desc: %s. %s",
-                           status, sqlite3_errstr (status), error);
+                           "Couldn't set db version. errno: %d, desc: %s. %s",
+                           status, sqlite3_errmsg (self->db), error);
   sqlite3_free (error);
 
   return FALSE;
@@ -669,8 +669,8 @@ insert_or_ignore_user (ChattyHistory  *self,
     g_task_return_new_error (task,
                              G_IO_ERROR,
                              G_IO_ERROR_FAILED,
-                             "Error inserting into users. errno: %d, desc: %s",
-                             status, sqlite3_errstr (status));
+                             "Couldn't insert into users. errno: %d, desc: %s",
+                             status, sqlite3_errmsg (self->db));
   return id;
 }
 
@@ -712,8 +712,8 @@ insert_or_ignore_account (ChattyHistory  *self,
     g_task_return_new_error (task,
                              G_IO_ERROR,
                              G_IO_ERROR_FAILED,
-                             "Error inserting into users. errno: %d, desc: %s",
-                             status, sqlite3_errstr (status));
+                             "Couldn't insert into users. errno: %d, desc: %s",
+                             status, sqlite3_errmsg (self->db));
   return id;
 }
 
@@ -819,8 +819,8 @@ insert_or_ignore_thread (ChattyHistory *self,
     g_task_return_new_error (task,
                              G_IO_ERROR,
                              G_IO_ERROR_FAILED,
-                             "Error inserting into users. errno: %d, desc: %s",
-                             status, sqlite3_errstr (status));
+                             "Couldn't insert into users. errno: %d, desc: %s",
+                             status, sqlite3_errmsg (self->db));
   return id;
 }
 
@@ -867,8 +867,8 @@ history_add_phone_user (ChattyHistory *self,
     g_task_return_new_error (task,
                              G_IO_ERROR,
                              G_IO_ERROR_FAILED,
-                             "Error inserting into accounts. errno: %d, desc: %s",
-                             status, sqlite3_errstr (status));
+                             "Couldn't insert into accounts. errno: %d, desc: %s",
+                             status, sqlite3_errmsg (self->db));
 
   return status == SQLITE_DONE;
 }
@@ -894,8 +894,8 @@ history_add_phone_account (ChattyHistory *self,
     g_task_return_new_error (task,
                              G_IO_ERROR,
                              G_IO_ERROR_FAILED,
-                             "Error inserting into accounts. errno: %d, desc: %s",
-                             status, sqlite3_errstr (status));
+                             "Couldn't insert into accounts. errno: %d, desc: %s",
+                             status, sqlite3_errmsg (self->db));
 
   return status == SQLITE_DONE;
 }
@@ -929,8 +929,8 @@ history_add_thread (ChattyHistory *self,
     g_task_return_new_error (task,
                              G_IO_ERROR,
                              G_IO_ERROR_FAILED,
-                             "Error inserting into accounts. errno: %d, desc: %s",
-                             status, sqlite3_errstr (status));
+                             "Couldn't insert into accounts. errno: %d, desc: %s",
+                             status, sqlite3_errmsg (self->db));
 
   return status == SQLITE_DONE;
 }
@@ -1533,7 +1533,7 @@ chatty_history_migrate_db_to_v1_to_v3 (ChattyHistory *self,
   g_task_return_new_error (task,
                            G_IO_ERROR,
                            G_IO_ERROR_FAILED,
-                           "Error setting db version. errno: %d, desc: %s. %s",
+                           "Couldn't set db version. errno: %d, desc: %s. %s",
                            status, sqlite3_errstr (status), error);
   sqlite3_free (error);
 
@@ -1639,7 +1639,7 @@ chatty_history_migrate_db_to_v2 (ChattyHistory *self,
   g_task_return_new_error (task,
                            G_IO_ERROR,
                            G_IO_ERROR_FAILED,
-                           "Error setting db version. errno: %d, desc: %s. %s",
+                           "Couldn't set db version. errno: %d, desc: %s. %s",
                            status, sqlite3_errstr (status), error);
   sqlite3_free (error);
 
@@ -1680,7 +1680,7 @@ chatty_history_migrate_db_to_v3 (ChattyHistory *self,
   g_task_return_new_error (task,
                            G_IO_ERROR,
                            G_IO_ERROR_FAILED,
-                           "Error setting db version. errno: %d, desc: %s. %s",
+                           "Couldn't set db version. errno: %d, desc: %s. %s",
                            status, sqlite3_errstr (status), error);
   sqlite3_free (error);
 
@@ -1971,7 +1971,7 @@ history_get_messages (ChattyHistory *self,
   if (!self->db) {
     g_task_return_new_error (task,
                              G_IO_ERROR, G_IO_ERROR_FAILED,
-                             "Error: Database not opened");
+                             "Database not opened");
     return;
   }
 
@@ -2121,7 +2121,7 @@ history_add_message (ChattyHistory *self,
   if (!self->db) {
     g_task_return_new_error (task,
                              G_IO_ERROR, G_IO_ERROR_FAILED,
-                             "Error: Database not opened");
+                             "Database not opened");
     return;
   }
 
@@ -2214,8 +2214,8 @@ history_add_message (ChattyHistory *self,
   else
     g_task_return_new_error (task,
                              G_IO_ERROR, G_IO_ERROR_FAILED,
-                             "Error: Failed to save message. errno: %d, desc: %s",
-                             status, sqlite3_errstr (status));
+                             "Failed to save message. errno: %d, desc: %s",
+                             status, sqlite3_errmsg (self->db));
 }
 
 static void
@@ -2320,7 +2320,7 @@ history_delete_chat (ChattyHistory *self,
   if (!self->db) {
     g_task_return_new_error (task,
                              G_IO_ERROR, G_IO_ERROR_FAILED,
-                             "Error: Database not opened");
+                             "Database not opened");
     return;
   }
 
@@ -2361,8 +2361,8 @@ history_delete_chat (ChattyHistory *self,
   else
     g_task_return_new_error (task,
                              G_IO_ERROR, G_IO_ERROR_FAILED,
-                             "Error: Failed to delete chat. errno: %d, desc: %s",
-                             status, sqlite3_errstr (status));
+                             "Failed to delete chat. errno: %d, desc: %s",
+                             status, sqlite3_errmsg (self->db));
 }
 
 static void
