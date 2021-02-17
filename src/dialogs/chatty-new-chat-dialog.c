@@ -118,11 +118,11 @@ dialog_filter_item_cb (ChattyItem          *item,
       return FALSE;
 
   if (CHATTY_IS_PP_BUDDY (item)) {
-    PurpleAccount *account;
+    ChattyAccount *account;
 
     account = chatty_pp_buddy_get_account (CHATTY_PP_BUDDY (item));
 
-    if (!purple_account_is_connected (account))
+    if (chatty_account_get_status (account) != CHATTY_CONNECTED)
       return FALSE;
   }
 
