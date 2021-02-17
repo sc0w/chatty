@@ -32,6 +32,7 @@
 #include "dialogs/chatty-settings-dialog.h"
 #include "dialogs/chatty-new-chat-dialog.h"
 #include "dialogs/chatty-new-muc-dialog.h"
+#include "chatty-log.h"
 
 struct _ChattyWindow
 {
@@ -472,6 +473,7 @@ window_new_message_clicked_cb (ChattyWindow *self)
   if (response != GTK_RESPONSE_OK)
     return;
 
+
   dialog = CHATTY_NEW_CHAT_DIALOG (self->new_chat_dialog);
   item = chatty_new_chat_dialog_get_selected_item (dialog);
 
@@ -702,23 +704,17 @@ window_add_contact_clicked_cb (ChattyWindow *self)
 static void
 window_add_in_contacts_clicked_cb (ChattyWindow *self)
 {
-  PurpleBuddy      *buddy;
-  PurpleContact    *contact;
   const char       *who;
   const char       *alias;
   g_autofree gchar *number = NULL;
 
   g_assert (CHATTY_IS_WINDOW (self));
-  g_return_if_fail (self->selected_item);
+  g_return_if_fail (CHATTY_CHAT (self->selected_item));
 
-  buddy = chatty_pp_chat_get_purple_buddy (CHATTY_PP_CHAT (self->selected_item));
-  g_return_if_fail (buddy != NULL);
-
-  who = purple_buddy_get_name (buddy);
-  contact = purple_buddy_get_contact (buddy);
-  alias = purple_contact_get_alias (contact);
-
+  alias = chatty_item_get_name (CHATTY_ITEM (self->selected_item));
+  who = chatty_chat_get_chat_name (CHATTY_CHAT (self->selected_item));
   number = chatty_utils_check_phonenumber (who, chatty_settings_get_country_iso_code (self->settings));
+  CHATTY_TRACE_MSG ("Save to contacts, name: %s, number: %s", who, number);
 
   chatty_dbus_gc_write_contact (alias, number);
 }
