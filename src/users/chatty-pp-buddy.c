@@ -495,14 +495,6 @@ chatty_pp_buddy_get_account (ChattyPpBuddy *self)
   return CHATTY_ACCOUNT (chatty_pp_account_get_object (account));
 }
 
-PurpleConversation *
-chatty_pp_buddy_get_chat (ChattyPpBuddy *self)
-{
-  g_return_val_if_fail (CHATTY_IS_PP_BUDDY (self), NULL);
-
-  return self->conv;
-}
-
 void
 chatty_pp_buddy_set_chat (ChattyPpBuddy      *self,
                           PurpleConversation *conv)

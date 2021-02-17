@@ -27,7 +27,6 @@ G_DECLARE_FINAL_TYPE (ChattyPpBuddy, chatty_pp_buddy, CHATTY, PP_BUDDY, ChattyIt
 
 ChattyPpBuddy   *chatty_pp_buddy_get_object    (PurpleBuddy   *buddy);
 ChattyAccount   *chatty_pp_buddy_get_account   (ChattyPpBuddy *self);
-PurpleConversation *chatty_pp_buddy_get_chat   (ChattyPpBuddy *self);
 void             chatty_pp_buddy_set_chat      (ChattyPpBuddy      *self,
                                                 PurpleConversation *conv);
 PurpleBuddy     *chatty_pp_buddy_get_buddy      (ChattyPpBuddy *self);
