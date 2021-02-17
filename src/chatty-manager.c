@@ -2171,6 +2171,20 @@ chatty_manager_load_plugins (ChattyManager *self)
                            G_CALLBACK (manager_message_carbons_changed), self,
                            G_CONNECT_SWAPPED);
   manager_message_carbons_changed (self, NULL, settings);
+
+  {
+    g_autoptr(GString) plugins_str = NULL;
+    GList *plugins;
+
+    plugins_str = g_string_new (NULL);
+    plugins = purple_plugins_get_loaded ();
+
+    for (GList *item = plugins; item; item = item->next)
+      g_string_append_printf (plugins_str, "%s ",
+                              purple_plugin_get_id (item->data));
+
+    g_debug ("Loaded purple plugins: %s", plugins_str->str);
+  }
 }
 
 void
