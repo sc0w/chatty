@@ -162,6 +162,37 @@ chatty_account_real_delete (ChattyAccount *self)
   /* Do Nothing */
 }
 
+static GListModel *
+chatty_account_real_get_fp_list (ChattyAccount *self)
+{
+  return NULL;
+}
+
+static void
+chatty_account_real_load_fp_async (ChattyAccount       *self,
+                                   GAsyncReadyCallback  callback,
+                                   gpointer             user_data)
+{
+  g_assert (CHATTY_IS_ACCOUNT (self));
+
+  g_task_report_new_error (self, callback, user_data,
+                           chatty_account_real_load_fp_async,
+                           G_IO_ERROR,
+                           G_IO_ERROR_NOT_SUPPORTED,
+                           "Loading finger print list not supported");
+}
+
+static gboolean
+chatty_account_real_load_fp_finish (ChattyAccount *self,
+                                    GAsyncResult  *result,
+                                    GError        **error)
+{
+  g_assert (CHATTY_IS_ACCOUNT (self));
+  g_assert (G_IS_TASK (result));
+
+  return g_task_propagate_boolean (G_TASK (result), error);
+}
+
 static void
 chatty_account_get_property (GObject    *object,
                              guint       prop_id,
@@ -227,6 +258,9 @@ chatty_account_class_init (ChattyAccountClass *klass)
   klass->set_remember_password = chatty_account_real_set_remember_password;
   klass->save = chatty_account_real_save;
   klass->delete = chatty_account_real_delete;
+  klass->get_fp_list = chatty_account_real_get_fp_list;
+  klass->load_fp_async = chatty_account_real_load_fp_async;
+  klass->load_fp_finish = chatty_account_real_load_fp_finish;
 
   /**
    * ChattyAccount:enabled:
@@ -404,4 +438,32 @@ chatty_account_delete (ChattyAccount *self)
   g_return_if_fail (CHATTY_IS_ACCOUNT (self));
 
   CHATTY_ACCOUNT_GET_CLASS (self)->delete (self);
+}
+
+GListModel *
+chatty_account_get_fp_list (ChattyAccount *self)
+{
+  g_return_val_if_fail (CHATTY_IS_ACCOUNT (self), NULL);
+
+  return CHATTY_ACCOUNT_GET_CLASS (self)->get_fp_list (self);
+}
+
+void
+chatty_account_load_fp_async (ChattyAccount       *self,
+                              GAsyncReadyCallback  callback,
+                              gpointer             user_data)
+{
+  g_return_if_fail (CHATTY_IS_ACCOUNT (self));
+
+  CHATTY_ACCOUNT_GET_CLASS (self)->load_fp_async (self, callback, user_data);
+}
+
+gboolean
+chatty_account_load_fp_finish (ChattyAccount  *self,
+                               GAsyncResult   *result,
+                               GError        **error)
+{
+  g_return_val_if_fail (CHATTY_IS_ACCOUNT (self), FALSE);
+
+  return CHATTY_ACCOUNT_GET_CLASS (self)->load_fp_finish (self, result, error);
 }

@@ -42,6 +42,13 @@ struct _ChattyAccountClass
                                          gboolean       remember);
   void         (*save)                  (ChattyAccount *self);
   void         (*delete)                (ChattyAccount *self);
+  GListModel  *(*get_fp_list)           (ChattyAccount *self);
+  void         (*load_fp_async)         (ChattyAccount *self,
+                                         GAsyncReadyCallback callback,
+                                         gpointer       user_data);
+  gboolean     (*load_fp_finish)        (ChattyAccount *self,
+                                         GAsyncResult  *result,
+                                         GError       **error);
 };
 
 
@@ -65,5 +72,12 @@ void          chatty_account_set_remember_password (ChattyAccount *self,
                                                     gboolean       remember);
 void          chatty_account_save                  (ChattyAccount *self);
 void          chatty_account_delete                (ChattyAccount *self);
+GListModel   *chatty_account_get_fp_list           (ChattyAccount *self);
+void          chatty_account_load_fp_async         (ChattyAccount *self,
+                                                    GAsyncReadyCallback callback,
+                                                    gpointer       user_data);
+gboolean      chatty_account_load_fp_finish        (ChattyAccount *self,
+                                                    GAsyncResult  *result,
+                                                    GError       **error);
 
 G_END_DECLS
