@@ -44,6 +44,7 @@ struct _ChattyPpAccount
   GdkPixbuf         *avatar;
   guint           connect_id;
   ChattyProtocol  protocol;
+  gboolean        has_encryption;
 
   ChattyPpAccountFeatures features;
 };
@@ -655,30 +656,42 @@ chatty_pp_account_get_object (PurpleAccount *account)
 ChattyPpAccount *
 chatty_pp_account_new (ChattyProtocol  protocol,
                        const char     *username,
-                       const char     *server_url)
+                       const char     *server_url,
+                       gboolean        has_encryption)
 {
+  ChattyPpAccount *self;
+
   g_return_val_if_fail (protocol & (CHATTY_PROTOCOL_SMS |
                                     CHATTY_PROTOCOL_XMPP |
                                     CHATTY_PROTOCOL_MATRIX |
                                     CHATTY_PROTOCOL_TELEGRAM), NULL);
   g_return_val_if_fail (username && *username, NULL);
 
-  return g_object_new (CHATTY_TYPE_PP_ACCOUNT,
+  self = g_object_new (CHATTY_TYPE_PP_ACCOUNT,
                        "protocols", protocol,
                        "username", username,
                        "server-url", server_url,
                        NULL);
+  self->has_encryption = !!has_encryption;
+
+  return self;
 }
 
 ChattyPpAccount *
-chatty_pp_account_new_purple (PurpleAccount *account)
+chatty_pp_account_new_purple (PurpleAccount *account,
+                              gboolean       has_encryption)
 {
+  ChattyPpAccount *self;
+
   g_return_val_if_fail (account, NULL);
   g_return_val_if_fail (!account->ui_data, NULL);
 
-  return g_object_new (CHATTY_TYPE_PP_ACCOUNT,
+  self = g_object_new (CHATTY_TYPE_PP_ACCOUNT,
                        "purple-account", account,
                        NULL);
+  self->has_encryption = !!has_encryption;
+
+  return self;
 }
 
 ChattyPpBuddy *

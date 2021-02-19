@@ -980,7 +980,7 @@ chatty_manager_enable_sms_account (ChattyManager *self)
   if (purple_accounts_find ("SMS", "prpl-mm-sms"))
     return;
 
-  account = chatty_pp_account_new (CHATTY_PROTOCOL_SMS, "SMS", NULL);
+  account = chatty_pp_account_new (CHATTY_PROTOCOL_SMS, "SMS", NULL, FALSE);
   chatty_account_save (CHATTY_ACCOUNT (account));
 }
 
@@ -1146,7 +1146,8 @@ manager_account_added_cb (PurpleAccount *pp_account,
   if (account)
     g_object_ref (account);
   else
-    account = chatty_pp_account_new_purple (pp_account);
+    account = chatty_pp_account_new_purple (pp_account,
+                                            chatty_manager_lurch_plugin_is_loaded (self));
 
   g_object_notify (G_OBJECT (account), "status");
   g_list_store_append (self->account_list, account);

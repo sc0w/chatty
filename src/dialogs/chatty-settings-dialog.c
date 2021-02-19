@@ -380,11 +380,16 @@ chatty_settings_add_clicked_cb (ChattySettingsDialog *self)
   }
 
   if (is_matrix)
-    account = (ChattyAccount *)chatty_pp_account_new (CHATTY_PROTOCOL_MATRIX, user_id, server_url);
+    account = (ChattyAccount *)chatty_pp_account_new (CHATTY_PROTOCOL_MATRIX, user_id, server_url, FALSE);
   else if (is_telegram)
-    account = (ChattyAccount *)chatty_pp_account_new (CHATTY_PROTOCOL_TELEGRAM, user_id, NULL);
-  else /* XMPP */
-    account = (ChattyAccount *)chatty_pp_account_new (CHATTY_PROTOCOL_XMPP, user_id, NULL);
+    account = (ChattyAccount *)chatty_pp_account_new (CHATTY_PROTOCOL_TELEGRAM, user_id, NULL, FALSE);
+  else {/* XMPP */
+    gboolean has_encryption;
+
+    has_encryption = chatty_manager_lurch_plugin_is_loaded (chatty_manager_get_default ());
+    account = (ChattyAccount *)chatty_pp_account_new (CHATTY_PROTOCOL_XMPP,
+                                                      user_id, NULL, has_encryption);
+  }
 
   if (password)
     {
