@@ -409,9 +409,6 @@ chatty_settings_save_clicked_cb (ChattySettingsDialog *self)
 
   g_assert (CHATTY_IS_SETTINGS_DIALOG (self));
 
-  chatty_account_set_username (CHATTY_ACCOUNT (self->selected_account),
-                               gtk_entry_get_text (GTK_ENTRY (self->account_id_entry)));
-
   password_entry = (GtkEntry *)self->password_entry;
   chatty_account_set_password (CHATTY_ACCOUNT (self->selected_account),
                                gtk_entry_get_text (password_entry));
