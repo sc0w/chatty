@@ -61,7 +61,7 @@ struct _ChattySettingsDialog
 
   GtkWidget      *avatar_button;
   GtkWidget      *avatar_image;
-  GtkWidget      *account_id_entry;
+  GtkWidget      *account_id_label;
   GtkWidget      *account_protocol_label;
   GtkWidget      *status_label;
   GtkWidget      *password_entry;
@@ -213,7 +213,8 @@ settings_update_account_details (ChattySettingsDialog *self)
   account_name = chatty_account_get_username (CHATTY_ACCOUNT (account));
   protocol_name = chatty_account_get_protocol_name (CHATTY_ACCOUNT (account));
 
-  gtk_entry_set_text (GTK_ENTRY (self->account_id_entry), account_name);
+  gtk_label_set_text (GTK_LABEL (self->account_id_label), account_name);
+  /* gtk_entry_set_text (GTK_ENTRY (self->account_id_entry), account_name); */
   gtk_label_set_text (GTK_LABEL (self->account_protocol_label), protocol_name);
   chatty_avatar_set_item (CHATTY_AVATAR (self->avatar_image), CHATTY_ITEM (account));
 }
@@ -911,7 +912,7 @@ chatty_settings_dialog_class_init (ChattySettingsDialogClass *klass)
 
   gtk_widget_class_bind_template_child (widget_class, ChattySettingsDialog, avatar_button);
   gtk_widget_class_bind_template_child (widget_class, ChattySettingsDialog, avatar_image);
-  gtk_widget_class_bind_template_child (widget_class, ChattySettingsDialog, account_id_entry);
+  gtk_widget_class_bind_template_child (widget_class, ChattySettingsDialog, account_id_label);
   gtk_widget_class_bind_template_child (widget_class, ChattySettingsDialog, account_protocol_label);
   gtk_widget_class_bind_template_child (widget_class, ChattySettingsDialog, status_label);
   gtk_widget_class_bind_template_child (widget_class, ChattySettingsDialog, password_entry);
