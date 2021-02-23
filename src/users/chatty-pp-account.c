@@ -11,6 +11,7 @@
 
 #define G_LOG_DOMAIN "chatty-pp-account"
 
+#include <handy.h>
 #include <purple.h>
 
 #include "chatty-config.h"
@@ -38,6 +39,8 @@ struct _ChattyPpAccount
   gchar          *username;
   gchar          *server_url;
   GListStore     *buddy_list;
+  HdyValueObject *device_fp;
+  GListStore     *fp_list;
 
   PurpleAccount  *pp_account;
   PurpleStoredImage *pp_avatar;
@@ -357,6 +360,104 @@ chatty_pp_account_delete (ChattyAccount *account)
   purple_accounts_delete (self->pp_account);
 }
 
+static HdyValueObject *
+chatty_pp_account_get_device_fp (ChattyAccount *account)
+{
+  ChattyPpAccount *self = (ChattyPpAccount *)account;
+
+  g_assert (CHATTY_IS_PP_ACCOUNT (self));
+
+  return self->device_fp;
+}
+
+static GListModel *
+chatty_pp_account_get_fp_list (ChattyAccount *account)
+{
+  ChattyPpAccount *self = (ChattyPpAccount *)account;
+
+  g_assert (CHATTY_IS_PP_ACCOUNT (self));
+
+  return G_LIST_MODEL (self->fp_list);
+}
+
+static void
+get_fp_list_cb (int         error,
+                GHashTable *fp_table,
+                gpointer    user_data)
+{
+  g_autoptr(GList) key_list = NULL;
+  g_autoptr(GTask) task = user_data;
+  ChattyPpAccount *self;
+
+  g_assert (G_IS_TASK (task));
+
+  self = g_task_get_source_object (task);
+  g_assert (CHATTY_IS_PP_ACCOUNT (self));
+
+  if (error || !fp_table) {
+    g_warning ("has error: %d", !!error);
+    g_task_return_boolean (task, FALSE);
+
+    return;
+  }
+
+  key_list = g_hash_table_get_keys (fp_table);
+  g_clear_object (&self->device_fp);
+
+  for (GList *item = key_list; item; item = item->next) {
+    const char *fp = NULL;
+
+    fp = g_hash_table_lookup (fp_table, item->data);
+
+    g_debug ("DeviceId: %i fingerprint: %s", *((guint32 *) item->data),
+             fp ? fp : "(no session)");
+
+    if (fp) {
+      char *id;
+
+      id = g_strdup_printf ("%u", *((guint32 *) item->data));
+      /* The first fingerprint is current device fingerprint */
+      if (!self->device_fp) {
+        self->device_fp = hdy_value_object_new_string (fp);
+        g_object_set_data_full (G_OBJECT (self->device_fp), "device-id", id, g_free);
+      } else {
+        g_autoptr(HdyValueObject) object = NULL;
+
+        object = hdy_value_object_new_string (fp);
+        g_object_set_data_full (G_OBJECT (object), "device-id", id, g_free);
+        g_list_store_append (self->fp_list, object);
+      }
+    }
+  }
+
+  g_task_return_boolean (task, TRUE);
+}
+
+static void
+chatty_pp_account_load_fp_async (ChattyAccount       *account,
+                                 GAsyncReadyCallback  callback,
+                                 gpointer             user_data)
+{
+  ChattyPpAccount *self = (ChattyPpAccount *)account;
+  GTask *task;
+
+  g_assert (CHATTY_IS_PP_ACCOUNT (self));
+
+  if (!self->has_encryption) {
+    CHATTY_ACCOUNT_CLASS (chatty_pp_account_parent_class)->load_fp_async (account, callback, user_data);
+
+    return;
+  }
+
+  task = g_task_new (self, NULL, callback, user_data);
+
+  purple_signal_emit (purple_plugins_get_handle (),
+                      "lurch-fp-list",
+                      self->pp_account,
+                      get_fp_list_cb,
+                      task);
+}
+
 static gboolean
 chatty_pp_account_get_remember_password (ChattyAccount *account)
 {
@@ -561,6 +662,9 @@ chatty_pp_account_finalize (GObject *object)
   if (self->pp_avatar)
     purple_imgstore_unref (self->pp_avatar);
 
+  g_list_store_remove_all (self->fp_list);
+  g_clear_object (&self->fp_list);
+  g_clear_object (&self->device_fp);
   g_clear_object (&self->buddy_list);
   g_clear_object (&self->avatar);
   g_free (self->username);
@@ -600,6 +704,9 @@ chatty_pp_account_class_init (ChattyPpAccountClass *klass)
   account_class->set_remember_password = chatty_pp_account_set_remember_password;
   account_class->save = chatty_pp_account_save;
   account_class->delete = chatty_pp_account_delete;
+  account_class->get_device_fp = chatty_pp_account_get_device_fp;
+  account_class->get_fp_list = chatty_pp_account_get_fp_list;
+  account_class->load_fp_async = chatty_pp_account_load_fp_async;
 
   properties[PROP_USERNAME] =
     g_param_spec_string ("username",
@@ -628,6 +735,7 @@ static void
 chatty_pp_account_init (ChattyPpAccount *self)
 {
   self->buddy_list = g_list_store_new (CHATTY_TYPE_PP_BUDDY);
+  self->fp_list = g_list_store_new (HDY_TYPE_VALUE_OBJECT);
 }
 
 /**
