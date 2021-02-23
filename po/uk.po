@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: purism-chatty\n"
 "Report-Msgid-Bugs-To: https://source.puri.sm/Librem5/chatty/issues\n"
-"POT-Creation-Date: 2021-02-17 15:26+0000\n"
-"PO-Revision-Date: 2021-02-17 20:27+0200\n"
+"POT-Creation-Date: 2021-02-23 15:25+0000\n"
+"PO-Revision-Date: 2021-02-23 20:33+0200\n"
 "Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian <trans-uk@lists.fedoraproject.org>\n"
 "Language: uk\n"
@@ -229,6 +229,13 @@ msgstr "Це обмін повідомленнями SMS."
 msgid "and carrier rates may apply."
 msgstr "і оператор може стягувати за нього сплату."
 
+#. TRANSLATORS: %s is the Device ID
+#: src/chatty-fp-row.c:131
+#, c-format
+msgid "Device ID %s fingerprint:"
+msgstr ""
+"Відбиток ідентифікатора пристрою %s:"
+
 #. Translators: Timestamp seconds suffix
 #: src/chatty-list-row.c:73
 msgctxt "timestamp-suffix-seconds"
@@ -347,7 +354,7 @@ msgid "Open File..."
 msgstr "Відкрити файл…"
 
 #: src/chatty-purple-request.c:191 src/chatty-window.c:584
-#: src/dialogs/chatty-settings-dialog.c:628 src/ui/chatty-dialog-join-muc.ui:16
+#: src/dialogs/chatty-settings-dialog.c:580 src/ui/chatty-dialog-join-muc.ui:16
 #: src/ui/chatty-info-dialog.ui:44 src/ui/chatty-info-dialog.ui:550
 msgid "Cancel"
 msgstr "Скасувати"
@@ -356,7 +363,7 @@ msgstr "Скасувати"
 msgid "Save"
 msgstr "Зберегти"
 
-#: src/chatty-purple-request.c:193 src/dialogs/chatty-settings-dialog.c:627
+#: src/chatty-purple-request.c:193 src/dialogs/chatty-settings-dialog.c:579
 #: src/ui/chatty-info-dialog.ui:557
 msgid "Open"
 msgstr "Відкрити"
@@ -482,17 +489,14 @@ msgid "Phone Number:"
 msgstr "Номер телефону:"
 
 #: src/dialogs/chatty-info-dialog.c:208
-#| msgid "XMPP ID"
 msgid "XMPP ID:"
 msgstr "Ід. XMPP:"
 
 #: src/dialogs/chatty-info-dialog.c:213
-#| msgid "Matrix"
 msgid "Matrix ID:"
 msgstr "Ід. Matrix:"
 
 #: src/dialogs/chatty-info-dialog.c:217
-#| msgid "Telegram"
 msgid "Telegram ID:"
 msgstr "Ід. Telegram:"
 
@@ -505,50 +509,50 @@ msgstr "Надіслати"
 msgid "Error opening GNOME Contacts: %s"
 msgstr "Помилка під час спроби відкрити «Контакти» GNOME: %s"
 
-#: src/dialogs/chatty-settings-dialog.c:495
+#: src/dialogs/chatty-settings-dialog.c:425
 msgid "Select Protocol"
 msgstr "Виберіть протокол"
 
-#: src/dialogs/chatty-settings-dialog.c:525
+#: src/dialogs/chatty-settings-dialog.c:455
 msgid "connected"
 msgstr "з'єднано"
 
-#: src/dialogs/chatty-settings-dialog.c:527
+#: src/dialogs/chatty-settings-dialog.c:457
 msgid "connecting…"
 msgstr "З'єднання…"
 
-#: src/dialogs/chatty-settings-dialog.c:529
+#: src/dialogs/chatty-settings-dialog.c:459
 msgid "disconnected"
 msgstr "від'єднано"
 
-#: src/dialogs/chatty-settings-dialog.c:624 src/ui/chatty-info-dialog.ui:545
+#: src/dialogs/chatty-settings-dialog.c:576 src/ui/chatty-info-dialog.ui:545
 msgid "Set Avatar"
 msgstr "Встановити аватар"
 
-#: src/dialogs/chatty-settings-dialog.c:705
-#: src/ui/chatty-settings-dialog.ui:483
+#: src/dialogs/chatty-settings-dialog.c:657
+#: src/ui/chatty-settings-dialog.ui:476
 msgid "Delete Account"
 msgstr "Вилучити запис"
 
-#: src/dialogs/chatty-settings-dialog.c:708
+#: src/dialogs/chatty-settings-dialog.c:660
 #, c-format
 msgid "Delete account %s?"
 msgstr "Вилучити запис %s?"
 
-#: src/matrix/chatty-ma-account.c:249
+#: src/matrix/chatty-ma-account.c:250
 msgid "Incorrect password"
 msgstr "Помилковий пароль"
 
-#: src/matrix/chatty-ma-account.c:252
+#: src/matrix/chatty-ma-account.c:253
 msgid "_OK"
 msgstr "_Гаразд"
 
-#: src/matrix/chatty-ma-account.c:253 src/ui/chatty-settings-dialog.ui:41
-#: src/ui/chatty-settings-dialog.ui:737
+#: src/matrix/chatty-ma-account.c:254 src/ui/chatty-settings-dialog.ui:41
+#: src/ui/chatty-settings-dialog.ui:735
 msgid "_Cancel"
 msgstr "_Скасувати"
 
-#: src/matrix/chatty-ma-account.c:259
+#: src/matrix/chatty-ma-account.c:260
 #, c-format
 msgid "Please enter password for “%s”"
 msgstr "Будь ласка, введіть пароль до «%s»"
@@ -665,12 +669,11 @@ msgstr "Ід. XMPP"
 msgid "Encryption"
 msgstr "Шифрування"
 
-#: src/ui/chatty-info-dialog.ui:294 src/ui/chatty-settings-dialog.ui:396
+#: src/ui/chatty-info-dialog.ui:294 src/ui/chatty-settings-dialog.ui:389
 msgid "Status"
 msgstr "Стан"
 
 #: src/ui/chatty-info-dialog.ui:319
-#| msgid "Chat Details"
 msgid "Chat settings"
 msgstr "Параметри спілкування"
 
@@ -687,7 +690,6 @@ msgid "Show status messages in chat"
 msgstr "Показувати повідомлення стану у спілкуванні"
 
 #: src/ui/chatty-info-dialog.ui:375
-#| msgid "Invite Message"
 msgid "Encrypt Messages"
 msgstr "Шифрувати повідомлення"
 
@@ -803,39 +805,39 @@ msgstr "Надсилати повідомлення клавішею вводу"
 msgid "Account ID"
 msgstr "Ідентифікатор запису"
 
-#: src/ui/chatty-settings-dialog.ui:367
+#: src/ui/chatty-settings-dialog.ui:360
 msgid "Protocol"
 msgstr "Протокол"
 
-#: src/ui/chatty-settings-dialog.ui:425 src/ui/chatty-settings-dialog.ui:647
+#: src/ui/chatty-settings-dialog.ui:418 src/ui/chatty-settings-dialog.ui:645
 msgid "Password"
 msgstr "Пароль"
 
-#: src/ui/chatty-settings-dialog.ui:501
+#: src/ui/chatty-settings-dialog.ui:494
 msgid "Own Fingerprint"
 msgstr "Власний відбиток"
 
-#: src/ui/chatty-settings-dialog.ui:555
+#: src/ui/chatty-settings-dialog.ui:553
 msgid "XMPP"
 msgstr "XMPP"
 
-#: src/ui/chatty-settings-dialog.ui:569
+#: src/ui/chatty-settings-dialog.ui:567
 msgid "Matrix"
 msgstr "Matrix"
 
-#: src/ui/chatty-settings-dialog.ui:584
+#: src/ui/chatty-settings-dialog.ui:582
 msgid "Telegram"
 msgstr "Telegram"
 
-#: src/ui/chatty-settings-dialog.ui:693
+#: src/ui/chatty-settings-dialog.ui:691
 msgid "Matrix Home Server"
 msgstr "Домашній сервер Matrix"
 
-#: src/ui/chatty-settings-dialog.ui:710
+#: src/ui/chatty-settings-dialog.ui:708
 msgid "Enter the matrix home server address."
 msgstr "Вкажіть адресу домашнього сервера matrix."
 
-#: src/ui/chatty-settings-dialog.ui:728
+#: src/ui/chatty-settings-dialog.ui:726
 msgid "_Accept"
 msgstr "При_йняти"
 
@@ -874,30 +876,3 @@ msgstr "Робочий: "
 #: src/users/chatty-contact.c:321
 msgid "Other: "
 msgstr "Інший: "
-
-#~ msgid "Message Error"
-#~ msgstr "Помилка повідомлення"
-
-#~ msgid "Account Info"
-#~ msgstr "Дані щодо облікового запису"
-
-#~ msgid "Account Connected"
-#~ msgstr "Обліковий запис з'єднано"
-
-#~ msgid "Group Details"
-#~ msgstr "Параметри групи"
-
-#~ msgid "Invite Contact"
-#~ msgstr "Запросити контакт"
-
-#~ msgid "Room settings"
-#~ msgstr "Параметри кімнати"
-
-#~ msgid "Show notification badge"
-#~ msgstr "Показувати банер сповіщення"
-
-#~ msgid "0 members"
-#~ msgstr "0 учасників"
-
-#~ msgid "Secure messaging using OMEMO"
-#~ msgstr "Безпечний обмін повідомленням з OMEMO"
