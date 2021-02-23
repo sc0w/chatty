@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gresources>
   <gresource prefix="/sm/puri/Chatty">
+    <file>ui/chatty-fp-row.ui</file>
     <file>ui/chatty-list-row.ui</file>
     <file>ui/chatty-chat-view.ui</file>
     <file>ui/chatty-contact-row.ui</file>
