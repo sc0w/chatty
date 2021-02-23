@@ -1652,9 +1652,6 @@ chatty_manager_initialize_libpurple (ChattyManager *self)
                          "account-removed", self,
                          PURPLE_CALLBACK (manager_account_removed_cb), self);
 
-  for (GList *node = purple_accounts_get_all (); node; node = node->next)
-    manager_account_added_cb (node->data, self);
-
   purple_signal_connect (purple_accounts_get_handle(),
                          "account-enabled", self,
                          PURPLE_CALLBACK (manager_account_changed_cb), self);
@@ -2072,6 +2069,10 @@ chatty_manager_purple (ChattyManager *self)
   purple_plugins_load_saved (CHATTY_PREFS_ROOT "/plugins/loaded");
 
   chatty_manager_load_plugins (self);
+
+  for (GList *node = purple_accounts_get_all (); node; node = node->next)
+    manager_account_added_cb (node->data, self);
+
   chatty_manager_load_buddies (self);
 
   purple_savedstatus_activate (purple_savedstatus_get_startup());
