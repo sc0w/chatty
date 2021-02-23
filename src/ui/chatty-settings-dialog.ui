@@ -490,19 +490,24 @@
 
                     <child>
                       <object class="HdyPreferencesGroup">
-                        <property name="visible" bind-source="fingerprint_list" bind-property="visible" bind-flags="sync-create"/>
+                        <property name="visible" bind-source="device_fp" bind-property="visible" bind-flags="sync-create"/>
                         <property name="title" translatable="yes">Own Fingerprint</property>
                         <child>
                           <object class="GtkListBox" id="fingerprint_list">
-                            <property name="visible">False</property>
+                            <property name="visible" bind-source="device_fp" bind-property="visible" bind-flags="sync-create"/>
                             <property name="can_focus">False</property>
                             <property name="expand">True</property>
                             <property name="selection-mode">none</property>
                             <style>
                               <class name="content"/>
                             </style>
+                            <child>
+                              <object class="ChattyFpRow" id="device_fp">
+                                <property name="visible">1</property>
+                              </object>
+                            </child>
                           </object>
-                        </child>
+                        </child> <!-- ./GtkListBox -->
                       </object>
                     </child>
                     <child>

@@ -34,6 +34,7 @@
 #include "matrix/chatty-ma-account.h"
 #include "chatty-manager.h"
 #include "chatty-icons.h"
+#include "chatty-fp-row.h"
 #include "chatty-avatar.h"
 #include "chatty-settings.h"
 #include "chatty-secret-store.h"
@@ -79,6 +80,7 @@ struct _ChattySettingsDialog
   GtkWidget      *new_password_entry;
 
   GtkWidget      *fingerprint_list;
+  GtkWidget      *device_fp;
   GtkWidget      *fingerprint_device_list;
 
   GtkWidget      *send_receipts_switch;
@@ -107,81 +109,6 @@ struct _ChattySettingsDialog
 };
 
 G_DEFINE_TYPE (ChattySettingsDialog, chatty_settings_dialog, GTK_TYPE_DIALOG)
-
-
-static void
-get_fp_list_own_cb (int         err,
-                    GHashTable *id_fp_table,
-                    gpointer    user_data)
-{
-  g_autoptr(GList) key_list = NULL;
-  g_autoptr(GList) filtered_list = NULL;
-  const GList *curr_p = NULL;
-  const char  *fp = NULL;
-  GtkWidget   *row;
-
-  ChattySettingsDialog *self = (ChattySettingsDialog *)user_data;
-
-  if (err || !id_fp_table) {
-    gtk_widget_hide (GTK_WIDGET(self->fingerprint_list));
-    gtk_widget_hide (GTK_WIDGET(self->fingerprint_device_list));
-
-    return;
-  }
-
-  if (self->fingerprint_list && self->fingerprint_device_list) {
-
-    key_list = g_hash_table_get_keys (id_fp_table);
-
-    for (curr_p = key_list; curr_p; curr_p = curr_p->next) {
-      fp = (char *) g_hash_table_lookup(id_fp_table, curr_p->data);
-
-      if (fp) {
-        filtered_list = g_list_append (filtered_list, curr_p->data);
-      }
-    }
-
-    gtk_container_foreach (GTK_CONTAINER (self->fingerprint_list),
-                           (GtkCallback)gtk_widget_destroy, NULL);
-    gtk_container_foreach (GTK_CONTAINER (self->fingerprint_device_list),
-                           (GtkCallback)gtk_widget_destroy, NULL);
-
-    for (curr_p = filtered_list; curr_p; curr_p = curr_p->next) {
-      fp = (char *) g_hash_table_lookup(id_fp_table, curr_p->data);
-
-      g_debug ("DeviceId: %i fingerprint: %s", *((guint32 *) curr_p->data),
-               fp ? fp : "(no session)");
-
-      row = chatty_utils_create_fingerprint_row (fp, *((guint32 *) curr_p->data));
-
-      if (row) {
-        if (curr_p == g_list_first (filtered_list)) {
-          gtk_container_add (GTK_CONTAINER(self->fingerprint_list), row);
-        } else {
-          gtk_container_add (GTK_CONTAINER(self->fingerprint_device_list), row);
-        }
-      }
-    }
-
-    if (g_list_length (filtered_list) == 1) {
-      gtk_widget_hide (GTK_WIDGET(self->fingerprint_device_list));
-    }
-  }
-}
-
-
-static void
-chatty_settings_dialog_get_fp_list_own (ChattySettingsDialog *self,
-                                        PurpleAccount        *account)
-{
-  void * plugins_handle = purple_plugins_get_handle();
-
-  purple_signal_emit (plugins_handle,
-                      "lurch-fp-list",
-                      account,
-                      get_fp_list_own_cb,
-                      self);
-}
 
 
 static void
@@ -536,17 +463,45 @@ chatty_settings_dialog_update_status (GtkListBoxRow *row)
 }
 
 static void
+get_fingerprints_cb (GObject      *object,
+                     GAsyncResult *result,
+                     gpointer      user_data)
+{
+  g_autoptr(ChattySettingsDialog) self = user_data;
+  ChattyAccount *account = CHATTY_ACCOUNT (object);
+  GListModel *fp_list;
+  HdyValueObject *device_fp;
+
+  g_assert (CHATTY_IS_SETTINGS_DIALOG (self));
+
+  chatty_account_load_fp_finish (account, result, NULL);
+
+  device_fp = chatty_account_get_device_fp (account);
+  fp_list = chatty_account_get_fp_list (account);
+
+  gtk_widget_set_visible (self->fingerprint_device_list, !!device_fp);
+  gtk_widget_set_visible (self->device_fp, !!device_fp);
+
+  gtk_widget_set_visible (self->fingerprint_device_list,
+                          fp_list && g_list_model_get_n_items (fp_list));
+
+  gtk_list_box_bind_model (GTK_LIST_BOX (self->fingerprint_device_list),
+                           fp_list,
+                           (GtkListBoxCreateWidgetFunc) chatty_fp_row_new,
+                           NULL, NULL);
+  if (device_fp)
+    chatty_fp_row_set_item (CHATTY_FP_ROW (self->device_fp), device_fp);
+}
+
+static void
 account_list_row_activated_cb (ChattySettingsDialog *self,
                                GtkListBoxRow        *row,
                                GtkListBox           *box)
 {
-  ChattyManager *manager;
-
   g_assert (CHATTY_IS_SETTINGS_DIALOG (self));
   g_assert (GTK_IS_LIST_BOX_ROW (row));
   g_assert (GTK_IS_LIST_BOX (box));
 
-  manager = chatty_manager_get_default ();
   gtk_widget_set_sensitive (self->add_button, FALSE);
   gtk_widget_set_sensitive (self->save_button, FALSE);
   gtk_widget_set_sensitive (self->password_entry, FALSE);
@@ -565,16 +520,10 @@ account_list_row_activated_cb (ChattySettingsDialog *self,
       gtk_stack_set_visible_child_name (GTK_STACK (self->main_stack),
                                         "edit-account-view");
 
-      if (chatty_manager_lurch_plugin_is_loaded (manager) &&
-          chatty_item_get_protocols (CHATTY_ITEM (self->selected_account)) == CHATTY_PROTOCOL_XMPP)
-        {
-          PurpleAccount *account;
-
-          account = chatty_pp_account_get_account (CHATTY_PP_ACCOUNT (self->selected_account));
-          gtk_widget_show (GTK_WIDGET (self->fingerprint_list));
-          gtk_widget_show (GTK_WIDGET (self->fingerprint_device_list));
-          chatty_settings_dialog_get_fp_list_own (self, account);
-        }
+      if (chatty_item_get_protocols (CHATTY_ITEM (self->selected_account)) == CHATTY_PROTOCOL_XMPP ||
+          CHATTY_IS_MA_ACCOUNT (self->selected_account))
+        chatty_account_load_fp_async (CHATTY_ACCOUNT (self->selected_account),
+                                      get_fingerprints_cb, g_object_ref (self));
 
       settings_update_account_details (self);
     }
@@ -935,6 +884,7 @@ chatty_settings_dialog_class_init (ChattySettingsDialogClass *klass)
   gtk_widget_class_bind_template_child (widget_class, ChattySettingsDialog, new_password_entry);
 
   gtk_widget_class_bind_template_child (widget_class, ChattySettingsDialog, fingerprint_list);
+  gtk_widget_class_bind_template_child (widget_class, ChattySettingsDialog, device_fp);
   gtk_widget_class_bind_template_child (widget_class, ChattySettingsDialog, fingerprint_device_list);
 
   gtk_widget_class_bind_template_child (widget_class, ChattySettingsDialog, send_receipts_switch);
