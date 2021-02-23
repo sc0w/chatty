@@ -162,6 +162,12 @@ chatty_account_real_delete (ChattyAccount *self)
   /* Do Nothing */
 }
 
+static HdyValueObject *
+chatty_account_real_get_device_fp (ChattyAccount *self)
+{
+  return NULL;
+}
+
 static GListModel *
 chatty_account_real_get_fp_list (ChattyAccount *self)
 {
@@ -258,6 +264,7 @@ chatty_account_class_init (ChattyAccountClass *klass)
   klass->set_remember_password = chatty_account_real_set_remember_password;
   klass->save = chatty_account_real_save;
   klass->delete = chatty_account_real_delete;
+  klass->get_device_fp = chatty_account_real_get_device_fp;
   klass->get_fp_list = chatty_account_real_get_fp_list;
   klass->load_fp_async = chatty_account_real_load_fp_async;
   klass->load_fp_finish = chatty_account_real_load_fp_finish;
@@ -438,6 +445,14 @@ chatty_account_delete (ChattyAccount *self)
   g_return_if_fail (CHATTY_IS_ACCOUNT (self));
 
   CHATTY_ACCOUNT_GET_CLASS (self)->delete (self);
+}
+
+HdyValueObject *
+chatty_account_get_device_fp (ChattyAccount *self)
+{
+  g_return_val_if_fail (CHATTY_IS_ACCOUNT (self), NULL);
+
+  return CHATTY_ACCOUNT_GET_CLASS (self)->get_device_fp (self);
 }
 
 GListModel *
