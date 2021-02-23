@@ -112,8 +112,16 @@ chatty_fp_row_set_item (ChattyFpRow    *self,
 
   value = hdy_value_object_dup_string (item);
   len = strlen (value);
-  if (len > 64)
-    value[len / 2] = '\n';
+  /* If we have at least 4 chunks, split the rest into a new line */
+  if (len >= 4 * 8) {
+    for (guint i = 4 * 8; value[i]; i++) {
+      if (value[i] != ' ')
+        continue;
+
+      value[i] = '\n';
+      break;
+    }
+  }
 
   gtk_label_set_text (GTK_LABEL (self->device_fp), value);
   g_free (value);
