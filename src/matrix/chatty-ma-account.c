@@ -45,6 +45,7 @@ struct _ChattyMaAccount
   MatrixApi      *matrix_api;
   MatrixEnc      *matrix_enc;
   MatrixDb       *matrix_db;
+  HdyValueObject *device_fp;
 
   ChattyHistory  *history_db;
 
@@ -673,6 +674,39 @@ chatty_ma_account_delete (ChattyAccount *account)
   g_assert (CHATTY_IS_MA_ACCOUNT (self));
 }
 
+static HdyValueObject *
+chatty_ma_account_get_device_fp (ChattyAccount *account)
+{
+  ChattyMaAccount *self = (ChattyMaAccount *)account;
+  const char *device_id;
+
+  g_assert (CHATTY_IS_MA_ACCOUNT (self));
+
+  device_id = matrix_api_get_device_id (self->matrix_api);
+  g_clear_object (&self->device_fp);
+
+  if (!self->device_fp && device_id) {
+    g_autoptr(GString) fp = NULL;
+    const char *str;
+
+    fp = g_string_new (NULL);
+    str = matrix_enc_get_ed25519_key (self->matrix_enc);
+
+    while (str && *str) {
+      g_autofree char *chunk = g_strndup (str, 4);
+
+      g_string_append_printf (fp, "%s ", chunk);
+      str = str + strlen (chunk);
+    }
+
+    self->device_fp = hdy_value_object_new_string (fp->str);
+    g_object_set_data_full (G_OBJECT (self->device_fp), "device-id",
+                            g_strdup (device_id), g_free);
+  }
+
+  return self->device_fp;
+}
+
 static ChattyProtocol
 chatty_ma_account_get_protocols (ChattyItem *item)
 {
@@ -714,6 +748,7 @@ chatty_ma_account_finalize (GObject *object)
 
   g_clear_object (&self->matrix_api);
   g_clear_object (&self->matrix_enc);
+  g_clear_object (&self->device_fp);
   g_clear_object (&self->chat_list);
   g_clear_object (&self->avatar);
   g_clear_pointer (&self->db_chat_list, g_ptr_array_unref);
@@ -747,6 +782,7 @@ chatty_ma_account_class_init (ChattyMaAccountClass *klass)
   account_class->get_remember_password = chatty_ma_account_get_remember_password;
   account_class->save = chatty_ma_account_save;
   account_class->delete = chatty_ma_account_delete;
+  account_class->get_device_fp = chatty_ma_account_get_device_fp;
 }
 
 static void
