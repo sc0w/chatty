@@ -219,11 +219,7 @@ message_row_update_message (ChattyMessageRow *self)
     message = chatty_msg_list_escape_message (self, chatty_message_get_text (self->message));
   }
 
-  if (type == CHATTY_MESSAGE_TEXT)
-    gtk_label_set_text (GTK_LABEL (self->message_label),
-                        chatty_message_get_text (self->message));
-  else
-    gtk_label_set_markup (GTK_LABEL (self->message_label), message);
+  gtk_label_set_markup (GTK_LABEL (self->message_label), message);
   gtk_label_set_markup (GTK_LABEL (self->footer_label), footer);
   gtk_widget_set_visible (self->footer_label, footer && *footer);
 
