@@ -110,6 +110,41 @@ message_row_hold_cb (ChattyMessageRow *self)
 }
 
 static void
+message_row_update_quotes (ChattyMessageRow *self)
+{
+  const char *text, *end;
+  char *quote;
+
+  text = gtk_label_get_text (GTK_LABEL (self->message_label));
+  end = text;
+
+  if (!text || !*text)
+    return;
+
+  do {
+    quote = strchr (end, '>');
+
+    if (quote &&
+        (quote == text ||
+         *(quote - 1) == '\n')) {
+      PangoAttrList *list;
+      PangoAttribute *attribute;
+
+      list = gtk_label_get_attributes (GTK_LABEL (self->message_label));
+      end = strchr (quote, '\n');
+
+      if (!end)
+        end = quote + strlen (quote);
+
+      attribute = pango_attr_foreground_new (30000, 30000, 30000);
+      attribute->start_index = quote - text;
+      attribute->end_index = end - text + 1;
+      pango_attr_list_insert (list, attribute);
+    }
+  } while (quote && *quote);
+}
+
+static void
 message_row_update_message (ChattyMessageRow *self)
 {
   g_autofree char *message = NULL;
@@ -191,6 +226,8 @@ message_row_update_message (ChattyMessageRow *self)
     gtk_label_set_markup (GTK_LABEL (self->message_label), message);
   gtk_label_set_markup (GTK_LABEL (self->footer_label), footer);
   gtk_widget_set_visible (self->footer_label, footer && *footer);
+
+  message_row_update_quotes (self);
 }
 
 static gboolean
@@ -237,7 +274,13 @@ chatty_message_row_class_init (ChattyMessageRowClass *klass)
 static void
 chatty_message_row_init (ChattyMessageRow *self)
 {
+  PangoAttrList *list;
+
   gtk_widget_init_template (GTK_WIDGET (self));
+
+  list = pango_attr_list_new ();
+  gtk_label_set_attributes (GTK_LABEL (self->message_label), list);
+  pango_attr_list_unref (list);
 
   self->multipress_gesture = gtk_gesture_multi_press_new (self->message_event_box);
   gtk_gesture_single_set_button (GTK_GESTURE_SINGLE (self->multipress_gesture), GDK_BUTTON_SECONDARY);
