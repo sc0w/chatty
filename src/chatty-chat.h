@@ -61,6 +61,15 @@ struct _ChattyChatClass
   gboolean          (*get_buddy_typing)   (ChattyChat *self);
   void              (*set_typing)         (ChattyChat *self,
                                            gboolean    is_typing);
+  void              (*invite_async)       (ChattyChat *self,
+                                           const char *username,
+                                           const char *invite_msg,
+                                           GCancellable *cancellable,
+                                           GAsyncReadyCallback callback,
+                                           gpointer       user_data);
+  gboolean         (*invite_finish)       (ChattyChat    *self,
+                                           GAsyncResult  *result,
+                                           GError       **error);
 };
 
 ChattyChat         *chatty_chat_new                (const char *account_username,
@@ -99,5 +108,14 @@ void                chatty_chat_set_encryption     (ChattyChat *self,
 gboolean            chatty_chat_get_buddy_typing   (ChattyChat *self);
 void                chatty_chat_set_typing         (ChattyChat *self,
                                                     gboolean    is_typing);
+void                chatty_chat_invite_async       (ChattyChat *self,
+                                                    const char *username,
+                                                    const char *invite_msg,
+                                                    GCancellable *cancellable,
+                                                    GAsyncReadyCallback callback,
+                                                    gpointer    user_data);
+gboolean           chatty_chat_invite_finish       (ChattyChat    *self,
+                                                    GAsyncResult  *result,
+                                                    GError       **error);
 
 G_END_DECLS
