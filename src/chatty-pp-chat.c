@@ -26,6 +26,7 @@
 #include "users/chatty-pp-account.h"
 #include "chatty-manager.h"
 #include "chatty-pp-chat.h"
+#include "chatty-log.h"
 
 #define CHATTY_COLOR_BLUE "4A8FD9"
 
@@ -666,6 +667,37 @@ chatty_pp_chat_set_typing (ChattyChat *chat,
   }
 }
 
+static void
+chatty_pp_chat_invite_async (ChattyChat          *chat,
+                             const char          *username,
+                             const char          *invite_msg,
+                             GCancellable        *cancellable,
+                             GAsyncReadyCallback  callback,
+                             gpointer             user_data)
+{
+  ChattyPpChat *self = (ChattyPpChat *)chat;
+  g_autoptr(GTask) task = NULL;
+
+  g_assert (CHATTY_IS_PP_CHAT (self));
+
+  task = g_task_new (self, cancellable, callback, user_data);
+  if (!self->conv ||
+      chatty_item_get_protocols (CHATTY_ITEM (self)) != CHATTY_PROTOCOL_XMPP ||
+      chatty_chat_is_im (chat)) {
+    g_task_return_new_error (task, G_IO_ERROR, G_IO_ERROR_NOT_SUPPORTED,
+                             "Chat doesn't supports invite");
+    return;
+  }
+
+  CHATTY_DEBUG_MSG ("Inviting user %s, invite message: %s", username, invite_msg);
+
+  serv_chat_invite (purple_conversation_get_gc (self->conv),
+                    purple_conv_chat_get_id (PURPLE_CONV_CHAT (self->conv)),
+                    invite_msg, username);
+
+  g_task_return_boolean (task, TRUE);
+}
+
 static const char *
 chatty_pp_chat_get_name (ChattyItem *item)
 {
@@ -862,6 +894,7 @@ chatty_pp_chat_class_init (ChattyPpChatClass *klass)
   chat_class->set_encryption = chatty_pp_chat_set_encryption;
   chat_class->get_buddy_typing = chatty_pp_chat_get_buddy_typing;
   chat_class->set_typing = chatty_pp_chat_set_typing;
+  chat_class->invite_async = chatty_pp_chat_invite_async;
 }
 
 static void
