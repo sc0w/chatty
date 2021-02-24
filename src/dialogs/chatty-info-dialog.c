@@ -301,28 +301,30 @@ info_dialog_cancel_clicked_cb (ChattyInfoDialog *self)
 }
 
 static void
+chat_invite_cb (GObject      *object,
+                GAsyncResult *result,
+                gpointer      user_data)
+{
+  g_autoptr(ChattyInfoDialog) self = user_data;
+
+  g_assert (CHATTY_IS_INFO_DIALOG (self));
+}
+
+static void
 info_dialog_invite_clicked_cb (ChattyInfoDialog *self)
 {
-  PurpleConversation *conv;
   const char *name, *invite_message;
 
   g_assert (CHATTY_IS_INFO_DIALOG (self));
   g_return_if_fail (self->chat);
 
-  if (chatty_item_get_protocols (CHATTY_ITEM (self->chat)) != CHATTY_PROTOCOL_XMPP ||
-      chatty_chat_is_im (self->chat))
-    goto end;
-
-  conv = chatty_pp_chat_get_purple_conv (CHATTY_PP_CHAT (self->chat));
   name = gtk_entry_get_text (GTK_ENTRY (self->contact_id_entry));
   invite_message = gtk_entry_get_text (GTK_ENTRY (self->message_entry));
 
-  if (name && *name && conv)
-    serv_chat_invite (purple_conversation_get_gc (conv),
-                      purple_conv_chat_get_id (PURPLE_CONV_CHAT (conv)),
-                      invite_message, name);
+  if (name && *name)
+    chatty_chat_invite_async (CHATTY_CHAT (self->chat), name, invite_message, NULL,
+                              chat_invite_cb, g_object_ref (self));
 
- end:
   gtk_entry_set_text (GTK_ENTRY (self->contact_id_entry), "");
   gtk_entry_set_text (GTK_ENTRY (self->message_entry), "");
   info_dialog_cancel_clicked_cb (self);
