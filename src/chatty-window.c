@@ -657,6 +657,28 @@ window_leave_chat_clicked_cb (ChattyWindow *self)
   chatty_window_change_view (self, CHATTY_VIEW_CHAT_LIST);
 }
 
+static void
+write_contact_cb (GObject      *object,
+                  GAsyncResult *result,
+                  gpointer      user_data)
+{
+  g_autoptr(ChattyWindow) self = user_data;
+  g_autoptr(GError) error = NULL;
+  GtkWidget *dialog;
+
+  g_assert (CHATTY_IS_WINDOW (self));
+
+  if (chatty_eds_write_contact_finish (result, &error))
+    return;
+
+  dialog = gtk_message_dialog_new (GTK_WINDOW (self),
+                                   GTK_DIALOG_MODAL,
+                                   GTK_MESSAGE_WARNING,
+                                   GTK_BUTTONS_CLOSE,
+                                   _("Error saving contact: %s"), error->message);
+  gtk_dialog_run (GTK_DIALOG (dialog));
+  gtk_widget_destroy (dialog);
+}
 
 static void
 window_add_contact_clicked_cb (ChattyWindow *self)
@@ -694,7 +716,7 @@ window_add_contact_clicked_cb (ChattyWindow *self)
       contact = chatty_eds_find_by_number (chatty_eds, number);
 
     if (!contact)
-      chatty_dbus_gc_write_contact (who, number);
+      chatty_eds_write_contact_async (who, number, write_contact_cb, g_object_ref (self));
   }
 
   gtk_widget_hide (self->menu_add_contact_button);
@@ -716,7 +738,7 @@ window_add_in_contacts_clicked_cb (ChattyWindow *self)
   number = chatty_utils_check_phonenumber (who, chatty_settings_get_country_iso_code (self->settings));
   CHATTY_TRACE_MSG ("Save to contacts, name: %s, number: %s", who, number);
 
-  chatty_dbus_gc_write_contact (alias, number);
+  chatty_eds_write_contact_async (alias, number, write_contact_cb, g_object_ref (self));
 }
 
 
