@@ -15,7 +15,6 @@
 #include "contrib/gtk.h"
 #include "chatty-config.h"
 #include "chatty-window.h"
-#include "chatty-dbus.h"
 #include "chatty-history.h"
 #include "chatty-avatar.h"
 #include "chatty-manager.h"
