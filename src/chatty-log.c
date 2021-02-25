@@ -15,6 +15,8 @@
 
 #include "chatty-log.h"
 
+#define DEFAULT_DOMAIN "chatty"
+
 char *domain;
 static int verbosity;
 gboolean any_domain;
@@ -185,13 +187,20 @@ chatty_log_handler (GLogLevelFlags   log_level,
         log_message = field->value;
     }
 
+  if (!log_domain)
+    log_domain = "**";
+
+  /* Skip logs from other domains if verbosity level is low */
+  if (any_domain && !domain &&
+      verbosity < 5 &&
+      log_level > G_LOG_LEVEL_MESSAGE &&
+      !strstr (log_domain, DEFAULT_DOMAIN))
+    return G_LOG_WRITER_HANDLED;
+
   /* GdkPixbuf logs are too much verbose, skip unless asked not to. */
   if (g_strcmp0 (log_domain, "GdkPixbuf") == 0 &&
       g_strcmp0 (log_domain, domain) != 0)
     return G_LOG_WRITER_HANDLED;
-
-  if (!log_domain)
-    log_domain = "**";
 
   if (!log_message)
     log_message = "(NULL) message";
