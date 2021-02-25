@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: purism-chatty\n"
 "Report-Msgid-Bugs-To: https://source.puri.sm/Librem5/chatty/issues\n"
-"POT-Creation-Date: 2021-02-23 15:25+0000\n"
-"PO-Revision-Date: 2021-02-23 20:33+0200\n"
+"POT-Creation-Date: 2021-02-25 15:25+0000\n"
+"PO-Revision-Date: 2021-02-25 19:53+0200\n"
 "Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian <trans-uk@lists.fedoraproject.org>\n"
 "Language: uk\n"
@@ -233,8 +233,7 @@ msgstr "і оператор може стягувати за нього спла
 #: src/chatty-fp-row.c:131
 #, c-format
 msgid "Device ID %s fingerprint:"
-msgstr ""
-"Відбиток ідентифікатора пристрою %s:"
+msgstr "Відбиток ідентифікатора пристрою %s:"
 
 #. Translators: Timestamp seconds suffix
 #: src/chatty-list-row.c:73
@@ -353,7 +352,7 @@ msgstr "Зберегти файл…"
 msgid "Open File..."
 msgstr "Відкрити файл…"
 
-#: src/chatty-purple-request.c:191 src/chatty-window.c:584
+#: src/chatty-purple-request.c:191 src/chatty-window.c:583
 #: src/dialogs/chatty-settings-dialog.c:580 src/ui/chatty-dialog-join-muc.ui:16
 #: src/ui/chatty-info-dialog.ui:44 src/ui/chatty-info-dialog.ui:550
 msgid "Cancel"
@@ -394,11 +393,11 @@ msgstr "%a %I∶%M %p"
 msgid "%Y-%m-%d"
 msgstr "%d-%m-%Y"
 
-#: src/chatty-window.c:107 src/chatty-window.c:112 src/chatty-window.c:117
+#: src/chatty-window.c:106 src/chatty-window.c:111 src/chatty-window.c:116
 msgid "Choose a contact"
 msgstr "Виберіть контакт"
 
-#: src/chatty-window.c:108
+#: src/chatty-window.c:107
 msgid ""
 "Select an <b>SMS</b> or <b>Instant Message</b> contact with the <b>\"+\"</b> "
 "button in the titlebar."
@@ -406,7 +405,7 @@ msgstr ""
 "Виберіть контакт <b>SMS</b> або <b>обміну повідомленнями</b> за допомогою "
 "кнопки <b>+</b> на смужці заголовка."
 
-#: src/chatty-window.c:113
+#: src/chatty-window.c:112
 msgid ""
 "Select an <b>Instant Message</b> contact with the \"+\" button in the "
 "titlebar."
@@ -414,12 +413,12 @@ msgstr ""
 "Виберіть контакт <b>обміну повідомленнями</b> за допомогою кнопки «+» на "
 "смужці заголовка."
 
-#: src/chatty-window.c:118
+#: src/chatty-window.c:117
 msgid "Start a <b>SMS</b> chat with the \"+\" button in the titlebar."
 msgstr ""
 "Розпочніть спілкування <b>SMS</b> натисканням кнопки «+» на смужці заголовка."
 
-#: src/chatty-window.c:119 src/chatty-window.c:123
+#: src/chatty-window.c:118 src/chatty-window.c:122
 msgid ""
 "For <b>Instant Messaging</b> add or activate an account in <i>\"preferences"
 "\"</i>."
@@ -427,39 +426,44 @@ msgstr ""
 "Для спілкування <b>обміном повідомленнями</b> додайте або активуйте "
 "обліковий запис у <i>параметрах програми</i>."
 
-#: src/chatty-window.c:122
+#: src/chatty-window.c:121
 msgid "Start chatting"
 msgstr "Почати спілкування"
 
-#: src/chatty-window.c:569
+#: src/chatty-window.c:568
 msgid "Delete chat with"
 msgstr "Вилучити спілкування з"
 
-#: src/chatty-window.c:570
+#: src/chatty-window.c:569
 msgid "This deletes the conversation history"
 msgstr "У результаті буде вилучено журнал спілкування"
 
-#: src/chatty-window.c:572
+#: src/chatty-window.c:571
 msgid "Disconnect group chat"
 msgstr "Від'єднатися від групового спілкування"
 
-#: src/chatty-window.c:573
+#: src/chatty-window.c:572
 msgid "This removes chat from chats list"
 msgstr "У результаті спілкування буде вилучено зі списку спілкувань"
 
-#: src/chatty-window.c:586
+#: src/chatty-window.c:585
 msgid "Delete"
 msgstr "Вилучити"
 
-#: src/chatty-window.c:801
+#: src/chatty-window.c:677
+#, c-format
+msgid "Error saving contact: %s"
+msgstr "Помилка під час спроби зберегти контакт: %s"
+
+#: src/chatty-window.c:822
 msgid "An SMS and XMPP messaging client"
 msgstr "Клієнт обміну повідомленнями SMS і XMPP"
 
-#: src/chatty-window.c:808
+#: src/chatty-window.c:829
 msgid "translator-credits"
 msgstr "Юрій Чорноіван <yurchor@ukr.net>, 2020"
 
-#: src/chatty-window.c:1108
+#: src/chatty-window.c:1129
 #, c-format
 msgid "“%s” is not a valid phone number"
 msgstr "«%s» не є коректним номером телефону"
@@ -500,11 +504,11 @@ msgstr "Ід. Matrix:"
 msgid "Telegram ID:"
 msgstr "Ід. Telegram:"
 
-#: src/dialogs/chatty-new-chat-dialog.c:153
+#: src/dialogs/chatty-new-chat-dialog.c:152
 msgid "Send To"
 msgstr "Надіслати"
 
-#: src/dialogs/chatty-new-chat-dialog.c:197
+#: src/dialogs/chatty-new-chat-dialog.c:196
 #, c-format
 msgid "Error opening GNOME Contacts: %s"
 msgstr "Помилка під час спроби відкрити «Контакти» GNOME: %s"
