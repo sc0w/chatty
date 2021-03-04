@@ -11,6 +11,7 @@
 
 #include <glib/gi18n.h>
 
+#include "chatty-config.h"
 #include "chatty-avatar.h"
 #include "chatty-list-row.h"
 #include "chatty-fp-row.h"
@@ -67,13 +68,15 @@ chatty_info_dialog_list_users (ChattyInfoDialog *self)
 {
   GListModel *user_list;
   g_autofree char *count_str = NULL;
+  guint n_items;
 
   g_assert (CHATTY_IS_INFO_DIALOG (self));
 
   user_list = chatty_chat_get_users (self->chat);
-  count_str = g_strdup_printf ("%u %s",
-                               g_list_model_get_n_items (user_list),
-                               _("members"));
+  n_items = g_list_model_get_n_items (user_list);
+  count_str = g_strdup_printf (g_dngettext (GETTEXT_PACKAGE, "%u Member",
+                                            "%u Members", n_items),
+                               n_items);
   gtk_label_set_text (GTK_LABEL (self->user_list_label), count_str);
   gtk_list_box_bind_model (GTK_LIST_BOX (self->user_list), user_list,
                            (GtkListBoxCreateWidgetFunc)chatty_list_row_new,
