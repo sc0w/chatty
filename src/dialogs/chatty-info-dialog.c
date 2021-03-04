@@ -354,17 +354,13 @@ info_dialog_avatar_button_clicked_cb (ChattyInfoDialog *self)
 static void
 show_status_switch_changed_cb (ChattyInfoDialog *self)
 {
-  PurpleConversation *conv;
-  PurpleBlistNode *node;
   gboolean active;
 
   g_assert (CHATTY_IS_INFO_DIALOG (self));
   g_return_if_fail (CHATTY_IS_PP_CHAT (self->chat));
 
   active = gtk_switch_get_active (GTK_SWITCH (self->show_status_switch));
-  conv = chatty_pp_chat_get_purple_conv (CHATTY_PP_CHAT (self->chat));
-  node = PURPLE_BLIST_NODE (purple_blist_find_chat (conv->account, conv->name));
-  purple_blist_node_set_bool (node, "chatty-status-msg", active);
+  chatty_pp_chat_set_show_status_msg (CHATTY_PP_CHAT (self->chat), active);
 }
 
 static void
