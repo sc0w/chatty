@@ -2184,8 +2184,9 @@ chatty_manager_load_plugins (ChattyManager *self)
     plugins = purple_plugins_get_loaded ();
 
     for (GList *item = plugins; item; item = item->next)
-      g_string_append_printf (plugins_str, "%s ",
-                              purple_plugin_get_id (item->data));
+      g_string_append_printf (plugins_str, "%s:%s ",
+                              purple_plugin_get_id (item->data),
+                              purple_plugin_get_version (item->data));
 
     g_debug ("Loaded purple plugins: %s", plugins_str->str);
   }
