@@ -62,6 +62,13 @@ char               *chatty_pp_chat_get_buddy_name         (ChattyPpChat       *c
 void                chatty_pp_chat_emit_user_changed      (ChattyPpChat       *self,
                                                            const char         *user);
 void                chatty_pp_chat_load_encryption_status (ChattyPpChat       *self);
+GListModel         *chatty_pp_chat_get_fp_list            (ChattyPpChat       *self);
+void                chatty_pp_chat_load_fp_list_async     (ChattyPpChat       *self,
+                                                           GAsyncReadyCallback callback,
+                                                           gpointer            user_data);
+gboolean            chatty_pp_chat_load_fp_list_finish    (ChattyPpChat       *self,
+                                                           GAsyncResult       *result,
+                                                           GError            **error);
 gboolean            chatty_pp_chat_get_show_notifications (ChattyPpChat       *self);
 gboolean            chatty_pp_chat_get_show_status_msg    (ChattyPpChat       *self);
 void                chatty_pp_chat_set_show_notifications (ChattyPpChat       *self,

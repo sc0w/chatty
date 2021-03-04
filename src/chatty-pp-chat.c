@@ -62,6 +62,7 @@ struct _ChattyPpChat
   GListStore         *chat_users;
   GtkSortListModel   *sorted_chat_users;
   GListStore         *message_store;
+  GListStore         *fp_list;
 
   char               *last_message;
   char               *chat_name;
@@ -94,6 +95,50 @@ emit_avatar_changed (ChattyPpChat *self)
   g_assert (CHATTY_IS_PP_CHAT (self));
 
   g_signal_emit_by_name (self, "avatar-changed");
+}
+
+static void
+list_fingerprints_cb (int         error,
+                      GHashTable *fp_table,
+                      gpointer    user_data)
+{
+  g_autoptr(GTask)task = user_data;
+  g_autoptr(GList) key_list = NULL;
+  ChattyPpChat *self;
+
+  g_assert (G_IS_TASK (task));
+
+  self = g_task_get_source_object (task);
+  g_assert (CHATTY_IS_PP_CHAT (self));
+
+  if (error || !fp_table) {
+    CHATTY_DEBUG_MSG ("No fingerprints. has error: %d", !!error);
+    g_task_return_boolean (task, FALSE);
+
+    return;
+  }
+
+  key_list = g_hash_table_get_keys (fp_table);
+
+  for (GList *item = key_list; item; item = item->next) {
+    g_autoptr(HdyValueObject) object = NULL;
+    const char *fp;
+    char *id;
+
+    fp = g_hash_table_lookup (fp_table, item->data);
+    g_debug ("DeviceId: %i fingerprint: %s", *((guint32 *) item->data),
+             fp ? fp : "(no session)");
+
+    if (!fp)
+      continue;
+
+    object = hdy_value_object_new_string (fp);
+    id = g_strdup_printf ("%u", *((guint32 *) item->data));
+    g_object_set_data_full (G_OBJECT (object), "device-id", id, g_free);
+    g_list_store_append (self->fp_list, object);
+  }
+
+  g_task_return_boolean (task, TRUE);
 }
 
 static void
@@ -851,6 +896,8 @@ chatty_pp_chat_finalize (GObject *object)
 
   g_list_store_remove_all (self->chat_users);
   g_list_store_remove_all (self->message_store);
+  g_list_store_remove_all (self->fp_list);
+  g_object_unref (self->fp_list);
   g_object_unref (self->message_store);
   g_object_unref (self->chat_users);
   g_object_unref (self->sorted_chat_users);
@@ -907,6 +954,7 @@ chatty_pp_chat_init (ChattyPpChat *self)
   self->sorted_chat_users = gtk_sort_list_model_new (G_LIST_MODEL (self->chat_users), sorter);
 
   self->message_store = g_list_store_new (CHATTY_TYPE_MESSAGE);
+  self->fp_list = g_list_store_new (HDY_TYPE_VALUE_OBJECT);
   self->encrypt = CHATTY_ENCRYPTION_UNSUPPORTED;
 }
 
@@ -1338,6 +1386,51 @@ chatty_pp_chat_load_encryption_status (ChattyPpChat *self)
                       lurch_status_changed_cb,
                       g_object_ref (self));
 
+}
+
+GListModel *
+chatty_pp_chat_get_fp_list (ChattyPpChat *self)
+{
+  g_return_val_if_fail (CHATTY_IS_PP_CHAT (self), NULL);
+
+  return G_LIST_MODEL (self->fp_list);
+}
+
+void
+chatty_pp_chat_load_fp_list_async (ChattyPpChat        *self,
+                                   GAsyncReadyCallback  callback,
+                                   gpointer             user_data)
+{
+  g_autoptr(GTask) task = NULL;
+  g_autofree char *user_id = NULL;
+  const char *name;
+  void *handle;
+
+  g_return_if_fail (CHATTY_IS_PP_CHAT (self));
+
+  task = g_task_new (self, NULL, callback, user_data);
+  name = chatty_chat_get_chat_name (CHATTY_CHAT (self));
+  user_id = chatty_utils_jabber_id_strip (name);
+  handle = purple_plugins_get_handle ();
+
+  if (!self->buddy || !self->supports_encryption) {
+    g_task_return_boolean (task, FALSE);
+    return;
+  }
+
+  g_list_store_remove_all (self->fp_list);
+  purple_signal_emit (handle, "lurch-fp-other", self->buddy->account,
+                      user_id, list_fingerprints_cb, g_steal_pointer (&task));
+}
+
+gboolean
+chatty_pp_chat_load_fp_list_finish (ChattyPpChat  *self,
+                                    GAsyncResult  *result,
+                                    GError       **error)
+{
+  g_return_val_if_fail (CHATTY_IS_PP_CHAT (self), FALSE);
+
+  return g_task_propagate_boolean (G_TASK (result), error);
 }
 
 gboolean
