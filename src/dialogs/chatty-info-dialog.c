@@ -13,6 +13,7 @@
 
 #include "chatty-avatar.h"
 #include "chatty-list-row.h"
+#include "chatty-fp-row.h"
 #include "chatty-pp-chat.h"
 #include "chatty-manager.h"
 #include "chatty-utils.h"
@@ -60,69 +61,6 @@ struct _ChattyInfoDialog
 };
 
 G_DEFINE_TYPE (ChattyInfoDialog, chatty_info_dialog, GTK_TYPE_DIALOG)
-
-static void
-list_fingerprints_cb (int         err,
-                      GHashTable *fingerprints,
-                      gpointer    user_data)
-{
-  ChattyInfoDialog *self = user_data;
-  GList *key_list = NULL;
-
-  g_assert (CHATTY_IS_INFO_DIALOG (self));
-
-  if (err || !fingerprints) {
-    gtk_widget_hide (self->key_list);
-    gtk_label_set_text (GTK_LABEL (self->encryption_label), _("Encryption not available"));
-
-    return;
-  }
-
-  key_list = g_hash_table_get_keys (fingerprints);
-
-  for (GList *item = key_list; item; item = item->next) {
-    GtkWidget *row;
-    const char *fp;
-
-    fp = g_hash_table_lookup (fingerprints, item->data);
-    g_debug ("DeviceId: %i fingerprint:\n%s\n", *((guint32 *) item->data),
-             fp ? fp : "(no session)");
-
-    row = chatty_utils_create_fingerprint_row (fp, *((guint32 *) item->data));
-    if (row) {
-      gtk_container_add (GTK_CONTAINER (self->key_list), row);
-      gtk_widget_show (self->key_list);
-    }
-  }
-
-  g_list_free (key_list);
-}
-
-static void
-chatty_info_dialog_list_fingerprints (ChattyInfoDialog *self)
-{
-  PurpleAccount *account = NULL;
-  PurpleBuddy *buddy;
-  g_autofree char *user_id = NULL;
-  const char *name;
-  void *handle;
-
-  g_assert (CHATTY_IS_INFO_DIALOG (self));
-  g_return_if_fail (CHATTY_IS_PP_CHAT (self->chat));
-
-  name = chatty_chat_get_chat_name (self->chat);
-  user_id = chatty_utils_jabber_id_strip (name);
-  handle = purple_plugins_get_handle();
-
-  buddy = chatty_pp_chat_get_purple_buddy (CHATTY_PP_CHAT (self->chat));
-  if (buddy)
-    account = buddy->account;
-  else
-    return;
-
-  purple_signal_emit (handle, "lurch-fp-other", account, user_id,
-                      list_fingerprints_cb, self);
-}
 
 static void
 chatty_info_dialog_list_users (ChattyInfoDialog *self)
@@ -175,6 +113,30 @@ info_dialog_encrypt_changed_cb (ChattyInfoDialog *self)
   }
 
   gtk_label_set_text (GTK_LABEL (self->encryption_label), status_msg);
+}
+
+static void
+info_dialog_list_fp_cb (GObject      *object,
+                        GAsyncResult *result,
+                        gpointer      user_data)
+{
+  ChattyInfoDialog *self = user_data;
+  ChattyPpChat *chat;
+
+  g_assert (CHATTY_IS_INFO_DIALOG (self));
+
+  chat = CHATTY_PP_CHAT (self->chat);
+
+  if (!chatty_pp_chat_load_fp_list_finish (chat, result, NULL)) {
+    gtk_widget_hide (self->key_list);
+    gtk_label_set_text (GTK_LABEL (self->encryption_label), _("Encryption not available"));
+  } else {
+    gtk_widget_show (self->key_list);
+    gtk_list_box_bind_model (GTK_LIST_BOX (self->key_list),
+                             chatty_pp_chat_get_fp_list (chat),
+                             (GtkListBoxCreateWidgetFunc) chatty_fp_row_new,
+                             NULL, NULL);
+  }
 }
 
 static void
@@ -235,11 +197,15 @@ chatty_info_dialog_update (ChattyInfoDialog *self)
                         chatty_item_get_name (CHATTY_ITEM (self->chat)));
   }
 
+  gtk_list_box_bind_model (GTK_LIST_BOX (self->key_list),
+                           NULL, NULL, NULL, NULL);
+
   if (protocol == CHATTY_PROTOCOL_XMPP &&
       chatty_chat_is_im (self->chat)) {
     gtk_widget_show (self->encryption_label);
     gtk_widget_show (self->status_label);
-    chatty_info_dialog_list_fingerprints (self);
+    chatty_pp_chat_load_fp_list_async (CHATTY_PP_CHAT (self->chat),
+                                       info_dialog_list_fp_cb, self);
   } else {
     gtk_widget_hide (self->encryption_label);
     gtk_widget_hide (self->status_label);
