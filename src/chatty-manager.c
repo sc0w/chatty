@@ -650,6 +650,7 @@ chatty_conv_new (PurpleConversation *conv)
           folks_name = chatty_item_get_name (CHATTY_ITEM (contact));
 
           buddy = purple_buddy_new (account, conv_name, folks_name);
+          purple_blist_node_set_bool (PURPLE_BLIST_NODE (buddy), "chatty-notifications", TRUE);
 
           purple_blist_add_buddy (buddy, NULL, NULL, NULL);
         }
@@ -661,6 +662,7 @@ chatty_conv_new (PurpleConversation *conv)
       purple_blist_add_buddy (buddy, NULL, NULL, NULL);
       // flag the node in the blist so it can be set off in the chats-list
       purple_blist_node_set_bool (PURPLE_BLIST_NODE(buddy), "chatty-unknown-contact", TRUE);
+      purple_blist_node_set_bool (PURPLE_BLIST_NODE (buddy), "chatty-notifications", TRUE);
 
       g_debug ("Unknown contact %s added to blist", purple_buddy_get_name (buddy));
     }
