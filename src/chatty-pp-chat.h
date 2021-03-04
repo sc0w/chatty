@@ -66,6 +66,8 @@ gboolean            chatty_pp_chat_get_show_notifications (ChattyPpChat       *s
 gboolean            chatty_pp_chat_get_show_status_msg    (ChattyPpChat       *self);
 void                chatty_pp_chat_set_show_notifications (ChattyPpChat       *self,
                                                            gboolean            show);
+void                chatty_pp_chat_set_show_status_msg    (ChattyPpChat       *self,
+                                                           gboolean            show);
 const char         *chatty_pp_chat_get_status             (ChattyPpChat       *self);
 gboolean            chatty_pp_chat_get_auto_join          (ChattyPpChat       *self);
 void                chatty_pp_chat_set_buddy_typing       (ChattyPpChat       *self,

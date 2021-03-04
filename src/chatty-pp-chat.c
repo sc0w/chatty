@@ -1392,6 +1392,23 @@ chatty_pp_chat_set_show_notifications (ChattyPpChat *self,
   purple_blist_node_set_bool (node, "chatty-notifications", !!show);
 }
 
+void
+chatty_pp_chat_set_show_status_msg (ChattyPpChat *self,
+                                    gboolean      show)
+{
+  PurpleConversation *conv;
+  PurpleBlistNode *node;
+
+  g_return_if_fail (CHATTY_IS_PP_CHAT (self));
+
+  if (!self->conv)
+    return;
+
+  conv = self->conv;
+  node = PURPLE_BLIST_NODE (purple_blist_find_chat (conv->account, conv->name));
+  purple_blist_node_set_bool (node, "chatty-status-msg", show);
+}
+
 const char *
 chatty_pp_chat_get_status (ChattyPpChat *self)
 {
