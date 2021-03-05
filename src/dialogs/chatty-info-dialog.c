@@ -44,6 +44,7 @@ struct _ChattyInfoDialog
   GtkWidget      *encryption_label;
   GtkWidget      *status_label;
 
+  GtkWidget      *settings_label;
   GtkWidget      *notification_switch;
   GtkWidget      *show_status_switch;
   GtkWidget      *encryption_switch;
@@ -95,7 +96,9 @@ info_dialog_encrypt_changed_cb (ChattyInfoDialog *self)
   encryption = chatty_chat_get_encryption (self->chat);
   has_encryption = encryption != CHATTY_ENCRYPTION_UNSUPPORTED;
 
-  gtk_widget_set_visible (self->encryption_switch, has_encryption);
+  gtk_widget_set_visible (self->settings_label, CHATTY_IS_PP_CHAT (self->chat));
+  gtk_widget_set_visible (self->encryption_switch,
+                          has_encryption && CHATTY_IS_PP_CHAT (self->chat));
 
   switch (encryption) {
   case CHATTY_ENCRYPTION_UNSUPPORTED:
@@ -429,6 +432,7 @@ chatty_info_dialog_class_init (ChattyInfoDialogClass *klass)
   gtk_widget_class_bind_template_child (widget_class, ChattyInfoDialog, encryption_label);
   gtk_widget_class_bind_template_child (widget_class, ChattyInfoDialog, status_label);
 
+  gtk_widget_class_bind_template_child (widget_class, ChattyInfoDialog, settings_label);
   gtk_widget_class_bind_template_child (widget_class, ChattyInfoDialog, notification_switch);
   gtk_widget_class_bind_template_child (widget_class, ChattyInfoDialog, show_status_switch);
   gtk_widget_class_bind_template_child (widget_class, ChattyInfoDialog, encryption_switch);
