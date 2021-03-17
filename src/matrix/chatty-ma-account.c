@@ -967,7 +967,9 @@ db_load_chats_cb (GObject      *object,
   if (error)
     g_warning ("Error getting chats: %s", error->message);
 
+
   matrix_db_load_account_async (self->matrix_db, CHATTY_ACCOUNT (self),
+                                matrix_api_get_device_id (self->matrix_api),
                                 db_load_account_cb, self);
 }
 

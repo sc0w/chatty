@@ -400,7 +400,7 @@ matrix_db_load_account (MatrixDb *self,
                         GTask    *task)
 {
   sqlite3_stmt *stmt;
-  char *username;
+  char *username, *device_id;
   int status;
 
   g_assert (MATRIX_IS_DB (self));
@@ -409,16 +409,19 @@ matrix_db_load_account (MatrixDb *self,
   g_assert (self->db);
 
   username = g_object_get_data (G_OBJECT (task), "username");
+  device_id = g_object_get_data (G_OBJECT (task), "device");
 
   status = sqlite3_prepare_v2 (self->db,
                                "SELECT enabled,pickle,next_batch,device "
                                "FROM accounts "
                                "INNER JOIN users "
-                               "ON users.username=? AND users.id=user_id "
+                               "ON users.username=?1 AND users.id=user_id "
                                "LEFT JOIN devices "
-                               "ON device_id=devices.id",
+                               "ON device_id=devices.id AND devices.device=?2 "
+                               "WHERE (?2 is NULL AND device is NULL) OR (?2 is NOT NULL AND device=?2)",
                                -1, &stmt, NULL);
   matrix_bind_text (stmt, 1, username, "binding when loading account");
+  matrix_bind_text (stmt, 2, device_id, "binding when loading account");
 
   status = sqlite3_step (stmt);
 
@@ -970,12 +973,14 @@ matrix_db_save_account_finish (MatrixDb      *self,
 void
 matrix_db_load_account_async (MatrixDb            *self,
                               ChattyAccount       *account,
+                              const char          *device_id,
                               GAsyncReadyCallback  callback,
                               gpointer             user_data)
 {
   GTask *task;
   const char *username;
 
+  g_return_if_fail (!device_id || *device_id);
   g_return_if_fail (MATRIX_IS_DB (self));
   g_return_if_fail (CHATTY_IS_ACCOUNT (account));
 
@@ -984,6 +989,7 @@ matrix_db_load_account_async (MatrixDb            *self,
   g_task_set_task_data (task, matrix_db_load_account, NULL);
 
   username = chatty_account_get_username (CHATTY_ACCOUNT (account));
+  g_object_set_data_full (G_OBJECT (task), "device", g_strdup (device_id), g_free);
   g_object_set_data_full (G_OBJECT (task), "username", g_strdup (username), g_free);
   g_object_set_data_full (G_OBJECT (task), "account", g_object_ref (account), g_object_unref);
 

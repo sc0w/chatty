@@ -69,6 +69,7 @@ gboolean       matrix_db_save_account_finish           (MatrixDb        *self,
                                                         GError         **error);
 void           matrix_db_load_account_async            (MatrixDb        *db,
                                                         ChattyAccount   *account,
+                                                        const char      *device_id,
                                                         GAsyncReadyCallback callback,
                                                         gpointer         user_data);
 gboolean       matrix_db_load_account_finish           (MatrixDb        *self,

@@ -105,7 +105,7 @@ add_matrix_account (MatrixDb   *db,
   g_assert_true (g_ptr_array_find (account_array, account, &i));
   account = account_array->pdata[i];
   task = g_task_new (NULL, NULL, NULL, NULL);
-  matrix_db_load_account_async (db, CHATTY_ACCOUNT (account), finish_bool_cb, task);
+  matrix_db_load_account_async (db, CHATTY_ACCOUNT (account), device_id, finish_bool_cb, task);
 
   while (!g_task_get_completed (task))
     g_main_context_iteration (NULL, TRUE);
