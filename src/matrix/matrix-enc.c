@@ -313,7 +313,7 @@ matrix_enc_init (MatrixEnc *self)
   self->in_olm_sessions = g_hash_table_new_full (g_str_hash, g_str_equal,
                                                  g_free, free_olm_session);
   self->out_olm_sessions = g_hash_table_new_full (g_str_hash, g_str_equal,
-                                                  free_olm_session, g_free);
+                                                  g_free, free_olm_session);
   self->in_group_sessions = g_hash_table_new_full (g_str_hash, g_str_equal,
                                                    g_free, free_in_group_session);
   self->out_group_sessions = g_hash_table_new_full (g_str_hash, g_str_equal,
