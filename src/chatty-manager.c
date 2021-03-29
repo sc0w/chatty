@@ -1999,6 +1999,9 @@ manager_secret_load_cb (GObject      *object,
 
   accounts = chatty_secret_load_finish (result, &error);
 
+  if (error)
+    g_warning ("Error loading secret accounts: %s", error->message);
+
   if (!accounts)
     return;
 
