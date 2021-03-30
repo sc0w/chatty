@@ -543,6 +543,7 @@ matrix_add_message_from_data (ChattyMaChat  *self,
 
   /* We should move to more precise time (ie, time in ms) as it is already provided */
   message = chatty_message_new (CHATTY_ITEM (buddy), NULL, body, uuid, ts, msg_type, direction, 0);
+  chatty_message_set_user_name (message, chatty_ma_buddy_get_id (CHATTY_MA_BUDDY (buddy)));
   chatty_message_set_encrypted (message, encrypted);
 
   if (msg_type != CHATTY_MESSAGE_TEXT)
