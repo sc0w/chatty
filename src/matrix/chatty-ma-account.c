@@ -848,14 +848,19 @@ chatty_ma_account_new_secret (gpointer secret_item)
   g_autoptr(GHashTable) attributes = NULL;
   SecretItem *item = secret_item;
   SecretValue *value;
-  const char *username, *homeserver, *credentials;
+  const char *username, *homeserver, *credentials = NULL;
   char *password, *token, *device_id;
   char *password_str, *token_str = NULL;
 
   g_return_val_if_fail (SECRET_IS_ITEM (item), NULL);
 
   value = secret_item_get_secret (item);
-  credentials = secret_value_get_text (value);
+
+  if (value)
+    credentials = secret_value_get_text (value);
+
+  if (!credentials)
+    return NULL;
 
   attributes = secret_item_get_attributes (item);
   username = g_hash_table_lookup (attributes, CHATTY_USERNAME_ATTRIBUTE);
