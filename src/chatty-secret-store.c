@@ -131,7 +131,9 @@ secret_load_cb (GObject      *object,
       accounts = g_ptr_array_new_full (5, g_object_unref);
 
     account = chatty_ma_account_new_secret (item->data);
-    g_ptr_array_insert (accounts, -1, account);
+
+    if (account)
+      g_ptr_array_insert (accounts, -1, account);
   }
 
   if (secrets)
