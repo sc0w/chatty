@@ -17,7 +17,7 @@
 
 #define DEFAULT_DOMAIN "chatty"
 
-char *domain;
+char *domains;
 static int verbosity;
 gboolean any_domain;
 gboolean stderr_is_journal;
@@ -153,21 +153,21 @@ chatty_log_handler (GLogLevelFlags   log_level,
   switch ((int)log_level)
     {
     case G_LOG_LEVEL_MESSAGE:
-      if (any_domain && domain)
+      if (any_domain && domains)
         break;
       if (verbosity < 1)
         return G_LOG_WRITER_HANDLED;
       break;
 
     case G_LOG_LEVEL_INFO:
-      if (any_domain && domain)
+      if (any_domain && domains)
         break;
       if (verbosity < 2)
         return G_LOG_WRITER_HANDLED;
       break;
 
     case G_LOG_LEVEL_DEBUG:
-      if (any_domain && domain)
+      if (any_domain && domains)
         break;
       if (verbosity < 3)
         return G_LOG_WRITER_HANDLED;
@@ -196,7 +196,7 @@ chatty_log_handler (GLogLevelFlags   log_level,
     log_domain = "**";
 
   /* Skip logs from other domains if verbosity level is low */
-  if (any_domain && !domain &&
+  if (any_domain && !domains &&
       verbosity < 5 &&
       log_level > G_LOG_LEVEL_MESSAGE &&
       !strstr (log_domain, DEFAULT_DOMAIN))
@@ -204,7 +204,7 @@ chatty_log_handler (GLogLevelFlags   log_level,
 
   /* GdkPixbuf logs are too much verbose, skip unless asked not to. */
   if (g_strcmp0 (log_domain, "GdkPixbuf") == 0 &&
-      g_strcmp0 (log_domain, domain) != 0)
+      !strstr (domains, log_domain))
     return G_LOG_WRITER_HANDLED;
 
   if (!log_message)
@@ -214,7 +214,7 @@ chatty_log_handler (GLogLevelFlags   log_level,
     return chatty_log_write (log_level, log_domain, log_message,
                              fields, n_fields, user_data);
 
-  if (!log_domain || strstr (log_domain, domain))
+  if (!log_domain || strstr (domains, log_domain))
     return chatty_log_write (log_level, log_domain, log_message,
                              fields, n_fields, user_data);
 
@@ -224,7 +224,7 @@ chatty_log_handler (GLogLevelFlags   log_level,
 static void
 chatty_log_finalize (void)
 {
-  g_clear_pointer (&domain, g_free);
+  g_clear_pointer (&domains, g_free);
 }
 
 void
@@ -234,9 +234,12 @@ chatty_log_init (void)
 
   if (g_once_init_enter (&initialized))
     {
-      domain = g_strdup (g_getenv ("G_MESSAGES_DEBUG"));
+      domains = g_strdup (g_getenv ("G_MESSAGES_DEBUG"));
 
-      if (!domain || g_str_equal (domain, "all"))
+      if (domains && !*domains)
+        g_clear_pointer (&domains, g_free);
+
+      if (!domains || g_str_equal (domains, "all"))
         any_domain = TRUE;
 
       stderr_is_journal = g_log_writer_is_journald (fileno (stderr));
