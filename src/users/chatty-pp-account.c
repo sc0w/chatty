@@ -238,6 +238,16 @@ chatty_pp_account_set_username (ChattyAccount *account,
   purple_account_set_username (self->pp_account, username);
 }
 
+static GListModel *
+chatty_pp_account_get_buddies (ChattyAccount *account)
+{
+  ChattyPpAccount *self = (ChattyPpAccount *)account;
+
+  g_assert (CHATTY_IS_PP_ACCOUNT (self));
+
+  return G_LIST_MODEL (self->buddy_list);
+}
+
 static gboolean
 chatty_pp_account_get_enabled (ChattyAccount *account)
 {
@@ -694,6 +704,7 @@ chatty_pp_account_class_init (ChattyPpAccountClass *klass)
   account_class->get_status   = chatty_pp_account_get_status;
   account_class->get_username = chatty_pp_account_get_username;
   account_class->set_username = chatty_pp_account_set_username;
+  account_class->get_buddies  = chatty_pp_account_get_buddies;
   account_class->get_enabled  = chatty_pp_account_get_enabled;
   account_class->set_enabled  = chatty_pp_account_set_enabled;
   account_class->get_password = chatty_pp_account_get_password;
@@ -835,14 +846,6 @@ chatty_pp_account_add_purple_buddy (ChattyPpAccount *self,
                         NULL);
 
   return buddy;
-}
-
-GListModel *
-chatty_pp_account_get_buddy_list (ChattyPpAccount *self)
-{
-  g_return_val_if_fail (CHATTY_IS_PP_ACCOUNT (self), NULL);
-
-  return G_LIST_MODEL (self->buddy_list);
 }
 
 /* XXX: a helper API till the dust settles */

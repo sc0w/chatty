@@ -221,7 +221,7 @@ manager_eds_is_ready (ChattyManager *self)
 
   /* TODO: Optimize */
   for (guint i = 0; i < n_accounts; i++) {
-    g_autoptr(ChattyPpAccount) account = NULL;
+    g_autoptr(ChattyAccount) account = NULL;
 
     account  = g_list_model_get_item (accounts, i);
     protocol = chatty_item_get_protocols (CHATTY_ITEM (account));
@@ -229,7 +229,7 @@ manager_eds_is_ready (ChattyManager *self)
     if (protocol != CHATTY_PROTOCOL_SMS)
       continue;
 
-    model = chatty_pp_account_get_buddy_list (account);
+    model = chatty_account_get_buddies (account);
     n_buddies = g_list_model_get_n_items (model);
     for (guint j = 0; j < n_buddies; j++) {
       g_autoptr(ChattyPpBuddy) buddy = NULL;
@@ -1025,7 +1025,7 @@ manager_buddy_added_cb (PurpleBuddy   *pp_buddy,
   account = chatty_pp_account_get_object (pp_account);
   g_return_if_fail (account);
 
-  model = chatty_pp_account_get_buddy_list (account);
+  model = chatty_account_get_buddies (CHATTY_ACCOUNT (account));
   buddy = manager_find_buddy (model, pp_buddy);
 
   if (!buddy)
@@ -1075,7 +1075,7 @@ manager_buddy_removed_cb (PurpleBuddy   *pp_buddy,
   if (!account)
     return;
 
-  model = chatty_pp_account_get_buddy_list (account);
+  model = chatty_account_get_buddies (CHATTY_ACCOUNT (account));
   buddy = manager_find_buddy (model, pp_buddy);
 
   g_return_if_fail (buddy);
@@ -1154,7 +1154,7 @@ manager_account_added_cb (PurpleAccount *pp_account,
   g_object_notify (G_OBJECT (account), "status");
   g_list_store_append (self->account_list, account);
   g_list_store_append (self->list_of_user_list,
-                       chatty_pp_account_get_buddy_list (account));
+                       chatty_account_get_buddies (CHATTY_ACCOUNT (account)));
 
   if (self->disable_auto_login)
     chatty_account_set_enabled (CHATTY_ACCOUNT (account), FALSE);
@@ -1176,7 +1176,7 @@ manager_account_removed_cb (PurpleAccount *pp_account,
   g_return_if_fail (account);
 
   chatty_utils_remove_list_item (self->list_of_user_list,
-                                 chatty_pp_account_get_buddy_list (account));
+                                 chatty_account_get_buddies (CHATTY_ACCOUNT (account)));
   g_object_notify (G_OBJECT (account), "status");
   g_signal_emit_by_name (account, "deleted");
   chatty_utils_remove_list_item (self->account_list, account);
