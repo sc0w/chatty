@@ -30,6 +30,8 @@ struct _ChattyAccountClass
   void         (*set_username)          (ChattyAccount *self,
                                          const char    *username);
   GListModel  *(*get_buddies)           (ChattyAccount *self);
+  gboolean     (*buddy_exists)          (ChattyAccount *self,
+                                         const char    *buddy_username);
   gboolean     (*get_enabled)           (ChattyAccount *self);
   void         (*set_enabled)           (ChattyAccount *self,
                                          gboolean       enable);
@@ -61,6 +63,8 @@ const char   *chatty_account_get_username          (ChattyAccount *self);
 void          chatty_account_set_username          (ChattyAccount *self,
                                                     const char    *username);
 GListModel   *chatty_account_get_buddies           (ChattyAccount *self);
+gboolean      chatty_account_buddy_exists          (ChattyAccount *self,
+                                                    const char    *buddy_username);
 gboolean      chatty_account_get_enabled           (ChattyAccount *self);
 void          chatty_account_set_enabled           (ChattyAccount *self,
                                                     gboolean       enable);

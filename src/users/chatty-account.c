@@ -79,6 +79,15 @@ chatty_account_real_get_buddies (ChattyAccount *self)
 }
 
 static gboolean
+chatty_account_real_buddy_exists (ChattyAccount *self,
+                                  const char    *buddy_username)
+{
+  g_assert (CHATTY_IS_ACCOUNT (self));
+
+  return FALSE;
+}
+
+static gboolean
 chatty_account_real_get_enabled (ChattyAccount *self)
 {
   g_assert (CHATTY_IS_ACCOUNT (self));
@@ -254,6 +263,7 @@ chatty_account_class_init (ChattyAccountClass *klass)
   klass->get_username = chatty_account_real_get_username;
   klass->set_username = chatty_account_real_set_username;
   klass->get_buddies  = chatty_account_real_get_buddies;
+  klass->buddy_exists = chatty_account_real_buddy_exists;
   klass->get_enabled  = chatty_account_real_get_enabled;
   klass->set_enabled  = chatty_account_real_set_enabled;
   klass->connect      = chatty_account_real_connect;
@@ -340,6 +350,28 @@ chatty_account_get_buddies (ChattyAccount *self)
   g_return_val_if_fail (CHATTY_IS_ACCOUNT (self), NULL);
 
   return CHATTY_ACCOUNT_GET_CLASS (self)->get_buddies (self);
+}
+
+/**
+ * chatty_account_buddy_exists:
+ * @self: A #ChattyAccount
+ * @buddy_username: Username of the buddy
+ *
+ * Check if @buddy_username exists in the buddy list
+ * of @self.  The result is undefined if an invalid
+ * username is provided.  To validate username see
+ * chatty_utils_username_is_valid()
+ *
+ * Returns: %TRUE if @buddy_username exists in the
+ * local buddy list of @self.  %FALSE otherwise
+ */
+gboolean
+chatty_account_buddy_exists (ChattyAccount *self,
+                             const char    *buddy_username)
+{
+  g_return_val_if_fail (CHATTY_IS_ACCOUNT (self), FALSE);
+
+  return CHATTY_ACCOUNT_GET_CLASS (self)->buddy_exists (self, buddy_username);
 }
 
 gboolean
