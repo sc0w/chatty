@@ -249,6 +249,23 @@ chatty_pp_account_get_buddies (ChattyAccount *account)
 }
 
 static gboolean
+chatty_pp_account_buddy_exists (ChattyAccount *account,
+                                const char    *buddy_username)
+{
+  ChattyPpAccount *self = (ChattyPpAccount *)account;
+  PurpleBuddy *buddy;
+
+  g_assert (CHATTY_IS_PP_ACCOUNT (self));
+
+  if (!buddy_username || !*buddy_username)
+    return FALSE;
+
+  buddy = purple_find_buddy (self->pp_account, buddy_username);
+
+  return buddy != NULL;
+}
+
+static gboolean
 chatty_pp_account_get_enabled (ChattyAccount *account)
 {
   ChattyPpAccount *self = (ChattyPpAccount *)account;
@@ -705,6 +722,7 @@ chatty_pp_account_class_init (ChattyPpAccountClass *klass)
   account_class->get_username = chatty_pp_account_get_username;
   account_class->set_username = chatty_pp_account_set_username;
   account_class->get_buddies  = chatty_pp_account_get_buddies;
+  account_class->buddy_exists = chatty_pp_account_buddy_exists;
   account_class->get_enabled  = chatty_pp_account_get_enabled;
   account_class->set_enabled  = chatty_pp_account_set_enabled;
   account_class->get_password = chatty_pp_account_get_password;
