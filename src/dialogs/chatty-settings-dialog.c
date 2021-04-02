@@ -610,7 +610,7 @@ settings_new_detail_changed_cb (ChattySettingsDialog *self)
 {
   const gchar *id, *password;
   ChattyProtocol protocol;
-  gboolean valid;
+  gboolean valid = TRUE;
 
   g_assert (CHATTY_IS_SETTINGS_DIALOG (self));
 
@@ -624,7 +624,10 @@ settings_new_detail_changed_cb (ChattySettingsDialog *self)
   else
     protocol = CHATTY_PROTOCOL_XMPP;
 
-  valid = password && *password;
+  /* Allow empty passwords for telegram accounts */
+  if (protocol != CHATTY_PROTOCOL_TELEGRAM)
+    valid = valid && password && *password;
+
   valid = valid && chatty_utils_username_is_valid (id, protocol);
 
   gtk_widget_set_sensitive (self->add_button, valid);
