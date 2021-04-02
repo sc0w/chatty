@@ -369,25 +369,22 @@ chatty_new_chat_name_check (ChattyNewChatDialog *self,
                             GtkEntry            *entry,
                             GtkWidget           *button)
 {
-  PurpleAccount *account;
-  PurpleBuddy   *buddy = NULL;
-  const char    *name;
+  const char *name;
+  ChattyProtocol protocol, valid_protocol;
+  gboolean valid = TRUE;
 
   g_return_if_fail (CHATTY_IS_NEW_CHAT_DIALOG (self));
 
   name = gtk_entry_get_text (entry);
 
-  account = chatty_pp_account_get_account (CHATTY_PP_ACCOUNT (self->selected_account));
+  protocol = chatty_item_get_protocols (CHATTY_ITEM (self->selected_account));
+  valid_protocol = chatty_utils_username_is_valid (name, protocol);
+  valid = protocol == valid_protocol;
 
-  if ((*name != '\0') && account) {
-    buddy = purple_find_buddy (account, name);
-  }
+  if (valid)
+    valid &= !chatty_account_buddy_exists (CHATTY_ACCOUNT (self->selected_account), name);
 
-  if ((*name != '\0') && !buddy) {
-    gtk_widget_set_sensitive (button, TRUE);
-  } else {
-    gtk_widget_set_sensitive (button, FALSE);
-  }
+  gtk_widget_set_sensitive (button, valid);
 }
 
 
