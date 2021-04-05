@@ -24,6 +24,7 @@
 #include "chatty-list-row.h"
 #include "chatty-utils.h"
 #include "chatty-icons.h"
+#include "chatty-phone-utils.h"
 #include "chatty-new-chat-dialog.h"
 
 
@@ -76,25 +77,6 @@ struct _ChattyNewChatDialog
 
 G_DEFINE_TYPE (ChattyNewChatDialog, chatty_new_chat_dialog, GTK_TYPE_DIALOG)
 
-
-static gboolean
-new_chat_str_is_phone (const char *str)
-{
-  guint length;
-
-  if (!str || !*str)
-    return FALSE;
-
-  if (*str == '+')
-    str++;
-
-  length = strlen (str);
-
-  if (length >= 3 && strspn (str, "0123456789") == length)
-    return TRUE;
-
-  return FALSE;
-}
 
 static void
 dialog_active_protocols_changed_cb (ChattyNewChatDialog *self)
@@ -244,6 +226,7 @@ contact_search_entry_changed_cb (ChattyNewChatDialog *self,
   g_autofree char *old_needle = NULL;
   const char *str;
   GtkFilterChange change;
+  ChattyProtocol protocol;
   gboolean valid;
 
   g_assert (CHATTY_IS_NEW_CHAT_DIALOG (self));
@@ -274,7 +257,8 @@ contact_search_entry_changed_cb (ChattyNewChatDialog *self,
   chatty_list_row_set_item (CHATTY_LIST_ROW (self->new_contact_row),
                             CHATTY_ITEM (self->dummy_contact));
 
-  valid = new_chat_str_is_phone (self->search_str);
+  protocol = CHATTY_PROTOCOL_SMS;
+  valid = protocol == chatty_utils_username_is_valid (self->search_str, protocol);
   account = purple_accounts_find ("SMS", "prpl-mm-sms");
   valid = valid && purple_account_is_connected (account);
   gtk_widget_set_visible (self->new_contact_row, valid);
