@@ -209,6 +209,32 @@ chatty_account_real_load_fp_finish (ChattyAccount *self,
 }
 
 static void
+chatty_account_real_start_direct_chat_async (ChattyAccount       *self,
+                                             GPtrArray           *buddies,
+                                             GAsyncReadyCallback  callback,
+                                             gpointer             user_data)
+{
+  g_assert (CHATTY_IS_ACCOUNT (self));
+
+  g_task_report_new_error (self, callback, user_data,
+                           chatty_account_real_start_direct_chat_async,
+                           G_IO_ERROR,
+                           G_IO_ERROR_NOT_SUPPORTED,
+                           "Starting direct chat not supported");
+}
+
+static gboolean
+chatty_account_real_start_direct_chat_finish (ChattyAccount *self,
+                                              GAsyncResult  *result,
+                                              GError        **error)
+{
+  g_assert (CHATTY_IS_ACCOUNT (self));
+  g_assert (G_IS_TASK (result));
+
+  return g_task_propagate_boolean (G_TASK (result), error);
+}
+
+static void
 chatty_account_get_property (GObject    *object,
                              guint       prop_id,
                              GValue     *value,
@@ -278,6 +304,8 @@ chatty_account_class_init (ChattyAccountClass *klass)
   klass->get_fp_list = chatty_account_real_get_fp_list;
   klass->load_fp_async = chatty_account_real_load_fp_async;
   klass->load_fp_finish = chatty_account_real_load_fp_finish;
+  klass->start_direct_chat_async = chatty_account_real_start_direct_chat_async;
+  klass->start_direct_chat_finish = chatty_account_real_start_direct_chat_finish;
 
   /**
    * ChattyAccount:enabled:
@@ -513,4 +541,38 @@ chatty_account_load_fp_finish (ChattyAccount  *self,
   g_return_val_if_fail (CHATTY_IS_ACCOUNT (self), FALSE);
 
   return CHATTY_ACCOUNT_GET_CLASS (self)->load_fp_finish (self, result, error);
+}
+
+/**
+ * chatty_account_start_direct_chat_async:
+ * @self: A #ChattyAccount
+ * @buddies: (transfer full): A #GPtrArray an array of strings
+ * @callback: A #GAsyncReadyCallback
+ * @user_data: The user data for @callback
+ *
+ * Try to create a direct chat with the @buddies.  Different
+ * protocols may have different requirements for this.  Eg:
+ * currently purple XMPP requires @buddies to have exactly
+ * one buddy.  The GUI is present to the user when ready.
+ */
+void
+chatty_account_start_direct_chat_async (ChattyAccount       *self,
+                                        GPtrArray           *buddies,
+                                        GAsyncReadyCallback  callback,
+                                        gpointer             user_data)
+{
+  g_return_if_fail (CHATTY_IS_ACCOUNT (self));
+  g_return_if_fail (buddies && buddies->len);
+
+  CHATTY_ACCOUNT_GET_CLASS (self)->start_direct_chat_async (self, buddies, callback, user_data);
+}
+
+gboolean
+chatty_account_start_direct_chat_finish (ChattyAccount  *self,
+                                         GAsyncResult   *result,
+                                         GError        **error)
+{
+  g_return_val_if_fail (CHATTY_IS_ACCOUNT (self), FALSE);
+
+  return CHATTY_ACCOUNT_GET_CLASS (self)->start_direct_chat_finish (self, result, error);
 }

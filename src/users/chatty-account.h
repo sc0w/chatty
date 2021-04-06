@@ -54,6 +54,13 @@ struct _ChattyAccountClass
   gboolean     (*load_fp_finish)        (ChattyAccount *self,
                                          GAsyncResult  *result,
                                          GError       **error);
+  void         (*start_direct_chat_async)  (ChattyAccount *self,
+                                            GPtrArray     *buddies,
+                                            GAsyncReadyCallback callback,
+                                            gpointer       user_data);
+  gboolean     (*start_direct_chat_finish) (ChattyAccount *self,
+                                            GAsyncResult  *result,
+                                            GError       **error);
 };
 
 
@@ -87,5 +94,12 @@ void          chatty_account_load_fp_async         (ChattyAccount *self,
 gboolean      chatty_account_load_fp_finish        (ChattyAccount *self,
                                                     GAsyncResult  *result,
                                                     GError       **error);
+void          chatty_account_start_direct_chat_async  (ChattyAccount *self,
+                                                       GPtrArray     *buddies,
+                                                       GAsyncReadyCallback callback,
+                                                       gpointer       user_data);
+gboolean      chatty_account_start_direct_chat_finish (ChattyAccount *self,
+                                                       GAsyncResult  *result,
+                                                       GError       **error);
 
 G_END_DECLS
