@@ -485,6 +485,36 @@ chatty_pp_account_load_fp_async (ChattyAccount       *account,
                       task);
 }
 
+static void
+chatty_pp_account_start_direct_chat_async (ChattyAccount       *account,
+                                           GPtrArray           *buddies,
+                                           GAsyncReadyCallback  callback,
+                                           gpointer             user_data)
+{
+  ChattyPpAccount *self = (ChattyPpAccount *)account;
+  PurpleConversation *conv;
+  const char *name;
+  g_autoptr(GTask) task = NULL;
+
+  g_assert (CHATTY_IS_PP_ACCOUNT (self));
+
+  g_return_if_fail (buddies->len == 1);
+  g_return_if_fail (purple_account_is_connected (self->pp_account));
+
+  task = g_task_new (self, NULL, callback, user_data);
+  name = buddies->pdata[0];
+  conv = purple_find_conversation_with_account (PURPLE_CONV_TYPE_IM, name, self->pp_account);
+
+  if (!conv)
+    conv = purple_conversation_new (PURPLE_CONV_TYPE_IM, self->pp_account, name);
+
+  purple_conversation_present (conv);
+  g_ptr_array_unref (buddies);
+
+  /* Just assume we succeeded, what else can we do! */
+  g_task_return_boolean (task, TRUE);
+}
+
 static gboolean
 chatty_pp_account_get_remember_password (ChattyAccount *account)
 {
@@ -736,6 +766,7 @@ chatty_pp_account_class_init (ChattyPpAccountClass *klass)
   account_class->get_device_fp = chatty_pp_account_get_device_fp;
   account_class->get_fp_list = chatty_pp_account_get_fp_list;
   account_class->load_fp_async = chatty_pp_account_load_fp_async;
+  account_class->start_direct_chat_async = chatty_pp_account_start_direct_chat_async;
 
   properties[PROP_USERNAME] =
     g_param_spec_string ("username",
