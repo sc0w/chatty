@@ -362,11 +362,14 @@ chatty_window_open_item (ChattyWindow *self,
     node = (PurpleBlistNode *)chatty_pp_chat_get_purple_buddy (CHATTY_PP_CHAT (item));
 
   if (node) {
+    ChattyAccount *chatty_account;
     PurpleAccount *account;
     PurpleBuddy *buddy;
+    GPtrArray *buddies;
 
     buddy = (PurpleBuddy*)node;
     account = purple_buddy_get_account (buddy);
+    chatty_account = (ChattyAccount *)chatty_pp_account_get_object (account);
 
     if (chatty_item_get_protocols (item) == CHATTY_PROTOCOL_SMS) {
       ChattyEds *chatty_eds;
@@ -385,7 +388,10 @@ chatty_window_open_item (ChattyWindow *self,
       gtk_widget_show (self->menu_add_contact_button);
 
     purple_blist_node_set_bool (PURPLE_BLIST_NODE (buddy), "chatty-autojoin", TRUE);
-    chatty_conv_im_with_buddy (account, purple_buddy_get_name (buddy));
+
+    buddies = g_ptr_array_new_full (1, g_free);
+    g_ptr_array_add (buddies, g_strdup (purple_buddy_get_name (buddy)));
+    chatty_account_start_direct_chat_async (chatty_account, buddies, NULL, NULL);
 
     return;
   }
@@ -1101,10 +1107,13 @@ chatty_window_set_uri (ChattyWindow *self,
   ChattyContact *contact;
   PurpleAccount *account;
   ChattyPpBuddy *pp_buddy;
+  ChattyAccount *chatty_account;
   PurpleBuddy   *buddy;
+  GPtrArray     *buddies;
   const char    *alias;
 
   account = purple_accounts_find ("SMS", "prpl-mm-sms");
+  chatty_account = (ChattyAccount *)chatty_pp_account_get_object (account);
 
   if (!purple_account_is_connected (account))
     return;
@@ -1132,7 +1141,6 @@ chatty_window_set_uri (ChattyWindow *self,
 
     return;
   }
-  g_return_if_fail (who != NULL);
 
   buddy = purple_find_buddy (account, who);
 
@@ -1152,7 +1160,9 @@ chatty_window_set_uri (ChattyWindow *self,
 
   purple_blist_node_set_bool (PURPLE_BLIST_NODE(buddy), "chatty-autojoin", TRUE);
 
-  chatty_conv_im_with_buddy (account, g_strdup (who));
+  buddies = g_ptr_array_new_full (1, g_free);
+  g_ptr_array_add (buddies, g_strdup (who));
+  chatty_account_start_direct_chat_async (chatty_account, buddies, NULL, NULL);
 
   gtk_widget_hide (self->new_chat_dialog);
 
