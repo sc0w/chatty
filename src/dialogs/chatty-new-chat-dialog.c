@@ -284,26 +284,24 @@ contact_row_activated_cb (ChattyNewChatDialog *self,
 static void
 add_contact_button_clicked_cb (ChattyNewChatDialog *self)
 {
-  PurpleAccount     *account;
-  char              *who;
-  const char        *alias;
+  GPtrArray *buddies;
+  const char *who, *alias;
 
   g_assert (CHATTY_IS_NEW_CHAT_DIALOG (self));
 
   if (!gtk_widget_get_sensitive (self->add_contact_button))
     return;
 
-  account = chatty_pp_account_get_account (CHATTY_PP_ACCOUNT (self->selected_account));
+  buddies = g_ptr_array_new_full (1, g_free);
 
-  who = g_strdup (gtk_entry_get_text (GTK_ENTRY (self->contact_name_entry)));
+  who = gtk_entry_get_text (GTK_ENTRY (self->contact_name_entry));
   alias = gtk_entry_get_text (GTK_ENTRY (self->contact_alias_entry));
-
   chatty_pp_account_add_buddy (CHATTY_PP_ACCOUNT (self->selected_account), who, alias);
-  chatty_conv_im_with_buddy (account, g_strdup (who));
+
+  g_ptr_array_add (buddies, g_strdup (who));
+  chatty_account_start_direct_chat_async (self->selected_account, buddies, NULL, NULL);
 
   gtk_widget_hide (GTK_WIDGET (self));
-
-  g_free (who);
 
   gtk_entry_set_text (GTK_ENTRY (self->contact_name_entry), "");
   gtk_entry_set_text (GTK_ENTRY (self->contact_alias_entry), "");
