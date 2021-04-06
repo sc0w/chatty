@@ -73,6 +73,10 @@ struct _ChattyPpChat
   gboolean            initial_history_loaded;
   gboolean            history_is_loading;
   gboolean            supports_encryption;
+
+  gboolean            file_upload_checked;
+  void (*upload_file_callback)(gpointer, gpointer);
+  gpointer            callback_userdata;
 };
 
 G_DEFINE_TYPE (ChattyPpChat, chatty_pp_chat, CHATTY_TYPE_CHAT)
@@ -95,6 +99,43 @@ emit_avatar_changed (ChattyPpChat *self)
   g_assert (CHATTY_IS_PP_CHAT (self));
 
   g_signal_emit_by_name (self, "avatar-changed");
+}
+
+static void
+pp_chat_setup_file_upload (ChattyPpChat *self)
+{
+  PurplePluginProtocolInfo *prpl_info;
+  PurpleConnection *gc;
+  PurpleBlistNode *node = NULL;
+  g_autoptr(GList) list = NULL;
+
+  g_assert (CHATTY_IS_PP_CHAT (self));
+
+  gc = purple_conversation_get_gc (self->conv);
+  if (gc)
+    node = chatty_utils_get_conv_blist_node (self->conv);
+  if (node)
+    prpl_info = PURPLE_PLUGIN_PROTOCOL_INFO (gc->prpl);
+
+  if (!prpl_info)
+    return;
+
+  self->file_upload_checked = TRUE;
+  if (prpl_info->blist_node_menu)
+    list = prpl_info->blist_node_menu (node);
+
+  for (GList *l = list; l; l = l->next) {
+    PurpleMenuAction *act = l->data;
+
+    if (g_strcmp0 (act->label, "HTTP File Upload") == 0) {
+      self->upload_file_callback = (gpointer)act->callback;
+      self->callback_userdata = act->data;
+      purple_menu_action_free (act);
+      break;
+    }
+
+    purple_menu_action_free (act);
+  }
 }
 
 static void
@@ -366,6 +407,19 @@ chatty_pp_chat_is_im (ChattyChat *chat)
     type = purple_conversation_get_type (self->conv);
 
   return type == PURPLE_CONV_TYPE_IM;
+}
+
+static gboolean
+chatty_pp_chat_has_file_upload (ChattyChat *chat)
+{
+  ChattyPpChat *self = (ChattyPpChat *)chat;
+
+  g_assert (CHATTY_IS_PP_CHAT (self));
+
+  if (!self->file_upload_checked)
+    pp_chat_setup_file_upload (self);
+
+  return self->upload_file_callback != NULL;
 }
 
 static const char *
@@ -923,6 +977,7 @@ chatty_pp_chat_class_init (ChattyPpChatClass *klass)
 
   chat_class->set_data = chatty_pp_chat_set_data;
   chat_class->is_im = chatty_pp_chat_is_im;
+  chat_class->has_file_upload = chatty_pp_chat_has_file_upload;
   chat_class->get_chat_name = chatty_pp_chat_get_chat_name;
   chat_class->get_username = chatty_pp_chat_get_username;
   chat_class->get_account = chatty_pp_chat_get_account;
@@ -1081,6 +1136,19 @@ chatty_pp_chat_get_purple_conv (ChattyPpChat *self)
   g_return_val_if_fail (CHATTY_IS_PP_CHAT (self), NULL);
 
   return self->conv;
+}
+
+void
+chatty_pp_chat_show_file_upload (ChattyPpChat *self)
+{
+  PurpleBlistNode *node;
+
+  g_return_if_fail (CHATTY_IS_PP_CHAT (self));
+
+  node = chatty_utils_get_conv_blist_node (self->conv);
+
+  if (self->upload_file_callback)
+    self->upload_file_callback (node, self->callback_userdata);
 }
 
 gboolean

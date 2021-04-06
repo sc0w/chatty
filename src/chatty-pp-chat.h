@@ -39,6 +39,7 @@ ChattyProtocol      chatty_pp_chat_get_protocol           (ChattyPpChat       *s
 PurpleChat         *chatty_pp_chat_get_purple_chat        (ChattyPpChat       *self);
 PurpleBuddy        *chatty_pp_chat_get_purple_buddy       (ChattyPpChat       *self);
 PurpleConversation *chatty_pp_chat_get_purple_conv        (ChattyPpChat       *self);
+void                chatty_pp_chat_show_file_upload       (ChattyPpChat       *self);
 gboolean            chatty_pp_chat_are_same               (ChattyPpChat       *a,
                                                            ChattyPpChat       *b);
 gboolean            chatty_pp_chat_run_command            (ChattyPpChat       *self,
