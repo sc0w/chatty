@@ -41,6 +41,8 @@ PurpleBuddy        *chatty_pp_chat_get_purple_buddy       (ChattyPpChat       *s
 PurpleConversation *chatty_pp_chat_get_purple_conv        (ChattyPpChat       *self);
 gboolean            chatty_pp_chat_are_same               (ChattyPpChat       *a,
                                                            ChattyPpChat       *b);
+gboolean            chatty_pp_chat_run_command            (ChattyPpChat       *self,
+                                                           const char         *command);
 gboolean            chatty_pp_chat_match_purple_conv      (ChattyPpChat       *self,
                                                            PurpleConversation *conv);
 ChattyMessage      *chatty_pp_chat_find_message_with_id   (ChattyPpChat       *self,

@@ -1115,6 +1115,101 @@ chatty_pp_chat_are_same (ChattyPpChat *a,
   return FALSE;
 }
 
+/**
+ * chatty_pp_chat_run_command:
+ * @self: A #ChattyPpChat
+ * @command: The command to run
+ *
+ * Try to run the command @command.
+ *
+ * Returns: %TRUE if @command was handled.
+ * %FALSE otherwise.
+ */
+gboolean
+chatty_pp_chat_run_command (ChattyPpChat *self,
+                            const char   *command)
+{
+  g_autofree char *error = NULL;
+  PurpleCmdStatus status;
+  PurpleMessageFlags flags = PURPLE_MESSAGE_NO_LOG | PURPLE_MESSAGE_SYSTEM;
+
+  g_return_val_if_fail (CHATTY_IS_PP_CHAT (self), FALSE);
+
+  if (!command || *command != '/' || !self->conv)
+    return FALSE;
+
+  command = command + strlen ("/");
+  purple_conversation_write (self->conv, "", command, flags, time (NULL));
+  status = purple_cmd_do_command (self->conv, command, command, &error);
+
+  switch (status) {
+  case PURPLE_CMD_STATUS_OK:
+    return TRUE;
+
+  case PURPLE_CMD_STATUS_NOT_FOUND:
+    {
+      PurplePluginProtocolInfo *prpl_info = NULL;
+      PurpleConnection *gc;
+
+      if ((gc = purple_conversation_get_gc (self->conv)))
+        prpl_info = PURPLE_PLUGIN_PROTOCOL_INFO(gc->prpl);
+
+      if ((prpl_info != NULL) &&
+          (prpl_info->options & OPT_PROTO_SLASH_COMMANDS_NATIVE)) {
+        const char *spaceslash;
+
+        /* If the first word in the entered text has a '/' in it, then the user
+         * probably didn't mean it as a command. So send the text as message. */
+        spaceslash = command;
+
+        while (*spaceslash && *spaceslash != ' ' && *spaceslash != '/')
+          spaceslash++;
+
+        if (*spaceslash != '/') {
+          purple_conversation_write (self->conv, "",
+                                     "Unknown command. Get a list of available commands with '/chatty help'",
+                                     flags, time (NULL));
+          return TRUE;
+        }
+      }
+    }
+    break;
+
+  case PURPLE_CMD_STATUS_WRONG_ARGS:
+    purple_conversation_write (self->conv, "",
+                               "Wrong number of arguments for the command.",
+                               flags, time (NULL));
+    return TRUE;
+
+  case PURPLE_CMD_STATUS_FAILED:
+    purple_conversation_write (self->conv, "",
+                               error ? error : "The command failed.",
+                               flags, time (NULL));
+    return TRUE;
+
+  case PURPLE_CMD_STATUS_WRONG_TYPE:
+    if (purple_conversation_get_type (self->conv) == PURPLE_CONV_TYPE_IM)
+      purple_conversation_write (self->conv, "",
+                                 "That command only works in chats, not IMs.",
+                                 flags, time (NULL));
+    else
+      purple_conversation_write (self->conv, "",
+                                 "That command only works in IMs, not chats.",
+                                 flags, time (NULL));
+    return TRUE;
+
+  case PURPLE_CMD_STATUS_WRONG_PRPL:
+    purple_conversation_write (self->conv, "",
+                               "That command doesn't work on this protocol.",
+                               flags, time (NULL));
+    return TRUE;
+  default:
+    break;
+  }
+
+  return FALSE;
+}
+
 gboolean
 chatty_pp_chat_match_purple_conv (ChattyPpChat       *self,
                                   PurpleConversation *conv)
