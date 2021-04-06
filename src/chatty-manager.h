@@ -75,8 +75,6 @@ gboolean        chatty_manager_save_account_finish    (ChattyManager      *self,
                                                        GError            **error);
 ChattyChat     *chatty_manager_add_chat               (ChattyManager      *self,
                                                        ChattyChat         *chat);
-void            chatty_conv_im_with_buddy             (PurpleAccount      *account,
-                                                       const char         *username);
 void            chatty_conv_join_chat                 (PurpleChat         *chat);
 ChattyHistory  *chatty_manager_get_history            (ChattyManager      *self);
 

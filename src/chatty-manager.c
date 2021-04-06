@@ -2542,38 +2542,6 @@ chatty_manager_add_chat (ChattyManager *self,
 }
 
 /**
- * chatty_conv_im_with_buddy:
- * @account: a PurpleAccount
- * @name: the buddy name
- *
- * Starts a new conversation with a buddy.
- * If there is already an instance of the conversation
- * the GUI presents it to the user.
- *
- */
-void
-chatty_conv_im_with_buddy (PurpleAccount *account,
-                           const char    *name)
-{
-  PurpleConversation *conv;
-
-  g_return_if_fail (purple_account_is_connected (account));
-  g_return_if_fail (name != NULL);
-
-  conv = purple_find_conversation_with_account (PURPLE_CONV_TYPE_IM,
-                                                name,
-                                                account);
-
-  if (conv == NULL) {
-    conv = purple_conversation_new (PURPLE_CONV_TYPE_IM,
-                                    account,
-                                    name);
-  }
-
-  purple_conversation_present (conv);
-}
-
-/**
  * chatty_conv_join_chat:
  * @chat: a PurpleChat
  *
