@@ -481,131 +481,6 @@ chat_view_input_focus_out_cb (ChattyChatView *self)
   return FALSE;
 }
 
-
-
-static gboolean
-chatty_conv_check_for_command (ChattyChatView *self)
-{
-  PurpleConversation *conv;
-  g_autofree char *cmd = NULL;
-  gboolean            retval = FALSE;
-  GtkTextIter         start, end;
-  PurpleMessageFlags  flags = 0;
-
-  flags |= PURPLE_MESSAGE_NO_LOG | PURPLE_MESSAGE_SYSTEM;
-  conv = self->conv;
-
-  gtk_text_buffer_get_bounds (self->message_input_buffer, &start, &end);
-
-  cmd = gtk_text_buffer_get_text (self->message_input_buffer, &start, &end, FALSE);
-
-  if (cmd && *cmd == '/') {
-    g_autofree char *error = NULL;
-    PurpleCmdStatus status;
-    char *cmdline;
-
-    cmdline = cmd + strlen ("/");
-
-    if (purple_strequal (cmdline, "xyzzy")) {
-      purple_conversation_write (conv,
-                                 "",
-                                 "Nothing happens",
-                                 flags,
-                                 time(NULL));
-      return TRUE;
-    }
-
-    purple_conversation_write (conv,
-                               "",
-                               cmdline,
-                               flags,
-                               time(NULL));
-
-    status = purple_cmd_do_command (conv, cmdline, cmdline, &error);
-
-    switch (status) {
-    case PURPLE_CMD_STATUS_OK:
-      retval = TRUE;
-      break;
-    case PURPLE_CMD_STATUS_NOT_FOUND:
-      {
-        PurplePluginProtocolInfo *prpl_info = NULL;
-        PurpleConnection *gc;
-
-        if ((gc = purple_conversation_get_gc (conv)))
-          prpl_info = PURPLE_PLUGIN_PROTOCOL_INFO(gc->prpl);
-
-        if ((prpl_info != NULL) &&
-            (prpl_info->options & OPT_PROTO_SLASH_COMMANDS_NATIVE)) {
-          gchar *spaceslash;
-
-          /* If the first word in the entered text has a '/' in it, then the user
-           * probably didn't mean it as a command. So send the text as message. */
-          spaceslash = cmdline;
-
-          while (*spaceslash && *spaceslash != ' ' && *spaceslash != '/') {
-            spaceslash++;
-          }
-
-          if (*spaceslash != '/') {
-            purple_conversation_write (conv,
-                                       "",
-                                       "Unknown command. Get a list of available commands with '/chatty help'",
-                                       flags,
-                                       time(NULL));
-            retval = TRUE;
-          }
-        }
-        break;
-      }
-    case PURPLE_CMD_STATUS_WRONG_ARGS:
-      purple_conversation_write (conv,
-                                 "",
-                                 "Wrong number of arguments for the command.",
-                                 flags,
-                                 time(NULL));
-      retval = TRUE;
-      break;
-    case PURPLE_CMD_STATUS_FAILED:
-      purple_conversation_write (conv,
-                                 "",
-                                 error ? error : "The command failed.",
-                                 flags,
-                                 time(NULL));
-      retval = TRUE;
-      break;
-    case PURPLE_CMD_STATUS_WRONG_TYPE:
-      if (purple_conversation_get_type (conv) == PURPLE_CONV_TYPE_IM)
-        purple_conversation_write (conv,
-                                   "",
-                                   "That command only works in chats, not IMs.",
-                                   flags,
-                                   time(NULL));
-      else
-        purple_conversation_write (conv,
-                                   "",
-                                   "That command only works in IMs, not chats.",
-                                   flags,
-                                   time(NULL));
-      retval = TRUE;
-      break;
-    case PURPLE_CMD_STATUS_WRONG_PRPL:
-      purple_conversation_write (conv,
-                                 "",
-                                 "That command doesn't work on this protocol.",
-                                 flags,
-                                 time(NULL));
-      retval = TRUE;
-      break;
-    default:
-      break;
-    }
-  }
-
-  return retval;
-}
-
-
 static void
 chat_view_send_file_button_clicked_cb (ChattyChatView *self,
                                        GtkButton      *button)
@@ -648,8 +523,10 @@ chat_view_send_message_button_clicked_cb (ChattyChatView *self)
   conv = self->conv;
 
   gtk_text_buffer_get_bounds (self->message_input_buffer, &start, &end);
+  message = gtk_text_buffer_get_text (self->message_input_buffer, &start, &end, FALSE);
 
-  if (conv && chatty_conv_check_for_command (self)) {
+  if (CHATTY_IS_PP_CHAT (self->chat) &&
+      chatty_pp_chat_run_command (CHATTY_PP_CHAT (self->chat), message)) {
     gtk_widget_hide (self->send_message_button);
     gtk_text_buffer_delete (self->message_input_buffer, &start, &end);
 
@@ -664,8 +541,6 @@ chat_view_send_message_button_clicked_cb (ChattyChatView *self)
 
   if (conv)
     purple_idle_touch ();
-
-  message = gtk_text_buffer_get_text (self->message_input_buffer, &start, &end, FALSE);
 
   if (gtk_text_buffer_get_char_count (self->message_input_buffer)) {
     g_autofree char *escaped = NULL;
