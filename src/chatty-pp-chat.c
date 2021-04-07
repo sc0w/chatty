@@ -1731,6 +1731,25 @@ chatty_pp_chat_set_buddy_typing (ChattyPpChat *self,
 }
 
 void
+chatty_pp_chat_leave (ChattyPpChat *self)
+{
+  PurpleBlistNode *node;
+
+  g_return_if_fail (CHATTY_IS_PP_CHAT (self));
+
+  node = (gpointer)self->buddy;
+
+  if (!node)
+    node = (gpointer)self->pp_chat;
+
+  if (node)
+    purple_blist_node_set_bool (node, "chatty-autojoin", FALSE);
+
+  if (self->conv)
+    purple_conversation_destroy (self->conv);
+}
+
+void
 chatty_pp_chat_delete (ChattyPpChat *self)
 {
   g_return_if_fail (CHATTY_IS_PP_CHAT (self));
