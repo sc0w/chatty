@@ -224,39 +224,6 @@ chatty_check_for_emoticon (ChattyChatView *self)
 }
 
 static void
-chat_view_setup_file_upload (ChattyChatView *self)
-{
-  PurplePluginProtocolInfo *prpl_info;
-  PurpleConnection         *gc;
-  PurpleBlistNode          *node;
-  g_autoptr(GList)          list = NULL;
-
-  g_assert (CHATTY_IS_CHAT_VIEW (self));
-
-  gtk_widget_show (self->send_file_button);
-
-  gc = purple_conversation_get_gc (self->conv);
-  node = chatty_utils_get_conv_blist_node (self->conv);
-  prpl_info = PURPLE_PLUGIN_PROTOCOL_INFO (gc->prpl);
-
-  if (prpl_info->blist_node_menu)
-    list = prpl_info->blist_node_menu (node);
-
-  for (GList *l = list; l; l = l->next) {
-    PurpleMenuAction *act = l->data;
-
-    if (g_strcmp0 (act->label, "HTTP File Upload") == 0) {
-      g_object_set_data (G_OBJECT (self->send_file_button),
-                         "callback", act->callback);
-
-      g_object_set_data (G_OBJECT (self->send_file_button),
-                         "callback-data", act->data);
-    }
-    purple_menu_action_free (act);
-  }
-}
-
-static void
 chatty_chat_view_update (ChattyChatView *self)
 {
   GtkStyleContext *context;
@@ -278,9 +245,7 @@ chatty_chat_view_update (ChattyChatView *self)
   if (chatty_chat_is_im (self->chat) && CHATTY_IS_PP_CHAT (self->chat))
     chatty_pp_chat_load_encryption_status (CHATTY_PP_CHAT (self->chat));
 
-  if (chatty_manager_has_file_upload_plugin (chatty_manager_get_default ()) &&
-      chatty_item_get_protocols (CHATTY_ITEM (self->chat)) == CHATTY_PROTOCOL_XMPP)
-    chat_view_setup_file_upload (self);
+  gtk_widget_set_visible (self->send_file_button, chatty_chat_has_file_upload (self->chat));
 
   if (CHATTY_IS_MA_CHAT (self->chat)) {
     gtk_widget_show (self->send_file_button);
@@ -485,26 +450,16 @@ static void
 chat_view_send_file_button_clicked_cb (ChattyChatView *self,
                                        GtkButton      *button)
 {
-  PurpleBlistNode *node;
-  gpointer data;
-
-  void (*callback)(gpointer, gpointer);
-
   g_assert (CHATTY_IS_CHAT_VIEW (self));
   g_assert (GTK_IS_BUTTON (button));
+  g_return_if_fail (chatty_chat_has_file_upload (self->chat));
 
   if (CHATTY_IS_MA_CHAT (self->chat)) {
     /* TODO */
 
-    return;
+  } else if (CHATTY_IS_PP_CHAT (self->chat)) {
+    chatty_pp_chat_show_file_upload (CHATTY_PP_CHAT (self->chat));
   }
-
-  callback = g_object_get_data (G_OBJECT (button), "callback");
-  data = g_object_get_data (G_OBJECT (button), "callback-data");
-  node = chatty_utils_get_conv_blist_node (self->conv);
-
-  if (callback)
-    callback (node, data);
 }
 
 static void
