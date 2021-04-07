@@ -361,6 +361,16 @@ chatty_window_open_item (ChattyWindow *self,
   if (CHATTY_IS_PP_CHAT (item))
     node = (PurpleBlistNode *)chatty_pp_chat_get_purple_buddy (CHATTY_PP_CHAT (item));
 
+  if (chatty_item_get_protocols (item) == CHATTY_PROTOCOL_SMS &&
+      CHATTY_IS_PP_BUDDY (item)) {
+    ChattyContact *contact;
+
+    contact = chatty_pp_buddy_get_contact (CHATTY_PP_BUDDY (item));
+
+    if (!contact)
+      gtk_widget_show (self->menu_add_in_contacts_button);
+  }
+
   if (node) {
     ChattyAccount *chatty_account;
     PurpleAccount *account;
@@ -370,19 +380,6 @@ chatty_window_open_item (ChattyWindow *self,
     buddy = (PurpleBuddy*)node;
     account = purple_buddy_get_account (buddy);
     chatty_account = (ChattyAccount *)chatty_pp_account_get_object (account);
-
-    if (chatty_item_get_protocols (item) == CHATTY_PROTOCOL_SMS) {
-      ChattyEds *chatty_eds;
-      ChattyContact *contact;
-      const char *number;
-
-      chatty_eds = chatty_manager_get_eds (self->manager);
-      number = purple_buddy_get_name (buddy);
-      contact = chatty_eds_find_by_number (chatty_eds, number);
-
-      if (!contact)
-        gtk_widget_show (self->menu_add_in_contacts_button);
-    }
 
     if (purple_blist_node_get_bool (node, "chatty-unknown-contact"))
       gtk_widget_show (self->menu_add_contact_button);
