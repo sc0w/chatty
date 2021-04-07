@@ -20,6 +20,8 @@ G_BEGIN_DECLS
 
 G_DECLARE_DERIVABLE_TYPE (ChattyAccount, chatty_account, CHATTY, ACCOUNT, ChattyItem)
 
+typedef struct _ChattyChat ChattyChat;
+
 struct _ChattyAccountClass
 {
   ChattyItemClass parent_class;
@@ -52,6 +54,13 @@ struct _ChattyAccountClass
                                          GAsyncReadyCallback callback,
                                          gpointer       user_data);
   gboolean     (*load_fp_finish)        (ChattyAccount *self,
+                                         GAsyncResult  *result,
+                                         GError       **error);
+  void         (*leave_chat_async)      (ChattyAccount *self,
+                                         ChattyChat    *chat,
+                                         GAsyncReadyCallback callback,
+                                         gpointer       user_data);
+  gboolean     (*leave_chat_finish)     (ChattyAccount *self,
                                          GAsyncResult  *result,
                                          GError       **error);
   void         (*start_direct_chat_async)  (ChattyAccount *self,
@@ -94,6 +103,15 @@ void          chatty_account_load_fp_async         (ChattyAccount *self,
 gboolean      chatty_account_load_fp_finish        (ChattyAccount *self,
                                                     GAsyncResult  *result,
                                                     GError       **error);
+
+void          chatty_account_leave_chat_async      (ChattyAccount *self,
+                                                    ChattyChat    *chat,
+                                                    GAsyncReadyCallback callback,
+                                                    gpointer       user_data);
+gboolean      chatty_account_leave_chat_finish     (ChattyAccount *self,
+                                                    GAsyncResult  *result,
+                                                    GError       **error);
+
 void          chatty_account_start_direct_chat_async  (ChattyAccount *self,
                                                        GPtrArray     *buddies,
                                                        GAsyncReadyCallback callback,
