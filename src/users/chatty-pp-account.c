@@ -18,6 +18,7 @@
 #include "chatty-settings.h"
 #include "chatty-account.h"
 #include "chatty-window.h"
+#include "chatty-pp-chat.h"
 #include "chatty-pp-account.h"
 
 /**
@@ -486,6 +487,24 @@ chatty_pp_account_load_fp_async (ChattyAccount       *account,
 }
 
 static void
+chatty_pp_account_leave_chat_async (ChattyAccount       *account,
+                                    ChattyChat          *chat,
+                                    GAsyncReadyCallback  callback,
+                                    gpointer             user_data)
+{
+  ChattyPpAccount *self = (ChattyPpAccount *)account;
+  g_autoptr(GTask) task = NULL;
+
+  g_assert (CHATTY_IS_PP_ACCOUNT (self));
+
+  chatty_pp_chat_leave (CHATTY_PP_CHAT (chat));
+
+  /* Assume we succeeded! */
+  task = g_task_new (self, NULL, callback, user_data);
+  g_task_return_boolean (task, TRUE);
+}
+
+static void
 chatty_pp_account_start_direct_chat_async (ChattyAccount       *account,
                                            GPtrArray           *buddies,
                                            GAsyncReadyCallback  callback,
@@ -766,6 +785,7 @@ chatty_pp_account_class_init (ChattyPpAccountClass *klass)
   account_class->get_device_fp = chatty_pp_account_get_device_fp;
   account_class->get_fp_list = chatty_pp_account_get_fp_list;
   account_class->load_fp_async = chatty_pp_account_load_fp_async;
+  account_class->leave_chat_async = chatty_pp_account_leave_chat_async;
   account_class->start_direct_chat_async = chatty_pp_account_start_direct_chat_async;
 
   properties[PROP_USERNAME] =
