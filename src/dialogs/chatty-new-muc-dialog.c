@@ -18,11 +18,6 @@
 #include "chatty-new-muc-dialog.h"
 
 
-static void chatty_new_muc_name_check (ChattyNewMucDialog *self, 
-                                       GtkEntry           *entry, 
-                                       GtkWidget          *button);
-
-
 struct _ChattyNewMucDialog
 {
   GtkDialog  parent_instance;
@@ -107,11 +102,14 @@ button_join_chat_clicked_cb (ChattyNewMucDialog *self)
 static void
 chat_name_changed_cb (ChattyNewMucDialog *self)
 {
+  const char *name;
+  gboolean buddy_exists;
+
   g_assert (CHATTY_IS_NEW_MUC_DIALOG(self));
 
-  chatty_new_muc_name_check (self,
-                             GTK_ENTRY(self->entry_group_chat_id), 
-                             self->button_join_chat);
+  name = gtk_entry_get_text (GTK_ENTRY (self->entry_group_chat_id));
+  buddy_exists = chatty_account_buddy_exists (CHATTY_ACCOUNT (self->selected_account), name);
+  gtk_widget_set_sensitive (self->button_join_chat, !buddy_exists);
 }
 
 
@@ -132,34 +130,6 @@ account_list_row_activated_cb (ChattyNewMucDialog *self,
 
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(prefix_radio), TRUE);
 }
-
-
-static void
-chatty_new_muc_name_check (ChattyNewMucDialog *self,
-                           GtkEntry           *entry,
-                           GtkWidget          *button)
-{
-  PurpleAccount *account;
-  PurpleBuddy   *buddy = NULL;
-  const char    *name;
-
-  g_return_if_fail (CHATTY_IS_NEW_MUC_DIALOG(self));
-
-  name = gtk_entry_get_text (entry);
-
-  account = chatty_pp_account_get_account (self->selected_account);
-
-  if ((*name != '\0') && account) {
-    buddy = purple_find_buddy (account, name);
-  }
-
-  if ((*name != '\0') && !buddy) {
-    gtk_widget_set_sensitive (button, TRUE);
-  } else {
-    gtk_widget_set_sensitive (button, FALSE);
-  }
-}
-
 
 static void
 chatty_new_muc_add_account_to_list (ChattyNewMucDialog *self,
