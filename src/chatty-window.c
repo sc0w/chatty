@@ -620,38 +620,15 @@ window_delete_buddy_clicked_cb (ChattyWindow *self)
 static void
 window_leave_chat_clicked_cb (ChattyWindow *self)
 {
-  PurpleBlistNode *node;
-
   g_assert (CHATTY_IS_WINDOW (self));
 
-  if (!self->selected_item) {
-    chatty_window_change_view (self, CHATTY_VIEW_CHAT_LIST);
-
-    g_return_if_reached ();
-  }
-
-  if (CHATTY_IS_MA_CHAT (self->selected_item)) {
+  if (self->selected_item) {
     ChattyAccount *account;
 
     account = chatty_chat_get_account (CHATTY_CHAT (self->selected_item));
     chatty_account_leave_chat_async (account,
                                      CHATTY_CHAT (self->selected_item),
                                      NULL, NULL);
-    window_set_item (self, NULL);
-    chatty_window_chat_list_select_first (self);
-    chatty_window_change_view (self, CHATTY_VIEW_CHAT_LIST);
-
-    return;
-  }
-
-  node = (PurpleBlistNode *)chatty_pp_chat_get_purple_buddy (CHATTY_PP_CHAT (self->selected_item));
-
-  if (!node)
-    node = (PurpleBlistNode *)chatty_pp_chat_get_purple_chat (CHATTY_PP_CHAT (self->selected_item));
-
-  if (node) {
-    purple_blist_node_set_bool (node, "chatty-autojoin", FALSE);
-    purple_conversation_destroy (chatty_pp_chat_get_purple_conv (CHATTY_PP_CHAT (self->selected_item)));
   }
 
   window_set_item (self, NULL);
