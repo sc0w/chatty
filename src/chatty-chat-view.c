@@ -49,7 +49,6 @@ struct _ChattyChatView
   GtkAdjustment *vadjustment;
 
   ChattyChat *chat;
-  PurpleConversation *conv;
   char       *last_message_id;  /* id of last sent message, currently used only for SMS */
   guint       message_type;
   guint       refresh_typing_id;
@@ -465,7 +464,7 @@ chat_view_send_file_button_clicked_cb (ChattyChatView *self,
 static void
 chat_view_send_message_button_clicked_cb (ChattyChatView *self)
 {
-  PurpleConversation  *conv;
+  PurpleConversation *conv = NULL;
   ChattyAccount *account;
   g_autoptr(ChattyMessage) msg = NULL;
   g_autofree char *message = NULL;
@@ -475,7 +474,8 @@ chat_view_send_message_button_clicked_cb (ChattyChatView *self)
 
   g_assert (CHATTY_IS_CHAT_VIEW (self));
 
-  conv = self->conv;
+  if (CHATTY_IS_PP_CHAT (self->chat))
+    conv = chatty_pp_chat_get_purple_conv (CHATTY_PP_CHAT (self->chat));
 
   gtk_text_buffer_get_bounds (self->message_input_buffer, &start, &end);
   message = gtk_text_buffer_get_text (self->message_input_buffer, &start, &end, FALSE);
@@ -813,9 +813,6 @@ chatty_chat_view_set_chat (ChattyChatView *self,
 
   if (!chat)
     return;
-
-  if (CHATTY_IS_PP_CHAT (chat))
-    self->conv = chatty_pp_chat_get_purple_conv (CHATTY_PP_CHAT (chat));
 
   gtk_list_box_bind_model (GTK_LIST_BOX (self->message_list),
                            chatty_chat_get_messages (self->chat),
