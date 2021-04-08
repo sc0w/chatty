@@ -76,6 +76,8 @@ gboolean        chatty_manager_save_account_finish    (ChattyManager      *self,
 ChattyChat     *chatty_manager_add_chat               (ChattyManager      *self,
                                                        ChattyChat         *chat);
 void            chatty_conv_join_chat                 (PurpleChat         *chat);
+gboolean        chatty_manager_set_uri                (ChattyManager      *self,
+                                                       const char         *uri);
 ChattyHistory  *chatty_manager_get_history            (ChattyManager      *self);
 
 G_END_DECLS

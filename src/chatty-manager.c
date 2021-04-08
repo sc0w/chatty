@@ -2591,6 +2591,68 @@ chatty_conv_join_chat (PurpleChat *chat)
   g_free (chat_name);
 }
 
+gboolean
+chatty_manager_set_uri (ChattyManager *self,
+                        const char    *uri)
+{
+  g_autoptr(ChattyChat) chat = NULL;
+  g_autofree char *who = NULL;
+  ChattyContact *contact;
+  PurpleAccount *pp_account;
+  ChattyPpBuddy *buddy;
+  ChattyAccount *account;
+  PurpleBuddy *pp_buddy;
+  ChattyChat *item;
+  GPtrArray *buddies;
+  const char *alias, *country_code;
+
+  if (!uri || !*uri)
+    return FALSE;
+
+  pp_account = purple_accounts_find ("SMS", "prpl-mm-sms");
+  account = (ChattyAccount *)chatty_pp_account_get_object (pp_account);
+
+  if (!purple_account_is_connected (pp_account))
+    return FALSE;
+
+  country_code = chatty_settings_get_country_iso_code (chatty_settings_get_default ());
+  who = chatty_utils_check_phonenumber (uri, country_code);
+  if (!who)
+    return FALSE;
+
+  contact = chatty_eds_find_by_number (self->chatty_eds, who);
+
+  if (contact)
+    alias = chatty_item_get_name (CHATTY_ITEM (contact));
+  else
+    alias = who;
+
+  pp_buddy = purple_find_buddy (pp_account, who);
+
+  if (!pp_buddy) {
+    pp_buddy = purple_buddy_new (pp_account, who, alias);
+
+    purple_blist_add_buddy (pp_buddy, NULL, NULL, NULL);
+  }
+
+  buddy = chatty_pp_buddy_get_object (pp_buddy);
+
+  if (buddy && contact)
+    chatty_pp_buddy_set_contact (buddy, contact);
+
+  chat = (ChattyChat *)chatty_pp_chat_new_im_chat (pp_account, pp_buddy, FALSE);
+  item = chatty_manager_add_chat (self, chat);
+
+  purple_blist_node_set_bool (PURPLE_BLIST_NODE(pp_buddy), "chatty-autojoin", TRUE);
+
+  buddies = g_ptr_array_new_full (1, g_free);
+  g_ptr_array_add (buddies, g_strdup (who));
+  chatty_account_start_direct_chat_async (account, buddies, NULL, NULL);
+  g_signal_emit_by_name (item, "changed");
+
+  return TRUE;
+}
+
 ChattyHistory *
 chatty_manager_get_history (ChattyManager *self)
 {
