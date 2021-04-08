@@ -1074,33 +1074,9 @@ void
 chatty_window_set_uri (ChattyWindow *self,
                        const char   *uri)
 {
-  g_autoptr(ChattyChat) chat = NULL;
   g_autofree char *who = NULL;
-  ChattyChat    *item;
-  ChattyEds     *chatty_eds;
-  ChattyContact *contact;
-  PurpleAccount *account;
-  ChattyPpBuddy *pp_buddy;
-  ChattyAccount *chatty_account;
-  PurpleBuddy   *buddy;
-  GPtrArray     *buddies;
-  const char    *alias;
-
-  account = purple_accounts_find ("SMS", "prpl-mm-sms");
-  chatty_account = (ChattyAccount *)chatty_pp_account_get_object (account);
-
-  if (!purple_account_is_connected (account))
-    return;
 
   who = chatty_utils_check_phonenumber (uri, chatty_settings_get_country_iso_code (self->settings));
-
-  chatty_eds = chatty_manager_get_eds (self->manager);
-  contact = chatty_eds_find_by_number (chatty_eds, who);
-
-  if (contact)
-    alias = chatty_item_get_name (CHATTY_ITEM (contact));
-  else
-    alias = who;
 
   if (!who) {
     GtkWidget *dialog;
@@ -1116,32 +1092,11 @@ chatty_window_set_uri (ChattyWindow *self,
     return;
   }
 
-  buddy = purple_find_buddy (account, who);
-
-  if (!buddy) {
-    buddy = purple_buddy_new (account, who, alias);
-
-    purple_blist_add_buddy (buddy, NULL, NULL, NULL);
-  }
-
-  pp_buddy = chatty_pp_buddy_get_object (buddy);
-
-  if (pp_buddy && contact)
-    chatty_pp_buddy_set_contact (pp_buddy, contact);
-
-  chat = (ChattyChat *)chatty_pp_chat_new_im_chat (account, buddy, FALSE);
-  item = chatty_manager_add_chat (chatty_manager_get_default (), chat);
-
-  purple_blist_node_set_bool (PURPLE_BLIST_NODE(buddy), "chatty-autojoin", TRUE);
-
-  buddies = g_ptr_array_new_full (1, g_free);
-  g_ptr_array_add (buddies, g_strdup (who));
-  chatty_account_start_direct_chat_async (chatty_account, buddies, NULL, NULL);
+  if (!chatty_manager_set_uri (self->manager, uri))
+    return;
 
   gtk_widget_hide (self->new_chat_dialog);
-
   chatty_window_change_view (self, CHATTY_VIEW_MESSAGE_LIST);
-  g_signal_emit_by_name (item, "changed");
 }
 
 ChattyChat *
