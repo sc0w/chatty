@@ -63,7 +63,6 @@ struct _ChattyWindow
   GtkWidget *menu_add_contact_button;
   GtkWidget *menu_new_message_button;
   GtkWidget *menu_new_group_message_button;
-  GtkWidget *menu_new_bulk_sms_button;
   GtkWidget *header_chat_info_button;
   GtkWidget *header_add_chat_button;
   GtkWidget *header_sub_menu_button;
@@ -792,8 +791,7 @@ window_active_protocols_changed_cb (ChattyWindow *self)
 
   gtk_widget_set_sensitive (self->header_add_chat_button, has_sms || has_im);
   gtk_widget_set_sensitive (self->menu_new_group_message_button, has_im);
-  gtk_widget_set_sensitive (self->menu_new_bulk_sms_button, has_sms);
-  
+
   gtk_filter_changed (self->chat_filter, GTK_FILTER_CHANGE_DIFFERENT);
   window_chat_changed_cb (self);
 }
@@ -930,7 +928,6 @@ chatty_window_class_init (ChattyWindowClass *klass)
   gtk_widget_class_bind_template_child (widget_class, ChattyWindow, menu_add_contact_button);
   gtk_widget_class_bind_template_child (widget_class, ChattyWindow, menu_new_message_button);
   gtk_widget_class_bind_template_child (widget_class, ChattyWindow, menu_new_group_message_button);
-  gtk_widget_class_bind_template_child (widget_class, ChattyWindow, menu_new_bulk_sms_button);
   gtk_widget_class_bind_template_child (widget_class, ChattyWindow, header_chat_info_button);
   gtk_widget_class_bind_template_child (widget_class, ChattyWindow, header_add_chat_button);
   gtk_widget_class_bind_template_child (widget_class, ChattyWindow, header_sub_menu_button);

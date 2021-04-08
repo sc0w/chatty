@@ -76,18 +76,6 @@
             <property name="fill">True</property>
           </packing>
         </child>
-        <child>
-          <object class="GtkModelButton" id="menu_new_bulk_sms_button">
-            <property name="visible">False</property>
-            <property name="can_focus">True</property>
-            <property name="receives_default">False</property>
-            <property name="text" translatable="yes">New Bulk SMS…</property>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-          </packing>
-        </child>
       </object>
       <packing>
         <property name="submenu">main</property>
