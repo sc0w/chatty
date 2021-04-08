@@ -84,5 +84,11 @@ void                chatty_pp_chat_set_buddy_typing       (ChattyPpChat       *s
                                                            gboolean            is_typing);
 void                chatty_pp_chat_leave                  (ChattyPpChat       *self);
 void                chatty_pp_chat_delete                 (ChattyPpChat       *self);
+void                chatty_pp_chat_save_to_contacts_async (ChattyPpChat       *self,
+                                                           GAsyncReadyCallback callback,
+                                                           gpointer            user_data);
+gboolean            chatty_pp_chat_save_to_contacts_finish (ChattyPpChat       *self,
+                                                            GAsyncResult       *result,
+                                                            GError            **error);
 
 G_END_DECLS
