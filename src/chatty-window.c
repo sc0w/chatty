@@ -642,12 +642,14 @@ write_contact_cb (GObject      *object,
                   gpointer      user_data)
 {
   g_autoptr(ChattyWindow) self = user_data;
+  ChattyPpChat *chat = CHATTY_PP_CHAT (object);
   g_autoptr(GError) error = NULL;
   GtkWidget *dialog;
 
   g_assert (CHATTY_IS_WINDOW (self));
+  g_assert (CHATTY_IS_PP_CHAT (chat));
 
-  if (chatty_eds_write_contact_finish (result, &error))
+  if (chatty_pp_chat_save_to_contacts_finish (chat, result, &error))
     return;
 
   dialog = gtk_message_dialog_new (GTK_WINDOW (self),
@@ -662,41 +664,14 @@ write_contact_cb (GObject      *object,
 static void
 window_add_contact_clicked_cb (ChattyWindow *self)
 {
-  PurpleAccount      *account;
-  PurpleConversation *conv;
-  PurpleBuddy        *buddy;
-  const char         *who;
-  g_autofree gchar   *number = NULL;
-
   g_assert (CHATTY_IS_WINDOW (self));
   g_return_if_fail (self->selected_item);
 
-  buddy = chatty_pp_chat_get_purple_buddy (CHATTY_PP_CHAT (self->selected_item));
-  g_return_if_fail (buddy != NULL);
+  if (!CHATTY_IS_PP_CHAT (self->selected_item))
+    return;
 
-  conv = chatty_pp_chat_get_purple_conv (CHATTY_PP_CHAT (self->selected_item));
-
-  account = purple_conversation_get_account (conv);
-  purple_account_add_buddy (account, buddy);
-  purple_blist_node_remove_setting (PURPLE_BLIST_NODE(buddy), "chatty-unknown-contact");
-  purple_blist_node_set_bool (PURPLE_BLIST_NODE (buddy), "chatty-notifications", TRUE);
-
-  if (chatty_item_get_protocols (CHATTY_ITEM (self->selected_item)) == CHATTY_PROTOCOL_SMS) {
-    ChattyEds *chatty_eds;
-    ChattyContact *contact = NULL;
-
-    chatty_eds = chatty_manager_get_eds (self->manager);
-
-    who = purple_buddy_get_name (buddy);
-
-    number = chatty_utils_check_phonenumber (who, chatty_settings_get_country_iso_code (self->settings));
-
-    if (number)
-      contact = chatty_eds_find_by_number (chatty_eds, number);
-
-    if (!contact)
-      chatty_eds_write_contact_async (who, number, write_contact_cb, g_object_ref (self));
-  }
+  chatty_pp_chat_save_to_contacts_async (CHATTY_PP_CHAT (self->selected_item),
+                                         write_contact_cb, g_object_ref (self));
 
   gtk_widget_hide (self->menu_add_contact_button);
 }
@@ -705,19 +680,12 @@ window_add_contact_clicked_cb (ChattyWindow *self)
 static void
 window_add_in_contacts_clicked_cb (ChattyWindow *self)
 {
-  const char       *who;
-  const char       *alias;
-  g_autofree gchar *number = NULL;
-
   g_assert (CHATTY_IS_WINDOW (self));
-  g_return_if_fail (CHATTY_CHAT (self->selected_item));
+  g_return_if_fail (CHATTY_IS_PP_CHAT (self->selected_item));
 
-  alias = chatty_item_get_name (CHATTY_ITEM (self->selected_item));
-  who = chatty_chat_get_chat_name (CHATTY_CHAT (self->selected_item));
-  number = chatty_utils_check_phonenumber (who, chatty_settings_get_country_iso_code (self->settings));
-  CHATTY_TRACE_MSG ("Save to contacts, name: %s, number: %s", who, number);
-
-  chatty_eds_write_contact_async (alias, number, write_contact_cb, g_object_ref (self));
+  chatty_pp_chat_save_to_contacts_async (CHATTY_PP_CHAT (self->selected_item),
+                                         write_contact_cb, g_object_ref (self));
+  gtk_widget_hide (self->menu_add_contact_button);
 }
 
 
