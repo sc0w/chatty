@@ -61,7 +61,6 @@ struct _ChattyWindow
   GtkWidget *header_chat_list_new_msg_popover;
 
   GtkWidget *menu_add_contact_button;
-  GtkWidget *menu_add_in_contacts_button;
   GtkWidget *menu_new_message_button;
   GtkWidget *menu_new_group_message_button;
   GtkWidget *menu_new_bulk_sms_button;
@@ -368,7 +367,7 @@ chatty_window_open_item (ChattyWindow *self,
     contact = chatty_pp_buddy_get_contact (CHATTY_PP_BUDDY (item));
 
     if (!contact)
-      gtk_widget_show (self->menu_add_in_contacts_button);
+      gtk_widget_show (self->menu_add_contact_button);
   }
 
   if (node) {
@@ -676,19 +675,6 @@ window_add_contact_clicked_cb (ChattyWindow *self)
   gtk_widget_hide (self->menu_add_contact_button);
 }
 
-
-static void
-window_add_in_contacts_clicked_cb (ChattyWindow *self)
-{
-  g_assert (CHATTY_IS_WINDOW (self));
-  g_return_if_fail (CHATTY_IS_PP_CHAT (self->selected_item));
-
-  chatty_pp_chat_save_to_contacts_async (CHATTY_PP_CHAT (self->selected_item),
-                                         write_contact_cb, g_object_ref (self));
-  gtk_widget_hide (self->menu_add_contact_button);
-}
-
-
 static void
 window_show_chat_info_clicked_cb (ChattyWindow *self)
 {
@@ -954,7 +940,6 @@ chatty_window_class_init (ChattyWindowClass *klass)
   gtk_widget_class_bind_template_child (widget_class, ChattyWindow, sub_header_label);
   gtk_widget_class_bind_template_child (widget_class, ChattyWindow, sub_header_icon);
   gtk_widget_class_bind_template_child (widget_class, ChattyWindow, menu_add_contact_button);
-  gtk_widget_class_bind_template_child (widget_class, ChattyWindow, menu_add_in_contacts_button);
   gtk_widget_class_bind_template_child (widget_class, ChattyWindow, menu_new_message_button);
   gtk_widget_class_bind_template_child (widget_class, ChattyWindow, menu_new_group_message_button);
   gtk_widget_class_bind_template_child (widget_class, ChattyWindow, menu_new_bulk_sms_button);
@@ -991,7 +976,6 @@ chatty_window_class_init (ChattyWindowClass *klass)
   gtk_widget_class_bind_template_callback (widget_class, window_back_clicked_cb);
   gtk_widget_class_bind_template_callback (widget_class, window_show_chat_info_clicked_cb);
   gtk_widget_class_bind_template_callback (widget_class, window_add_contact_clicked_cb);
-  gtk_widget_class_bind_template_callback (widget_class, window_add_in_contacts_clicked_cb);
   gtk_widget_class_bind_template_callback (widget_class, window_leave_chat_clicked_cb);
   gtk_widget_class_bind_template_callback (widget_class, window_delete_buddy_clicked_cb);
   gtk_widget_class_bind_template_callback (widget_class, window_search_changed_cb);
