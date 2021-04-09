@@ -89,7 +89,6 @@ struct _ChattySettingsDialog
   GtkWidget      *message_carbons_switch;
   GtkWidget      *typing_notification_switch;
 
-  GtkWidget      *indicate_offline_switch;
   GtkWidget      *indicate_idle_switch;
   GtkWidget      *indicate_unknown_switch;
 
@@ -814,9 +813,6 @@ chatty_settings_dialog_constructed (GObject *object)
                           self->typing_notification_switch, "active",
                           G_BINDING_SYNC_CREATE | G_BINDING_BIDIRECTIONAL);
 
-  g_object_bind_property (settings, "greyout-offline-buddies",
-                          self->indicate_offline_switch, "active",
-                          G_BINDING_SYNC_CREATE | G_BINDING_BIDIRECTIONAL);
   g_object_bind_property (settings, "blur-idle-buddies",
                           self->indicate_idle_switch, "active",
                           G_BINDING_SYNC_CREATE | G_BINDING_BIDIRECTIONAL);
@@ -896,7 +892,6 @@ chatty_settings_dialog_class_init (ChattySettingsDialogClass *klass)
   gtk_widget_class_bind_template_child (widget_class, ChattySettingsDialog, message_carbons_switch);
   gtk_widget_class_bind_template_child (widget_class, ChattySettingsDialog, typing_notification_switch);
 
-  gtk_widget_class_bind_template_child (widget_class, ChattySettingsDialog, indicate_offline_switch);
   gtk_widget_class_bind_template_child (widget_class, ChattySettingsDialog, indicate_idle_switch);
   gtk_widget_class_bind_template_child (widget_class, ChattySettingsDialog, indicate_unknown_switch);
 
