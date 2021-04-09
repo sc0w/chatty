@@ -16,9 +16,9 @@ before_script:
   - export DEBIAN_FRONTEND=noninteractive
   - apt-get -y update
 
-build-pureos-gcc-amber:
+build-pureos-gcc-byzantium:
   <<: *tags
-  image: pureos/amber
+  image: pureos/byzantium
   stage: build
   script:
     - apt-get -y build-dep .
@@ -30,25 +30,12 @@ build-pureos-gcc-amber:
     paths:
       - _build
 
-build-pureos-gcc-byzantium:
-  <<: *tags
-  image: pureos/byzantium
-  stage: build
-  script:
-    - apt-get -y build-dep .
-    - export LC_ALL=C.UTF-8
-    - meson . _build -Db_coverage=true --werror
-    - ninja -C _build
-  artifacts:
-    paths:
-      - _build
-
 test:debian-gcc:
   <<: *tags
   stage: test
-  image: pureos/amber
+  image: pureos/byzantium
   dependencies:
-    - build-pureos-gcc-amber
+    - build-pureos-gcc-byzantium
   script:
     - apt-get -y build-dep .
     - apt-get -y install libgtk-3-bin xvfb lcov
@@ -63,7 +50,7 @@ check-po:
   stage: test
   image: debian:bullseye
   dependencies:
-    - build-pureos-gcc-amber
+    - build-pureos-gcc-byzantium
   before_script:
     - apt-get -y update
     - apt-get -y install intltool
