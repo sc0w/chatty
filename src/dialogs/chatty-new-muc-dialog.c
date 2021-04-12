@@ -38,64 +38,29 @@ G_DEFINE_TYPE (ChattyNewMucDialog, chatty_new_muc_dialog, GTK_TYPE_DIALOG)
 
 
 static void
-chatty_blist_join_group_chat (PurpleAccount *account,
-                              const char    *group_chat_id,
-                              const char    *room_alias,
-                              const char    *user_alias,
-                              const char    *pwd)
+join_new_chat_cb (GObject      *object,
+                  GAsyncResult *result,
+                  gpointer      user_data)
 {
-  PurpleChat               *chat;
-  PurpleGroup              *group;
-  PurpleConnection         *gc;
-  PurplePluginProtocolInfo *info;
-  GHashTable               *hash = NULL;
+  g_autoptr(ChattyNewMucDialog) self = user_data;
 
-  if (!purple_account_is_connected (account) || !group_chat_id)
-    return;
-
-  gc = purple_account_get_connection (account);
-
-  info = PURPLE_PLUGIN_PROTOCOL_INFO(purple_connection_get_prpl (gc));
-
-  if (info->chat_info_defaults != NULL)
-    hash = info->chat_info_defaults(gc, group_chat_id);
-
-  if (*user_alias != '\0')
-    g_hash_table_replace (hash, "handle", g_strdup (user_alias));
-
-  chat = purple_chat_new (account, group_chat_id, hash);
-
-  if (chat != NULL) {
-    if ((group = purple_find_group ("Chats")) == NULL) {
-      group = purple_group_new ("Chats");
-      purple_blist_add_group (group, NULL);
-    }
-
-    purple_blist_add_chat (chat, group, NULL);
-    purple_blist_alias_chat (chat, room_alias);
-    purple_blist_node_set_bool ((PurpleBlistNode*)chat,
-                                "chatty-autojoin",
-                                TRUE);
-
-    chatty_conv_join_chat (chat);
-  }
+  g_assert (CHATTY_IS_NEW_MUC_DIALOG (self));
 }
-
 
 static void
 button_join_chat_clicked_cb (ChattyNewMucDialog *self)
 {
-  PurpleAccount *account;
+  ChattyChat *chat;
 
   g_assert (CHATTY_IS_NEW_MUC_DIALOG(self));
 
-  account = chatty_pp_account_get_account (self->selected_account);
-
-  chatty_blist_join_group_chat (account,
-                                gtk_entry_get_text (GTK_ENTRY(self->entry_group_chat_id)),
-                                gtk_entry_get_text (GTK_ENTRY(self->entry_group_chat_room_alias)),
-                                gtk_entry_get_text (GTK_ENTRY(self->entry_group_chat_user_alias)),
-                                gtk_entry_get_text (GTK_ENTRY(self->entry_group_chat_pw)));
+  chat = chatty_pp_account_join_chat (CHATTY_PP_ACCOUNT (self->selected_account),
+                                      gtk_entry_get_text (GTK_ENTRY(self->entry_group_chat_id)),
+                                      gtk_entry_get_text (GTK_ENTRY(self->entry_group_chat_room_alias)),
+                                      gtk_entry_get_text (GTK_ENTRY(self->entry_group_chat_user_alias)),
+                                      gtk_entry_get_text (GTK_ENTRY(self->entry_group_chat_pw)));
+  chatty_account_join_chat_async (CHATTY_ACCOUNT (self->selected_account), chat,
+                                  join_new_chat_cb, g_object_ref (self));
 }
 
 
