@@ -87,33 +87,6 @@ G_DEFINE_TYPE (ChattyWindow, chatty_window, GTK_TYPE_APPLICATION_WINDOW)
 static void chatty_window_show_new_muc_dialog (ChattyWindow *self);
 
 
-typedef struct {
-  const char *title;
-  const char *description;
-} overlay_content_t;
-
-overlay_content_t OverlayContent[6] = {
-  {.title       = N_("Choose a Contact"),
-   .description = N_("Select an <b>SMS</b> or <b>Instant Message</b> "
-                     "contact with the <b>\"+\"</b> button in the titlebar."),
-  },
-  {.title       = N_("Choose a Contact"),
-   .description = N_("Select an <b>Instant Message</b> contact with "
-                     "the \"+\" button in the titlebar."),
-  },
-  {.title       = N_("Choose a Contact"),
-   .description = N_("Start a <b>SMS</b> chat with the \"+\" button in the "
-                     "titlebar.\n\n"
-                     "For <b>Instant Messaging</b> add or activate "
-                     "an account in <i>\"preferences\"</i>."),
-  },
-  {.title       = N_("Start Chatting"),
-   .description = N_("For <b>Instant Messaging</b> add or activate "
-                     "an account in <i>\"preferences\"</i>."),
-  }
-};
-
-
 static GtkWidget *
 window_chat_list_row_new (ChattyItem   *item,
                           ChattyWindow *self)
@@ -194,9 +167,6 @@ static void
 window_chat_changed_cb (ChattyWindow *self)
 {
   GListModel *model;
-  ChattyProtocol protocols;
-  gint mode = CHATTY_OVERLAY_EMPTY_CHAT_NO_SMS_IM;
-  gboolean has_sms, has_im;
   gboolean has_child;
 
   g_assert (CHATTY_IS_WINDOW (self));
@@ -229,21 +199,14 @@ window_chat_changed_cb (ChattyWindow *self)
   if (has_child)
     return;
 
-  protocols = chatty_manager_get_active_protocols (self->manager);
-  has_sms = !!(protocols & CHATTY_PROTOCOL_SMS);
-  has_im  = !!(protocols & ~CHATTY_PROTOCOL_SMS);
-
-  if (has_sms && has_im)
-    mode = CHATTY_OVERLAY_EMPTY_CHAT;
-  else if (has_sms)
-    mode = CHATTY_OVERLAY_EMPTY_CHAT_NO_IM;
-  else if (has_im)
-    mode = CHATTY_OVERLAY_EMPTY_CHAT_NO_SMS;
-
-  hdy_status_page_set_title (HDY_STATUS_PAGE (self->empty_view),
-                             gettext (OverlayContent[mode].title));
-  hdy_status_page_set_description (HDY_STATUS_PAGE (self->empty_view),
-                                   gettext (OverlayContent[mode].description));
+  if (chatty_manager_get_active_protocols (self->manager))
+    hdy_status_page_set_description (HDY_STATUS_PAGE (self->empty_view),
+                                     _("Select a contact with the "
+                                       "<b>“+”</b> button in the titlebar."));
+  else
+    hdy_status_page_set_description (HDY_STATUS_PAGE (self->empty_view),
+                                     _("For <b>Instant Messaging</b> add or activate "
+                                       "an account in <i>\"preferences\"</i>."));
 }
 
 static void
