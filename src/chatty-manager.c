@@ -1627,9 +1627,6 @@ chatty_manager_initialize_libpurple (ChattyManager *self)
   network_monitor = g_network_monitor_get_default ();
   self->network_available = g_network_monitor_get_network_available (network_monitor);
 
-  purple_prefs_add_none (CHATTY_PREFS_ROOT "/conversations");
-  purple_prefs_add_bool (CHATTY_PREFS_ROOT "/conversations/show_tabs", FALSE);
-
   purple_signal_register (self, "conversation-write",
                           purple_marshal_VOID__POINTER_POINTER_POINTER_UINT,
                           NULL, 4,

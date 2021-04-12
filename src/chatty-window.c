@@ -947,11 +947,6 @@ chatty_window_init (ChattyWindow *self)
   g_signal_connect_after (G_OBJECT (self->convs_notebook),
                           "switch-page",
                           G_CALLBACK (window_notebook_after_switch_cb), self);
-
-  if (purple_prefs_get_bool (CHATTY_PREFS_ROOT "/conversations/show_tabs"))
-    gtk_notebook_set_show_tabs (GTK_NOTEBOOK (self->convs_notebook), TRUE);
-  else
-    gtk_notebook_set_show_tabs (GTK_NOTEBOOK (self->convs_notebook), FALSE);
 }
 
 
@@ -1031,22 +1026,14 @@ chatty_window_open_chat (ChattyWindow *self,
   view = window_get_view_for_chat (self, chat);
 
   if (!view) {
-    const char *name;
-    g_auto(GStrv) split = NULL;
-    g_autofree char *label = NULL;
-
     view  = chatty_chat_view_new ();
-    name  = chatty_item_get_name (CHATTY_ITEM (chat));
-    split = g_strsplit (name, "@", -1);
-    label = g_strdup_printf ("%s %s", split[0], " >");
 
-    g_debug ("creating new view for chat \"%s\"", name);
+    g_debug ("creating new view for chat \"%s\"",
+             chatty_item_get_name (CHATTY_ITEM (chat)));
 
     chatty_chat_view_set_chat (CHATTY_CHAT_VIEW (view), chat);
     gtk_widget_show (view);
-
     gtk_container_add (GTK_CONTAINER (self->convs_notebook), view);
-    gtk_notebook_set_tab_label_text (GTK_NOTEBOOK(self->convs_notebook), view, label);
 
     chatty_chat_load_past_messages (chat, -1);
   }
