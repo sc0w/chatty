@@ -11,7 +11,6 @@
 #include <glib.h>
 #include <glib/gi18n.h>
 #include <glib-object.h>
-#include <purple.h>
 #include "contrib/gtk.h"
 #include "chatty-config.h"
 #include "chatty-window.h"
@@ -286,8 +285,7 @@ static void
 chatty_window_open_item (ChattyWindow *self,
                          ChattyItem   *item)
 {
-  PurpleBlistNode *node = NULL;
-  PurpleChat *chat;
+  ChattyChat *chat;
 
   g_assert (CHATTY_IS_WINDOW (self));
   g_assert (CHATTY_IS_ITEM (item));
@@ -304,11 +302,22 @@ chatty_window_open_item (ChattyWindow *self,
     return;
   }
 
-  if (CHATTY_IS_PP_BUDDY (item))
-    node = (PurpleBlistNode *)chatty_pp_buddy_get_buddy (CHATTY_PP_BUDDY (item));
+  if (CHATTY_IS_PP_BUDDY (item)) {
+    chat = g_object_get_data (G_OBJECT (item), "chat");
+
+    if (!chat) {
+      gboolean has_encryption;
+
+      has_encryption = chatty_manager_lurch_plugin_is_loaded (self->manager);
+      chat = (ChattyChat *)chatty_pp_chat_new_buddy_chat (CHATTY_PP_BUDDY (item),
+                                                          has_encryption);
+      chat = chatty_manager_add_chat (self->manager, chat);
+      chatty_chat_load_past_messages (chat, -1);
+    }
+  }
 
   if (CHATTY_IS_PP_CHAT (item))
-    node = (PurpleBlistNode *)chatty_pp_chat_get_purple_buddy (CHATTY_PP_CHAT (item));
+    chat = CHATTY_CHAT (item);
 
   if (chatty_item_get_protocols (item) == CHATTY_PROTOCOL_SMS &&
       CHATTY_IS_PP_BUDDY (item)) {
@@ -320,31 +329,8 @@ chatty_window_open_item (ChattyWindow *self,
       gtk_widget_show (self->menu_add_contact_button);
   }
 
-  if (node) {
-    ChattyAccount *chatty_account;
-    PurpleAccount *account;
-    PurpleBuddy *buddy;
-    GPtrArray *buddies;
-
-    buddy = (PurpleBuddy*)node;
-    account = purple_buddy_get_account (buddy);
-    chatty_account = (ChattyAccount *)chatty_pp_account_get_object (account);
-
-    if (purple_blist_node_get_bool (node, "chatty-unknown-contact"))
-      gtk_widget_show (self->menu_add_contact_button);
-
-    purple_blist_node_set_bool (PURPLE_BLIST_NODE (buddy), "chatty-autojoin", TRUE);
-
-    buddies = g_ptr_array_new_full (1, g_free);
-    g_ptr_array_add (buddies, g_strdup (purple_buddy_get_name (buddy)));
-    chatty_account_start_direct_chat_async (chatty_account, buddies, NULL, NULL);
-
-    return;
-  }
-
-  if (CHATTY_IS_PP_CHAT (item) &&
-      (chat = chatty_pp_chat_get_purple_chat (CHATTY_PP_CHAT (item)))) {
-    chatty_pp_chat_join (CHATTY_PP_CHAT (item));
+  if (CHATTY_IS_PP_CHAT (chat)) {
+    chatty_pp_chat_join (CHATTY_PP_CHAT (chat));
     chatty_window_change_view (self, CHATTY_VIEW_MESSAGE_LIST);
 
     gtk_filter_changed (self->chat_filter, GTK_FILTER_CHANGE_DIFFERENT);
