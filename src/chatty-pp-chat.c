@@ -1784,21 +1784,40 @@ chatty_pp_chat_leave (ChattyPpChat *self)
 void
 chatty_pp_chat_join (ChattyPpChat *self)
 {
+  ChattyAccount *account;
   PurplePluginProtocolInfo *prpl_info;
   PurpleAccount *pp_account;
   PurpleConversation *conv;
+  PurpleBlistNode *node;
   GHashTable *components;
   g_autofree char *chat_name = NULL;
   const char *name = NULL;
 
   g_return_if_fail (CHATTY_IS_PP_CHAT (self));
-  g_return_if_fail (self->pp_chat);
+  g_return_if_fail (self->pp_chat || self->buddy);
+
+  node = (PurpleBlistNode *)self->pp_chat;
+
+  if (!node)
+    node = (PurpleBlistNode *)self->buddy;
+
+  account = chatty_chat_get_account (CHATTY_CHAT (self));
+  purple_blist_node_set_bool (node, "chatty-autojoin", TRUE);
+
+  if (self->buddy) {
+    GPtrArray *buddies;
+
+    buddies = g_ptr_array_new_full (1, g_free);
+    g_ptr_array_add (buddies, g_strdup (purple_buddy_get_name (self->buddy)));
+    chatty_account_start_direct_chat_async (account, buddies, NULL, NULL);
+
+    return;
+  }
 
   pp_account = purple_chat_get_account (self->pp_chat);
   prpl_info = PURPLE_PLUGIN_PROTOCOL_INFO (purple_find_prpl (purple_account_get_protocol_id (pp_account)));
 
   components = purple_chat_get_components (self->pp_chat);
-  purple_blist_node_set_bool ((PurpleBlistNode *)self->pp_chat, "chatty-autojoin", TRUE);
 
   if (prpl_info && prpl_info->get_chat_name)
     name = chat_name = prpl_info->get_chat_name (components);
