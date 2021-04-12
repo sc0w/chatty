@@ -1013,6 +1013,18 @@ chatty_pp_chat_init (ChattyPpChat *self)
   self->encrypt = CHATTY_ENCRYPTION_UNSUPPORTED;
 }
 
+ChattyChat *
+chatty_pp_chat_get_object (PurpleChat *pp_chat)
+{
+  PurpleBlistNode *node;
+
+  g_return_val_if_fail (pp_chat, NULL);
+
+  node = PURPLE_BLIST_NODE (pp_chat);
+
+  return node->ui_data;
+}
+
 ChattyPpChat *
 chatty_pp_chat_new_im_chat (PurpleAccount *account,
                             PurpleBuddy   *buddy,

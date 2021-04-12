@@ -26,6 +26,7 @@ G_BEGIN_DECLS
 
 G_DECLARE_FINAL_TYPE (ChattyPpChat, chatty_pp_chat, CHATTY, PP_CHAT, ChattyChat)
 
+ChattyChat         *chatty_pp_chat_get_object             (PurpleChat         *pp_chat);
 ChattyPpChat       *chatty_pp_chat_new_im_chat            (PurpleAccount      *account,
                                                            PurpleBuddy        *buddy,
                                                            gboolean            supports_encryption);
