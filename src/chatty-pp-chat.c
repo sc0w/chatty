@@ -1064,6 +1064,23 @@ chatty_pp_chat_new_im_chat (PurpleAccount *account,
 }
 
 ChattyPpChat *
+chatty_pp_chat_new_buddy_chat (ChattyPpBuddy *buddy,
+                               gboolean       supports_encryption)
+{
+  ChattyAccount *account;
+  PurpleAccount *pp_account;
+  PurpleBuddy *pp_buddy;
+
+  g_return_val_if_fail (CHATTY_IS_PP_BUDDY (buddy), NULL);
+
+  account = chatty_pp_buddy_get_account (buddy);
+  pp_account = chatty_pp_account_get_account (CHATTY_PP_ACCOUNT (account));
+  pp_buddy = chatty_pp_buddy_get_buddy (buddy);
+
+  return chatty_pp_chat_new_im_chat (pp_account, pp_buddy, supports_encryption);
+}
+
+ChattyPpChat *
 chatty_pp_chat_new_purple_chat (PurpleChat *pp_chat,
                                 gboolean    supports_encryption)
 {

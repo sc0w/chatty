@@ -30,6 +30,8 @@ ChattyChat         *chatty_pp_chat_get_object             (PurpleChat         *p
 ChattyPpChat       *chatty_pp_chat_new_im_chat            (PurpleAccount      *account,
                                                            PurpleBuddy        *buddy,
                                                            gboolean            supports_encryption);
+ChattyPpChat       *chatty_pp_chat_new_buddy_chat         (ChattyPpBuddy      *buddy,
+                                                           gboolean            supports_encryption);
 ChattyPpChat       *chatty_pp_chat_new_purple_chat        (PurpleChat         *pp_chat,
                                                            gboolean            supports_encryption);
 ChattyPpChat       *chatty_pp_chat_new_purple_conv        (PurpleConversation *conv,
