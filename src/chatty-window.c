@@ -344,9 +344,7 @@ chatty_window_open_item (ChattyWindow *self,
 
   if (CHATTY_IS_PP_CHAT (item) &&
       (chat = chatty_pp_chat_get_purple_chat (CHATTY_PP_CHAT (item)))) {
-    chatty_conv_join_chat (chat);
-
-    purple_blist_node_set_bool ((PurpleBlistNode *)chat, "chatty-autojoin", TRUE);
+    chatty_pp_chat_join (CHATTY_PP_CHAT (item));
     chatty_window_change_view (self, CHATTY_VIEW_MESSAGE_LIST);
 
     gtk_filter_changed (self->chat_filter, GTK_FILTER_CHANGE_DIFFERENT);
