@@ -102,6 +102,26 @@ emit_avatar_changed (ChattyPpChat *self)
 }
 
 static void
+pp_chat_add_history_since_component (ChattyPpChat *self,
+                                     GHashTable   *components,
+                                     const char   *account,
+                                     const char   *room)
+{
+  time_t mtime;
+  struct tm * timeinfo;
+  char *iso_timestamp = g_malloc0 (MAX_GMT_ISO_SIZE * sizeof (char));
+
+  mtime = chatty_history_get_last_message_time (self->history, account, room);
+  mtime += 1; // Use the next epoch to exclude the last stored message(s)
+  timeinfo = gmtime (&mtime);
+  g_return_if_fail (strftime (iso_timestamp, MAX_GMT_ISO_SIZE * sizeof(char),
+                              "%Y-%m-%dT%H:%M:%SZ", timeinfo));
+
+  g_hash_table_steal (components, "history_since");
+  g_hash_table_insert (components, "history_since", iso_timestamp);
+}
+
+static void
 pp_chat_setup_file_upload (ChattyPpChat *self)
 {
   PurplePluginProtocolInfo *prpl_info;
@@ -1759,6 +1779,44 @@ chatty_pp_chat_leave (ChattyPpChat *self)
 
   if (self->conv)
     purple_conversation_destroy (self->conv);
+}
+
+void
+chatty_pp_chat_join (ChattyPpChat *self)
+{
+  PurplePluginProtocolInfo *prpl_info;
+  PurpleAccount *pp_account;
+  PurpleConversation *conv;
+  GHashTable *components;
+  g_autofree char *chat_name = NULL;
+  const char *name = NULL;
+
+  g_return_if_fail (CHATTY_IS_PP_CHAT (self));
+  g_return_if_fail (self->pp_chat);
+
+  pp_account = purple_chat_get_account (self->pp_chat);
+  prpl_info = PURPLE_PLUGIN_PROTOCOL_INFO (purple_find_prpl (purple_account_get_protocol_id (pp_account)));
+
+  components = purple_chat_get_components (self->pp_chat);
+  purple_blist_node_set_bool ((PurpleBlistNode *)self->pp_chat, "chatty-autojoin", TRUE);
+
+  if (prpl_info && prpl_info->get_chat_name)
+    name = chat_name = prpl_info->get_chat_name (components);
+
+  if (!name)
+    name = purple_chat_get_name (self->pp_chat);
+
+  conv = purple_find_conversation_with_account (PURPLE_CONV_TYPE_CHAT, name, pp_account);
+
+  if (conv)
+    self->conv = conv;
+
+  if (!conv || purple_conv_chat_has_left (PURPLE_CONV_CHAT (conv))) {
+    pp_chat_add_history_since_component (self, components, pp_account->username, name);
+    serv_join_chat (purple_account_get_connection (pp_account), components);
+  } else if (conv) {
+    purple_conversation_present (conv);
+  }
 }
 
 void

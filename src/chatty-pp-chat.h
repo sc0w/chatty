@@ -83,6 +83,7 @@ const char         *chatty_pp_chat_get_status             (ChattyPpChat       *s
 gboolean            chatty_pp_chat_get_auto_join          (ChattyPpChat       *self);
 void                chatty_pp_chat_set_buddy_typing       (ChattyPpChat       *self,
                                                            gboolean            is_typing);
+void                chatty_pp_chat_join                   (ChattyPpChat       *self);
 void                chatty_pp_chat_leave                  (ChattyPpChat       *self);
 void                chatty_pp_chat_delete                 (ChattyPpChat       *self);
 void                chatty_pp_chat_save_to_contacts_async (ChattyPpChat       *self,
