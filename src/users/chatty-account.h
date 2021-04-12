@@ -56,6 +56,13 @@ struct _ChattyAccountClass
   gboolean     (*load_fp_finish)        (ChattyAccount *self,
                                          GAsyncResult  *result,
                                          GError       **error);
+  void         (*join_chat_async)       (ChattyAccount *self,
+                                         ChattyChat    *chat,
+                                         GAsyncReadyCallback callback,
+                                         gpointer       user_data);
+  gboolean     (*join_chat_finish)      (ChattyAccount *self,
+                                         GAsyncResult  *result,
+                                         GError       **error);
   void         (*leave_chat_async)      (ChattyAccount *self,
                                          ChattyChat    *chat,
                                          GAsyncReadyCallback callback,
@@ -104,6 +111,13 @@ gboolean      chatty_account_load_fp_finish        (ChattyAccount *self,
                                                     GAsyncResult  *result,
                                                     GError       **error);
 
+void          chatty_account_join_chat_async       (ChattyAccount *self,
+                                                    ChattyChat    *chat,
+                                                    GAsyncReadyCallback callback,
+                                                    gpointer       user_data);
+gboolean      chatty_account_join_chat_finish      (ChattyAccount  *self,
+                                                    GAsyncResult   *result,
+                                                    GError        **error);
 void          chatty_account_leave_chat_async      (ChattyAccount *self,
                                                     ChattyChat    *chat,
                                                     GAsyncReadyCallback callback,
