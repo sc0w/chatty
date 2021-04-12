@@ -937,6 +937,47 @@ chatty_pp_account_add_purple_buddy (ChattyPpAccount *self,
   return buddy;
 }
 
+ChattyChat *
+chatty_pp_account_join_chat (ChattyPpAccount *self,
+                             const char      *chat_id,
+                             const char      *room_alias,
+                             const char      *user_alias,
+                             const char      *password)
+{
+  PurplePluginProtocolInfo *info;
+  PurpleConnection *gc;
+  PurpleGroup *group;
+  PurpleChat *chat;
+  GHashTable *hash = NULL;
+
+  g_return_val_if_fail (CHATTY_IS_PP_ACCOUNT (self), NULL);
+  g_return_val_if_fail (chat_id && *chat_id, NULL);
+
+  if (!purple_account_is_connected (self->pp_account))
+    return NULL;
+
+  gc = purple_account_get_connection (self->pp_account);
+  info = PURPLE_PLUGIN_PROTOCOL_INFO (purple_connection_get_prpl (gc));
+
+  if (info->chat_info_defaults != NULL)
+    hash = info->chat_info_defaults (gc, chat_id);
+
+  if (user_alias && *user_alias)
+    g_hash_table_replace (hash, "handle", g_strdup (user_alias));
+
+  chat = purple_chat_new (self->pp_account, chat_id, hash);
+  if ((group = purple_find_group ("Chats")) == NULL) {
+    group = purple_group_new ("Chats");
+    purple_blist_add_group (group, NULL);
+  }
+
+  purple_blist_add_chat (chat, group, NULL);
+  purple_blist_alias_chat (chat, room_alias);
+  purple_blist_node_set_bool ((PurpleBlistNode*)chat, "chatty-autojoin", TRUE);
+
+  return chatty_pp_chat_get_object (chat);
+}
+
 /* XXX: a helper API till the dust settles */
 PurpleAccount *
 chatty_pp_account_get_account (ChattyPpAccount *self)
