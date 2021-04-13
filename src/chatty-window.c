@@ -793,13 +793,7 @@ chatty_window_constructed (GObject *object)
   self->new_chat_dialog = chatty_new_chat_dialog_new (GTK_WINDOW (self));
   self->chat_info_dialog = chatty_info_dialog_new (GTK_WINDOW (self));
 
-  hdy_leaflet_set_visible_child_name (HDY_LEAFLET (self->content_box), "sidebar");
-
-  gtk_widget_set_sensitive (GTK_WIDGET (self->header_sub_menu_button), FALSE);
-
   chatty_window_change_view (self, CHATTY_VIEW_CHAT_LIST);
-
-  gtk_widget_set_sensitive (self->header_add_chat_button, FALSE);
 
   self->chat_filter = gtk_custom_filter_new ((GtkCustomFilterFunc)window_chat_name_matches,
                                              g_object_ref (self),
