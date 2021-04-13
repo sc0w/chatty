@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: purism-chatty\n"
 "Report-Msgid-Bugs-To: https://source.puri.sm/Librem5/chatty/issues\n"
-"POT-Creation-Date: 2021-04-12 15:25+0000\n"
-"PO-Revision-Date: 2021-04-12 20:44+0300\n"
+"POT-Creation-Date: 2021-04-13 15:25+0000\n"
+"PO-Revision-Date: 2021-04-13 20:21+0300\n"
 "Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian <trans-uk@lists.fedoraproject.org>\n"
 "Language: uk\n"
@@ -197,33 +197,30 @@ msgstr "Невдала спроба увійти"
 msgid "Please check ID and password"
 msgstr "Будь ласка, перевірте ідентифікатор і пароль"
 
-#: src/chatty-chat-view.c:70 src/chatty-chat-view.c:75
-msgid "This is an IM conversation."
-msgstr "Це спілкування у службі обміну повідомленнями."
+#: src/chatty-chat-view.c:227
+#| msgid "This is an SMS conversation."
+msgid "This is an SMS conversation"
+msgstr "Це обмін повідомленнями SMS"
 
-#: src/chatty-chat-view.c:71 src/chatty-chat-view.c:81
-msgid "Your messages are not encrypted,"
-msgstr "Ваші повідомлення не зашифровано,"
+#: src/chatty-chat-view.c:229
+#| msgid "Your messages are not encrypted,"
+msgid "Your messages are not encrypted, and carrier rates may apply"
+msgstr "Ваші повідомлення не зашифровано, оператор може стягувати сплату за передавання даних"
 
-#: src/chatty-chat-view.c:72
-msgid "ask your counterpart to use E2EE."
-msgstr "попросіть вашого співрозмовника скористатися E2EE."
+#: src/chatty-chat-view.c:233
+#| msgid "This is an IM conversation."
+msgid "This is an IM conversation"
+msgstr "Це спілкування у службі обміну повідомленнями"
 
-#: src/chatty-chat-view.c:76
-msgid "Your messages are secured"
-msgstr "Ваші повідомлення захищено"
+#: src/chatty-chat-view.c:236
+#| msgid "Your messages are not encrypted,"
+msgid "Your messages are encrypted"
+msgstr "Ваші повідомлення зашифровано"
 
-#: src/chatty-chat-view.c:77
-msgid "by end-to-end encryption."
-msgstr "проміжним шифруванням даних."
-
-#: src/chatty-chat-view.c:80
-msgid "This is an SMS conversation."
-msgstr "Це обмін повідомленнями SMS."
-
-#: src/chatty-chat-view.c:82
-msgid "and carrier rates may apply."
-msgstr "і оператор може стягувати за нього сплату."
+#: src/chatty-chat-view.c:239
+#| msgid "Your messages are not encrypted,"
+msgid "Your messages are not encrypted"
+msgstr "Ваші повідомлення не зашифровано"
 
 #. TRANSLATORS: %s is the Device ID
 #: src/chatty-fp-row.c:131
@@ -348,7 +345,7 @@ msgstr "Зберегти файл…"
 msgid "Open File..."
 msgstr "Відкрити файл…"
 
-#: src/chatty-purple-request.c:191 src/chatty-window.c:535
+#: src/chatty-purple-request.c:191 src/chatty-window.c:513
 #: src/dialogs/chatty-settings-dialog.c:579 src/ui/chatty-dialog-join-muc.ui:16
 #: src/ui/chatty-info-dialog.ui:44 src/ui/chatty-info-dialog.ui:551
 msgid "Cancel"
@@ -389,16 +386,11 @@ msgstr "%a %I∶%M %p"
 msgid "%Y-%m-%d"
 msgstr "%d-%m-%Y"
 
-#: src/chatty-window.c:204
-#| msgid ""
-#| "Select an <b>Instant Message</b> contact with the \"+\" button in the "
-#| "titlebar."
+#: src/chatty-window.c:202
 msgid "Select a contact with the <b>“+”</b> button in the titlebar."
-msgstr ""
-"Виберіть контакт за допомогою кнопки <b>«+»</b> на "
-"смужці заголовка."
+msgstr "Виберіть контакт за допомогою кнопки <b>«+»</b> на смужці заголовка."
 
-#: src/chatty-window.c:208
+#: src/chatty-window.c:206
 msgid ""
 "For <b>Instant Messaging</b> add or activate an account in <i>\"preferences"
 "\"</i>."
@@ -406,40 +398,40 @@ msgstr ""
 "Для спілкування <b>обміном повідомленнями</b> додайте або активуйте "
 "обліковий запис у <i>параметрах програми</i>."
 
-#: src/chatty-window.c:520
+#: src/chatty-window.c:498
 msgid "Delete chat with"
 msgstr "Вилучити спілкування з"
 
-#: src/chatty-window.c:521
+#: src/chatty-window.c:499
 msgid "This deletes the conversation history"
 msgstr "У результаті буде вилучено журнал спілкування"
 
-#: src/chatty-window.c:523
+#: src/chatty-window.c:501
 msgid "Disconnect group chat"
 msgstr "Від'єднатися від групового спілкування"
 
-#: src/chatty-window.c:524
+#: src/chatty-window.c:502
 msgid "This removes chat from chats list"
 msgstr "У результаті спілкування буде вилучено зі списку спілкувань"
 
-#: src/chatty-window.c:537
+#: src/chatty-window.c:515
 msgid "Delete"
 msgstr "Вилучити"
 
-#: src/chatty-window.c:608
+#: src/chatty-window.c:586
 #, c-format
 msgid "Error saving contact: %s"
 msgstr "Помилка під час спроби зберегти контакт: %s"
 
-#: src/chatty-window.c:706
+#: src/chatty-window.c:684
 msgid "An SMS and XMPP messaging client"
 msgstr "Клієнт обміну повідомленнями SMS і XMPP"
 
-#: src/chatty-window.c:713
+#: src/chatty-window.c:691
 msgid "translator-credits"
 msgstr "Юрій Чорноіван <yurchor@ukr.net>, 2020"
 
-#: src/chatty-window.c:979
+#: src/chatty-window.c:949
 #, c-format
 msgid "“%s” is not a valid phone number"
 msgstr "«%s» не є коректним номером телефону"
@@ -837,8 +829,7 @@ msgstr "Полишити спілкування"
 msgid "Delete Chat"
 msgstr "Вилучити спілкування"
 
-#: src/ui/chatty-window.ui:400
-#| msgid "Start chatting"
+#: src/ui/chatty-window.ui:397
 msgid "Start Chatting"
 msgstr "Почати спілкування"
 
@@ -853,33 +844,3 @@ msgstr "Робочий: "
 #: src/users/chatty-contact.c:321
 msgid "Other: "
 msgstr "Інший: "
-
-#~ msgid "Mark offline users differently"
-#~ msgstr "Позначати користувачів поза мережею"
-
-#~ msgid "Choose a contact"
-#~ msgstr "Виберіть контакт"
-
-#~ msgid ""
-#~ "Select an <b>SMS</b> or <b>Instant Message</b> contact with the <b>\"+\"</"
-#~ "b> button in the titlebar."
-#~ msgstr ""
-#~ "Виберіть контакт <b>SMS</b> або <b>обміну повідомленнями</b> за допомогою "
-#~ "кнопки <b>+</b> на смужці заголовка."
-
-#~ msgid "Start a <b>SMS</b> chat with the \"+\" button in the titlebar."
-#~ msgstr ""
-#~ "Розпочніть спілкування <b>SMS</b> натисканням кнопки «+» на смужці "
-#~ "заголовка."
-
-#~ msgid "Indicate Offline Contacts"
-#~ msgstr "Позначати контакти поза мережею"
-
-#~ msgid "Grey out avatars from offline contacts"
-#~ msgstr "Позначати сірим аватари контактів поза мережею"
-
-#~ msgid "New Bulk SMS…"
-#~ msgstr "Нове пакетне SMS…"
-
-#~ msgid "members"
-#~ msgstr "учасники"
