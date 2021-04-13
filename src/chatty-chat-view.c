@@ -43,14 +43,12 @@ struct _ChattyChatView
   GtkWidget  *empty_view;
   GtkWidget  *empty_label0;
   GtkWidget  *empty_label1;
-  GtkWidget  *empty_label2;
   GtkWidget  *scroll_down_button;
   GtkTextBuffer *message_input_buffer;
   GtkAdjustment *vadjustment;
 
   ChattyChat *chat;
   char       *last_message_id;  /* id of last sent message, currently used only for SMS */
-  guint       message_type;
   guint       refresh_typing_id;
   gboolean    first_scroll_to_bottom;
 };
@@ -64,24 +62,6 @@ static GHashTable *ht_sms_id = NULL;
 
 G_DEFINE_TYPE (ChattyChatView, chatty_chat_view, GTK_TYPE_BOX)
 
-
-const char *disclaimer_strings[][3] = {
-  {
-    N_("This is an IM conversation."),
-    N_("Your messages are not encrypted,"),
-    N_("ask your counterpart to use E2EE."),
-  },
-  {
-    N_("This is an IM conversation."),
-    N_("Your messages are secured"),
-    N_("by end-to-end encryption."),
-  },
-  {
-    N_("This is an SMS conversation."),
-    N_("Your messages are not encrypted,"),
-    N_("and carrier rates may apply."),
-  },
-};
 
 const char *emoticons[][15] = {
   {":)", "🙂"},
@@ -226,18 +206,11 @@ static void
 chatty_chat_view_update (ChattyChatView *self)
 {
   GtkStyleContext *context;
-  int index = -1;
-
+  ChattyProtocol protocol;
 
   g_assert (CHATTY_IS_CHAT_VIEW (self));
 
-  if (chatty_chat_is_im (self->chat) &&
-      chatty_item_get_protocols (CHATTY_ITEM (self->chat)) == CHATTY_PROTOCOL_SMS)
-    self->message_type = CHATTY_MSG_TYPE_SMS;
-  else if (chatty_chat_is_im (self->chat))
-    self->message_type = CHATTY_MSG_TYPE_IM;
-  else
-    self->message_type = CHATTY_MSG_TYPE_MUC;
+  protocol = chatty_item_get_protocols (CHATTY_ITEM (self->chat));
 
   gtk_widget_show (self->encrypt_icon);
 
@@ -246,34 +219,31 @@ chatty_chat_view_update (ChattyChatView *self)
 
   gtk_widget_set_visible (self->send_file_button, chatty_chat_has_file_upload (self->chat));
 
-  if (CHATTY_IS_MA_CHAT (self->chat)) {
+  if (CHATTY_IS_MA_CHAT (self->chat))
     gtk_widget_show (self->send_file_button);
-    gtk_widget_hide (self->empty_label0);
-    gtk_widget_hide (self->empty_label1);
-    gtk_widget_hide (self->empty_label2);
-  } else {
-    gtk_widget_show (self->empty_label0);
-    gtk_widget_show (self->empty_label1);
-    gtk_widget_show (self->empty_label2);
-  }
 
-  if (self->message_type == CHATTY_MSG_TYPE_IM)
-    index = 0;
-  else if (self->message_type == CHATTY_MSG_TYPE_SMS)
-    index = 2;
-
-  /* XXX: This is temporary, strings put into different labels isn’t good for translation */
-  if (index >= 0) {
-    gtk_label_set_label (GTK_LABEL (self->empty_label0), disclaimer_strings[index][0]);
-    gtk_label_set_label (GTK_LABEL (self->empty_label1), disclaimer_strings[index][1]);
-    gtk_label_set_label (GTK_LABEL (self->empty_label2), disclaimer_strings[index][2]);
+  if (protocol == CHATTY_PROTOCOL_SMS) {
+    gtk_label_set_label (GTK_LABEL (self->empty_label0),
+                         _("This is an SMS conversation"));
+    gtk_label_set_label (GTK_LABEL (self->empty_label1),
+                         _("Your messages are not encrypted, "
+                           "and carrier rates may apply"));
+  } else if (chatty_chat_is_im (self->chat)) {
+    gtk_label_set_label (GTK_LABEL (self->empty_label0),
+                         _("This is an IM conversation"));
+    if (chatty_chat_get_encryption (self->chat) == CHATTY_ENCRYPTION_ENABLED)
+      gtk_label_set_label (GTK_LABEL (self->empty_label1),
+                           _("Your messages are encrypted"));
+    else
+      gtk_label_set_label (GTK_LABEL (self->empty_label1),
+                           _("Your messages are not encrypted"));
   }
 
   context = gtk_widget_get_style_context (self->send_message_button);
 
-  if (self->message_type == CHATTY_MSG_TYPE_SMS)
+  if (protocol == CHATTY_PROTOCOL_SMS)
     gtk_style_context_add_class (context, "button_send_green");
-  else if (self->message_type == CHATTY_MSG_TYPE_IM)
+  else if (chatty_chat_is_im (self->chat))
     gtk_style_context_add_class (context, "suggested-action");
 }
 
@@ -348,7 +318,7 @@ messages_items_changed_cb (ChattyChatView *self,
     return;
 
   /* Don't hide footers in group chats */
-  if (self->message_type == CHATTY_MSG_TYPE_MUC)
+  if (!chatty_chat_is_im (self->chat))
     return;
 
   list = GTK_LIST_BOX (self->message_list);
@@ -745,7 +715,6 @@ chatty_chat_view_class_init (ChattyChatViewClass *klass)
   gtk_widget_class_bind_template_child (widget_class, ChattyChatView, empty_view);
   gtk_widget_class_bind_template_child (widget_class, ChattyChatView, empty_label0);
   gtk_widget_class_bind_template_child (widget_class, ChattyChatView, empty_label1);
-  gtk_widget_class_bind_template_child (widget_class, ChattyChatView, empty_label2);
   gtk_widget_class_bind_template_child (widget_class, ChattyChatView, message_input_buffer);
   gtk_widget_class_bind_template_child (widget_class, ChattyChatView, vadjustment);
 
