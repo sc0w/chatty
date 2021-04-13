@@ -834,9 +834,6 @@ chatty_chat_view_set_chat (ChattyChatView *self,
   g_object_bind_property (self->chat, "loading-history",
                           self->loading_spinner, "active",
                           G_BINDING_SYNC_CREATE);
-  g_object_bind_property (self->chat, "loading-history",
-                          self->loading_spinner, "visible",
-                          G_BINDING_SYNC_CREATE);
 
   chat_encrypt_changed_cb (self);
   chat_buddy_typing_changed_cb (self);
