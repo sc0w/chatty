@@ -442,11 +442,8 @@
           </object>
         </child>
         <child>
-          <object class="GtkNotebook" id="convs_notebook">
+          <object class="GtkStack" id="chat_view_stack">
             <property name="visible">True</property>
-            <property name="show-border">False</property>
-            <property name="can_focus">False</property>
-            <property name="show-tabs">False</property>
             <property name="width_request">300</property>
           </object>
           <packing>
@@ -467,7 +464,7 @@
     <property name="mode">horizontal</property>
     <widgets>
       <widget name="sub_header_bar"/>
-      <widget name="convs_notebook"/>
+      <widget name="chat_view_stack"/>
     </widgets>
   </object>
   <object class="HdyHeaderGroup" id="header_group">

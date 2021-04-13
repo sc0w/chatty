@@ -68,8 +68,7 @@ struct _ChattyWindow
   GtkWidget *leave_button;
   GtkWidget *delete_button;
 
-  GtkWidget *convs_notebook;
-
+  GtkWidget *chat_view_stack;
 
   ChattyItem    *selected_item;
   ChattyManager *manager;
@@ -112,7 +111,7 @@ window_get_view_for_chat (ChattyWindow *self,
   g_assert (CHATTY_IS_WINDOW (self));
   g_assert (CHATTY_IS_CHAT (chat));
 
-  children = gtk_container_get_children (GTK_CONTAINER (self->convs_notebook));
+  children = gtk_container_get_children (GTK_CONTAINER (self->chat_view_stack));
 
   for (GList *child = children; child; child = child->next)
     if (CHATTY_IS_CHAT_VIEW (child->data) &&
@@ -209,16 +208,16 @@ window_chat_changed_cb (ChattyWindow *self)
 }
 
 static void
-window_notebook_after_switch_cb (GtkNotebook  *notebook,
-                                 GtkWidget    *page,
-                                 gint          page_num,
-                                 ChattyWindow *self)
+window_stack_child_changed_cb (ChattyWindow *self)
 {
   ChattyChat *chat;
 
-  g_assert (CHATTY_IS_CHAT_VIEW (page));
+  g_assert (CHATTY_IS_WINDOW (self));
 
-  chat = chatty_chat_view_get_chat (CHATTY_CHAT_VIEW (page));
+  chat = chatty_window_get_active_chat (self);
+  if (!chat)
+    return;
+
   window_set_item (self, CHATTY_ITEM (chat));
   window_chat_changed_cb (self);
 
@@ -491,12 +490,7 @@ window_delete_buddy_clicked_cb (ChattyWindow *self)
   int response;
 
   g_assert (CHATTY_IS_WINDOW (self));
-
-  if (!self->selected_item) {
-    chatty_window_change_view (self, CHATTY_VIEW_CHAT_LIST);
-
-    g_return_if_reached ();
-  }
+  g_return_if_fail (self->selected_item);
 
   name = chatty_item_get_name (CHATTY_ITEM (self->selected_item));
 
@@ -894,7 +888,7 @@ chatty_window_class_init (ChattyWindowClass *klass)
   gtk_widget_class_bind_template_child (widget_class, ChattyWindow, chat_list_view);
   gtk_widget_class_bind_template_child (widget_class, ChattyWindow, chats_listbox);
 
-  gtk_widget_class_bind_template_child (widget_class, ChattyWindow, convs_notebook);
+  gtk_widget_class_bind_template_child (widget_class, ChattyWindow, chat_view_stack);
   gtk_widget_class_bind_template_child (widget_class, ChattyWindow, header_chat_list_new_msg_popover);
 
   gtk_widget_class_bind_template_callback (widget_class, notify_fold_cb);
@@ -928,9 +922,10 @@ chatty_window_init (ChattyWindow *self)
                            G_CALLBACK (window_chat_deleted_cb), self,
                            G_CONNECT_SWAPPED);
 
-  g_signal_connect_after (G_OBJECT (self->convs_notebook),
-                          "switch-page",
-                          G_CALLBACK (window_notebook_after_switch_cb), self);
+  g_signal_connect_object (self->chat_view_stack,
+                           "notify::visible-child",
+                           G_CALLBACK (window_stack_child_changed_cb), self,
+                           G_CONNECT_AFTER | G_CONNECT_SWAPPED);
 }
 
 
@@ -978,17 +973,12 @@ ChattyChat *
 chatty_window_get_active_chat (ChattyWindow *self)
 {
   GtkWidget *child;
-  gint current_page;
 
   g_return_val_if_fail (CHATTY_IS_WINDOW (self), NULL);
 
-  current_page = gtk_notebook_get_current_page (GTK_NOTEBOOK (self->convs_notebook));
+  child = gtk_stack_get_visible_child (GTK_STACK (self->chat_view_stack));
 
-  if (current_page == -1)
-    return NULL;
-
-  child = gtk_notebook_get_nth_page (GTK_NOTEBOOK (self->convs_notebook), current_page);
-  if (!gtk_widget_is_drawable (child))
+  if (!child)
     return NULL;
 
   return chatty_chat_view_get_chat (CHATTY_CHAT_VIEW (child));
@@ -999,7 +989,6 @@ chatty_window_open_chat (ChattyWindow *self,
                          ChattyChat   *chat)
 {
   GtkWidget *view;
-  int page_num;
 
   g_return_if_fail (CHATTY_IS_WINDOW (self));
   g_return_if_fail (CHATTY_IS_CHAT (chat));
@@ -1017,7 +1006,7 @@ chatty_window_open_chat (ChattyWindow *self,
 
     chatty_chat_view_set_chat (CHATTY_CHAT_VIEW (view), chat);
     gtk_widget_show (view);
-    gtk_container_add (GTK_CONTAINER (self->convs_notebook), view);
+    gtk_container_add (GTK_CONTAINER (self->chat_view_stack), view);
 
     chatty_chat_load_past_messages (chat, -1);
   }
@@ -1027,9 +1016,8 @@ chatty_window_open_chat (ChattyWindow *self,
   else
     gtk_widget_hide (self->delete_button);
 
-  page_num = gtk_notebook_page_num (GTK_NOTEBOOK (self->convs_notebook), view);
-  gtk_notebook_set_current_page (GTK_NOTEBOOK (self->convs_notebook), page_num);
-  hdy_leaflet_set_visible_child (HDY_LEAFLET (self->content_box), self->convs_notebook);
+  gtk_stack_set_visible_child (GTK_STACK (self->chat_view_stack), view);
+  hdy_leaflet_set_visible_child (HDY_LEAFLET (self->content_box), self->chat_view_stack);
 
   chatty_chat_set_unread_count (chat, 0);
   gtk_window_present (GTK_WINDOW (self));
