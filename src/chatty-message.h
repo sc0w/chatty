@@ -51,10 +51,6 @@ gboolean            chatty_message_get_encrypted   (ChattyMessage      *self);
 void                chatty_message_set_encrypted   (ChattyMessage      *self,
                                                     gboolean            is_encrypted);
 
-ChattyFileInfo     *chatty_message_get_file        (ChattyMessage      *self);
-void                chatty_message_set_file        (ChattyMessage      *self,
-                                                    ChattyFileInfo     *file);
-
 GList              *chatty_message_get_files       (ChattyMessage      *self);
 void                chatty_message_set_files       (ChattyMessage      *self,
                                                     GList              *files);
