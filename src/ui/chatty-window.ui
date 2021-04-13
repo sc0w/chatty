@@ -368,14 +368,9 @@
                 <property name="visible">True</property>
                 <property name="hexpand">False</property>
                 <child>
-                  <object class="HdyClamp">
+                  <object class="GtkSearchEntry" id="chats_search_entry">
                     <property name="visible">True</property>
-                    <child>
-                      <object class="GtkSearchEntry" id="chats_search_entry">
-                        <property name="visible">True</property>
-                        <signal name="search-changed" handler="window_search_changed_cb" swapped="yes"/>
-                      </object>
-                    </child>
+                    <signal name="search-changed" handler="window_search_changed_cb" swapped="yes"/>
                   </object>
                 </child>
               </object>

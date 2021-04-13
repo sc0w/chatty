@@ -795,9 +795,6 @@ chatty_window_constructed (GObject *object)
 
   hdy_leaflet_set_visible_child_name (HDY_LEAFLET (self->content_box), "sidebar");
 
-  hdy_search_bar_connect_entry (HDY_SEARCH_BAR(self->chats_search_bar),
-                                GTK_ENTRY (self->chats_search_entry));
-
   gtk_widget_set_sensitive (GTK_WIDGET (self->header_sub_menu_button), FALSE);
 
   chatty_window_change_view (self, CHATTY_VIEW_CHAT_LIST);
