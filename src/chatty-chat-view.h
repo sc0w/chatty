@@ -42,7 +42,5 @@ void        chatty_chat_view_purple_uninit (void);
 void        chatty_chat_view_set_chat (ChattyChatView *self,
                                        ChattyChat     *chat);
 ChattyChat *chatty_chat_view_get_chat (ChattyChatView *self);
-void        chatty_chat_view_load     (ChattyChatView *self,
-                                       guint           limit);
 
 G_END_DECLS
