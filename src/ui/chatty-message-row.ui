@@ -24,7 +24,6 @@
               <object class="ChattyAvatar" id="avatar_image">
                 <property name="visible">True</property>
                 <property name="valign">start</property>
-                <property name="pixel-size">36</property>
                 <property name="no-show-all">True</property>
               </object>
               <packing>
