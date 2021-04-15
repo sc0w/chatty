@@ -363,22 +363,6 @@ chatty_message_row_get_item (ChattyMessageRow *self)
   return self->message;
 }
 
-
-void
-chatty_message_row_set_footer (ChattyMessageRow *self,
-                               GtkWidget        *footer)
-{
-  g_return_if_fail (CHATTY_IS_MESSAGE_ROW (self));
-
-  if (!footer || footer == self->footer_label)
-    return;
-
-  gtk_container_remove (GTK_CONTAINER (self->content_grid), self->footer_label);
-  gtk_grid_attach (GTK_GRID (self->content_grid), footer, 1, 1, 1, 1);
-  gtk_widget_show (footer);
-  self->footer_label = footer;
-}
-
 void
 chatty_message_row_hide_footer (ChattyMessageRow *self)
 {
