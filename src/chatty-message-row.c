@@ -301,12 +301,11 @@ chatty_message_row_new (ChattyMessage  *message,
   GtkStyleContext *sc;
   ChattyMsgDirection direction;
 
+  g_return_val_if_fail (CHATTY_IS_MESSAGE (message), NULL);
+
   self = g_object_new (CHATTY_TYPE_MESSAGE_ROW, NULL);
   sc = gtk_widget_get_style_context (self->message_label);
   self->protocol = protocol;
-
-  if (!message)
-    return GTK_WIDGET (self);
 
   self->message = g_object_ref (message);
   self->is_im = !!is_im;
