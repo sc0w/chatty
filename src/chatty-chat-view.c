@@ -219,9 +219,6 @@ chatty_chat_view_update (ChattyChatView *self)
 
   gtk_widget_set_visible (self->send_file_button, chatty_chat_has_file_upload (self->chat));
 
-  if (CHATTY_IS_MA_CHAT (self->chat))
-    gtk_widget_show (self->send_file_button);
-
   if (protocol == CHATTY_PROTOCOL_SMS) {
     gtk_label_set_label (GTK_LABEL (self->empty_label0),
                          _("This is an SMS conversation"));
