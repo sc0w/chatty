@@ -175,17 +175,21 @@ ma_chat_find_buddy (ChattyMaChat *self,
                     guint        *index)
 {
   guint n_items;
+  guint id_hash;
 
   g_assert (CHATTY_IS_MA_CHAT (self));
   g_assert (G_IS_LIST_MODEL (model));
   g_return_val_if_fail (matrix_id && *matrix_id, NULL);
 
   n_items = g_list_model_get_n_items (model);
+  id_hash = g_str_hash (matrix_id);
+
   for (guint i = 0; i < n_items; i++) {
     g_autoptr(ChattyMaBuddy) buddy = NULL;
 
     buddy = g_list_model_get_item (model, i);
-    if (g_str_equal (chatty_ma_buddy_get_id (buddy), matrix_id)) {
+    if (id_hash == chatty_ma_buddy_get_id_hash (buddy) &&
+        g_str_equal (chatty_ma_buddy_get_id (buddy), matrix_id)) {
       if (index)
         *index = i;
 
