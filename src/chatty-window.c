@@ -272,7 +272,7 @@ static void
 chatty_window_open_item (ChattyWindow *self,
                          ChattyItem   *item)
 {
-  ChattyChat *chat;
+  ChattyChat *chat = NULL;
 
   g_assert (CHATTY_IS_WINDOW (self));
   g_assert (CHATTY_IS_ITEM (item));
