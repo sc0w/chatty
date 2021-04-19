@@ -66,6 +66,7 @@ chatty_sources = [
   'dialogs/chatty-new-chat-dialog.c',
   'dialogs/chatty-new-muc-dialog.c',
   'chatty-message-row.c',
+  'chatty-text-item.c',
   './xeps/xeps.c',
   './xeps/chatty-xep-0184.c',
   './xeps/chatty-xep-0313.c',
