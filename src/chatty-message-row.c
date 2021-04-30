@@ -65,6 +65,9 @@ message_row_show_popover (ChattyMessageRow *self)
 {
   g_assert (CHATTY_IS_MESSAGE_ROW (self));
 
+  if (chatty_message_get_msg_type (self->message) != CHATTY_MESSAGE_TEXT)
+    return;
+
   if (!self->popover) {
     GtkWidget *item;
 
