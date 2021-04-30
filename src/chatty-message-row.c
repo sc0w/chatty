@@ -36,6 +36,7 @@ struct _ChattyMessageRow
   GtkWidget  *popover;
   GtkGesture *multipress_gesture;
   GtkGesture *longpress_gesture;
+  GtkGesture *activate_gesture;
 
   ChattyMessage *message;
   ChattyProtocol protocol;
@@ -93,6 +94,33 @@ message_row_hold_cb (ChattyMessageRow *self)
 
   message_row_show_popover (self);
   gtk_gesture_set_state (self->longpress_gesture, GTK_EVENT_SEQUENCE_CLAIMED);
+}
+
+static void
+message_activate_gesture_cb (ChattyMessageRow *self)
+{
+  g_autoptr(GFile) file = NULL;
+  g_autofree char *uri = NULL;
+  ChattyFileInfo *info = NULL;
+  GList *file_list;
+
+  g_assert (CHATTY_IS_MESSAGE_ROW (self));
+
+  if (chatty_message_get_msg_type (self->message) != CHATTY_MESSAGE_IMAGE)
+    return;
+
+  file_list = chatty_message_get_files (self->message);
+
+  if (file_list)
+    info = file_list->data;
+
+  if (!info || !info->path)
+    return;
+
+  file = g_file_new_build_filename (g_get_user_cache_dir (), "chatty", info->path, NULL);
+  uri = g_file_get_uri (file);
+
+  gtk_show_uri_on_window (NULL, uri, GDK_CURRENT_TIME, NULL);
 }
 
 static void
@@ -197,6 +225,11 @@ chatty_message_row_init (ChattyMessageRow *self)
   gtk_gesture_single_set_touch_only (GTK_GESTURE_SINGLE (self->longpress_gesture), TRUE);
   g_signal_connect_swapped (self->longpress_gesture, "pressed",
                             G_CALLBACK (message_row_hold_cb), self);
+
+  self->activate_gesture = gtk_gesture_multi_press_new (self->message_event_box);
+  gtk_gesture_single_set_button (GTK_GESTURE_SINGLE (self->activate_gesture), GDK_BUTTON_PRIMARY);
+  g_signal_connect_swapped (self->activate_gesture, "pressed",
+                            G_CALLBACK (message_activate_gesture_cb), self);
 }
 
 GtkWidget *
