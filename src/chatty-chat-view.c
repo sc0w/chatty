@@ -47,6 +47,9 @@ struct _ChattyChatView
   GtkTextBuffer *message_input_buffer;
   GtkAdjustment *vadjustment;
 
+  /* Signal ids */
+  GBinding   *history_binding;
+
   ChattyChat *chat;
   char       *last_message_id;  /* id of last sent message, currently used only for SMS */
   guint       refresh_typing_id;
@@ -796,6 +799,20 @@ chatty_chat_view_set_chat (ChattyChatView *self,
   g_return_if_fail (CHATTY_IS_CHAT_VIEW (self));
   g_return_if_fail (CHATTY_IS_CHAT (chat));
 
+  if (self->chat && chat != self->chat) {
+    g_signal_handlers_disconnect_by_func (chatty_chat_get_messages (self->chat),
+                                          messages_items_changed_cb,
+                                          self);
+    g_signal_handlers_disconnect_by_func (self->chat,
+                                          chat_encrypt_changed_cb,
+                                          self);
+    g_signal_handlers_disconnect_by_func (self->chat,
+                                          chat_buddy_typing_changed_cb,
+                                          self);
+
+    g_clear_object (&self->history_binding);
+  }
+
   if (!g_set_object (&self->chat, chat))
     return;
 
@@ -806,22 +823,19 @@ chatty_chat_view_set_chat (ChattyChatView *self,
                            chatty_chat_get_messages (self->chat),
                            (GtkListBoxCreateWidgetFunc)chat_view_message_row_new,
                            self, NULL);
-  g_signal_connect_object (chatty_chat_get_messages (self->chat),
-                           "items-changed",
-                           G_CALLBACK (messages_items_changed_cb),
-                           self,
-                           G_CONNECT_SWAPPED | G_CONNECT_AFTER);
-  g_signal_connect_object (self->chat, "notify::encrypt",
-                           G_CALLBACK (chat_encrypt_changed_cb),
-                           self,
-                           G_CONNECT_SWAPPED);
-  g_signal_connect_object (self->chat, "notify::buddy-typing",
-                           G_CALLBACK (chat_buddy_typing_changed_cb),
-                           self,
-                           G_CONNECT_SWAPPED);
-  g_object_bind_property (self->chat, "loading-history",
-                          self->loading_spinner, "active",
-                          G_BINDING_SYNC_CREATE);
+  g_signal_connect_swapped (chatty_chat_get_messages (self->chat),
+                            "items-changed",
+                            G_CALLBACK (messages_items_changed_cb),
+                            self);
+  g_signal_connect_swapped (self->chat, "notify::encrypt",
+                            G_CALLBACK (chat_encrypt_changed_cb),
+                            self);
+  g_signal_connect_swapped (self->chat, "notify::buddy-typing",
+                            G_CALLBACK (chat_buddy_typing_changed_cb),
+                            self);
+  self->history_binding = g_object_bind_property (self->chat, "loading-history",
+                                                  self->loading_spinner, "active",
+                                                  G_BINDING_SYNC_CREATE);
 
   chat_encrypt_changed_cb (self);
   chat_buddy_typing_changed_cb (self);
