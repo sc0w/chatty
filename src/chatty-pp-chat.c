@@ -241,6 +241,9 @@ chatty_pp_chat_set_purple_buddy (ChattyPpChat *self,
     return;
 
   g_object_set_data (node->ui_data, "chat", self);
+  g_signal_handlers_disconnect_by_func (node->ui_data,
+                                        emit_avatar_changed,
+                                        self);
   g_signal_connect_object (node->ui_data, "avatar-changed",
                            G_CALLBACK (emit_avatar_changed),
                            self,
