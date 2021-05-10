@@ -8,8 +8,6 @@
 
 #include <glib.h>
 #include <gtk/gtk.h>
-#include <math.h>
-#include "purple.h"
 #include "chatty-icons.h"
 
 
@@ -43,65 +41,6 @@ chatty_icon_pixbuf_from_data (const guchar *buf,
   return g_object_ref (pixbuf);
 }
 
-
-GdkPixbuf *
-chatty_icon_shape_pixbuf_circular (GdkPixbuf *pixbuf)
-{
-  cairo_format_t   format;
-  cairo_surface_t *surface;
-  cairo_t         *cr;
-  GdkPixbuf       *ret;
-  int              width, height, size;
-
-  format = CAIRO_FORMAT_ARGB32;
-
-  width = gdk_pixbuf_get_width (pixbuf);
-  height = gdk_pixbuf_get_height (pixbuf);
-
-  size = (width >= height) ? width : height;
-
-  surface = cairo_image_surface_create (format, size, size);
-
-  cr = cairo_create (surface);
-
-  cairo_set_antialias (cr, CAIRO_ANTIALIAS_SUBPIXEL); 
-
-  cairo_set_source_rgb (cr, 1.0, 1.0, 1.0);
-
-  cairo_arc (cr,
-             size / 2,
-             size / 2,
-             size / 2,
-             0,
-             2 * M_PI);
-
-  cairo_fill (cr);
-
-  gdk_cairo_set_source_pixbuf (cr, pixbuf, 0, 0);
-
-  cairo_arc (cr,
-             size / 2,
-             size / 2,
-             size / 2,
-             0,
-             2 * M_PI);
-
-  cairo_clip (cr);
-  cairo_paint (cr);
-
-  ret = gdk_pixbuf_get_from_surface (surface,
-                                     0,
-                                     0,
-                                     size,
-                                     size);
-
-  cairo_surface_destroy (surface);
-  cairo_destroy (cr);
-
-  return ret;
-}
-
-
 GdkPixbuf *
 chatty_icon_get_buddy_icon (PurpleBlistNode *node)
 {
@@ -131,36 +70,4 @@ chatty_icon_get_buddy_icon (PurpleBlistNode *node)
   }
 
   return NULL;
-}
-
-/* Altered from do_colorshift in gnome-panel */
-void
-chatty_icon_do_alphashift (GdkPixbuf *pixbuf,
-                           int        shift)
-{
-  gint    i, j;
-  gint    width, height, padding;
-  guchar *pixels;
-  int     val;
-
-  if (!gdk_pixbuf_get_has_alpha (pixbuf)) {
-    return;
-  }
-
-  width = gdk_pixbuf_get_width (pixbuf);
-  height = gdk_pixbuf_get_height (pixbuf);
-  padding = gdk_pixbuf_get_rowstride (pixbuf) - width * 4;
-  pixels = gdk_pixbuf_get_pixels (pixbuf);
-
-  for (i = 0; i < height; i++) {
-    for (j = 0; j < width; j++) {
-      pixels++;
-      pixels++;
-      pixels++;
-      val = *pixels - shift;
-      *(pixels++) = CLAMP(val, 0, 255);
-    }
-
-    pixels += padding;
-  }
 }
