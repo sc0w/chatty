@@ -376,27 +376,3 @@ chatty_icon_do_alphashift (GdkPixbuf *pixbuf,
     pixels += padding;
   }
 }
-
-
-GIcon * 
-chatty_icon_get_gicon_from_pixbuf (GdkPixbuf *pixbuf)
-{
-  GIcon  *icon;
-  g_autoptr(GBytes) bytes = NULL;
-  g_autofree char *buffer = NULL;
-  gsize   size;
-  g_autoptr(GError) error = NULL;
-
-  gdk_pixbuf_save_to_buffer (pixbuf, &buffer, &size, "png", &error, NULL);
-
-  if (error != NULL) {
-    g_debug ("%s: Could not save pixbuf to buffer: %s", __func__, error->message);
-
-    return NULL;
-  }
-
-  bytes = g_bytes_new (buffer, size);
-  icon = g_bytes_icon_new (bytes);
-
-  return icon;
-}
