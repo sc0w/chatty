@@ -74,6 +74,7 @@ struct _ChattyMaChat
 
   int            message_timeout_id;
   guint          is_sending_message : 1;
+  guint          notification_shown : 1;
 
   guint          state_is_sync    : 1;
   guint          state_is_syncing : 1;
@@ -1023,8 +1024,15 @@ matrix_chat_set_json_data (ChattyMaChat *self,
 
   object = matrix_utils_json_object_get_object (self->json_data, "unread_notifications");
   if (object) {
+    guint old_count;
+
+    old_count = self->unread_count;
     self->unread_count = matrix_utils_json_object_get_int (object, "notification_count");
     g_signal_emit_by_name (self, "changed", 0);
+
+    /* Reset notification state on new messages */
+    if (self->unread_count > old_count)
+      self->notification_shown = FALSE;
   }
 }
 
@@ -1764,4 +1772,36 @@ chatty_ma_chat_add_messages (ChattyMaChat *self,
   if (messages && messages->len)
     g_list_store_splice (self->message_list, 0, 0,
                          messages->pdata, messages->len);
+}
+
+/**
+ * chatty_ma_chat_show_notification:
+ * @self: A #ChattyMaChat
+ *
+ * Get the #ChattyMessage that should be shown
+ * as the notification, if any.  If the message
+ * notification was already shown for the last
+ * unread message, %NULL is returned
+ *
+ * Returns: (transfer none): A #ChattyMessage
+ */
+ChattyMessage *
+chatty_ma_chat_show_notification (ChattyMaChat *self)
+{
+  g_autoptr(ChattyMessage) message = NULL;
+  ChattyChat *chat;
+  guint n_items;
+
+  g_return_val_if_fail (CHATTY_IS_MA_CHAT (self), NULL);
+
+  if (!self->unread_count || self->notification_shown)
+    return NULL;
+
+  chat = CHATTY_CHAT (self);
+  self->notification_shown = TRUE;
+
+  n_items = g_list_model_get_n_items (chatty_chat_get_messages (chat));
+  message = g_list_model_get_item (chatty_chat_get_messages (chat), n_items - 1);
+
+  return message;
 }
