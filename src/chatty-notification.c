@@ -210,12 +210,8 @@ chatty_notification_show_message (ChattyNotification *self,
   avatar = chatty_item_get_avatar (item);
   image = chatty_manager_round_pixbuf (avatar);
 
-  if (image) {
-    g_autoptr(GIcon) icon = NULL;
-
-    icon = chatty_icon_get_gicon_from_pixbuf (image);
-    g_notification_set_icon (self->notification, icon);
-  }
+  if (image)
+    g_notification_set_icon (self->notification, G_ICON (image));
 
   g_notification_set_body (self->notification, chatty_message_get_text (message));
   g_notification_set_title (self->notification, title);
