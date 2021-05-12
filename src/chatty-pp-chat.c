@@ -915,11 +915,7 @@ chatty_pp_chat_get_avatar (ChattyItem *item)
   }
 
   if (self->pp_chat)
-    return chatty_icon_get_buddy_icon ((PurpleBlistNode *)self->pp_chat,
-                                       NULL,
-                                       CHATTY_ICON_SIZE_MEDIUM,
-                                       CHATTY_COLOR_BLUE,
-                                       FALSE);
+    return chatty_icon_get_buddy_icon ((PurpleBlistNode *)self->pp_chat);
 
   return NULL;
 }
