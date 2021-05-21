@@ -137,7 +137,10 @@ chatty_text_item_init (ChattyTextItem *self)
 {
   self->content_label = g_object_new (GTK_TYPE_LABEL,
                                       "visible", TRUE,
-                                      "margin", 3,
+                                      "margin-top", 3,
+                                      "margin-bottom", 3,
+                                      "margin-start", 9,
+                                      "margin-end", 9,
                                       "wrap", TRUE,
                                       "wrap-mode", PANGO_WRAP_WORD_CHAR,
                                       "xalign", 0.0,
