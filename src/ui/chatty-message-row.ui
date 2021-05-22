@@ -36,9 +36,6 @@
             <child>
               <object class="GtkEventBox" id="message_event_box">
                 <property name="visible">True</property>
-                <style>
-                  <class name="message_bubble"/>
-                </style>
               </object>
               <packing>
                 <property name="left-attach">1</property>

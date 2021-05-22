@@ -245,7 +245,7 @@ chatty_message_row_new (ChattyMessage  *message,
   g_return_val_if_fail (CHATTY_IS_MESSAGE (message), NULL);
 
   self = g_object_new (CHATTY_TYPE_MESSAGE_ROW, NULL);
-  sc = gtk_widget_get_style_context (self->message_event_box);
+  /* sc = gtk_widget_get_style_context (self->message_event_box); */
   self->protocol = protocol;
 
   self->message = g_object_ref (message);
@@ -253,11 +253,15 @@ chatty_message_row_new (ChattyMessage  *message,
   direction = chatty_message_get_msg_direction (message);
   type = chatty_message_get_msg_type (message);
 
-  if (type == CHATTY_MESSAGE_IMAGE)
+  if (type == CHATTY_MESSAGE_IMAGE) {
     self->content = chatty_image_item_new (message, protocol);
-  else
+    sc = chatty_image_item_get_style (CHATTY_IMAGE_ITEM (self->content));
+  } else {
     self->content = chatty_text_item_new (message, protocol);
+    sc = chatty_text_item_get_style (CHATTY_TEXT_ITEM (self->content));
+  }
 
+  gtk_style_context_add_class (sc, "message_bubble");
   gtk_container_add (GTK_CONTAINER (self->message_event_box), self->content);
   gtk_widget_show (self->content);
 
