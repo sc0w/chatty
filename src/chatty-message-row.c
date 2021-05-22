@@ -245,7 +245,6 @@ chatty_message_row_new (ChattyMessage  *message,
   g_return_val_if_fail (CHATTY_IS_MESSAGE (message), NULL);
 
   self = g_object_new (CHATTY_TYPE_MESSAGE_ROW, NULL);
-  /* sc = gtk_widget_get_style_context (self->message_event_box); */
   self->protocol = protocol;
 
   self->message = g_object_ref (message);
