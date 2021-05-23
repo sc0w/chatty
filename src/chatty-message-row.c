@@ -165,6 +165,7 @@ message_row_update_message (ChattyMessageRow *self)
 
     alias = chatty_message_get_user_alias (self->message);
 
+
     if (alias)
       author = g_strconcat ("<span color='grey'>",
                             alias,
@@ -275,6 +276,7 @@ chatty_message_row_new (ChattyMessage  *message,
     gtk_style_context_add_class (sc, "bubble_white");
     gtk_widget_set_halign (self->content_grid, GTK_ALIGN_START);
     gtk_widget_set_halign (self->message_event_box, GTK_ALIGN_START);
+    gtk_widget_set_halign (self->author_label, GTK_ALIGN_START);
   } else if (direction == CHATTY_DIRECTION_OUT && protocol == CHATTY_PROTOCOL_SMS) {
     gtk_style_context_add_class (sc, "bubble_green");
   } else if (direction == CHATTY_DIRECTION_OUT) {
@@ -288,6 +290,7 @@ chatty_message_row_new (ChattyMessage  *message,
     gtk_label_set_xalign (GTK_LABEL (self->footer_label), 1);
     gtk_widget_set_halign (self->content_grid, GTK_ALIGN_END);
     gtk_widget_set_halign (self->message_event_box, GTK_ALIGN_END);
+    gtk_widget_set_halign (self->author_label, GTK_ALIGN_END);
   } else {
     gtk_label_set_xalign (GTK_LABEL (self->footer_label), 0);
   }
