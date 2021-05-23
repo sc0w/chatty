@@ -32,6 +32,20 @@
               </packing>
             </child>
 
+            <!-- Author label -->
+            <child>
+              <object class="GtkLabel" id="author_label">
+                <property name="visible">False</property>
+                <property name="valign">start</property>
+                <property name="no-show-all">True</property>
+                <property name="margin-top">3</property>
+              </object>
+              <packing>
+                <property name="left-attach">1</property>
+                <property name="top-attach">0</property>
+              </packing>
+            </child>
+
             <!-- Message text -->
             <child>
               <object class="GtkEventBox" id="message_event_box">
@@ -39,7 +53,7 @@
               </object>
               <packing>
                 <property name="left-attach">1</property>
-                <property name="top-attach">0</property>
+                <property name="top-attach">1</property>
               </packing>
             </child>
 
@@ -58,7 +72,7 @@
               </object>
               <packing>
                 <property name="left-attach">1</property>
-                <property name="top-attach">1</property>
+                <property name="top-attach">2</property>
               </packing>
             </child>
 

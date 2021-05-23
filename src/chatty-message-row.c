@@ -28,6 +28,7 @@ struct _ChattyMessageRow
   GtkWidget  *revealer;
   GtkWidget  *content_grid;
   GtkWidget  *avatar_image;
+  GtkWidget  *author_label;
   GtkWidget  *message_event_box;
   GtkWidget  *footer_label;
 
@@ -127,7 +128,6 @@ static void
 message_row_update_message (ChattyMessageRow *self)
 {
   g_autofree char *message = NULL;
-  g_autofree char *footer = NULL;
   const char *status_str = "";
   ChattyMsgStatus status;
 
@@ -145,6 +145,7 @@ message_row_update_message (ChattyMessageRow *self)
 
   if (self->is_im && self->protocol != CHATTY_PROTOCOL_MATRIX) {
     g_autofree char *time_str = NULL;
+    g_autofree char *footer = NULL;
     time_t time_stamp;
 
     time_stamp = chatty_message_get_time (self->message);
@@ -155,20 +156,23 @@ message_row_update_message (ChattyMessageRow *self)
                           "</span>",
                           status_str,
                           NULL);
+    gtk_label_set_markup (GTK_LABEL (self->footer_label), footer);
+    gtk_widget_set_visible (self->footer_label, footer && *footer);
   } else {
+    g_autofree char *author = NULL;
     const char *alias;
 
     alias = chatty_message_get_user_alias (self->message);
 
     if (alias)
-      footer = g_strconcat ("<span color='grey'>",
+      author = g_strconcat ("<span color='grey'>",
                             alias,
                             "</span>",
                             NULL);
+    if (author)
+      gtk_label_set_markup (GTK_LABEL (self->author_label), author);
+    gtk_widget_set_visible (self->author_label, author && *author);
   }
-
-  gtk_label_set_markup (GTK_LABEL (self->footer_label), footer);
-  gtk_widget_set_visible (self->footer_label, footer && *footer);
 }
 
 static gboolean
@@ -207,6 +211,7 @@ chatty_message_row_class_init (ChattyMessageRowClass *klass)
   gtk_widget_class_bind_template_child (widget_class, ChattyMessageRow, revealer);
   gtk_widget_class_bind_template_child (widget_class, ChattyMessageRow, content_grid);
   gtk_widget_class_bind_template_child (widget_class, ChattyMessageRow, avatar_image);
+  gtk_widget_class_bind_template_child (widget_class, ChattyMessageRow, author_label);
   gtk_widget_class_bind_template_child (widget_class, ChattyMessageRow, message_event_box);
   gtk_widget_class_bind_template_child (widget_class, ChattyMessageRow, footer_label);
 }
