@@ -299,11 +299,26 @@ messages_items_changed_cb (ChattyChatView *self,
   if (added == 0)
     return;
 
-  /* Don't hide footers in group chats */
-  if (!chatty_chat_is_im (self->chat))
-    return;
-
   list = GTK_LIST_BOX (self->message_list);
+
+  /* Hide duplicate author labels in group chats */
+  if (!chatty_chat_is_im (self->chat)) {
+    for (gint i = position; i < position + added; i++) {
+      next_row = gtk_list_box_get_row_at_index (list, i + 1);
+
+      if (!next_row)
+        break;
+
+      row = gtk_list_box_get_row_at_index (list, i);
+      msg = chatty_message_row_get_item (CHATTY_MESSAGE_ROW (row));
+      next_msg = chatty_message_row_get_item (CHATTY_MESSAGE_ROW (next_row));
+
+      if (chatty_message_user_matches (msg, next_msg))
+        chatty_message_row_hide_user_detail (CHATTY_MESSAGE_ROW (next_row));
+    }
+
+    return;
+  }
 
   for (gint i = position; i < position + added; i++) {
     next_row = gtk_list_box_get_row_at_index (list, i + 1);
