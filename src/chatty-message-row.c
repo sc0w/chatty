@@ -28,6 +28,7 @@ struct _ChattyMessageRow
   GtkWidget  *revealer;
   GtkWidget  *content_grid;
   GtkWidget  *avatar_image;
+  GtkWidget  *hidden_box;
   GtkWidget  *author_label;
   GtkWidget  *message_event_box;
   GtkWidget  *footer_label;
@@ -211,6 +212,7 @@ chatty_message_row_class_init (ChattyMessageRowClass *klass)
   gtk_widget_class_bind_template_child (widget_class, ChattyMessageRow, revealer);
   gtk_widget_class_bind_template_child (widget_class, ChattyMessageRow, content_grid);
   gtk_widget_class_bind_template_child (widget_class, ChattyMessageRow, avatar_image);
+  gtk_widget_class_bind_template_child (widget_class, ChattyMessageRow, hidden_box);
   gtk_widget_class_bind_template_child (widget_class, ChattyMessageRow, author_label);
   gtk_widget_class_bind_template_child (widget_class, ChattyMessageRow, message_event_box);
   gtk_widget_class_bind_template_child (widget_class, ChattyMessageRow, footer_label);
@@ -335,4 +337,14 @@ chatty_message_row_set_alias (ChattyMessageRow *self,
   g_return_if_fail (CHATTY_IS_MESSAGE_ROW (self));
 
   chatty_avatar_set_title (CHATTY_AVATAR (self->avatar_image), alias);
+}
+
+void
+chatty_message_row_hide_user_detail (ChattyMessageRow *self)
+{
+  g_return_if_fail (CHATTY_IS_MESSAGE_ROW (self));
+
+  gtk_widget_hide (self->author_label);
+  gtk_widget_hide (self->avatar_image);
+  gtk_widget_show (self->hidden_box);
 }

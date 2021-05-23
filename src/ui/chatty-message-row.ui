@@ -32,6 +32,20 @@
               </packing>
             </child>
 
+            <!-- Avatar placeholder -->
+            <!-- HACK to keep the width of avatar when hidden -->
+            <child>
+              <object class="GtkBox" id="hidden_box">
+                <property name="visible">False</property>
+                <property name="no-show-all">True</property>
+              </object>
+              <packing>
+                <property name="left-attach">0</property>
+                <property name="top-attach">1</property>
+                <property name="height">1</property>
+              </packing>
+            </child>
+
             <!-- Author label -->
             <child>
               <object class="GtkLabel" id="author_label">
@@ -81,4 +95,13 @@
       </object>
     </child>
   </template>
+
+  <object class="GtkSizeGroup" id="avatar_size_group">
+    <property name="mode">horizontal</property>
+    <widgets>
+      <widget name="avatar_image"/>
+      <widget name="hidden_box"/>
+    </widgets>
+  </object>
+
 </interface>
