@@ -316,8 +316,6 @@ messages_items_changed_cb (ChattyChatView *self,
       if (chatty_message_user_matches (msg, next_msg))
         chatty_message_row_hide_user_detail (CHATTY_MESSAGE_ROW (next_row));
     }
-
-    return;
   }
 
   for (gint i = position; i < position + added; i++) {
