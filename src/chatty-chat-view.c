@@ -89,28 +89,6 @@ enum {
 static guint signals[N_SIGNALS];
 
 static gboolean
-chat_view_time_is_same_day (time_t time_a,
-                            time_t time_b)
-{
-  struct tm *tm;
-  int day_a, day_b;
-
-  if (difftime (time_a, time_b) > SECONDS_PER_DAY)
-    return FALSE;
-
-  tm = localtime (&time_a);
-  day_a = tm->tm_yday;
-
-  tm = localtime (&time_b);
-  day_b = tm->tm_yday;
-
-  if (day_a == day_b)
-    return TRUE;
-
-  return FALSE;
-}
-
-static gboolean
 chat_view_hash_table_match_item (gpointer key,
                                  gpointer value,
                                  gpointer user_data)
@@ -340,11 +318,8 @@ messages_items_changed_cb (ChattyChatView *self,
     next_msg = chatty_message_row_get_item (CHATTY_MESSAGE_ROW (next_row));
     next_time = chatty_message_get_time (next_msg);
 
-    /*
-     * Hide time if the message following the current one belong to the same
-     * day
-     */
-    if (chat_view_time_is_same_day (time, next_time))
+    /* Hide footer of the previous message if both have same time (in minutes) */
+    if (time / 60 == next_time / 60)
       chatty_message_row_hide_footer (CHATTY_MESSAGE_ROW (row));
   }
 }
