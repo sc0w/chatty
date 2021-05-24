@@ -302,7 +302,8 @@ messages_items_changed_cb (ChattyChatView *self,
   list = GTK_LIST_BOX (self->message_list);
 
   /* Hide duplicate author labels in group chats */
-  if (!chatty_chat_is_im (self->chat)) {
+  if (!chatty_chat_is_im (self->chat) ||
+      CHATTY_IS_MA_CHAT (self->chat)) {
     for (gint i = position; i < position + added; i++) {
       next_row = gtk_list_box_get_row_at_index (list, i + 1);
 
