@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: purism-chatty\n"
 "Report-Msgid-Bugs-To: https://source.puri.sm/Librem5/chatty/issues\n"
 "POT-Creation-Date: 2021-04-13 15:25+0000\n"
-"PO-Revision-Date: 2021-05-23 14:26+0200\n"
+"PO-Revision-Date: 2021-05-24 19:08+0200\n"
 "Last-Translator: Daniel Rusek <mail@asciiwolf.com>\n"
 "Language-Team: Czech\n"
 "Language: cs\n"
@@ -136,7 +136,7 @@ msgstr "Konverzace je aplikace na posílání XMPP a SMS zpráv."
 
 #: data/sm.puri.Chatty.metainfo.xml.in:16
 msgid "Chats message window"
-msgstr "Okno zprávy Chats"
+msgstr "Okno zpráv aplikace Konverzace"
 
 #: src/chatty-application.c:73
 msgid "Show release version"
@@ -802,7 +802,7 @@ msgstr "_Přijmout"
 
 #: src/ui/chatty-window.ui:30
 msgid "About Chats"
-msgstr "O aplikaci Chats"
+msgstr "O aplikaci Konverzace"
 
 #: src/ui/chatty-window.ui:58
 msgid "New Message…"
