@@ -62,16 +62,6 @@
           </packing>
         </child>
 
-        <child>
-          <object class="GtkSpinner" id="matrix_spinner">
-            <property name="visible">1</property>
-            <property name="halign">start</property>
-          </object>
-          <packing>
-            <property name="pack-type">end</property>
-          </packing>
-        </child>
-
         <!-- Save button -->
         <child>
           <object class="GtkButton" id="save_button">
@@ -82,6 +72,16 @@
             <style>
               <class name="default" />
             </style>
+          </object>
+          <packing>
+            <property name="pack-type">end</property>
+          </packing>
+        </child>
+
+        <child>
+          <object class="GtkSpinner" id="matrix_spinner">
+            <property name="visible">1</property>
+            <property name="halign">start</property>
           </object>
           <packing>
             <property name="pack-type">end</property>
