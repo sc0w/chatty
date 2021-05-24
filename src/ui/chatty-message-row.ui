@@ -76,7 +76,6 @@
               <object class="GtkLabel" id="footer_label">
                 <property name="visible">False</property>
                 <property name="sensitive">False</property>
-                <property name="margin-bottom">6</property>
                 <property name="no-show-all">True</property>
                 <property name="ellipsize">end</property>
                 <property name="single-line-mode">True</property>

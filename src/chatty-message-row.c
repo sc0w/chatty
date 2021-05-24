@@ -129,8 +129,11 @@ static void
 message_row_update_message (ChattyMessageRow *self)
 {
   g_autofree char *message = NULL;
+  g_autofree char *time_str = NULL;
+  g_autofree char *footer = NULL;
   const char *status_str = "";
   ChattyMsgStatus status;
+  time_t time_stamp;
 
   g_assert (CHATTY_IS_MESSAGE_ROW (self));
   g_assert (self->message);
@@ -144,22 +147,15 @@ message_row_update_message (ChattyMessageRow *self)
   else if (status == CHATTY_STATUS_DELIVERED)
     status_str = "<span color='#6cba3d'> ✓</span>";
 
-  if (self->is_im && self->protocol != CHATTY_PROTOCOL_MATRIX) {
-    g_autofree char *time_str = NULL;
-    g_autofree char *footer = NULL;
-    time_t time_stamp;
+  time_stamp = chatty_message_get_time (self->message);
+  time_str = chatty_utils_get_human_time (time_stamp);
 
-    time_stamp = chatty_message_get_time (self->message);
-    time_str = chatty_utils_get_human_time (time_stamp);
+  footer = g_strconcat ("<span color='grey'>", time_str, "</span>",
+                        status_str, NULL);
+  gtk_label_set_markup (GTK_LABEL (self->footer_label), footer);
+  gtk_widget_set_visible (self->footer_label, footer && *footer);
 
-    footer = g_strconcat ("<span color='grey'>",
-                          time_str,
-                          "</span>",
-                          status_str,
-                          NULL);
-    gtk_label_set_markup (GTK_LABEL (self->footer_label), footer);
-    gtk_widget_set_visible (self->footer_label, footer && *footer);
-  } else {
+  if (!self->is_im || self->protocol == CHATTY_PROTOCOL_MATRIX) {
     g_autofree char *author = NULL;
     const char *alias;
 
