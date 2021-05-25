@@ -17,7 +17,6 @@
 #include <glib/gi18n.h>
 
 #include "chatty-icons.h"
-#include "chatty-manager.h"
 #include "chatty-notification.h"
 
 
@@ -33,6 +32,13 @@ struct _ChattyNotification
 };
 
 G_DEFINE_TYPE (ChattyNotification, chatty_notification, G_TYPE_OBJECT)
+
+enum {
+  OPEN_CHAT,
+  N_SIGNALS
+};
+
+static guint signals[N_SIGNALS];
 
 static void   notification_open_chat   (GSimpleAction *action,
                                         GVariant      *parameter,
@@ -51,12 +57,8 @@ notification_open_chat (GSimpleAction *action,
 
   g_assert (CHATTY_IS_NOTIFICATION (user_data));
 
-  if (self->chat) {
-    ChattyManager *manager;
-
-    manager = chatty_manager_get_default ();
-    g_signal_emit_by_name (manager,  "open-chat", self->chat);
-  }
+  if (self->chat)
+    g_signal_emit (self, signals[OPEN_CHAT], 0, self->chat);
 }
 
 static gboolean
@@ -154,6 +156,20 @@ chatty_notification_class_init (ChattyNotificationClass *klass)
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
 
   object_class->finalize = chatty_notification_finalize;
+
+  /**
+   * ChattyNotification::open-chat:
+   * @self: A #ChattyNotification
+   * @chat: A #ChattyChat
+   *
+   * Emit when requested to open @chat.
+   */
+  signals [OPEN_CHAT] =
+    g_signal_new ("open-chat",
+                  G_TYPE_FROM_CLASS (klass),
+                  G_SIGNAL_RUN_LAST,
+                  0, NULL, NULL, NULL,
+                  G_TYPE_NONE, 1, CHATTY_TYPE_CHAT);
 }
 
 static void
