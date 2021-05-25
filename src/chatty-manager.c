@@ -1975,15 +1975,11 @@ static void
 chat_changed_cb (ChattyManager *self,
                  ChattyChat    *chat)
 {
-  ChattyMessage *message;
-
   g_assert (CHATTY_IS_MANAGER (self));
   g_assert (CHATTY_IS_MA_CHAT (chat));
 
-  message = chatty_ma_chat_show_notification (CHATTY_MA_CHAT (chat));
-
-  if (message)
-    chatty_notification_show_message (self->notification, chat, message, NULL);
+  if (CHATTY_IS_MA_CHAT (chat))
+    chatty_ma_chat_show_notification (CHATTY_MA_CHAT (chat));
 }
 
 static void
