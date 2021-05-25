@@ -108,6 +108,13 @@ If you don't have an XMPP account yet and want to subscribe to a service then pl
 - XEP-0313: Message Archive Management
 - XEP-0363: HTTP File Upload
 
+## Known issues
+
+- chatty crashes in OMEMO encrypted chats.  This is due to a symbol conflict in
+  libolm3 and libaxc. A work around is done in [PureOS][3].  A proper fix would
+  be to not export those symbols at all.
+
 [0]: http://software.pureos.net/search_pkg?term=libhandy-1-dev
 [1]: https://packages.debian.org/search?keywords=libhandy-1-dev
 [2]: https://source.puri.sm/Librem5/libhandy
+[3]: https://source.puri.sm/Librem5/debs/olm/-/merge_requests/2
