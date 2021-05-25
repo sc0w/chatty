@@ -49,13 +49,6 @@ Please go to the git page where you'll find information on how to build and use 
 This can be skipped if encrypted messaging is not needed.
 
 
-### Build and install the 'purple-matrix' plugin
-Please go to the git page where you'll find information on how to build and install the
-[Matrix messenger plugin](https://github.com/matrix-org/purple-matrix)
-
-This can be skipped if Matrix messaging is not needed.
-
-
 ### Build and install the 'purple-telegram' plugin
 Please go to the git page where you'll find information on how to build and install the
 [Telegram messenger plugin](https://github.com/majn/telegram-purple)
