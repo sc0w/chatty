@@ -182,10 +182,10 @@ chatty_notification_init (ChattyNotification *self)
   g_notification_add_button (self->notification, _("Open Message"), "app.open-chat");
 
   app = g_application_get_default ();
-  g_assert (G_IS_APPLICATION (app));
 
-  g_action_map_add_action_entries (G_ACTION_MAP (app), actions,
-                                   G_N_ELEMENTS (actions), self);
+  if (app)
+    g_action_map_add_action_entries (G_ACTION_MAP (app), actions,
+                                     G_N_ELEMENTS (actions), self);
 }
 
 ChattyNotification *
