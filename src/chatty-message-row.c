@@ -25,7 +25,6 @@ struct _ChattyMessageRow
 {
   GtkListBoxRow  parent_instance;
 
-  GtkWidget  *revealer;
   GtkWidget  *content_grid;
   GtkWidget  *avatar_image;
   GtkWidget  *hidden_box;
@@ -173,16 +172,6 @@ message_row_update_message (ChattyMessageRow *self)
   }
 }
 
-static gboolean
-message_row_show_revealer (ChattyMessageRow *self)
-{
-  g_assert (CHATTY_IS_MESSAGE_ROW (self));
-
-  gtk_revealer_set_reveal_child (GTK_REVEALER (self->revealer), TRUE);
-
-  return G_SOURCE_REMOVE;
-}
-
 static void
 chatty_message_row_dispose (GObject *object)
 {
@@ -206,7 +195,6 @@ chatty_message_row_class_init (ChattyMessageRowClass *klass)
   gtk_widget_class_set_template_from_resource (widget_class,
                                                "/sm/puri/Chatty/"
                                                "ui/chatty-message-row.ui");
-  gtk_widget_class_bind_template_child (widget_class, ChattyMessageRow, revealer);
   gtk_widget_class_bind_template_child (widget_class, ChattyMessageRow, content_grid);
   gtk_widget_class_bind_template_child (widget_class, ChattyMessageRow, avatar_image);
   gtk_widget_class_bind_template_child (widget_class, ChattyMessageRow, hidden_box);
@@ -302,13 +290,6 @@ chatty_message_row_new (ChattyMessage  *message,
                            G_CALLBACK (message_row_update_message),
                            self, G_CONNECT_SWAPPED);
   message_row_update_message (self);
-
-  /*
-   * HACK: This is to delay showing the revealer child, so that it
-   * is revealed after @self is added to some container.  Otherwise,
-   * the child revealing won’t be animated.
-   */
-  g_idle_add (G_SOURCE_FUNC (message_row_show_revealer), self);
 
   return GTK_WIDGET (self);
 }
