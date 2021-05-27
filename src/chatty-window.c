@@ -81,9 +81,6 @@ struct _ChattyWindow
 G_DEFINE_TYPE (ChattyWindow, chatty_window, GTK_TYPE_APPLICATION_WINDOW)
 
 
-static void chatty_window_show_new_muc_dialog (ChattyWindow *self);
-
-
 static GtkWidget *
 window_get_view_for_chat (ChattyWindow *self,
                           ChattyChat   *chat)
@@ -415,9 +412,14 @@ window_new_message_clicked_cb (ChattyWindow *self)
 static void
 window_new_muc_clicked_cb (ChattyWindow *self)
 {
+  GtkWidget *dialog;
+
   g_assert (CHATTY_IS_WINDOW (self));
 
-  chatty_window_show_new_muc_dialog (self);
+  dialog = chatty_new_muc_dialog_new (GTK_WINDOW (self));
+  gtk_dialog_run (GTK_DIALOG (dialog));
+
+  gtk_widget_destroy (dialog);
 }
 
 
@@ -615,21 +617,6 @@ chatty_window_show_settings_dialog (ChattyWindow *self)
   gtk_widget_destroy (dialog);
 }
 
-
-static void
-chatty_window_show_new_muc_dialog (ChattyWindow *self)
-{
-  GtkWidget *dialog;
-
-  g_assert (CHATTY_IS_WINDOW (self));
-
-  dialog = chatty_new_muc_dialog_new (GTK_WINDOW (self));
-  gtk_dialog_run (GTK_DIALOG (dialog));
-
-  gtk_widget_destroy (dialog);
-}
-
-
 /* Copied from chatty-dialogs.c written by Andrea Schäfer <mosibasu@me.com> */
 static void
 chatty_window_show_about_dialog (ChattyWindow *self)
@@ -675,14 +662,6 @@ chatty_window_show_about_dialog (ChattyWindow *self)
                          "documenters", documenters,
                          "translator-credits", _("translator-credits"),
                          NULL);
-}
-
-
-static void
-chatty_window_show_new_chat_dialog (ChattyWindow *self)
-{
-  /* XXX: Not used */
-  gtk_dialog_run (GTK_DIALOG (self->new_chat_dialog));
 }
 
 void
@@ -877,8 +856,6 @@ chatty_window_class_init (ChattyWindowClass *klass)
   gtk_widget_class_bind_template_callback (widget_class, window_delete_buddy_clicked_cb);
   gtk_widget_class_bind_template_callback (widget_class, window_search_changed_cb);
   gtk_widget_class_bind_template_callback (widget_class, window_chat_row_activated_cb);
-  gtk_widget_class_bind_template_callback (widget_class, chatty_window_show_new_muc_dialog);
-  gtk_widget_class_bind_template_callback (widget_class, chatty_window_show_new_chat_dialog);
   gtk_widget_class_bind_template_callback (widget_class, chatty_window_show_settings_dialog);
   gtk_widget_class_bind_template_callback (widget_class, chatty_window_show_about_dialog);
 }
