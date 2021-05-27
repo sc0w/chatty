@@ -6,13 +6,17 @@
 
 #define G_LOG_DOMAIN "chatty-window"
 
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
+
 #define _GNU_SOURCE
 #include <string.h>
 #include <glib.h>
 #include <glib/gi18n.h>
 #include <glib-object.h>
 #include "contrib/gtk.h"
-#include "chatty-config.h"
+
 #include "chatty-window.h"
 #include "chatty-history.h"
 #include "chatty-avatar.h"

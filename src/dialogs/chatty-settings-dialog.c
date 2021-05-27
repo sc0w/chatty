@@ -25,9 +25,12 @@
 
 #define G_LOG_DOMAIN "chatty-settings-dialog"
 
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
+
 #include <glib/gi18n.h>
 
-#include "chatty-config.h"
 #include "chatty-utils.h"
 #include "users/chatty-pp-account.h"
 #include "matrix/matrix-utils.h"

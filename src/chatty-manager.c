@@ -11,7 +11,9 @@
 
 #define G_LOG_DOMAIN "chatty-manager"
 
-#include "chatty-config.h"
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
 
 #define LIBFEEDBACK_USE_UNSTABLE_API
 #include <libfeedback.h>

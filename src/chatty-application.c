@@ -23,10 +23,13 @@
 
 #define G_LOG_DOMAIN "chatty-application"
 
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
+
 #include <glib/gi18n.h>
 #include <handy.h>
 
-#include "chatty-config.h"
 #include "chatty-window.h"
 #include "chatty-utils.h"
 #include "users/chatty-pp-account.h"

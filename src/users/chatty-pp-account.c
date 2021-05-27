@@ -11,10 +11,13 @@
 
 #define G_LOG_DOMAIN "chatty-pp-account"
 
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
+
 #include <handy.h>
 #include <purple.h>
 
-#include "chatty-config.h"
 #include "chatty-settings.h"
 #include "chatty-account.h"
 #include "chatty-window.h"

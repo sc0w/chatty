@@ -19,7 +19,6 @@
 #include <string.h>
 #include <glib/gi18n.h>
 
-#include "chatty-config.h"
 #include "matrix-enums.h"
 #include "chatty-utils.h"
 #include "matrix-utils.h"

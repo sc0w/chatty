@@ -18,7 +18,6 @@
 #include <glib/gi18n.h>
 
 #include "contrib/gtk.h"
-#include "chatty-config.h"
 #include "chatty-history.h"
 #include "chatty-notification.h"
 #include "chatty-utils.h"

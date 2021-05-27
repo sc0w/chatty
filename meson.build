@@ -28,11 +28,12 @@ else
 endif
 
 configure_file(
-  output: 'chatty-config.h',
+  output: 'config.h',
   configuration: config_h,
 )
 add_project_arguments([
   '-I' + meson.build_root(),
+  '-DHAVE_CONFIG_H',
   '-DGLIB_DISABLE_DEPRECATION_WARNINGS',
   '-DG_LOG_USE_STRUCTURED',
 ], language: 'c')
