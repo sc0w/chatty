@@ -771,7 +771,7 @@ chatty_chat_view_set_chat (ChattyChatView *self,
   GListModel *messages;
 
   g_return_if_fail (CHATTY_IS_CHAT_VIEW (self));
-  g_return_if_fail (CHATTY_IS_CHAT (chat));
+  g_return_if_fail (!chat || CHATTY_IS_CHAT (chat));
 
   if (self->chat && chat != self->chat) {
     g_signal_handlers_disconnect_by_func (self->chat,
