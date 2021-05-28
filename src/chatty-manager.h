@@ -23,13 +23,6 @@ G_BEGIN_DECLS
 #define CHATTY_APP_ID       "sm.puri.Chatty"
 #define CHATTY_PREFS_ROOT   "/chatty"
 
-typedef enum
-{
-  CHATTY_SMS_RECEIPT_NONE      = -1,
-  CHATTY_SMS_RECEIPT_MM_ACKN   =  0,
-  CHATTY_SMS_RECEIPT_SMSC_ACKN,
-} e_sms_receipt_states;
-
 #define CHATTY_TYPE_MANAGER (chatty_manager_get_type ())
 
 G_DECLARE_FINAL_TYPE (ChattyManager, chatty_manager, CHATTY, MANAGER, GObject)

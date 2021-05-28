@@ -26,6 +26,10 @@ libsrc = [
   'users/chatty-pp-account.c',
   'chatty-fp-row.c',
   'chatty-list-row.c',
+  'chatty-chat-view.c',
+  'chatty-message-row.c',
+  'chatty-text-item.c',
+  'chatty-image-item.c',
   'chatty-log.c',
   'chatty-avatar.c',
   'chatty-chat.c',
@@ -58,7 +62,6 @@ ui_files = files (
 
 chatty_sources = [
   'main.c',
-  'chatty-chat-view.c',
   'chatty-manager.c',
   'chatty-application.c',
   'chatty-window.c',
@@ -66,9 +69,6 @@ chatty_sources = [
   'dialogs/chatty-settings-dialog.c',
   'dialogs/chatty-new-chat-dialog.c',
   'dialogs/chatty-new-muc-dialog.c',
-  'chatty-message-row.c',
-  'chatty-text-item.c',
-  'chatty-image-item.c',
   './xeps/xeps.c',
   './xeps/chatty-xep-0184.c',
   './xeps/chatty-xep-0313.c',
