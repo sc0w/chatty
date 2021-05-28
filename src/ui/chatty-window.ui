@@ -420,7 +420,7 @@
           </object>
         </child>
         <child>
-          <object class="GtkStack" id="chat_view_stack">
+          <object class="ChattyChatView" id="chat_view">
             <property name="visible">True</property>
             <property name="width_request">300</property>
           </object>
@@ -442,7 +442,7 @@
     <property name="mode">horizontal</property>
     <widgets>
       <widget name="sub_header_bar"/>
-      <widget name="chat_view_stack"/>
+      <widget name="chat_view"/>
     </widgets>
   </object>
   <object class="HdyHeaderGroup" id="header_group">

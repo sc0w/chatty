@@ -71,7 +71,7 @@ struct _ChattyWindow
   GtkWidget *leave_button;
   GtkWidget *delete_button;
 
-  GtkWidget *chat_view_stack;
+  GtkWidget *chat_view;
 
   ChattyItem    *selected_item;
   ChattyManager *manager;
@@ -83,26 +83,6 @@ struct _ChattyWindow
 
 
 G_DEFINE_TYPE (ChattyWindow, chatty_window, GTK_TYPE_APPLICATION_WINDOW)
-
-
-static GtkWidget *
-window_get_view_for_chat (ChattyWindow *self,
-                          ChattyChat   *chat)
-{
-  g_autoptr(GList) children = NULL;
-
-  g_assert (CHATTY_IS_WINDOW (self));
-  g_assert (CHATTY_IS_CHAT (chat));
-
-  children = gtk_container_get_children (GTK_CONTAINER (self->chat_view_stack));
-
-  for (GList *child = children; child; child = child->next)
-    if (CHATTY_IS_CHAT_VIEW (child->data) &&
-        chatty_chat_view_get_chat (child->data) == chat)
-      return child->data;
-
-  return NULL;
-}
 
 static void
 window_set_item (ChattyWindow *self,
@@ -195,26 +175,6 @@ window_chat_changed_cb (ChattyWindow *self)
                                        "an account in <i>\"preferences\"</i>."));
 }
 
-static void
-window_stack_child_changed_cb (ChattyWindow *self)
-{
-  ChattyChat *chat;
-
-  g_assert (CHATTY_IS_WINDOW (self));
-
-  chat = chatty_window_get_active_chat (self);
-  if (!chat)
-    return;
-
-  window_set_item (self, CHATTY_ITEM (chat));
-  window_chat_changed_cb (self);
-
-  g_debug ("%s: Chat name: %s", G_STRFUNC, chatty_chat_get_chat_name (chat));
-
-  chatty_chat_set_unread_count (chat, 0);
-}
-
-
 static gboolean
 window_chat_name_matches (ChattyItem   *item,
                           ChattyWindow *self)
@@ -296,8 +256,7 @@ chatty_window_open_item (ChattyWindow *self,
       has_encryption = chatty_manager_lurch_plugin_is_loaded (self->manager);
       chat = (ChattyChat *)chatty_pp_chat_new_buddy_chat (CHATTY_PP_BUDDY (item),
                                                           has_encryption);
-      chat = chatty_manager_add_chat (self->manager, chat);
-      chatty_chat_load_past_messages (chat, -1);
+      chatty_manager_add_chat (self->manager, chat);
     }
   }
 
@@ -316,7 +275,6 @@ chatty_window_open_item (ChattyWindow *self,
 
   if (CHATTY_IS_PP_CHAT (chat)) {
     chatty_pp_chat_join (CHATTY_PP_CHAT (chat));
-    chatty_window_change_view (self, CHATTY_VIEW_MESSAGE_LIST);
 
     gtk_filter_changed (self->chat_filter, GTK_FILTER_CHANGE_DIFFERENT);
     window_chat_changed_cb (self);
@@ -709,18 +667,14 @@ static void
 window_chat_deleted_cb (ChattyWindow *self,
                         ChattyChat   *chat)
 {
-  GtkWidget *view;
-
   g_assert (CHATTY_IS_WINDOW (self));
   g_assert (CHATTY_IS_CHAT (chat));
 
-  if (self->selected_item == (gpointer)chat)
-    window_set_item (self, NULL);
+  if (self->selected_item != (gpointer)chat)
+    return;
 
-  view = window_get_view_for_chat (self, chat);
-
-  if (view)
-    gtk_widget_destroy (view);
+  window_set_item (self, NULL);
+  chatty_chat_view_set_chat (CHATTY_CHAT_VIEW (self->chat_view), NULL);
 }
 
 static void
@@ -846,7 +800,7 @@ chatty_window_class_init (ChattyWindowClass *klass)
   gtk_widget_class_bind_template_child (widget_class, ChattyWindow, chat_list_view);
   gtk_widget_class_bind_template_child (widget_class, ChattyWindow, chats_listbox);
 
-  gtk_widget_class_bind_template_child (widget_class, ChattyWindow, chat_view_stack);
+  gtk_widget_class_bind_template_child (widget_class, ChattyWindow, chat_view);
   gtk_widget_class_bind_template_child (widget_class, ChattyWindow, header_chat_list_new_msg_popover);
 
   gtk_widget_class_bind_template_callback (widget_class, notify_fold_cb);
@@ -877,11 +831,6 @@ chatty_window_init (ChattyWindow *self)
   g_signal_connect_object (self->manager, "chat-deleted",
                            G_CALLBACK (window_chat_deleted_cb), self,
                            G_CONNECT_SWAPPED);
-
-  g_signal_connect_object (self->chat_view_stack,
-                           "notify::visible-child",
-                           G_CALLBACK (window_stack_child_changed_cb), self,
-                           G_CONNECT_AFTER | G_CONNECT_SWAPPED);
 }
 
 
@@ -922,58 +871,32 @@ chatty_window_set_uri (ChattyWindow *self,
     return;
 
   gtk_widget_hide (self->new_chat_dialog);
-  chatty_window_change_view (self, CHATTY_VIEW_MESSAGE_LIST);
 }
 
 ChattyChat *
 chatty_window_get_active_chat (ChattyWindow *self)
 {
-  GtkWidget *child;
-
   g_return_val_if_fail (CHATTY_IS_WINDOW (self), NULL);
 
-  child = gtk_stack_get_visible_child (GTK_STACK (self->chat_view_stack));
-
-  if (!child)
-    return NULL;
-
-  return chatty_chat_view_get_chat (CHATTY_CHAT_VIEW (child));
+  return chatty_chat_view_get_chat (CHATTY_CHAT_VIEW (self->chat_view));
 }
 
 void
 chatty_window_open_chat (ChattyWindow *self,
                          ChattyChat   *chat)
 {
-  GtkWidget *view;
-
   g_return_if_fail (CHATTY_IS_WINDOW (self));
   g_return_if_fail (CHATTY_IS_CHAT (chat));
   g_debug ("opening item of type: %s, protocol: %d",
            G_OBJECT_TYPE_NAME (chat),
            chatty_item_get_protocols (CHATTY_ITEM (chat)));
 
-  view = window_get_view_for_chat (self, chat);
+  chatty_chat_view_set_chat (CHATTY_CHAT_VIEW (self->chat_view), chat);
+  window_set_item (self, CHATTY_ITEM (chat));
+  window_chat_changed_cb (self);
 
-  if (!view) {
-    view  = chatty_chat_view_new ();
-
-    g_debug ("creating new view for chat \"%s\"",
-             chatty_item_get_name (CHATTY_ITEM (chat)));
-
-    chatty_chat_view_set_chat (CHATTY_CHAT_VIEW (view), chat);
-    gtk_widget_show (view);
-    gtk_container_add (GTK_CONTAINER (self->chat_view_stack), view);
-
-    chatty_chat_load_past_messages (chat, -1);
-  }
-
-  if (CHATTY_IS_PP_CHAT (chat))
-    gtk_widget_show (self->delete_button);
-  else
-    gtk_widget_hide (self->delete_button);
-
-  gtk_stack_set_visible_child (GTK_STACK (self->chat_view_stack), view);
-  hdy_leaflet_set_visible_child (HDY_LEAFLET (self->content_box), self->chat_view_stack);
+  gtk_widget_set_visible (self->delete_button, CHATTY_IS_PP_CHAT (chat));
+  hdy_leaflet_set_visible_child (HDY_LEAFLET (self->content_box), self->chat_view);
 
   chatty_chat_set_unread_count (chat, 0);
   gtk_window_present (GTK_WINDOW (self));
