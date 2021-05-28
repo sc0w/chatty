@@ -796,6 +796,8 @@ void
 chatty_chat_view_set_chat (ChattyChatView *self,
                            ChattyChat     *chat)
 {
+  GListModel *messages;
+
   g_return_if_fail (CHATTY_IS_CHAT_VIEW (self));
   g_return_if_fail (CHATTY_IS_CHAT (chat));
 
@@ -818,6 +820,10 @@ chatty_chat_view_set_chat (ChattyChatView *self,
 
   if (!chat)
     return;
+
+  messages = chatty_chat_get_messages (chat);
+  if (g_list_model_get_n_items (messages) <= 3)
+    chatty_chat_load_past_messages (chat, -1);
 
   gtk_list_box_bind_model (GTK_LIST_BOX (self->message_list),
                            chatty_chat_get_messages (self->chat),
