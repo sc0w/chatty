@@ -287,61 +287,6 @@ chat_view_message_row_new (ChattyMessage  *message,
 }
 
 static void
-messages_items_changed_cb (ChattyChatView *self,
-                           guint           position,
-                           guint           removed,
-                           guint           added)
-{
-  ChattyMessage *next_msg, *msg;
-  GtkListBoxRow *row, *next_row;
-  GtkListBox *list;
-  time_t next_time, time;
-
-  g_assert (CHATTY_IS_CHAT_VIEW (self));
-
-  if (added == 0)
-    return;
-
-  list = GTK_LIST_BOX (self->message_list);
-
-  /* Hide duplicate author labels in group chats */
-  if (!chatty_chat_is_im (self->chat) ||
-      CHATTY_IS_MA_CHAT (self->chat)) {
-    for (gint i = position; i < position + added; i++) {
-      next_row = gtk_list_box_get_row_at_index (list, i + 1);
-
-      if (!next_row)
-        break;
-
-      row = gtk_list_box_get_row_at_index (list, i);
-      msg = chatty_message_row_get_item (CHATTY_MESSAGE_ROW (row));
-      next_msg = chatty_message_row_get_item (CHATTY_MESSAGE_ROW (next_row));
-
-      if (chatty_message_user_matches (msg, next_msg))
-        chatty_message_row_hide_user_detail (CHATTY_MESSAGE_ROW (next_row));
-    }
-  }
-
-  for (gint i = position; i < position + added; i++) {
-    next_row = gtk_list_box_get_row_at_index (list, i + 1);
-
-    if (!next_row)
-      break;
-
-    row = gtk_list_box_get_row_at_index (list, i);
-    msg = chatty_message_row_get_item (CHATTY_MESSAGE_ROW (row));
-    time = chatty_message_get_time (msg);
-
-    next_msg = chatty_message_row_get_item (CHATTY_MESSAGE_ROW (next_row));
-    next_time = chatty_message_get_time (next_msg);
-
-    /* Hide footer of the previous message if both have same time (in minutes) */
-    if (time / 60 == next_time / 60)
-      chatty_message_row_hide_footer (CHATTY_MESSAGE_ROW (row));
-  }
-}
-
-static void
 chat_encrypt_changed_cb (ChattyChatView *self)
 {
   GtkStyleContext *context;
@@ -611,6 +556,30 @@ chat_view_adjustment_changed_cb (GtkAdjustment  *adjustment,
 }
 
 static void
+chat_view_update_header_func (ChattyMessageRow *row,
+                              ChattyMessageRow *before,
+                              gpointer          user_data)
+{
+  ChattyMessage *a, *b;
+  time_t a_time, b_time;
+
+  if (!before || !row)
+    return;
+
+  a = chatty_message_row_get_item (before);
+  b = chatty_message_row_get_item (row);
+  a_time = chatty_message_get_time (a);
+  b_time = chatty_message_get_time (b);
+
+  if (chatty_message_user_matches (a, b))
+    chatty_message_row_hide_user_detail (row);
+
+  /* Hide footer of the previous message if both have same time (in minutes) */
+  if (a_time / 60 == b_time / 60)
+    chatty_message_row_hide_footer (before);
+}
+
+static void
 chat_view_get_files_cb (GObject      *object,
                         GAsyncResult *result,
                         gpointer      user_data)
@@ -765,6 +734,9 @@ chatty_chat_view_init (ChattyChatView *self)
                           self);
   g_signal_connect_after (G_OBJECT (self), "file-requested",
                           G_CALLBACK (chat_view_file_requested_cb), self);
+  gtk_list_box_set_header_func (GTK_LIST_BOX (self->message_list),
+                                (GtkListBoxUpdateHeaderFunc)chat_view_update_header_func,
+                                NULL, NULL);
 }
 
 GtkWidget *
@@ -802,9 +774,6 @@ chatty_chat_view_set_chat (ChattyChatView *self,
   g_return_if_fail (CHATTY_IS_CHAT (chat));
 
   if (self->chat && chat != self->chat) {
-    g_signal_handlers_disconnect_by_func (chatty_chat_get_messages (self->chat),
-                                          messages_items_changed_cb,
-                                          self);
     g_signal_handlers_disconnect_by_func (self->chat,
                                           chat_encrypt_changed_cb,
                                           self);
@@ -829,10 +798,6 @@ chatty_chat_view_set_chat (ChattyChatView *self,
                            chatty_chat_get_messages (self->chat),
                            (GtkListBoxCreateWidgetFunc)chat_view_message_row_new,
                            self, NULL);
-  g_signal_connect_swapped (chatty_chat_get_messages (self->chat),
-                            "items-changed",
-                            G_CALLBACK (messages_items_changed_cb),
-                            self);
   g_signal_connect_swapped (self->chat, "notify::encrypt",
                             G_CALLBACK (chat_encrypt_changed_cb),
                             self);
