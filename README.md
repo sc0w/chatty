@@ -67,6 +67,12 @@ meson build
 ninja -C build
 ```
 
+### Enabling Matrix support (optional)
+To enable matrix support, run the following:
+```bash
+gsettings set sm.puri.Chatty experimental-features true
+```
+
 ## Running from the source tree
 To run Chatty from source tree (without installing) do:
 
