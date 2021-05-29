@@ -626,6 +626,7 @@ static int
 insert_or_ignore_user (ChattyHistory  *self,
                        ChattyProtocol  protocol,
                        const char     *who,
+                       const char     *alias,
                        GTask          *task)
 {
   g_autofree char *phone = NULL;
@@ -643,11 +644,15 @@ insert_or_ignore_user (ChattyHistory  *self,
   }
 
   sqlite3_prepare_v2 (self->db,
-                      "INSERT OR IGNORE INTO users(username,type) "
-                      "VALUES(?,?);",
+                      "INSERT OR IGNORE INTO users(username,type,alias) "
+                      "VALUES(?1,?2,?3) "
+                      "ON CONFLICT(username,type) "
+                      "DO UPDATE SET alias=coalesce(?3,alias)",
                       -1, &stmt, NULL);
   history_bind_text (stmt, 1, phone ? phone : who, "binding when adding phone number");
   history_bind_int (stmt, 2, history_protocol_to_type_value (protocol), "binding when adding phone number");
+  if (alias && who && !g_str_equal (who, alias))
+    history_bind_text (stmt, 3, alias, "binding when adding phone number");
 
   sqlite3_step (stmt);
   sqlite3_finalize (stmt);
@@ -762,6 +767,7 @@ insert_or_ignore_thread (ChattyHistory *self,
   user_id = insert_or_ignore_user (self,
                                    chatty_item_get_protocols (CHATTY_ITEM (chat)),
                                    chatty_chat_get_username (chat),
+                                   NULL,
                                    task);
   if (!user_id) {
     const char *who;
@@ -1844,8 +1850,8 @@ get_messages_before_time (ChattyHistory *self,
     skip = FALSE;
 
   status = sqlite3_prepare_v2 (self->db,
-                                               /* 0      1      2    3         4           5 */
-                               "SELECT DISTINCT time,direction,body,uid,users.username,body_type,"
+                                               /* 0      1      2    3                 4                         5 */
+                               "SELECT DISTINCT time,direction,body,uid,coalesce(users.alias,users.username),body_type,"
                                /*    6         7          8           9            10          11 */
                                "files.name,files.url,files.path,mime_type.name,files.size,files.status,"
                                "coalesce(video.width,image.width)," /* 12 */
@@ -2109,7 +2115,7 @@ history_add_message (ChattyHistory *self,
   ChattyMessage *message;
   ChattyChat *chat;
   sqlite3_stmt *stmt;
-  const char *who, *uid, *msg;
+  const char *who, *uid, *msg, *alias;
   ChattyMsgDirection direction;
   ChattyMsgType type;
   int thread_id = 0, sender_id = 0, file_id = 0, preview_id = 0;
@@ -2139,6 +2145,7 @@ history_add_message (ChattyHistory *self,
   direction = chatty_message_get_msg_direction (message);
   dir = history_direction_to_value (direction);
   type = chatty_message_get_msg_type (message);
+  alias = chatty_message_get_user_alias (message);
 
   /* TODO: check if this is good */
   if (!who || !*who) {
@@ -2152,7 +2159,7 @@ history_add_message (ChattyHistory *self,
   if (!thread_id)
     return;
 
-  sender_id = insert_or_ignore_user (self, chatty_item_get_protocols (CHATTY_ITEM (chat)), who, task);
+  sender_id = insert_or_ignore_user (self, chatty_item_get_protocols (CHATTY_ITEM (chat)), who, alias, task);
 
   if (sender_id && direction == CHATTY_DIRECTION_IN) {
     sqlite3_prepare_v2 (self->db,
