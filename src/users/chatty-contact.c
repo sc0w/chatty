@@ -365,5 +365,5 @@ chatty_contact_is_dummy (ChattyContact *self)
 {
   g_return_val_if_fail (CHATTY_IS_CONTACT (self), TRUE);
 
-  return self->e_contact == NULL;
+  return !!g_object_get_data (G_OBJECT (self), "dummy");
 }

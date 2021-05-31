@@ -132,6 +132,7 @@ chatty_new_chat_dialog_update_new_contact_row (ChattyNewChatDialog *self)
 
   self->dummy_contact = g_object_new (CHATTY_TYPE_CONTACT, NULL);
   chatty_contact_set_name (self->dummy_contact, _("Send To"));
+  g_object_set_data (G_OBJECT (self->dummy_contact), "dummy", GINT_TO_POINTER (TRUE));
 }
 
 static void
