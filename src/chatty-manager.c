@@ -845,9 +845,6 @@ chatty_conv_write_conversation (PurpleConversation *conv,
       chatty_pp_chat_append_message (CHATTY_PP_CHAT (chat), chat_message);
     }
 
-    if (chat_message && pcm.who && !(flags & PURPLE_MESSAGE_SEND))
-      chatty_message_set_user_name (chat_message, pcm.who);
-
     /*
      * This is default fallback history handler.  Other plugins may
      * intercept “conversation-write” and suppress it if they handle
