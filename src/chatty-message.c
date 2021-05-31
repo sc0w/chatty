@@ -15,6 +15,9 @@
 # include "config.h"
 #endif
 
+#include "matrix/chatty-ma-buddy.h"
+#include "users/chatty-contact.h"
+#include "users/chatty-pp-buddy.h"
 #include "chatty-message.h"
 #include "chatty-utils.h"
 
@@ -317,8 +320,16 @@ chatty_message_get_user_name (ChattyMessage *self)
 
   g_return_val_if_fail (CHATTY_IS_MESSAGE (self), "");
 
-  if (!self->user_name && self->user)
-    user_name = chatty_item_get_name (self->user);
+  if (!self->user_name && self->user) {
+    if (CHATTY_IS_CONTACT (self->user))
+      user_name = chatty_contact_get_value (CHATTY_CONTACT (self->user));
+    else if (CHATTY_IS_PP_BUDDY (self->user))
+      user_name = chatty_pp_buddy_get_id (CHATTY_PP_BUDDY (self->user));
+    else if (CHATTY_IS_MA_BUDDY (self->user))
+      user_name = chatty_ma_buddy_get_id (CHATTY_MA_BUDDY (self->user));
+    else
+      user_name = chatty_item_get_name (self->user);
+  }
 
   if (user_name)
     self->user_name = chatty_utils_jabber_id_strip (user_name);
