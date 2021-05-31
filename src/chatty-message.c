@@ -31,7 +31,6 @@ struct _ChattyMessage
 
   ChattyItem      *user;
   char            *user_name;
-  char            *user_alias;
   char            *message;
   char            *uid;
   char            *id;
@@ -67,7 +66,6 @@ chatty_message_finalize (GObject *object)
   g_clear_object (&self->user);
   g_free (self->message);
   g_free (self->uid);
-  g_free (self->user_alias);
   g_free (self->user_name);
   g_free (self->id);
 
@@ -107,7 +105,6 @@ chatty_message_init (ChattyMessage *self)
 
 ChattyMessage *
 chatty_message_new (ChattyItem         *user,
-                    const char         *user_alias,
                     const char         *message,
                     const char         *uid,
                     time_t              timestamp,
@@ -122,7 +119,6 @@ chatty_message_new (ChattyItem         *user,
 
   self = g_object_new (CHATTY_TYPE_MESSAGE, NULL);
   g_set_object (&self->user, user);
-  self->user_alias = g_strdup (user_alias);
   self->message = g_strdup (message);
   self->uid = g_strdup (uid);
   self->status = status;
@@ -350,9 +346,6 @@ chatty_message_get_user_alias (ChattyMessage *self)
 
   g_return_val_if_fail (CHATTY_IS_MESSAGE (self), NULL);
 
-  if (self->user_alias)
-    return self->user_alias;
-
   if (self->user)
     name = chatty_item_get_name (self->user);
 
@@ -381,9 +374,6 @@ chatty_message_user_matches (ChattyMessage *a,
     return TRUE;
   else if (a->user_name && b->user_name)
     return FALSE;
-
-  if (a->user_alias && g_strcmp0 (a->user_alias, b->user_alias) == 0)
-    return TRUE;
 
   return FALSE;
 }

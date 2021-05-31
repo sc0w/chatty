@@ -437,7 +437,7 @@ chat_view_send_message_button_clicked_cb (ChattyChatView *self)
         protocol == CHATTY_PROTOCOL_TELEGRAM)
       escaped = purple_markup_escape_text (message, -1);
 
-    msg = chatty_message_new (NULL, NULL, escaped ? escaped : message,
+    msg = chatty_message_new (NULL, escaped ? escaped : message,
                               NULL, time (NULL),
                               escaped ? CHATTY_MESSAGE_HTML_ESCAPED : CHATTY_MESSAGE_TEXT,
                               CHATTY_DIRECTION_OUT, 0);

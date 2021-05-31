@@ -39,7 +39,6 @@ struct _ChattyFileInfo {
 G_DECLARE_FINAL_TYPE (ChattyMessage, chatty_message, CHATTY, MESSAGE, GObject)
 
 ChattyMessage      *chatty_message_new             (ChattyItem         *user,
-                                                    const char         *user_alias,
                                                     const char         *message,
                                                     const char         *uid,
                                                     time_t              time,

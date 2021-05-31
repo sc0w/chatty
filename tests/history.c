@@ -259,7 +259,7 @@ new_message (const char         *account,
                           "protocols", CHATTY_PROTOCOL_XMPP,
                           NULL);
   chatty_contact_set_value (contact, buddy);
-  message->message = chatty_message_new (CHATTY_ITEM (contact), NULL, msg_text,
+  message->message = chatty_message_new (CHATTY_ITEM (contact), msg_text,
                                          uuid, time_stamp, type, direction, 0);
   if (type == CHATTY_MESSAGE_FILE ||
       type == CHATTY_MESSAGE_IMAGE ||
@@ -573,7 +573,7 @@ add_chatty_message (ChattyHistory      *history,
 
 
   uuid = g_uuid_string_random ();
-  message = chatty_message_new (NULL, NULL, what, uuid, when, type, direction, status);
+  message = chatty_message_new (NULL, what, uuid, when, type, direction, status);
   g_assert (CHATTY_IS_MESSAGE (message));
   g_ptr_array_add (msg_array, message);
 
@@ -927,7 +927,7 @@ test_value (ChattyHistory *history,
       uuid = g_uuid_string_random ();
 
     chat_direction = chatty_utils_direction_from_flag (flags);
-    chat_message = chatty_message_new (NULL, NULL, message, uuid, time_stamp,
+    chat_message = chatty_message_new (NULL, message, uuid, time_stamp,
                                        CHATTY_MESSAGE_TEXT, chat_direction, 0);
     if (chat_direction != CHATTY_DIRECTION_OUT)
       chatty_message_set_user_name (chat_message, who);

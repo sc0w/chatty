@@ -1948,9 +1948,18 @@ get_messages_before_time (ChattyHistory *self,
       who = (const char *)sqlite3_column_text (stmt, 4);
 
     status = sqlite3_column_int (stmt, 24);
-    message = chatty_message_new (NULL, who, msg, uid, time_stamp, type,
-                                  history_direction_from_value (direction),
-                                  history_msg_status_from_value (status));
+
+    {
+      g_autoptr(ChattyContact) contact = NULL;
+
+      contact = g_object_new (CHATTY_TYPE_CONTACT, NULL);
+      chatty_contact_set_name (contact, who);
+      chatty_contact_set_value (contact, who);
+      message = chatty_message_new (CHATTY_ITEM (contact), msg, uid, time_stamp, type,
+                                    history_direction_from_value (direction),
+                                    history_msg_status_from_value (status));
+    }
+
     chatty_message_set_files (message, g_list_append (NULL, file));
     chatty_message_set_preview (message, preview);
     g_ptr_array_insert (messages, 0, message);
