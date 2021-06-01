@@ -2156,13 +2156,11 @@ history_add_message (ChattyHistory *self,
   type = chatty_message_get_msg_type (message);
   alias = chatty_message_get_user_alias (message);
 
-  /* TODO: check if this is good */
-  if (!who || !*who) {
-    if (direction == CHATTY_DIRECTION_OUT)
-      who = chatty_chat_get_username (chat);
-    else if (direction == CHATTY_DIRECTION_IN && chatty_chat_is_im (chat))
-      who = chatty_chat_get_chat_name (chat);
-  }
+  if (direction == CHATTY_DIRECTION_OUT)
+    who = chatty_chat_get_username (chat);
+
+  if ((!who || !*who) && direction == CHATTY_DIRECTION_IN && chatty_chat_is_im (chat))
+    who = chatty_chat_get_chat_name (chat);
 
   thread_id = insert_or_ignore_thread (self, chat, task);
   if (!thread_id)
