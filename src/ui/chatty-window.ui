@@ -392,7 +392,7 @@
                           <object class="GtkListBox" id="chats_listbox">
                             <property name="visible">True</property>
                             <property name="vexpand">True</property>
-                            <property name="selection-mode">single</property>
+                            <property name="selection-mode">none</property>
                             <signal name="row-activated" handler="window_chat_row_activated_cb" swapped="no"/>
                           </object>
                         </child>
