@@ -340,16 +340,6 @@ chatty_message_get_user_name (ChattyMessage *self)
   return "";
 }
 
-void
-chatty_message_set_user_name (ChattyMessage *self,
-                              const char    *user_name)
-{
-  g_return_if_fail (CHATTY_IS_MESSAGE (self));
-
-  g_free (self->user_name);
-  self->user_name = g_strdup (user_name);
-}
-
 const char *
 chatty_message_get_user_alias (ChattyMessage *self)
 {

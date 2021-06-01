@@ -73,8 +73,6 @@ void                chatty_message_set_user        (ChattyMessage      *self,
                                                     ChattyItem         *sender);
 ChattyItem         *chatty_message_get_user        (ChattyMessage      *self);
 const char         *chatty_message_get_user_name   (ChattyMessage      *self);
-void                chatty_message_set_user_name   (ChattyMessage      *self,
-                                                    const char         *user_name);
 const char         *chatty_message_get_user_alias  (ChattyMessage      *self);
 gboolean            chatty_message_user_matches    (ChattyMessage      *a_message,
                                                     ChattyMessage      *b_message);
