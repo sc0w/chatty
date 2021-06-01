@@ -56,6 +56,7 @@ struct _ChattyPpChat
 
   PurpleAccount      *account;
   PurpleBuddy        *buddy;
+  char               *username;
 
   PurpleChat         *pp_chat;
   PurpleConversation *conv;
@@ -474,17 +475,24 @@ static const char *
 chatty_pp_chat_get_username (ChattyChat *chat)
 {
   ChattyPpChat *self = (ChattyPpChat *)chat;
+  const char *username = NULL;
 
   g_assert (CHATTY_IS_PP_CHAT (self));
 
   if (self->pp_chat)
-    return purple_account_get_username (self->pp_chat->account);
+    username = purple_account_get_username (self->pp_chat->account);
 
   if (self->buddy)
-    return purple_account_get_username (self->buddy->account);
+    username = purple_account_get_username (self->buddy->account);
 
   if (self->conv)
-    return purple_account_get_username (self->conv->account);
+    username = purple_account_get_username (self->conv->account);
+
+  if (username && *username && !self->username)
+    self->username = chatty_utils_jabber_id_strip (username);
+
+  if (self->username && *self->username)
+    return self->username;
 
   return "";
 }
