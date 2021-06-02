@@ -98,6 +98,9 @@ window_set_item (ChattyWindow *self,
   self->selected_item = item;
   chatty_avatar_set_item (CHATTY_AVATAR (self->sub_header_icon), item);
   gtk_label_set_label (GTK_LABEL (self->sub_header_label), header_label);
+
+  if (!item)
+    hdy_leaflet_set_visible_child_name (HDY_LEAFLET (self->content_box), "sidebar");
 }
 
 static void
@@ -319,7 +322,6 @@ notify_fold_cb (GObject      *sender,
 
   if (folded) {
     window_set_item (self, NULL);
-    hdy_leaflet_set_visible_child_name (HDY_LEAFLET (self->content_box), "sidebar");
   } else if (self->selected_item) {
     window_chat_changed_cb (self);
   } else {
@@ -405,7 +407,6 @@ window_back_clicked_cb (ChattyWindow *self)
    * while chatting with this node
    */
   gtk_list_box_unselect_all (GTK_LIST_BOX (self->chats_listbox));
-  chatty_window_change_view (self, CHATTY_VIEW_CHAT_LIST);
 }
 
 
@@ -420,7 +421,7 @@ chatty_window_chat_list_select_first (ChattyWindow *self)
     gtk_list_box_select_row (GTK_LIST_BOX(self->chats_listbox), row);
     window_chat_row_activated_cb (GTK_LIST_BOX(self->chats_listbox), row, self);
   } else {
-    chatty_window_change_view (self, CHATTY_VIEW_CHAT_LIST);
+    window_set_item (self, NULL);
   }
 }
 
@@ -480,8 +481,6 @@ window_delete_buddy_clicked_cb (ChattyWindow *self)
 
     window_set_item (self, NULL);
     chatty_window_chat_list_select_first (self);
-
-    chatty_window_change_view (self, CHATTY_VIEW_CHAT_LIST);
   }
 
   gtk_widget_destroy (dialog);
@@ -504,7 +503,6 @@ window_leave_chat_clicked_cb (ChattyWindow *self)
 
   window_set_item (self, NULL);
   chatty_window_chat_list_select_first (self);
-  chatty_window_change_view (self, CHATTY_VIEW_CHAT_LIST);
 }
 
 static void
@@ -621,24 +619,6 @@ chatty_window_show_about_dialog (ChattyWindow *self)
                          NULL);
 }
 
-void
-chatty_window_change_view (ChattyWindow      *self,
-                           ChattyWindowState  view)
-{
-  g_assert (CHATTY_IS_WINDOW (self));
-
-  switch (view) {
-    case CHATTY_VIEW_MESSAGE_LIST:
-      hdy_leaflet_set_visible_child_name (HDY_LEAFLET (self->content_box), "content");
-      break;
-    case CHATTY_VIEW_CHAT_LIST:
-      hdy_leaflet_set_visible_child_name (HDY_LEAFLET (self->content_box), "sidebar");
-      break;
-    default:
-      ;
-  }
-}
-
 static void
 window_active_protocols_changed_cb (ChattyWindow *self)
 {
@@ -709,8 +689,6 @@ chatty_window_constructed (GObject *object)
 
   self->new_chat_dialog = chatty_new_chat_dialog_new (GTK_WINDOW (self));
   self->chat_info_dialog = chatty_info_dialog_new (GTK_WINDOW (self));
-
-  chatty_window_change_view (self, CHATTY_VIEW_CHAT_LIST);
 
   self->chat_filter = gtk_custom_filter_new ((GtkCustomFilterFunc)window_chat_name_matches,
                                              g_object_ref (self),
