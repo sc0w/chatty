@@ -309,9 +309,7 @@ window_search_changed_cb (ChattyWindow *self,
 }
 
 static void
-notify_fold_cb (GObject      *sender,
-                GParamSpec   *pspec,
-                ChattyWindow *self)
+notify_fold_cb (ChattyWindow *self)
 {
   gboolean folded = hdy_leaflet_get_folded (HDY_LEAFLET (self->header_box));
 

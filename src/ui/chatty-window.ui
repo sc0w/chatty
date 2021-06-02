@@ -174,7 +174,7 @@
           <object class="HdyLeaflet" id="header_box">
             <property name="visible">True</property>
             <property name="visible-child-name" bind-source="content_box" bind-property="visible-child-name" bind-flags="sync-create"/>
-            <signal name="notify::folded" handler="notify_fold_cb" after="yes" swapped="no"/>
+            <signal name="notify::folded" handler="notify_fold_cb" after="yes" swapped="yes"/>
             <child>
               <object class="GtkHeaderBar" id="header_bar">
                 <property name="visible">True</property>
