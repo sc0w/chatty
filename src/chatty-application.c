@@ -474,14 +474,9 @@ chatty_application_get_main_window (ChattyApplication *self)
 ChattyChat *
 chatty_application_get_active_chat (ChattyApplication *self)
 {
-  GtkWidget *widget = NULL;
-
   g_return_val_if_fail (CHATTY_IS_APPLICATION (self), NULL);
 
   if (self->main_window)
-    widget = gtk_window_get_focus (GTK_WINDOW (self->main_window));
-
-  if (self->main_window && widget && gtk_widget_has_focus (widget))
     return chatty_window_get_active_chat (CHATTY_WINDOW (self->main_window));
 
   return NULL;
