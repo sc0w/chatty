@@ -870,5 +870,4 @@ chatty_window_open_chat (ChattyWindow *self,
   hdy_leaflet_set_visible_child (HDY_LEAFLET (self->content_box), self->chat_view);
 
   chatty_chat_set_unread_count (chat, 0);
-  gtk_window_present (GTK_WINDOW (self));
 }

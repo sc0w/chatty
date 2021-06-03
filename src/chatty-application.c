@@ -212,6 +212,7 @@ application_open_chat (ChattyApplication *self,
   }
 
   chatty_window_open_chat (CHATTY_WINDOW (self->main_window), chat);
+  gtk_window_present (GTK_WINDOW (self->main_window));
 }
 
 static gboolean
