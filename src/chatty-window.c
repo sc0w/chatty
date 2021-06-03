@@ -153,8 +153,6 @@ window_chat_changed_cb (ChattyWindow *self)
   if (self->selected_item && has_child) {
     guint position;
 
-    chatty_chat_set_unread_count (CHATTY_CHAT (self->selected_item), 0);
-
     if (chatty_utils_get_item_position (G_LIST_MODEL (self->filter_model), self->selected_item, &position)) {
       GtkListBoxRow *row;
 
@@ -876,5 +874,6 @@ chatty_window_open_chat (ChattyWindow *self,
   gtk_widget_set_visible (self->delete_button, CHATTY_IS_PP_CHAT (chat));
   hdy_leaflet_set_visible_child (HDY_LEAFLET (self->content_box), self->chat_view);
 
-  chatty_chat_set_unread_count (chat, 0);
+  if (chatty_window_get_active_chat (self))
+    chatty_chat_set_unread_count (chat, 0);
 }
