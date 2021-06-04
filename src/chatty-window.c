@@ -84,6 +84,8 @@ struct _ChattyWindow
 
 G_DEFINE_TYPE (ChattyWindow, chatty_window, GTK_TYPE_APPLICATION_WINDOW)
 
+static void chatty_window_chat_list_select_first (ChattyWindow *self);
+
 static void
 window_set_item (ChattyWindow *self,
                  ChattyItem   *item)
@@ -405,8 +407,7 @@ window_back_clicked_cb (ChattyWindow *self)
   gtk_list_box_unselect_all (GTK_LIST_BOX (self->chats_listbox));
 }
 
-
-void
+static void
 chatty_window_chat_list_select_first (ChattyWindow *self)
 {
   GtkListBoxRow *row;
