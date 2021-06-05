@@ -23,7 +23,6 @@
 #include "matrix/chatty-ma-account.h"
 #include "chatty-list-row.h"
 #include "chatty-utils.h"
-#include "chatty-icons.h"
 #include "chatty-phone-utils.h"
 #include "chatty-new-chat-dialog.h"
 

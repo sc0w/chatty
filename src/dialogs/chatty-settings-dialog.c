@@ -36,7 +36,6 @@
 #include "matrix/matrix-utils.h"
 #include "matrix/chatty-ma-account.h"
 #include "chatty-manager.h"
-#include "chatty-icons.h"
 #include "chatty-fp-row.h"
 #include "chatty-avatar.h"
 #include "chatty-settings.h"

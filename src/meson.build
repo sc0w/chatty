@@ -37,7 +37,6 @@ libsrc = [
   'chatty-contact-provider.c',
   'chatty-message.c',
   'chatty-settings.c',
-  'chatty-icons.c',
   'chatty-history.c',
   'chatty-notification.c',
   'chatty-secret-store.c',

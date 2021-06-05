@@ -19,7 +19,6 @@
 #include <gtk/gtk.h>
 #include <libebook-contacts/libebook-contacts.h>
 
-#include "chatty-icons.h"
 #include "chatty-settings.h"
 #include "chatty-utils.h"
 #include "chatty-contact.h"

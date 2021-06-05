@@ -26,7 +26,6 @@
 #include "chatty-pp-chat.h"
 #include "chatty-chat-view.h"
 #include "chatty-manager.h"
-#include "chatty-icons.h"
 #include "chatty-utils.h"
 #include "matrix/chatty-ma-account.h"
 #include "matrix/chatty-ma-chat.h"

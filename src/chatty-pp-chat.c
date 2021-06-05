@@ -20,7 +20,6 @@
 #include "contrib/gtk.h"
 #include "chatty-history.h"
 #include "chatty-settings.h"
-#include "chatty-icons.h"
 #include "chatty-utils.h"
 #include "users/chatty-pp-buddy.h"
 #include "users/chatty-pp-account.h"

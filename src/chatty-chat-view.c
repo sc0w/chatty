@@ -15,7 +15,6 @@
 #include "chatty-chat.h"
 #include "chatty-pp-chat.h"
 #include "chatty-history.h"
-#include "chatty-icons.h"
 #include "chatty-utils.h"
 #include "chatty-enums.h"
 #include "chatty-window.h"

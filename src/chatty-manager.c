@@ -35,7 +35,6 @@
 #include "chatty-secret-store.h"
 #include "chatty-chat.h"
 #include "chatty-pp-chat.h"
-#include "chatty-icons.h"
 #include "chatty-notification.h"
 #include "chatty-purple-request.h"
 #include "chatty-purple-notify.h"
