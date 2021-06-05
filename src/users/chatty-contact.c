@@ -21,6 +21,7 @@
 
 #include "chatty-icons.h"
 #include "chatty-settings.h"
+#include "chatty-utils.h"
 #include "chatty-contact.h"
 #include "chatty-contact-private.h"
 
@@ -158,7 +159,7 @@ chatty_contact_get_avatar (ChattyItem *item)
     data = e_contact_photo_get_inlined (photo, &len);
 
     if (data)
-      self->avatar = chatty_icon_pixbuf_from_data (data, len);
+      self->avatar = chatty_utils_get_pixbuf_from_data (data, len);
   }
 
   e_contact_photo_free (photo);
