@@ -31,6 +31,8 @@ gboolean chatty_utils_remove_list_item  (GListStore *store,
                                          gpointer    item);
 char       *chatty_utils_get_human_time (time_t unix_time);
 PurpleBlistNode *chatty_utils_get_conv_blist_node (PurpleConversation *conv);
+GdkPixbuf           *chatty_utils_get_pixbuf_from_data  (const guchar *buf,
+                                                         gsize         count);
 ChattyMsgDirection   chatty_utils_direction_from_flag   (PurpleMessageFlags flag);
 
 #endif
