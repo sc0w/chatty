@@ -102,6 +102,28 @@ emit_avatar_changed (ChattyPpChat *self)
   g_signal_emit_by_name (self, "avatar-changed");
 }
 
+static GdkPixbuf *
+chatty_pp_chat_get_buddy_icon (PurpleBlistNode *node)
+{
+  PurpleStoredImage *custom_img;
+  const guchar *data = NULL;
+  gsize len;
+
+  custom_img = purple_buddy_icons_node_find_custom_icon (node);
+
+  if (custom_img) {
+    data = purple_imgstore_get_data (custom_img);
+    len = purple_imgstore_get_size (custom_img);
+  }
+
+  purple_imgstore_unref (custom_img);
+
+  if (data != NULL)
+    return chatty_utils_get_pixbuf_from_data (data, len);
+
+  return NULL;
+}
+
 static void
 pp_chat_add_history_since_component (ChattyPpChat *self,
                                      GHashTable   *components,
@@ -926,7 +948,7 @@ chatty_pp_chat_get_avatar (ChattyItem *item)
   }
 
   if (self->pp_chat)
-    return chatty_icon_get_buddy_icon ((PurpleBlistNode *)self->pp_chat);
+    return chatty_pp_chat_get_buddy_icon ((PurpleBlistNode *)self->pp_chat);
 
   return NULL;
 }
