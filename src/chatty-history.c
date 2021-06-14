@@ -1879,6 +1879,7 @@ get_messages_before_time (ChattyHistory *self,
                                "LEFT JOIN image ON body_type=9 AND files.id=image.file_id "
                                "LEFT JOIN video ON body_type=10 AND files.id=video.file_id "
                                "LEFT JOIN audio ON body_type=11 AND files.id=audio.file_id "
+
                                "LEFT JOIN files AS p_files ON messages.preview_id=p_files.id "
                                "LEFT JOIN mime_type AS p_mime_type ON p_files.mime_type_id=p_mime_type.id "
                                "LEFT JOIN image AS p_image ON p_files.id=p_image.file_id "
@@ -2272,10 +2273,13 @@ history_get_chats (ChattyHistory *self,
   protocol = PROTOCOL_MATRIX;
 
   sqlite3_prepare_v2 (self->db,
-                      "SELECT threads.id,threads.name,threads.alias,threads.encrypted FROM threads "
+                      "SELECT threads.id,threads.name,threads.alias,threads.encrypted,"
+                      "files.url,files.path "
+                      "FROM threads "
                       "INNER JOIN accounts ON accounts.id=threads.account_id "
                       "INNER JOIN users ON users.id=accounts.user_id "
                       "AND users.username=? AND accounts.protocol=? "
+                      "LEFT JOIN files ON threads.avatar_id=files.id "
                       "WHERE visibility=" STRING(THREAD_VISIBILITY_VISIBLE),
                       -1, &stmt, NULL);
   history_bind_text (stmt, 1, user_id, "binding when getting threads");
@@ -2283,6 +2287,7 @@ history_get_chats (ChattyHistory *self,
 
   while (sqlite3_step (stmt) == SQLITE_ROW) {
     g_autoptr(GPtrArray) messages = NULL;
+    ChattyFileInfo *file = NULL;
     const char *name, *alias;
     ChattyChat *chat;
     int thread_id;
@@ -2294,6 +2299,12 @@ history_get_chats (ChattyHistory *self,
     name = (const char *)sqlite3_column_text (stmt, 1);
     alias = (const char *)sqlite3_column_text (stmt, 2);
     encrypted = sqlite3_column_int (stmt, 3);
+
+    if (sqlite3_column_text (stmt, 4)) {
+      file = g_new0 (ChattyFileInfo, 1);
+      file->url = g_strdup ((const char *)sqlite3_column_text (stmt, 4));
+      file->path = g_strdup ((const char *)sqlite3_column_text (stmt, 5));
+    }
 
     chat = (gpointer)chatty_ma_chat_new (name, alias);
     chatty_chat_set_encryption (CHATTY_CHAT (chat), encrypted);
