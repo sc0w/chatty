@@ -105,6 +105,8 @@ struct _ChattyHistory
 
 typedef void (*ChattyCallback) (ChattyHistory *self,
                                 GTask *task);
+static int     add_file_info   (ChattyHistory  *self,
+                                ChattyFileInfo *file);
 
 G_DEFINE_TYPE (ChattyHistory, chatty_history, G_TYPE_OBJECT)
 
@@ -757,7 +759,8 @@ insert_or_ignore_thread (ChattyHistory *self,
 {
   sqlite3_stmt *stmt;
   int user_id, account_id;
-  int status, id = 0;
+  int status, file_id, id = 0;
+  ChattyFileInfo *file;
 
   g_assert (CHATTY_IS_HISTORY (self));
   g_assert (G_IS_TASK (task));
@@ -790,11 +793,14 @@ insert_or_ignore_thread (ChattyHistory *self,
   if (!account_id)
     return 0;
 
+  file = chatty_item_get_avatar_file (CHATTY_ITEM (chat));
+  file_id = add_file_info (self, file);
+
   sqlite3_prepare_v2 (self->db,
-                      "INSERT INTO threads(name,alias,account_id,type,visibility,encrypted) "
-                      "VALUES(?1,?2,?3,?4,?5,?6) "
+                      "INSERT INTO threads(name,alias,account_id,type,visibility,encrypted,avatar_id) "
+                      "VALUES(?1,?2,?3,?4,?5,?6,?7) "
                       "ON CONFLICT(name,account_id,type) "
-                      "DO UPDATE SET alias=?2, visibility=?5, encrypted=?6",
+                      "DO UPDATE SET alias=?2, visibility=?5, encrypted=?6, avatar_id=?7",
                       -1, &stmt, NULL);
   history_bind_text (stmt, 1, chatty_chat_get_chat_name (chat), "binding when adding thread");
   history_bind_text (stmt, 2, chatty_item_get_name (CHATTY_ITEM (chat)), "binding when adding thread");
@@ -805,6 +811,9 @@ insert_or_ignore_thread (ChattyHistory *self,
                     "binding when adding thread");
   history_bind_int (stmt, 6, chatty_chat_get_encryption (chat) == CHATTY_ENCRYPTION_ENABLED,
                     "binding when adding thread");
+  if (file_id)
+    history_bind_int (stmt, 7, file_id, "binding when adding thread");
+
   sqlite3_step (stmt);
   sqlite3_finalize (stmt);
 
