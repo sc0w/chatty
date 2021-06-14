@@ -51,6 +51,7 @@ struct _ChattyMaChat
   char                *encryption;
   char                *prev_batch;
   char                *last_batch;
+  ChattyFileInfo      *avatar_file;
   ChattyMaBuddy       *self_buddy;
   GListStore          *buddy_list;
   GListStore          *message_list;
@@ -1543,6 +1544,16 @@ chatty_ma_chat_get_protocols (ChattyItem *item)
   return CHATTY_PROTOCOL_MATRIX;
 }
 
+static ChattyFileInfo *
+chatty_ma_chat_get_avatar_file (ChattyItem *item)
+{
+  ChattyMaChat *self = (ChattyMaChat *)item;
+
+  g_assert (CHATTY_IS_MA_CHAT (self));
+
+  return self->avatar_file;
+}
+
 static void
 chatty_ma_chat_set_property (GObject      *object,
                              guint         prop_id,
@@ -1604,6 +1615,7 @@ chatty_ma_chat_class_init (ChattyMaChatClass *klass)
   item_class->get_state = chatty_ma_chat_get_state;
   item_class->set_state = chatty_ma_chat_set_state;
   item_class->get_protocols = chatty_ma_chat_get_protocols;
+  item_class->get_avatar_file = chatty_ma_chat_get_avatar_file;
 
   chat_class->is_im = chatty_ma_chat_is_im;
   chat_class->get_chat_name = chatty_ma_chat_get_chat_name;
