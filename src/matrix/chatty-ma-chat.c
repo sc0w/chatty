@@ -222,6 +222,35 @@ ma_chat_add_buddy (ChattyMaChat *self,
   return buddy;
 }
 
+static ChattyFileInfo *
+ma_chat_new_file (ChattyMaChat *self,
+                  JsonObject   *object,
+                  JsonObject   *content)
+{
+  ChattyFileInfo *file = NULL;
+  const char *url;
+
+  g_assert (CHATTY_IS_MA_CHAT (self));
+
+  url = matrix_utils_json_object_get_string (object, "url");
+
+  if (url && g_str_has_prefix (url, "mxc://")) {
+    file = g_new0 (ChattyFileInfo, 1);
+
+    url = url + strlen ("mxc://");
+    file->url = g_strconcat (matrix_api_get_homeserver (self->matrix_api),
+                             "/_matrix/media/r0/download/", url, NULL);
+    file->file_name = g_strdup (matrix_utils_json_object_get_string (object, "body"));
+    object = matrix_utils_json_object_get_object (content, "info");
+    file->mime_type = g_strdup (matrix_utils_json_object_get_string (object, "mimetype"));
+    file->height = matrix_utils_json_object_get_int (object, "h");
+    file->width = matrix_utils_json_object_get_int (object, "w");
+    file->size = matrix_utils_json_object_get_int (object, "size");
+  }
+
+  return file;
+}
+
 static void
 handle_m_room_member (ChattyMaChat *self,
                       JsonObject   *object,
@@ -377,7 +406,6 @@ chat_handle_m_media (ChattyMaChat  *self,
 {
   ChattyFileInfo *file = NULL;
   JsonObject *object;
-  const char *url;
 
   g_assert (CHATTY_IS_MA_CHAT (self));
   g_assert (CHATTY_IS_MESSAGE (message));
@@ -400,21 +428,7 @@ chat_handle_m_media (ChattyMaChat  *self,
       !g_str_equal (type, "m.audio"))
     return;
 
-  url = matrix_utils_json_object_get_string (object, "url");
-
-  if (url && g_str_has_prefix (url, "mxc://")) {
-    file = g_new0 (ChattyFileInfo, 1);
-
-    url = url + strlen ("mxc://");
-    file->url = g_strconcat (matrix_api_get_homeserver (self->matrix_api),
-                             "/_matrix/media/r0/download/", url, NULL);
-    file->file_name = g_strdup (matrix_utils_json_object_get_string (object, "body"));
-    object = matrix_utils_json_object_get_object (content, "info");
-    file->mime_type = g_strdup (matrix_utils_json_object_get_string (object, "mimetype"));
-    file->height = matrix_utils_json_object_get_int (object, "h");
-    file->width = matrix_utils_json_object_get_int (object, "w");
-    file->size = matrix_utils_json_object_get_int (object, "size");
-  }
+  file = ma_chat_new_file (self, object, content);
 
   if (encrypted && file) {
     g_autoptr(MatrixFileEncInfo) info = NULL;
