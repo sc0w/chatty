@@ -223,6 +223,17 @@ ma_chat_add_buddy (ChattyMaChat *self,
   return buddy;
 }
 
+static void
+chat_got_room_avatar_cb (GObject      *object,
+                         GAsyncResult *result,
+                         gpointer      user_data)
+{
+  g_autoptr(ChattyMaChat) self = user_data;
+
+  if (matrix_api_get_file_finish (self->matrix_api, result, NULL))
+    chatty_history_update_chat (self->history_db, CHATTY_CHAT (self));
+}
+
 static ChattyFileInfo *
 ma_chat_new_file (ChattyMaChat *self,
                   JsonObject   *object,
@@ -341,6 +352,24 @@ handle_m_room_encryption (ChattyMaChat *self,
 
   if (self->encryption)
     g_object_notify (G_OBJECT (self), "encrypt");
+}
+
+static void
+handle_m_room_avatar (ChattyMaChat *self,
+                      JsonObject   *root)
+{
+  JsonObject *content;
+
+  g_assert (CHATTY_IS_MA_CHAT (self));
+
+  g_clear_pointer (&self->avatar_file, chatty_file_info_free);
+  content = matrix_utils_json_object_get_object (root, "content");
+  self->avatar_file = ma_chat_new_file (self, content, content);
+
+  matrix_api_get_file_async (self->matrix_api, NULL, self->avatar_file,
+                             NULL, NULL,
+                             chat_got_room_avatar_cb,
+                             g_object_ref (self));
 }
 
 static void
@@ -916,6 +945,8 @@ get_room_state_cb (GObject      *obj,
       handle_m_room_name (self, object);
     else if (g_str_equal (type, "m.room.encryption"))
       handle_m_room_encryption (self, object);
+    else if (g_str_equal (type, "m.room.avatar"))
+      handle_m_room_avatar (self, object);
     /* TODO */
     /* else if (g_str_equal (type, "m.room.power_levels")) */
     /*   handle_m_room_power_levels (self, object); */
