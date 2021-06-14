@@ -11,11 +11,28 @@
 #include <stdio.h>
 #include <gio/gio.h>
 #include <gtk/gtk.h>
+#include <purple.h>
 
-#include "users/chatty-pp-account.h"
+#include "chatty-enums.h"
 
 #define MAX_GMT_ISO_SIZE 256
 #define SECONDS_PER_DAY    86400.0
+
+typedef struct _ChattyFileInfo ChattyFileInfo;
+
+struct _ChattyFileInfo {
+  char *file_name;
+  char *url;
+  char *path;
+  char *mime_type;
+  gpointer user_data;
+  gsize width;
+  gsize height;
+  gsize size;
+  /* For audio files */
+  gsize duration;
+  int status;
+};
 
 char *chatty_utils_jabber_id_strip (const char *name);
 char *chatty_utils_check_phonenumber (const char *phone_number,
@@ -34,5 +51,6 @@ PurpleBlistNode *chatty_utils_get_conv_blist_node (PurpleConversation *conv);
 GdkPixbuf           *chatty_utils_get_pixbuf_from_data  (const guchar *buf,
                                                          gsize         count);
 ChattyMsgDirection   chatty_utils_direction_from_flag   (PurpleMessageFlags flag);
+void                 chatty_file_info_free              (ChattyFileInfo     *file_info);
 
 #endif

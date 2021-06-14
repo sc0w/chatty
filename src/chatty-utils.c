@@ -464,3 +464,16 @@ chatty_utils_direction_from_flag (PurpleMessageFlags flag)
 
   g_return_val_if_reached (CHATTY_DIRECTION_UNKNOWN);
 }
+
+void
+chatty_file_info_free (ChattyFileInfo *file_info)
+{
+  if (!file_info)
+    return;
+
+  g_free (file_info->file_name);
+  g_free (file_info->url);
+  g_free (file_info->path);
+  g_free (file_info->mime_type);
+  g_free (file_info);
+}

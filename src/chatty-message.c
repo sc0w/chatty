@@ -431,16 +431,3 @@ chatty_message_emit_updated (ChattyMessage *self)
 
   g_signal_emit (self, signals[UPDATED], 0);
 }
-
-void
-chatty_file_info_free (ChattyFileInfo *file_info)
-{
-  if (!file_info)
-    return;
-
-  g_free (file_info->file_name);
-  g_free (file_info->url);
-  g_free (file_info->path);
-  g_free (file_info->mime_type);
-  g_free (file_info);
-}
