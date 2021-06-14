@@ -2306,7 +2306,7 @@ history_get_chats (ChattyHistory *self,
       file->path = g_strdup ((const char *)sqlite3_column_text (stmt, 5));
     }
 
-    chat = (gpointer)chatty_ma_chat_new (name, alias);
+    chat = (gpointer)chatty_ma_chat_new (name, alias, file);
     chatty_chat_set_encryption (CHATTY_CHAT (chat), encrypted);
     messages = get_messages_before_time (self, chat, NULL, thread_id, INT_MAX, 1);
     chatty_ma_chat_add_messages (CHATTY_MA_CHAT (chat), messages);

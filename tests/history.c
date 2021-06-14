@@ -634,7 +634,7 @@ add_chat_and_test (ChattyHistory   *history,
   if (room_id) {
     g_autoptr(ChattyMaChat) chat = NULL;
 
-    chat = chatty_ma_chat_new (room_id, room_name);
+    chat = chatty_ma_chat_new (room_id, room_name, NULL);
     g_assert (CHATTY_IS_MA_CHAT (chat));
     if (hidden)
       chatty_item_set_state (CHATTY_ITEM (chat), CHATTY_ITEM_HIDDEN);

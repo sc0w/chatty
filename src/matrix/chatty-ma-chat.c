@@ -1732,8 +1732,9 @@ chatty_ma_chat_init (ChattyMaChat *self)
 }
 
 ChattyMaChat *
-chatty_ma_chat_new (const char *room_id,
-                    const char *name)
+chatty_ma_chat_new (const char     *room_id,
+                    const char     *name,
+                    ChattyFileInfo *avatar)
 {
   ChattyMaChat *self;
 
@@ -1742,6 +1743,7 @@ chatty_ma_chat_new (const char *room_id,
   self = g_object_new (CHATTY_TYPE_MA_CHAT,
                        "room-id", room_id, NULL);
   self->room_name = g_strdup (name);
+  self->avatar_file = avatar;
 
   return self;
 }
