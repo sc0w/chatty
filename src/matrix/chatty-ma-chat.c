@@ -51,6 +51,7 @@ struct _ChattyMaChat
   char                *encryption;
   char                *prev_batch;
   char                *last_batch;
+  GdkPixbuf           *avatar;
   ChattyFileInfo      *avatar_file;
   ChattyMaBuddy       *self_buddy;
   GListStore          *buddy_list;
@@ -1585,6 +1586,38 @@ chatty_ma_chat_get_avatar_file (ChattyItem *item)
   return self->avatar_file;
 }
 
+static GdkPixbuf *
+chatty_ma_chat_get_avatar (ChattyItem *item)
+{
+  ChattyMaChat *self = (ChattyMaChat *)item;
+  g_autoptr(GFile) file = NULL;
+  g_autofree char *path = NULL;
+  g_autofree char *content = NULL;
+  g_autoptr(GError) error = NULL;
+  gsize length;
+
+  g_assert (CHATTY_IS_MA_CHAT (self));
+
+  if (self->avatar)
+    return self->avatar;
+
+  if (!self->avatar_file || !self->avatar_file->path)
+    return NULL;
+
+  path = g_build_filename (g_get_user_cache_dir (), "chatty",
+                           self->avatar_file->path, NULL);
+  file = g_file_new_for_path (path);
+
+  g_file_load_contents (file, NULL, &content, &length, NULL, &error);
+
+  if (error)
+    g_warning ("error getting avatar: %s", error->message);
+  else
+    self->avatar = chatty_utils_get_pixbuf_from_data ((guchar *)content, length);
+
+  return self->avatar;
+}
+
 static void
 chatty_ma_chat_set_property (GObject      *object,
                              guint         prop_id,
@@ -1647,6 +1680,7 @@ chatty_ma_chat_class_init (ChattyMaChatClass *klass)
   item_class->set_state = chatty_ma_chat_set_state;
   item_class->get_protocols = chatty_ma_chat_get_protocols;
   item_class->get_avatar_file = chatty_ma_chat_get_avatar_file;
+  item_class->get_avatar = chatty_ma_chat_get_avatar;
 
   chat_class->is_im = chatty_ma_chat_is_im;
   chat_class->get_chat_name = chatty_ma_chat_get_chat_name;
