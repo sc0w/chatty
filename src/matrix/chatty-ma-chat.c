@@ -53,6 +53,7 @@ struct _ChattyMaChat
   char                *last_batch;
   GdkPixbuf           *avatar;
   ChattyFileInfo      *avatar_file;
+  GCancellable        *avatar_cancellable;
   ChattyMaBuddy       *self_buddy;
   GListStore          *buddy_list;
   GListStore          *message_list;
@@ -86,6 +87,7 @@ struct _ChattyMaChat
   guint          keys_claimed : 1;
   guint          prev_batch_loading : 1;
   guint          history_is_loading : 1;
+  guint          avatar_is_loading : 1;
   guint          saving_room_to_db  : 1;
   guint          room_db_loaded : 1;
 
@@ -225,14 +227,41 @@ ma_chat_add_buddy (ChattyMaChat *self,
 }
 
 static void
+ma_chat_get_avatar_pixbuf_cb (GObject      *object,
+                              GAsyncResult *result,
+                              gpointer      user_data)
+{
+  g_autoptr(ChattyMaChat) self = user_data;
+  GdkPixbuf *pixbuf;
+  g_autoptr(GError) error = NULL;
+
+  g_assert (CHATTY_IS_MA_CHAT (self));
+
+  pixbuf = matrix_utils_get_pixbuf_finish (result, &error);
+
+  if (error && !g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
+    g_warning ("Error loading avatar file: %s", error->message);
+
+  if (!error) {
+    g_set_object (&self->avatar, pixbuf);
+    g_signal_emit_by_name (self, "avatar-changed");
+  }
+
+  self->avatar_is_loading = FALSE;
+}
+
+static void
 chat_got_room_avatar_cb (GObject      *object,
                          GAsyncResult *result,
                          gpointer      user_data)
 {
   g_autoptr(ChattyMaChat) self = user_data;
 
-  if (matrix_api_get_file_finish (self->matrix_api, result, NULL))
+  if (matrix_api_get_file_finish (self->matrix_api, result, NULL)) {
+    g_clear_object (&self->avatar);
+    g_signal_emit_by_name (self, "avatar-changed");
     chatty_history_update_chat (self->history_db, CHATTY_CHAT (self));
+  }
 }
 
 static ChattyFileInfo *
@@ -366,6 +395,10 @@ handle_m_room_avatar (ChattyMaChat *self,
   g_clear_pointer (&self->avatar_file, chatty_file_info_free);
   content = matrix_utils_json_object_get_object (root, "content");
   self->avatar_file = ma_chat_new_file (self, content, content);
+
+  g_cancellable_cancel (self->avatar_cancellable);
+  g_clear_object (&self->avatar_cancellable);
+  self->avatar_cancellable = g_cancellable_new ();
 
   matrix_api_get_file_async (self->matrix_api, NULL, self->avatar_file,
                              NULL, NULL,
@@ -1590,32 +1623,25 @@ static GdkPixbuf *
 chatty_ma_chat_get_avatar (ChattyItem *item)
 {
   ChattyMaChat *self = (ChattyMaChat *)item;
-  g_autoptr(GFile) file = NULL;
   g_autofree char *path = NULL;
-  g_autofree char *content = NULL;
-  g_autoptr(GError) error = NULL;
-  gsize length;
 
   g_assert (CHATTY_IS_MA_CHAT (self));
 
-  if (self->avatar)
+  /* If avatar is loading return the past avatar (which may be NULL) */
+  if (self->avatar_is_loading || self->avatar)
     return self->avatar;
 
   if (!self->avatar_file || !self->avatar_file->path)
     return NULL;
 
+  self->avatar_is_loading = TRUE;
   path = g_build_filename (g_get_user_cache_dir (), "chatty",
                            self->avatar_file->path, NULL);
-  file = g_file_new_for_path (path);
+  matrix_utils_get_pixbuf_async (path, self->avatar_cancellable,
+                                 ma_chat_get_avatar_pixbuf_cb,
+                                 g_object_ref (self));
 
-  g_file_load_contents (file, NULL, &content, &length, NULL, &error);
-
-  if (error)
-    g_warning ("error getting avatar: %s", error->message);
-  else
-    self->avatar = chatty_utils_get_pixbuf_from_data ((guchar *)content, length);
-
-  return self->avatar;
+  return NULL;
 }
 
 static void
@@ -1647,6 +1673,10 @@ chatty_ma_chat_finalize (GObject *object)
   ChattyMaChat *self = (ChattyMaChat *)object;
 
   g_clear_handle_id (&self->message_timeout_id, g_source_remove);
+
+  if (self->avatar_cancellable)
+    g_cancellable_cancel (self->avatar_cancellable);
+  g_clear_object (&self->avatar_cancellable);
 
   g_list_store_remove_all (self->message_list);
   g_clear_object (&self->message_list);
@@ -1729,6 +1759,7 @@ chatty_ma_chat_init (ChattyMaChat *self)
   self->buddy_list = g_list_store_new (CHATTY_TYPE_MA_BUDDY);
   self->message_queue = g_queue_new ();
   self->notification  = chatty_notification_new ();
+  self->avatar_cancellable = g_cancellable_new ();
 }
 
 ChattyMaChat *
