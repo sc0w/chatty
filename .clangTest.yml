@@ -93,6 +93,7 @@ requires:
     - libgladeui-2-13
     - libgcrypt20
     - libgcrypt20-dev
+    - libjson-glib-1.0-0
 
 
 variables:
