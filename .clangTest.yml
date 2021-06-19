@@ -90,6 +90,7 @@ requires:
 #    - libhandy-1-0
     - wget
     - dpkg
+    - libgladeui-2-13
 
 
 variables:
@@ -116,7 +117,11 @@ build_scripts:
 #  - mkdir ../clang
 #  - cp -dpR . ../clang
 #  - cd ../clang
+  - wget http://ftp.us.debian.org/debian/pool/main/libh/libhandy-1/libhandy-1-0_1.2.2-1_amd64.deb
+  - wget http://ftp.us.debian.org/debian/pool/main/libh/libhandy-1/gir1.2-handy-1_1.2.2-1_amd64.deb
   - wget http://ftp.us.debian.org/debian/pool/main/libh/libhandy-1/libhandy-1-dev_1.2.2-1_amd64.deb
+  - dpkg -i libhandy-1-0_1.2.2-1_amd64.deb
+  - dpkg -i gir1.2-handy-1_1.2.2-1_amd64.deb
   - dpkg -i libhandy-1-dev_1.2.2-1_amd64.deb
   - scan-build $CHECKERS --keep-cc -o html-report meson . _build
   - scan-build $CHECKERS --keep-cc -o html-report ninja -C _build
