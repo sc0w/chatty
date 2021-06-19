@@ -84,6 +84,8 @@ requires:
     - libedata-book1.2-dev
     - libedataserver1.2-dev
     - libpurple-dev
+    - libolm3
+    - libolm-dev
 
 
 variables:
