@@ -67,6 +67,24 @@ requires:
     - upower
     - wx3.0-i18n
     - zlib1g-dev
+    - appstream
+    - appstream-util
+    - gir1.2-camel-1.2
+    - gir1.2-ebackend-1.2
+    - gir1.2-ebook-1.2
+    - gir1.2-ebookcontacts-1.2
+    - gir1.2-edatabook-1.2
+    - gir1.2-edataserver-1.2
+    - help2man
+    - libappstream-glib8
+    - libcamel1.2-dev
+    - libebackend1.2-dev
+    - libebook-contacts1.2-dev
+    - libebook1.2-dev
+    - libedata-book1.2-dev
+    - libedataserver1.2-dev
+    - libpurple-dev
+
 
 variables:
 #  - CPPFLAGS="-Wall -Woverloaded-virtual -Wextra -Wshadow -Wformat-nonliteral -Werror=format-security -Wpointer-arith -Wcast-align -Wmissing-declarations -Wredundant-decls"
@@ -92,7 +110,6 @@ build_scripts:
 #  - mkdir ../clang
 #  - cp -dpR . ../clang
 #  - cd ../clang
-  - apt-get build-dep chatty -y
   - scan-build $CHECKERS --keep-cc -o html-report meson . _build
   - scan-build $CHECKERS --keep-cc -o html-report ninja -C _build
 # - tar -zcf phosh_clang_htmlreport.tar.gz phosh_clang_htmlreport
