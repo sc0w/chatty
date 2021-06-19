@@ -87,6 +87,7 @@ requires:
     - libolm3
     - libolm-dev
     - libphonenumber-dev
+    - libhandy-1-0
 
 
 variables:
