@@ -55,7 +55,7 @@ requires:
     - meson
     - libfeedback-dev
     - libgnome-desktop-3-dev
-    - libhandy-1-dev
+#    - libhandy-1-dev
     - libnm-dev
     - pandoc
     - phoc
@@ -116,8 +116,8 @@ build_scripts:
 #  - mkdir ../clang
 #  - cp -dpR . ../clang
 #  - cd ../clang
-  - wget http://ftp.us.debian.org/debian/pool/main/libh/libhandy-1/libhandy-1-0_1.2.2-1_amd64.deb
-  - dpkg -i libhandy-1-0_1.2.2-1_amd64.deb
+  - wget http://ftp.us.debian.org/debian/pool/main/libh/libhandy-1/libhandy-1-dev_1.2.2-1_amd64.deb
+  - dpkg -i libhandy-1-dev_1.2.2-1_amd64.deb
   - scan-build $CHECKERS --keep-cc -o html-report meson . _build
   - scan-build $CHECKERS --keep-cc -o html-report ninja -C _build
 # - tar -zcf phosh_clang_htmlreport.tar.gz phosh_clang_htmlreport
