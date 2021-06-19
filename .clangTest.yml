@@ -91,6 +91,8 @@ requires:
     - wget
     - dpkg
     - libgladeui-2-13
+    - libgcrypt20
+    - libgcrypt20-dev
 
 
 variables:
