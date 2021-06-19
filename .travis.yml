@@ -10,7 +10,7 @@ addons:
 
 env:
   - JOB=cppcheckTest DISTRO="debian:testing"
-  - JOB=clangTest DISTRO="debian:experimental"
+  - JOB=clangTest DISTRO="debian:testing"
 
 branches:
   except:
