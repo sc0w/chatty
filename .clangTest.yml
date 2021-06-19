@@ -86,6 +86,7 @@ requires:
     - libpurple-dev
     - libolm3
     - libolm-dev
+    - libphonenumber-dev
 
 
 variables:
