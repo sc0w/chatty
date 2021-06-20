@@ -148,6 +148,7 @@ eds_find_contact_index (ChattyEds  *self,
                         guint      *count)
 {
   const char *old_uid;
+
   guint n_items, i;
   gboolean match;
 
