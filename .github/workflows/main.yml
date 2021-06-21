@@ -16,7 +16,7 @@ on:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   # This workflow contains a single job called "build"
-  build:
+  build-and-deploy:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
 
@@ -56,6 +56,12 @@ jobs:
 #          file: ./docker-build --name "debian" --config .cppcheckTest.yml --install
 #          push: true
 #          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/simplewhale:latest
+
+      - name: Deploy
+        uses: JamesIves/github-pages-deploy-action@4.1.4
+        with:
+          branch: gh-pages
+          folder: html-report
 
       - name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}
