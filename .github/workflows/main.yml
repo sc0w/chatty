@@ -46,14 +46,15 @@ jobs:
           chmod +x docker-build gen-index
 
       - name: Build and push
-        run: ./docker-build --name "debian" --config .cppcheckTest.yml --install
-#        id: docker_build
-#        uses: docker/build-push-action@v2
-#        with:
-#          context: ./
+#        run: ./docker-build --name "debian" --config .cppcheckTest.yml --install
+        id: docker_build
+        uses: docker/build-push-action@v2
+        with:
+          context: ./
 #          file: ./docker-build --name "debian" --config .cppcheckTest.yml --install
-#          push: true
-#          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/simplewhale:latest
+          run: ./docker-build --name "debian" --config .cppcheckTest.yml --install
+          push: true
+          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/simplewhale:latest
 
       - name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}
