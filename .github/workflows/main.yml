@@ -47,6 +47,8 @@ jobs:
 
       - name: Build and push
         run: |
+          export TRAVIS_COMMIT=$GITHUB_SHA
+          export TRAVIS_BRANCH=$GITHUB_REF
           ./docker-build --name "debian" --config .cppcheckTest.yml --install
           ./docker-build --name "debian" --verbose --config .cppcheckTest.yml --build scripts
 #        id: docker_build
