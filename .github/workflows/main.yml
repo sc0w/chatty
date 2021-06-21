@@ -48,16 +48,9 @@ jobs:
       - name: Build and push
         run: |
           export TRAVIS_COMMIT=$GITHUB_SHA
-          export TRAVIS_BRANCH=$GITHUB_REF
+          export TRAVIS_BRANCH=$GITHUB_HEAD_REF
           ./docker-build --name "debian" --config .cppcheckTest.yml --install
           ./docker-build --name "debian" --verbose --config .cppcheckTest.yml --build scripts
-#        id: docker_build
-#        uses: docker/build-push-action@v2
-#        with:
-#          context: ./
-#          file: ./docker-build --name "debian" --config .cppcheckTest.yml --install
-#          push: true
-#          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/simplewhale:latest
 
       - name: Deploy
         uses: JamesIves/github-pages-deploy-action@4.1.4
