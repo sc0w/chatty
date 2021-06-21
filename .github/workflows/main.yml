@@ -36,6 +36,12 @@ jobs:
         id: buildx
         uses: docker/setup-buildx-action@v1
 
+      - name: install docker-build
+        run: |
+          curl -Ls -o docker-build https://github.com/cafe-desktop/cafe-dev-scripts/raw/master/travis/docker-build
+          curl -Ls -o gen-index https://github.com/cafe-desktop/cafe-dev-scripts/raw/master/travis/gen-index.sh
+          chmod +x docker-build gen-index
+
       - name: Build and push
         id: docker_build
         uses: docker/build-push-action@v2
