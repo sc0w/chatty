@@ -24,7 +24,7 @@ jobs:
     steps:
 
       - name: Install dependencies
-        run: pip install python3-github==1.43.7
+        run: apt-get install python3-github -y
     
       - name: Check Out Repo 
         uses: actions/checkout@v2
