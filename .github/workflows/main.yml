@@ -58,6 +58,7 @@ jobs:
         with:
           branch: gh-pages
           folder: html-report
+          force: true
 
       - name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}
