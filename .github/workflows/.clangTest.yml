@@ -121,6 +121,9 @@ build_scripts:
 #  - mkdir ../clang
 #  - cp -dpR . ../clang
 #  - cd ../clang
+  - mkdir html-report
+  - cppcheck --xml --output-file=cppcheck.xml --enable=warning,style,performance,portability,information,missingInclude .
+  - cppcheck-htmlreport --title=${REPO_NAME} --file=cppcheck.xml --report-dir=cppcheck-htmlreport
   - wget http://ftp.us.debian.org/debian/pool/main/libh/libhandy-1/libhandy-1-0_1.2.2-1_amd64.deb
   - wget http://ftp.us.debian.org/debian/pool/main/libh/libhandy-1/gir1.2-handy-1_1.2.2-1_amd64.deb
   - wget http://ftp.us.debian.org/debian/pool/main/libh/libhandy-1/libhandy-1-dev_1.2.2-1_amd64.deb
@@ -129,9 +132,6 @@ build_scripts:
   - dpkg -i libhandy-1-dev_1.2.2-1_amd64.deb
   - scan-build $CHECKERS --keep-cc -o html-report meson . _build
   - scan-build $CHECKERS --keep-cc -o html-report ninja -C _build
-  - cppcheck --xml --output-file=cppcheck.xml --enable=warning,style,performance,portability,information,missingInclude .
-  - cppcheck-htmlreport --title=${REPO_NAME} --file=cppcheck.xml --report-dir=cppcheck-htmlreport
-  - ls -la
   - ./gen-index -l 20
 # - tar -zcf phosh_clang_htmlreport.tar.gz phosh_clang_htmlreport
 # - curl -F file=@phosh_clang_htmlreport.tar.gz -F expires=6m -F no_index=true https://api.anonymousfiles.io/ && echo
