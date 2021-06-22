@@ -134,8 +134,8 @@ build_scripts:
 #  - cd ../rootdir
 
 after_scripts:
-#  - cppcheck --xml --output-file=cppcheck.xml --enable=warning,style,performance,portability,information,missingInclude .
-#  - cppcheck-htmlreport --title=${REPO_NAME} --file=cppcheck.xml --report-dir=cppcheck-htmlreport
+  - cppcheck --xml --output-file=cppcheck.xml --enable=warning,style,performance,portability,information,missingInclude .
+  - cppcheck-htmlreport --title=${REPO_NAME} --file=cppcheck.xml --report-dir=cppcheck-htmlreport
   - ./gen-index -l 20
 #  - make check
 #  - make distcheck
