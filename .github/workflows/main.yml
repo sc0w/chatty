@@ -45,14 +45,11 @@ jobs:
           curl -Ls -o gen-index https://github.com/cafe-desktop/cafe-dev-scripts/raw/master/travis/gen-index.sh
           chmod +x docker-build gen-index
 
-#          export TRAVIS_COMMIT_MESSAGE=${{ github.event.head_commit.message }}
       - name: Build and push
         run: |
           export TRAVIS_COMMIT=$GITHUB_SHA
           export TRAVIS_BRANCH=$GITHUB_REF
-          export TRAVIS_COMMIT_MESSAGE=${{ github.event.commits[0].message }}
-          echo ${{ github.event.head_commit.message }}
-          echo ${{ github.event.commits[0].message }}
+          export TRAVIS_COMMIT_MESSAGE='${{ github.event.head_commit.message }}'
           ./docker-build --name "debian" --config .clangTest.yml --install
           ./docker-build --name "debian" --verbose --config .clangTest.yml --build scripts
 
