@@ -129,17 +129,21 @@ build_scripts:
   - dpkg -i libhandy-1-dev_1.2.2-1_amd64.deb
   - scan-build $CHECKERS --keep-cc -o html-report meson . _build
   - scan-build $CHECKERS --keep-cc -o html-report ninja -C _build
-# - tar -zcf phosh_clang_htmlreport.tar.gz phosh_clang_htmlreport
-# - curl -F file=@phosh_clang_htmlreport.tar.gz -F expires=6m -F no_index=true https://api.anonymousfiles.io/ && echo
-#  - cd ../rootdir
-
-after_scripts:
-#  - cppcheck --xml --output-file=cppcheck.xml --enable=warning,style,performance,portability,information,missingInclude .
-#  - cppcheck-htmlreport --title=${REPO_NAME} --file=cppcheck.xml --report-dir=cppcheck-htmlreport
   - cppcheck --xml --output-file=cppcheck.xml --enable=warning,style,performance,portability,information,missingInclude .
   - cppcheck-htmlreport --title=${REPO_NAME} --file=cppcheck.xml --report-dir=cppcheck-htmlreport
   - ls -la
   - ./gen-index -l 20
+# - tar -zcf phosh_clang_htmlreport.tar.gz phosh_clang_htmlreport
+# - curl -F file=@phosh_clang_htmlreport.tar.gz -F expires=6m -F no_index=true https://api.anonymousfiles.io/ && echo
+#  - cd ../rootdir
+
+#after_scripts:
+#  - cppcheck --xml --output-file=cppcheck.xml --enable=warning,style,performance,portability,information,missingInclude .
+#  - cppcheck-htmlreport --title=${REPO_NAME} --file=cppcheck.xml --report-dir=cppcheck-htmlreport
+#  - cppcheck --xml --output-file=cppcheck.xml --enable=warning,style,performance,portability,information,missingInclude .
+#  - cppcheck-htmlreport --title=${REPO_NAME} --file=cppcheck.xml --report-dir=cppcheck-htmlreport
+#  - ls -la
+#  - ./gen-index -l 20
 #  - make check
 #  - make distcheck
 #  - make clean
