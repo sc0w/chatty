@@ -50,8 +50,6 @@ jobs:
 
       - name: Build and push
         run: |
-          ./docker-build --name "debian" --config .cppcheckTest.yml --install
-          ./docker-build --name "debian" --verbose --config .cppcheckTest.yml --build scripts
           ./docker-build --name "debian" --config .clangTest.yml --install
           ./docker-build --name "debian" --verbose --config .clangTest.yml --build scripts
 
