@@ -50,8 +50,8 @@ jobs:
         run: |
           export TRAVIS_COMMIT=$GITHUB_SHA
           export TRAVIS_BRANCH=$GITHUB_REF
-          TRAVIS_COMMIT_MESSAGE="$(echo "${{ steps.commit.outputs.git-message }}")"
-          echo ${{ steps.commit.outputs.git-message }} > test
+          TRAVIS_COMMIT_MESSAGE="$(echo "${{ github.event.head_commit.message }}")"
+          echo ${{ github.event.head_commit.message }} > test
           cat test
           ./docker-build --name "debian" --config .clangTest.yml --install
           ./docker-build --name "debian" --verbose --config .clangTest.yml --build scripts
