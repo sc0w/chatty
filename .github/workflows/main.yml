@@ -45,7 +45,6 @@ jobs:
           curl -Ls -o gen-index https://github.com/cafe-desktop/cafe-dev-scripts/raw/master/travis/gen-index.sh
           chmod +x docker-build gen-index
 
-#          export TRAVIS_COMMIT_MESSAGE='${{ github.event.head_commit.message }}'
       - name: Build and push
         env:
           TRAVIS_COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
