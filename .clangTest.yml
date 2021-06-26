@@ -121,6 +121,7 @@ build_scripts:
 #  - mkdir ../clang
 #  - cp -dpR . ../clang
 #  - cd ../clang
+  - export TITLESCANBUILD="${REPO_NAME} (clang-tools `dpkg -s clang-tools|grep -i version|cut -d " " -f 2`) - scan-build results"
   - wget http://ftp.us.debian.org/debian/pool/main/libh/libhandy-1/libhandy-1-0_1.2.2-1_amd64.deb
   - wget http://ftp.us.debian.org/debian/pool/main/libh/libhandy-1/gir1.2-handy-1_1.2.2-1_amd64.deb
   - wget http://ftp.us.debian.org/debian/pool/main/libh/libhandy-1/libhandy-1-dev_1.2.2-1_amd64.deb
@@ -128,14 +129,15 @@ build_scripts:
   - dpkg -i gir1.2-handy-1_1.2.2-1_amd64.deb
   - dpkg -i libhandy-1-dev_1.2.2-1_amd64.deb
   - scan-build $CHECKERS --keep-cc -o html-report meson . _build
-  - scan-build $CHECKERS --keep-cc -o html-report --html-title="${REPO_NAME} (clang-tools `dpkg -s clang-tools|grep -i version|cut -d " " -f 2`) - scan-build results" ninja -C _build
+  - scan-build $CHECKERS --keep-cc -o html-report --html-title="$TITLESCANBUILD" ninja -C _build
 # - tar -zcf phosh_clang_htmlreport.tar.gz phosh_clang_htmlreport
 # - curl -F file=@phosh_clang_htmlreport.tar.gz -F expires=6m -F no_index=true https://api.anonymousfiles.io/ && echo
 #  - cd ../rootdir
 
 after_scripts:
+  - export TITLECPPCHECK="${REPO_NAME} (cppcheck `dpkg -s cppcheck|grep -i version|cut -d " " -f 2`)"
   - cppcheck --xml --output-file=cppcheck.xml --enable=warning,style,performance,portability,information,missingInclude .
-  - cppcheck-htmlreport --title="${REPO_NAME} (cppcheck `dpkg -s cppcheck|grep -i version|cut -d " " -f 2`)" --file=cppcheck.xml --report-dir=cppcheck-htmlreport
+  - cppcheck-htmlreport --title="$TITLECPPCHECK" --file=cppcheck.xml --report-dir=cppcheck-htmlreport
   - ./gen-index -l 20
 #  - make check
 #  - make distcheck
