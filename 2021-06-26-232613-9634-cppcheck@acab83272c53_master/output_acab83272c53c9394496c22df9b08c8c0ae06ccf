@@ -1,0 +1,1501 @@
+Checking src/chatty-application.c ...
+src/users/chatty-pp-account.h:31:1: error: There is an unknown macro here somewhere. Configuration is required. If G_DECLARE_FINAL_TYPE is a macro then please configure it. [unknownMacro]
+G_DECLARE_FINAL_TYPE (ChattyPpAccount, chatty_pp_account, CHATTY, PP_ACCOUNT, ChattyAccount)
+^
+Checking src/chatty-application.c: HAVE_CONFIG_H...
+1/62 files checked 1% done
+Checking src/chatty-avatar.c ...
+src/matrix/matrix-enc.h:44:1: error: There is an unknown macro here somewhere. Configuration is required. If G_DECLARE_FINAL_TYPE is a macro then please configure it. [unknownMacro]
+G_DECLARE_FINAL_TYPE (MatrixEnc, matrix_enc, MATRIX, ENC, GObject)
+^
+Checking src/chatty-avatar.c: HAVE_CONFIG_H...
+2/62 files checked 1% done
+Checking src/chatty-chat-view.c ...
+src/chatty-chat-view.h:28:1: error: There is an unknown macro here somewhere. Configuration is required. If G_DECLARE_FINAL_TYPE is a macro then please configure it. [unknownMacro]
+G_DECLARE_FINAL_TYPE (ChattyChatView, chatty_chat_view, CHATTY, CHAT_VIEW, GtkBox)
+^
+3/62 files checked 4% done
+Checking src/chatty-chat.c ...
+Checking src/chatty-chat.c: HAVE_CONFIG_H...
+4/62 files checked 5% done
+Checking src/chatty-contact-provider.c ...
+src/chatty-contact-provider.c:150:15: style: The scope of the variable 'old_uid' can be reduced. [variableScope]
+  const char *old_uid;
+              ^
+Checking src/chatty-contact-provider.c: HAVE_CONFIG_H...
+5/62 files checked 7% done
+Checking src/chatty-fp-row.c ...
+6/62 files checked 8% done
+Checking src/chatty-history.c ...
+src/chatty-history.c:246:18: style: Condition 'value==CHATTY_MESSAGE_HTML' is always false [knownConditionTrueFalse]
+           value == CHATTY_MESSAGE_HTML)
+                 ^
+src/chatty-history.c:245:18: note: Assuming that condition 'value==2' is not redundant
+  else if (value == MESSAGE_TYPE_HTML_ESCAPED ||
+                 ^
+src/chatty-history.c:246:18: note: Condition 'value==CHATTY_MESSAGE_HTML' is always false
+           value == CHATTY_MESSAGE_HTML)
+                 ^
+src/chatty-history.c:1427:14: style: Variable 'status' is reassigned a value before the old one has been used. [redundantAssignment]
+      status = sqlite3_step (insert_stmt);
+             ^
+src/chatty-history.c:1400:14: note: status is assigned
+      status = sqlite3_step (insert_stmt);
+             ^
+src/chatty-history.c:1427:14: note: status is overwritten
+      status = sqlite3_step (insert_stmt);
+             ^
+src/chatty-history.c:1450:14: style: Variable 'status' is reassigned a value before the old one has been used. [redundantAssignment]
+      status = sqlite3_step (insert_stmt);
+             ^
+src/chatty-history.c:1427:14: note: status is assigned
+      status = sqlite3_step (insert_stmt);
+             ^
+src/chatty-history.c:1450:14: note: status is overwritten
+      status = sqlite3_step (insert_stmt);
+             ^
+src/chatty-history.c:2394:10: style: Variable 'status' is reassigned a value before the old one has been used. [redundantAssignment]
+  status = sqlite3_step (stmt);
+         ^
+src/chatty-history.c:2379:10: note: status is assigned
+  status = sqlite3_prepare_v2 (self->db,
+         ^
+src/chatty-history.c:2394:10: note: status is overwritten
+  status = sqlite3_step (stmt);
+         ^
+src/chatty-history.c:2504:10: style: Variable 'status' is reassigned a value before the old one has been used. [redundantAssignment]
+  status = sqlite3_finalize (stmt);
+         ^
+src/chatty-history.c:2488:10: note: status is assigned
+  status = sqlite3_prepare_v2 (self->db,
+         ^
+src/chatty-history.c:2504:10: note: status is overwritten
+  status = sqlite3_finalize (stmt);
+         ^
+src/chatty-history.c:2255:17: style: The scope of the variable 'encrypted' can be reduced. [variableScope]
+  int protocol, encrypted;
+                ^
+Checking src/chatty-history.c: HAVE_CONFIG_H...
+7/62 files checked 18% done
+Checking src/chatty-image-item.c ...
+8/62 files checked 19% done
+Checking src/chatty-list-row.c ...
+9/62 files checked 20% done
+Checking src/chatty-log.c ...
+10/62 files checked 20% done
+Checking src/chatty-manager.c ...
+src/xeps/xeps.h:19:1: error: There is an unknown macro here somewhere. Configuration is required. If G_DEFINE_AUTOPTR_CLEANUP_FUNC is a macro then please configure it. [unknownMacro]
+G_DEFINE_AUTOPTR_CLEANUP_FUNC (xmlnode, xmlnode_free)
+^
+Checking src/chatty-manager.c: HAVE_CONFIG_H...
+Checking src/chatty-manager.c: __GTK_H_INSIDE__...
+11/62 files checked 27% done
+Checking src/chatty-message-row.c ...
+12/62 files checked 28% done
+Checking src/chatty-message.c ...
+Checking src/chatty-message.c: HAVE_CONFIG_H...
+13/62 files checked 29% done
+Checking src/chatty-notification.c ...
+14/62 files checked 29% done
+Checking src/chatty-phone-utils.cpp ...
+Checking src/chatty-phone-utils.cpp: HAVE_CONFIG_H...
+15/62 files checked 30% done
+Checking src/chatty-pp-chat.c ...
+Checking src/chatty-pp-chat.c: HAVE_CONFIG_H...
+Checking src/chatty-pp-chat.c: __GTK_H_INSIDE__...
+16/62 files checked 34% done
+Checking src/chatty-purple-notify.c ...
+17/62 files checked 34% done
+Checking src/chatty-purple-request.c ...
+18/62 files checked 35% done
+Checking src/chatty-secret-store.c ...
+19/62 files checked 36% done
+Checking src/chatty-settings.c ...
+Checking src/chatty-settings.c: HAVE_CONFIG_H...
+20/62 files checked 37% done
+Checking src/chatty-text-item.c ...
+21/62 files checked 37% done
+Checking src/chatty-utils.c ...
+22/62 files checked 38% done
+Checking src/chatty-window.c ...
+Checking src/chatty-window.c: HAVE_CONFIG_H...
+Checking src/chatty-window.c: __GTK_H_INSIDE__...
+23/62 files checked 41% done
+Checking src/contrib/gtkcustomfilter.c ...
+Checking src/contrib/gtkcustomfilter.c: ENABLE_NLS...
+Checking src/contrib/gtkcustomfilter.c: __GTK_H_INSIDE__...
+24/62 files checked 41% done
+Checking src/contrib/gtkcustomsorter.c ...
+Checking src/contrib/gtkcustomsorter.c: ENABLE_NLS...
+Checking src/contrib/gtkcustomsorter.c: __GTK_H_INSIDE__...
+25/62 files checked 42% done
+Checking src/contrib/gtkfilter.c ...
+Checking src/contrib/gtkfilter.c: ENABLE_NLS...
+Checking src/contrib/gtkfilter.c: __GTK_H_INSIDE__...
+26/62 files checked 42% done
+Checking src/contrib/gtkfilterlistmodel.c ...
+src/contrib/gtkfilterlistmodel.c:293:15: style: The scope of the variable 'node' can be reduced. [variableScope]
+  FilterNode *node;
+              ^
+Checking src/contrib/gtkfilterlistmodel.c: ENABLE_NLS...
+Checking src/contrib/gtkfilterlistmodel.c: __GTK_H_INSIDE__...
+27/62 files checked 44% done
+Checking src/contrib/gtkflattenlistmodel.c ...
+src/contrib/gtkflattenlistmodel.c:294:16: style: The scope of the variable 'node' can be reduced. [variableScope]
+  FlattenNode *node;
+               ^
+Checking src/contrib/gtkflattenlistmodel.c: ENABLE_NLS...
+Checking src/contrib/gtkflattenlistmodel.c: __GTK_H_INSIDE__...
+28/62 files checked 46% done
+Checking src/contrib/gtkrbtree.c ...
+src/contrib/gtkrbtree.c:71:28: warning: Possible null pointer dereference: node [nullPointer]
+  return GPOINTER_TO_SIZE (node->parent_or_tree) & 1 ? TRUE : FALSE;
+                           ^
+src/contrib/gtkrbtree.c:586:10: note: Calling function 'parent', 1st argument '(GtkRbNode*)((node)?(((guchar*)(node))-sizeof(GtkRbNode)):NULL)' value is 0
+  return NODE_TO_POINTER (parent (NODE_FROM_POINTER (node)));
+         ^
+src/contrib/gtkrbtree.c:77:16: note: Calling function 'is_root', 1st argument 'node' value is 0
+  if (is_root (node))
+               ^
+src/contrib/gtkrbtree.c:71:28: note: Null pointer dereference
+  return GPOINTER_TO_SIZE (node->parent_or_tree) & 1 ? TRUE : FALSE;
+                           ^
+src/contrib/gtkrbtree.c:159:7: warning: Possible null pointer dereference: node [nullPointer]
+  if (node->dirty)
+      ^
+src/contrib/gtkrbtree.c:621:27: note: Calling function 'gtk_rb_node_mark_dirty', 1st argument '(GtkRbNode*)((node)?(((guchar*)(node))-sizeof(GtkRbNode)):NULL)' value is 0
+  gtk_rb_node_mark_dirty (NODE_FROM_POINTER (node), TRUE);
+                          ^
+src/contrib/gtkrbtree.c:159:7: note: Null pointer dereference
+  if (node->dirty)
+      ^
+src/contrib/gtkrbtree.c:172:8: warning: Possible null pointer dereference: node [nullPointer]
+  if (!node->dirty)
+       ^
+src/contrib/gtkrbtree.c:605:23: note: Assignment 'rbnode=(GtkRbNode*)((node)?(((guchar*)(node))-sizeof(GtkRbNode)):NULL)', assigned value is 0
+  GtkRbNode *rbnode = NODE_FROM_POINTER (node);
+                      ^
+src/contrib/gtkrbtree.c:607:28: note: Calling function 'gtk_rb_node_clean', 2nd argument 'rbnode' value is 0
+  gtk_rb_node_clean (tree, rbnode);
+                           ^
+src/contrib/gtkrbtree.c:172:8: note: Null pointer dereference
+  if (!node->dirty)
+       ^
+src/contrib/gtkrbtree.c:207:7: warning: Possible null pointer dereference: node [nullPointer]
+  if (node->left)
+      ^
+src/contrib/gtkrbtree.c:568:10: note: Calling function 'gtk_rb_node_get_previous', 1st argument '(GtkRbNode*)((node)?(((guchar*)(node))-sizeof(GtkRbNode)):NULL)' value is 0
+  return NODE_TO_POINTER (gtk_rb_node_get_previous (NODE_FROM_POINTER (node)));
+         ^
+src/contrib/gtkrbtree.c:207:7: note: Null pointer dereference
+  if (node->left)
+      ^
+src/contrib/gtkrbtree.c:226:7: warning: Possible null pointer dereference: node [nullPointer]
+  if (node->right)
+      ^
+src/contrib/gtkrbtree.c:574:10: note: Calling function 'gtk_rb_node_get_next', 1st argument '(GtkRbNode*)((node)?(((guchar*)(node))-sizeof(GtkRbNode)):NULL)' value is 0
+  return NODE_TO_POINTER (gtk_rb_node_get_next (NODE_FROM_POINTER (node)));
+         ^
+src/contrib/gtkrbtree.c:226:7: note: Null pointer dereference
+  if (node->right)
+      ^
+src/contrib/gtkrbtree.c:592:10: warning: Possible null pointer dereference: (GtkRbNode*)((node)?(((guchar*)(node))-sizeof(GtkRbNode)):NULL) [nullPointer]
+  return NODE_TO_POINTER (NODE_FROM_POINTER (node)->left);
+         ^
+src/contrib/gtkrbtree.c:598:10: warning: Possible null pointer dereference: (GtkRbNode*)((node)?(((guchar*)(node))-sizeof(GtkRbNode)):NULL) [nullPointer]
+  return NODE_TO_POINTER (NODE_FROM_POINTER (node)->right);
+         ^
+src/contrib/gtkrbtree.c:657:11: warning: Possible null pointer dereference: current [nullPointer]
+      if (current->left)
+          ^
+src/contrib/gtkrbtree.c:648:28: note: Assignment 'current=(GtkRbNode*)((node)?(((guchar*)(node))-sizeof(GtkRbNode)):NULL)', assigned value is 0
+      GtkRbNode *current = NODE_FROM_POINTER (node);
+                           ^
+src/contrib/gtkrbtree.c:657:11: note: Null pointer dereference
+      if (current->left)
+          ^
+src/contrib/gtkrbtree.c:693:7: warning: Possible null pointer dereference: current [nullPointer]
+  if (current->right)
+      ^
+src/contrib/gtkrbtree.c:684:13: note: Assignment 'current=(GtkRbNode*)((node)?(((guchar*)(node))-sizeof(GtkRbNode)):NULL)', assigned value is 0
+  current = NODE_FROM_POINTER (node);
+            ^
+src/contrib/gtkrbtree.c:693:7: note: Null pointer dereference
+  if (current->right)
+      ^
+src/contrib/gtkrbtree.c:723:7: warning: Possible null pointer dereference: y [nullPointer]
+  if (y->left && y->right)
+      ^
+src/contrib/gtkrbtree.c:716:15: note: Assignment 'real_node=(GtkRbNode*)((node)?(((guchar*)(node))-sizeof(GtkRbNode)):NULL)', assigned value is 0
+  real_node = NODE_FROM_POINTER (node);
+              ^
+src/contrib/gtkrbtree.c:722:7: note: Assignment 'y=real_node', assigned value is 0
+  y = real_node;
+      ^
+src/contrib/gtkrbtree.c:723:7: note: Null pointer dereference
+  if (y->left && y->right)
+      ^
+src/contrib/gtkrbtree.c:512:14: style: Local variable 'tree' shadows outer function [shadowFunction]
+  GtkRbTree *tree;
+             ^
+src/contrib/gtkrbtree.c:84:1: note: Shadowed declaration
+tree (GtkRbNode *node)
+^
+src/contrib/gtkrbtree.c:512:14: note: Shadow variable
+  GtkRbTree *tree;
+             ^
+Checking src/contrib/gtkrbtree.c: DUMP_MODIFICATION...
+29/62 files checked 47% done
+Checking src/contrib/gtkslicelistmodel.c ...
+Checking src/contrib/gtkslicelistmodel.c: ENABLE_NLS...
+Checking src/contrib/gtkslicelistmodel.c: __GTK_H_INSIDE__...
+30/62 files checked 48% done
+Checking src/contrib/gtksorter.c ...
+Checking src/contrib/gtksorter.c: ENABLE_NLS...
+Checking src/contrib/gtksorter.c: G_ENABLE_DEBUG...
+Checking src/contrib/gtksorter.c: __GTK_H_INSIDE__...
+31/62 files checked 49% done
+Checking src/contrib/gtksortlistmodel.c ...
+Checking src/contrib/gtksortlistmodel.c: ENABLE_NLS...
+Checking src/contrib/gtksortlistmodel.c: __GTK_H_INSIDE__...
+32/62 files checked 50% done
+Checking src/contrib/gtktypebuiltins.c ...
+Checking src/contrib/gtktypebuiltins.c: __GTK_H_INSIDE__...
+33/62 files checked 51% done
+Checking src/dialogs/chatty-info-dialog.c ...
+Checking src/dialogs/chatty-info-dialog.c: HAVE_CONFIG_H...
+34/62 files checked 52% done
+Checking src/dialogs/chatty-new-chat-dialog.c ...
+src/dialogs/chatty-new-chat-dialog.c:51:14: style: struct member '_ChattyNewChatDialog::back_button' is never used. [unusedStructMember]
+  GtkWidget *back_button;
+             ^
+src/dialogs/chatty-new-chat-dialog.c:53:14: style: struct member '_ChattyNewChatDialog::edit_contact_button' is never used. [unusedStructMember]
+  GtkWidget *edit_contact_button;
+             ^
+35/62 files checked 54% done
+Checking src/dialogs/chatty-new-muc-dialog.c ...
+36/62 files checked 54% done
+Checking src/dialogs/chatty-settings-dialog.c ...
+src/dialogs/chatty-settings-dialog.c:309:7: style: The if condition is the same as the previous if condition [duplicateCondition]
+  if (is_matrix)
+      ^
+src/dialogs/chatty-settings-dialog.c:288:7: note: First condition
+  if (is_matrix) {
+      ^
+src/dialogs/chatty-settings-dialog.c:309:7: note: Second condition
+  if (is_matrix)
+      ^
+src/dialogs/chatty-settings-dialog.c:65:19: style: struct member '_ChattySettingsDialog::avatar_button' is never used. [unusedStructMember]
+  GtkWidget      *avatar_button;
+                  ^
+src/dialogs/chatty-settings-dialog.c:74:19: style: struct member '_ChattySettingsDialog::xmpp_radio_button' is never used. [unusedStructMember]
+  GtkWidget      *xmpp_radio_button;
+                  ^
+src/dialogs/chatty-settings-dialog.c:79:19: style: struct member '_ChattySettingsDialog::new_account_settings_list' is never used. [unusedStructMember]
+  GtkWidget      *new_account_settings_list;
+                  ^
+src/dialogs/chatty-settings-dialog.c:83:19: style: struct member '_ChattySettingsDialog::fingerprint_list' is never used. [unusedStructMember]
+  GtkWidget      *fingerprint_list;
+                  ^
+src/dialogs/chatty-settings-dialog.c:102:19: style: struct member '_ChattySettingsDialog::matrix_cancel_button' is never used. [unusedStructMember]
+  GtkWidget      *matrix_cancel_button;
+                  ^
+Checking src/dialogs/chatty-settings-dialog.c: HAVE_CONFIG_H...
+37/62 files checked 57% done
+Checking src/main.c ...
+Checking src/main.c: HAVE_CONFIG_H...
+38/62 files checked 57% done
+Checking src/matrix/chatty-ma-account.c ...
+39/62 files checked 61% done
+Checking src/matrix/chatty-ma-buddy.c ...
+40/62 files checked 62% done
+Checking src/matrix/chatty-ma-chat.c ...
+Checking src/matrix/chatty-ma-chat.c: HAVE_CONFIG_H...
+41/62 files checked 67% done
+Checking src/matrix/matrix-api.c ...
+Checking src/matrix/matrix-api.c: HAVE_CONFIG_H...
+42/62 files checked 72% done
+Checking src/matrix/matrix-db.c ...
+Checking src/matrix/matrix-db.c: HAVE_CONFIG_H...
+43/62 files checked 76% done
+Checking src/matrix/matrix-enc.c ...
+Checking src/matrix/matrix-enc.c: HAVE_CONFIG_H...
+44/62 files checked 79% done
+Checking src/matrix/matrix-utils.c ...
+src/matrix/matrix-utils.c:69:1: error: There is an unknown macro here somewhere. Configuration is required. If G_DEFINE_QUARK is a macro then please configure it. [unknownMacro]
+G_DEFINE_QUARK (matrix-error-quark, matrix_error)
+^
+Checking src/matrix/matrix-utils.c: HAVE_CONFIG_H...
+Checking src/matrix/matrix-utils.c: HAVE_EXPLICIT_BZERO...
+Checking src/matrix/matrix-utils.c: __STDC_LIB_EXT1__...
+45/62 files checked 81% done
+Checking src/users/chatty-account.c ...
+Checking src/users/chatty-account.c: HAVE_CONFIG_H...
+46/62 files checked 83% done
+Checking src/users/chatty-contact.c ...
+Checking src/users/chatty-contact.c: HAVE_CONFIG_H...
+47/62 files checked 84% done
+Checking src/users/chatty-item.c ...
+Checking src/users/chatty-item.c: HAVE_CONFIG_H...
+48/62 files checked 85% done
+Checking src/users/chatty-pp-account.c ...
+Checking src/users/chatty-pp-account.c: HAVE_CONFIG_H...
+49/62 files checked 88% done
+Checking src/users/chatty-pp-buddy.c ...
+Checking src/users/chatty-pp-buddy.c: HAVE_CONFIG_H...
+50/62 files checked 89% done
+Checking src/xeps/chatty-xep-0184.c ...
+51/62 files checked 90% done
+Checking src/xeps/chatty-xep-0313.c ...
+52/62 files checked 92% done
+Checking src/xeps/chatty-xep-0352.c ...
+53/62 files checked 93% done
+Checking src/xeps/xeps.c ...
+54/62 files checked 93% done
+Checking tests/account.c ...
+tests/account.c:44:23: error: syntax error [syntaxError]
+  g_assert_cmpstr (str, ==, protocol_id);
+                      ^
+55/62 files checked 93% done
+Checking tests/history.c ...
+tests/history.c:116:26: error: syntax error [syntaxError]
+  g_assert_cmpint (status, ==, SQLITE_OK);
+                         ^
+56/62 files checked 97% done
+Checking tests/matrix-api.c ...
+tests/matrix-api.c:23:49: error: syntax error [syntaxError]
+  g_assert_cmpstr (matrix_api_get_username (api), ==, NULL);
+                                                ^
+57/62 files checked 97% done
+Checking tests/matrix-db.c ...
+tests/matrix-db.c:116:67: error: syntax error [syntaxError]
+  g_assert_cmpstr (g_object_get_data (G_OBJECT (task), "username"), ==,
+                                                                  ^
+58/62 files checked 98% done
+Checking tests/matrix-enc.c ...
+tests/matrix-enc.c:150:27: error: syntax error [syntaxError]
+    g_assert_cmpstr (value, ==, data.curve_key);
+                          ^
+Checking tests/matrix-enc.c: HAVE_CONFIG_H...
+Checking tests/matrix-enc.c: HAVE_OLM3...
+tests/matrix-enc.c:141:28: error: syntax error [syntaxError]
+    g_assert_cmpstr (pickle, ==, data.olm3_pickle);
+                           ^
+59/62 files checked 98% done
+Checking tests/matrix-utils.c ...
+tests/matrix-utils.c:67:35: error: syntax error [syntaxError]
+    g_assert_cmpstr (json_str->str, ==, expected_json);
+                                  ^
+60/62 files checked 99% done
+Checking tests/settings.c ...
+61/62 files checked 99% done
+Checking tests/utils.c ...
+tests/utils.c:97:30: error: syntax error [syntaxError]
+    g_assert_cmpstr (expected, ==, phone[i][2]);
+                             ^
+62/62 files checked 100% done
+src/contrib/gtkrbtree.c:71:28: error: Null pointer dereference: node [ctunullpointer]
+  return GPOINTER_TO_SIZE (node->parent_or_tree) & 1 ? TRUE : FALSE;
+                           ^
+src/contrib/gtkrbtree.c:586:10: note: Calling function parent, 1st argument is null
+  return NODE_TO_POINTER (parent (NODE_FROM_POINTER (node)));
+         ^
+src/contrib/gtkrbtree.c:77:7: note: Calling function is_root, 1st argument is null
+  if (is_root (node))
+      ^
+src/contrib/gtkrbtree.c:71:28: note: Dereferencing argument node that is null
+  return GPOINTER_TO_SIZE (node->parent_or_tree) & 1 ? TRUE : FALSE;
+                           ^
+src/contrib/gtkrbtree.c:159:7: error: Null pointer dereference: node [ctunullpointer]
+  if (node->dirty)
+      ^
+src/contrib/gtkrbtree.c:621:26: note: Calling function gtk_rb_node_mark_dirty, 1st argument is null
+  gtk_rb_node_mark_dirty (NODE_FROM_POINTER (node), TRUE);
+                         ^
+src/contrib/gtkrbtree.c:159:7: note: Dereferencing argument node that is null
+  if (node->dirty)
+      ^
+src/contrib/gtkrbtree.c:172:8: error: Null pointer dereference: node [ctunullpointer]
+  if (!node->dirty)
+       ^
+src/contrib/gtkrbtree.c:605:23: note: Assignment 'rbnode=(GtkRbNode*)((node)?(((guchar*)(node))-sizeof(GtkRbNode)):NULL)', assigned value is 0
+
+                      ^
+src/contrib/gtkrbtree.c:607:21: note: Calling function gtk_rb_node_clean, 2nd argument is null
+  gtk_rb_node_clean (tree, rbnode);
+                    ^
+src/contrib/gtkrbtree.c:172:8: note: Dereferencing argument node that is null
+  if (!node->dirty)
+       ^
+src/contrib/gtkrbtree.c:207:7: error: Null pointer dereference: node [ctunullpointer]
+  if (node->left)
+      ^
+src/contrib/gtkrbtree.c:568:10: note: Calling function gtk_rb_node_get_previous, 1st argument is null
+  return NODE_TO_POINTER (gtk_rb_node_get_previous (NODE_FROM_POINTER (node)));
+         ^
+src/contrib/gtkrbtree.c:207:7: note: Dereferencing argument node that is null
+  if (node->left)
+      ^
+src/contrib/gtkrbtree.c:226:7: error: Null pointer dereference: node [ctunullpointer]
+  if (node->right)
+      ^
+src/contrib/gtkrbtree.c:574:10: note: Calling function gtk_rb_node_get_next, 1st argument is null
+  return NODE_TO_POINTER (gtk_rb_node_get_next (NODE_FROM_POINTER (node)));
+         ^
+src/contrib/gtkrbtree.c:226:7: note: Dereferencing argument node that is null
+  if (node->right)
+      ^
+nofile:0:0: information: Cppcheck cannot find all the include files (use --check-config for details) [missingInclude]
+
+scan-build: Using '/usr/lib/llvm-11/bin/clang' for static analysis
+The Meson build system
+Version: 0.56.2
+Source dir: /rootdir
+Build dir: /rootdir/_build
+Build type: native build
+Project name: chatty
+Project version: 0.3.1
+Using 'CC' from environment with value: '/usr/share/clang/scan-build-11/bin/../libexec/ccc-analyzer'
+Using 'CFLAGS' from environment with value: '-Wall -Wextra -Wshadow -Wformat-nonliteral -Werror=format-security -Wpointer-arith -Wcast-align -Wmissing-declarations -Wredundant-decls -Wall -Wmissing-prototypes -Wbad-function-cast -Wcast-align -Wextra -Wformat-nonliteral -Wmissing-declarations -Wmissing-field-initializers -Wnested-externs -Wpointer-arith -Wredundant-decls -Wshadow -Wstrict-prototypes -Werror=format-security -Wunused-macros'
+C compiler for the host machine: /usr/share/clang/scan-build-11/bin/../libexec/ccc-analyzer (gcc 10.2.1 "gcc (Debian 10.2.1-6) 10.2.1 20210110")
+C linker for the host machine: /usr/share/clang/scan-build-11/bin/../libexec/ccc-analyzer ld.bfd 2.35.2
+Using 'CXX' from environment with value: '/usr/share/clang/scan-build-11/bin/../libexec/c++-analyzer'
+Using 'CXXFLAGS' from environment with value: '-Wall -Woverloaded-virtual -Wextra -Wshadow -Wformat-nonliteral -Werror=format-security -Wpointer-arith -Wcast-align -Wmissing-declarations -Wredundant-decls -Wall -Wcast-align -Wextra -Wformat-nonliteral -Wmissing-declarations -Wmissing-field-initializers -Wpointer-arith -Wredundant-decls -Wshadow -Werror=format-security -Wunused-macros'
+C++ compiler for the host machine: /usr/share/clang/scan-build-11/bin/../libexec/c++-analyzer (gcc 10.2.1 "g++ (Debian 10.2.1-6) 10.2.1 20210110")
+C++ linker for the host machine: /usr/share/clang/scan-build-11/bin/../libexec/c++-analyzer ld.bfd 2.35.2
+Using 'CC' from environment with value: '/usr/share/clang/scan-build-11/bin/../libexec/ccc-analyzer'
+Using 'CFLAGS' from environment with value: '-Wall -Wextra -Wshadow -Wformat-nonliteral -Werror=format-security -Wpointer-arith -Wcast-align -Wmissing-declarations -Wredundant-decls -Wall -Wmissing-prototypes -Wbad-function-cast -Wcast-align -Wextra -Wformat-nonliteral -Wmissing-declarations -Wmissing-field-initializers -Wnested-externs -Wpointer-arith -Wredundant-decls -Wshadow -Wstrict-prototypes -Werror=format-security -Wunused-macros'
+Using 'CXX' from environment with value: '/usr/share/clang/scan-build-11/bin/../libexec/c++-analyzer'
+Using 'CXXFLAGS' from environment with value: '-Wall -Woverloaded-virtual -Wextra -Wshadow -Wformat-nonliteral -Werror=format-security -Wpointer-arith -Wcast-align -Wmissing-declarations -Wredundant-decls -Wall -Wcast-align -Wextra -Wformat-nonliteral -Wmissing-declarations -Wmissing-field-initializers -Wpointer-arith -Wredundant-decls -Wshadow -Werror=format-security -Wunused-macros'
+Host machine cpu family: x86_64
+Host machine cpu: x86_64
+Checking for function "explicit_bzero" : YES 
+Library olm found: YES
+Checking for function "olm_pk_key_from_private" with dependency -lolm: YES 
+Configuring config.h using configuration
+Compiler for C supports arguments -Wcast-align: YES 
+Compiler for C supports arguments -Wdate-time: YES 
+Compiler for C supports arguments -Wdeclaration-after-statement: YES 
+Compiler for C supports arguments -Werror=format-security -Werror=-format-nonliteral: NO 
+Compiler for C supports arguments -Wendif-labels: YES 
+Compiler for C supports arguments -Werror=incompatible-pointer-types: YES 
+Compiler for C supports arguments -Werror=missing-declarations: YES 
+Compiler for C supports arguments -Werror=overflow: YES 
+Compiler for C supports arguments -Werror=return-type: YES 
+Compiler for C supports arguments -Werror=shift-count-overflow: YES 
+Compiler for C supports arguments -Werror=shift-overflow=1: YES 
+Compiler for C supports arguments -Werror=implicit-fallthrough=3: YES 
+Compiler for C supports arguments -Wfloat-equal: YES 
+Compiler for C supports arguments -Wformat-nonliteral: YES 
+Compiler for C supports arguments -Wformat-security: YES 
+Compiler for C supports arguments -Winit-self: YES 
+Compiler for C supports arguments -Wmaybe-uninitialized: YES 
+Compiler for C supports arguments -Wmissing-field-initializers: YES 
+Compiler for C supports arguments -Wmissing-include-dirs: YES 
+Compiler for C supports arguments -Wmissing-noreturn: YES 
+Compiler for C supports arguments -Wnested-externs: YES 
+Compiler for C supports arguments -Wno-missing-field-initializers: YES 
+Compiler for C supports arguments -Wno-sign-compare: YES 
+Compiler for C supports arguments -Wno-strict-aliasing: YES 
+Compiler for C supports arguments -Wno-unused-parameter: YES 
+Compiler for C supports arguments -Wold-style-definition: YES 
+Compiler for C supports arguments -Wpointer-arith: YES 
+Compiler for C supports arguments -Wredundant-decls: YES 
+Compiler for C supports arguments -Wshadow: YES 
+Compiler for C supports arguments -Wstrict-prototypes: YES 
+Compiler for C supports arguments -Wswitch-default: YES 
+Compiler for C supports arguments -Wswitch-enum: YES 
+Compiler for C supports arguments -Wtype-limits: YES 
+Compiler for C supports arguments -Wundef: YES 
+Compiler for C supports arguments -Wunused-function: YES 
+Compiler for C supports arguments -fstack-protector-strong: YES 
+Configuring run using configuration
+Found pkg-config: /usr/bin/pkg-config (0.29.2)
+Run-time dependency libebook-contacts-1.2 found: YES 3.38.3
+Run-time dependency libfeedback-0.0 found: YES 0.0.0
+Library m found: YES
+Program desktop-file-validate found: NO
+Program appstream-util found: YES (/usr/bin/appstream-util)
+Program glib-compile-schemas found: YES (/usr/bin/glib-compile-schemas)
+Program glib-compile-schemas found: YES (/usr/bin/glib-compile-schemas)
+Found git repository at /rootdir
+Library phonenumber found: YES
+Run-time dependency purple found: YES 2.14.1
+Library jabber found: YES
+Run-time dependency gio-2.0 found: YES 2.66.8
+Run-time dependency gtk+-3.0 found: YES 3.24.24
+Run-time dependency libsecret-1 found: YES 0.20.4
+Run-time dependency libhandy-1 found: YES 1.2.2
+Run-time dependency sqlite3 found: YES 3.34.1
+Dependency libebook-contacts-1.2 found: YES 3.38.3 (cached)
+Run-time dependency libebook-1.2 found: YES 3.38.3
+Run-time dependency gsettings-desktop-schemas found: YES 3.38.0
+Run-time dependency libgcrypt found: YES 1.8.8
+Run-time dependency libsoup-2.4 found: YES 2.72.0
+Run-time dependency json-glib-1.0 found: YES 1.6.2
+Found pkg-config: /usr/bin/pkg-config (0.29.2)
+Program glib-compile-resources found: YES (/usr/bin/glib-compile-resources)
+Program gtk-builder-tool found: YES (/usr/bin/gtk-builder-tool)
+Program build-aux/meson/postinstall.py found: YES (/rootdir/build-aux/meson/postinstall.py)
+Build targets in project: 21
+
+Found ninja-1.10.1 at /usr/bin/ninja
+scan-build: Analysis run complete.
+scan-build: Removing directory '/rootdir/html-report/2021-06-26-232445-30751-1' because it contains no reports.
+scan-build: No bugs found.
+scan-build: Using '/usr/lib/llvm-11/bin/clang' for static analysis
+ninja: Entering directory `_build'
+[1/82] Generating sm.puri.Chatty-daemon.desktop_data_merge with a custom command
+[2/82] Generating gsettings-compile-data with a custom command
+[3/82] Generating sm.puri.Chatty.metainfo.xml_data_merge with a custom command
+[4/82] Generating sm.puri.Chatty.desktop_data_merge with a custom command
+[5/82] Generating chatty-resources_h with a custom command
+xml-stripblanks preprocessing requested, but XMLLINT is not set, and xmllint is not in PATH
+[6/82] Generating chatty-resources_c with a custom command
+xml-stripblanks preprocessing requested, but XMLLINT is not set, and xmllint is not in PATH
+[7/82] Generating version.h with a custom command
+fatal: No names found, cannot describe anything.
+[8/82] Compiling C object src/libchatty.so.p/meson-generated_.._chatty-resources.c.o
+[9/82] Compiling C object src/libchatty.so.p/contrib_gtksorter.c.o
+[10/82] Compiling C object src/libchatty.so.p/contrib_gtksortlistmodel.c.o
+[11/82] Compiling C object src/libchatty.so.p/contrib_gtkflattenlistmodel.c.o
+[12/82] Compiling C object src/libchatty.so.p/contrib_gtktypebuiltins.c.o
+[13/82] Compiling C object src/libchatty.so.p/contrib_gtkfilter.c.o
+[14/82] Compiling C object src/libchatty.so.p/contrib_gtkcustomfilter.c.o
+[15/82] Compiling C object src/libchatty.so.p/contrib_gtkcustomsorter.c.o
+[16/82] Compiling C object src/libchatty.so.p/matrix_matrix-enc.c.o
+../src/matrix/matrix-enc.c:29: warning: macro "KEY_LABEL_SIZE" is not used [-Wunused-macros]
+   29 | #define KEY_LABEL_SIZE    6
+      | 
+../src/matrix/matrix-enc.c:30: warning: macro "STRING_ALLOCATION" is not used [-Wunused-macros]
+   30 | #define STRING_ALLOCATION 512
+      | 
+../src/matrix/matrix-enc.c:400:3: warning: Value stored to 'old_user' is never read [deadcode.DeadStores]
+  old_user = self->user_id;
+  ^          ~~~~~~~~~~~~~
+../src/matrix/matrix-enc.c:1073:5: warning: Potential leak of memory pointed to by 'plaintext' [unix.Malloc]
+    g_warning ("Error decrypting: %s", olm_inbound_group_session_last_error (session));
+    ^~~~~~~~~
+../src/matrix/matrix-enc.c:1121:3: warning: Potential leak of memory pointed to by 'encrypted' [unix.Malloc]
+  json_object_set_string_member (root, "session_id", session_id);
+  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+../src/matrix/matrix-enc.c:1122:3: warning: Potential leak of memory pointed to by 'session_id' [unix.Malloc]
+  json_object_set_string_member (root, "device_id", self->device_id);
+  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+../src/matrix/matrix-enc.c:1178:5: warning: Potential leak of memory pointed to by 'session_id' [unix.Malloc]
+    g_warning ("Error getting session key: %s", olm_outbound_group_session_last_error (session));
+    ^~~~~~~~~
+../src/matrix/matrix-enc.c:1178:5: warning: Potential leak of memory pointed to by 'session_key' [unix.Malloc]
+    g_warning ("Error getting session key: %s", olm_outbound_group_session_last_error (session));
+    ^~~~~~~~~
+6 warnings generated.
+[17/82] Compiling C object src/libchatty.so.p/contrib_gtkfilterlistmodel.c.o
+[18/82] Compiling C object src/libchatty.so.p/matrix_matrix-utils.c.o
+In file included from /usr/include/glib-2.0/glib/gtypes.h:32,
+                 from /usr/include/glib-2.0/glib/galloca.h:32,
+                 from /usr/include/glib-2.0/glib.h:30,
+                 from /usr/include/glib-2.0/glib/gi18n.h:21,
+                 from ../src/matrix/matrix-utils.c:20:
+../src/matrix/matrix-utils.c: In function 'load_from_stream_cb':
+/usr/lib/x86_64-linux-gnu/glib-2.0/include/glibconfig.h:98:37: warning: cast from function call of type 'gpointer' {aka 'void *'} to non-matching type 'long int' [-Wbad-function-cast]
+   98 | #define GPOINTER_TO_INT(p) ((gint)  (glong) (p))
+      |                                     ^
+../src/matrix/matrix-utils.c:428:13: note: in expansion of macro 'GPOINTER_TO_INT'
+  428 |   timeout = GPOINTER_TO_INT (g_task_get_task_data (task));
+      |             ^~~~~~~~~~~~~~~
+../src/matrix/matrix-utils.c: In function 'uri_file_read_cb':
+/usr/lib/x86_64-linux-gnu/glib-2.0/include/glibconfig.h:98:37: warning: cast from function call of type 'gpointer' {aka 'void *'} to non-matching type 'long int' [-Wbad-function-cast]
+   98 | #define GPOINTER_TO_INT(p) ((gint)  (glong) (p))
+      |                                     ^
+../src/matrix/matrix-utils.c:539:17: note: in expansion of macro 'GPOINTER_TO_INT'
+  539 |   has_timeout = GPOINTER_TO_INT (g_task_get_task_data (task));
+      |                 ^~~~~~~~~~~~~~~
+/usr/lib/x86_64-linux-gnu/glib-2.0/include/glibconfig.h:99:38: warning: cast from function call of type 'gpointer' {aka 'void *'} to non-matching type 'long unsigned int' [-Wbad-function-cast]
+   99 | #define GPOINTER_TO_UINT(p) ((guint) (gulong) (p))
+      |                                      ^
+../src/matrix/matrix-utils.c:557:15: note: in expansion of macro 'GPOINTER_TO_UINT'
+  557 |     timeout = GPOINTER_TO_UINT (g_object_get_data (G_OBJECT (task), "timeout"));
+      |               ^~~~~~~~~~~~~~~~
+/usr/lib/x86_64-linux-gnu/glib-2.0/include/glibconfig.h:99:38: warning: cast from function call of type 'gpointer' {aka 'void *'} to non-matching type 'long unsigned int' [-Wbad-function-cast]
+   99 | #define GPOINTER_TO_UINT(p) ((guint) (gulong) (p))
+      |                                      ^
+../src/matrix/matrix-utils.c:558:18: note: in expansion of macro 'GPOINTER_TO_UINT'
+  558 |     timeout_id = GPOINTER_TO_UINT (g_object_get_data (G_OBJECT (task), "timeout-id"));
+      |                  ^~~~~~~~~~~~~~~~
+../src/matrix/matrix-utils.c: In function 'avatar_file_read_cb':
+/usr/lib/x86_64-linux-gnu/glib-2.0/include/glibconfig.h:98:37: warning: cast from function call of type 'gpointer' {aka 'void *'} to non-matching type 'long int' [-Wbad-function-cast]
+   98 | #define GPOINTER_TO_INT(p) ((gint)  (glong) (p))
+      |                                     ^
+../src/matrix/matrix-utils.c:782:11: note: in expansion of macro 'GPOINTER_TO_INT'
+  782 |   width = GPOINTER_TO_INT (g_object_get_data (object, "width"));
+      |           ^~~~~~~~~~~~~~~
+../src/matrix/matrix-utils.c: At top level:
+../src/matrix/matrix-utils.c:18: warning: macro "__STDC_WANT_LIB_EXT1__" is not used [-Wunused-macros]
+   18 | #define __STDC_WANT_LIB_EXT1__ 1
+      | 
+[19/82] Compiling C object src/libchatty.so.p/contrib_gtkslicelistmodel.c.o
+[20/82] Compiling C object src/libchatty.so.p/matrix_matrix-api.c.o
+In file included from /usr/include/glib-2.0/glib/gtypes.h:32,
+                 from /usr/include/glib-2.0/glib/galloca.h:32,
+                 from /usr/include/glib-2.0/glib.h:30,
+                 from /usr/include/glib-2.0/gobject/gbinding.h:28,
+                 from /usr/include/glib-2.0/glib-object.h:22,
+                 from /usr/include/glib-2.0/gio/gioenums.h:28,
+                 from /usr/include/glib-2.0/gio/giotypes.h:28,
+                 from /usr/include/glib-2.0/gio/gio.h:26,
+                 from /usr/include/libsoup-2.4/libsoup/soup-types.h:9,
+                 from /usr/include/libsoup-2.4/libsoup/soup-address.h:11,
+                 from /usr/include/libsoup-2.4/libsoup/soup.h:15,
+                 from ../src/matrix/matrix-api.c:20:
+../src/matrix/matrix-api.c: In function 'api_send_message_cb':
+/usr/lib/x86_64-linux-gnu/glib-2.0/include/glibconfig.h:98:37: warning: cast from function call of type 'gpointer' {aka 'void *'} to non-matching type 'long int' [-Wbad-function-cast]
+   98 | #define GPOINTER_TO_INT(p) ((gint)  (glong) (p))
+      |                                     ^
+../src/matrix/matrix-api.c:218:17: note: in expansion of macro 'GPOINTER_TO_INT'
+  218 |   retry_after = GPOINTER_TO_INT (g_object_get_data (G_OBJECT (result), "retry-after"));
+      |                 ^~~~~~~~~~~~~~~
+../src/matrix/matrix-api.c: In function 'api_set_read_marker_cb':
+../src/matrix/matrix-api.c:405:39: warning: parameter 'object' set but not used [-Wunused-but-set-parameter]
+  405 | api_set_read_marker_cb (GObject      *object,
+      |                         ~~~~~~~~~~~~~~^~~~~~
+../src/matrix/matrix-api.c:397:3: warning: Value stored to 'object' is never read [deadcode.DeadStores]
+  object = g_task_propagate_pointer (G_TASK (result), &error);
+  ^        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+../src/matrix/matrix-api.c:412:3: warning: Value stored to 'object' is never read [deadcode.DeadStores]
+  object = g_task_propagate_pointer (G_TASK (result), &error);
+  ^        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+../src/matrix/matrix-api.c:435:3: warning: Value stored to 'object' is never read [deadcode.DeadStores]
+  object = g_task_propagate_pointer (G_TASK (result), &error);
+  ^        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+../src/matrix/matrix-api.c:1031:5: warning: This statement is never executed [alpha.deadcode.UnreachableCode]
+    return;
+    ^~~~~~
+../src/matrix/matrix-api.c:2001:3: warning: Value stored to 'object' is never read [deadcode.DeadStores]
+  object = g_task_propagate_pointer (G_TASK (result), &error);
+  ^        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+5 warnings generated.
+[21/82] Compiling C object src/libchatty.so.p/contrib_gtkrbtree.c.o
+../src/contrib/gtkrbtree.c:71:10: warning: Dereference of null pointer [core.NullDereference]
+  return GPOINTER_TO_SIZE (node->parent_or_tree) & 1 ? TRUE : FALSE;
+         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/usr/include/glib-2.0/glib/gmacros.h:826:38: note: expanded from macro 'GPOINTER_TO_SIZE'
+#define GPOINTER_TO_SIZE(p)     ((gsize) (p))
+                                         ^~~
+../src/contrib/gtkrbtree.c:80:5: warning: Returned pointer value points outside the original object (potential buffer overflow) [alpha.security.ReturnPtrRange]
+    return node->parent;
+    ^~~~~~~~~~~~~~~~~~~
+../src/contrib/gtkrbtree.c:159:7: warning: Access to field 'dirty' results in a dereference of a null pointer (loaded from variable 'node') [core.NullDereference]
+  if (node->dirty)
+      ^~~~~~~~~~~
+../src/contrib/gtkrbtree.c:207:7: warning: Access to field 'left' results in a dereference of a null pointer (loaded from variable 'node') [core.NullDereference]
+  if (node->left)
+      ^~~~~~~~~~
+../src/contrib/gtkrbtree.c:226:7: warning: Access to field 'right' results in a dereference of a null pointer (loaded from variable 'node') [core.NullDereference]
+  if (node->right)
+      ^~~~~~~~~~~
+../src/contrib/gtkrbtree.c:446:18: warning: Access to field 'left' results in a dereference of a null pointer (loaded from variable 'w') [core.NullDereference]
+          if (is_black (w->left) && is_black (w->right))
+                        ^~~~~~~
+../src/contrib/gtkrbtree.c:568:53: warning: Casting a non-structure type to a structure type and accessing a field can lead to memory access errors or data corruption [alpha.core.CastToStruct]
+  return NODE_TO_POINTER (gtk_rb_node_get_previous (NODE_FROM_POINTER (node)));
+         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~
+../src/contrib/gtkrbtree.c:64:33: note: expanded from macro 'NODE_FROM_POINTER'
+#define NODE_FROM_POINTER(ptr) ((GtkRbNode *) ((ptr) ? (((guchar *) (ptr)) - sizeof (GtkRbNode)) : NULL))
+                                ^
+../src/contrib/gtkrbtree.c:65:45: note: expanded from macro 'NODE_TO_POINTER'
+#define NODE_TO_POINTER(node) ((gpointer) ((node) ? (((guchar *) (node)) + sizeof (GtkRbNode)) : NULL))
+                                            ^~~~
+../src/contrib/gtkrbtree.c:568:53: warning: Casting a non-structure type to a structure type and accessing a field can lead to memory access errors or data corruption [alpha.core.CastToStruct]
+  return NODE_TO_POINTER (gtk_rb_node_get_previous (NODE_FROM_POINTER (node)));
+         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~
+../src/contrib/gtkrbtree.c:64:33: note: expanded from macro 'NODE_FROM_POINTER'
+#define NODE_FROM_POINTER(ptr) ((GtkRbNode *) ((ptr) ? (((guchar *) (ptr)) - sizeof (GtkRbNode)) : NULL))
+                                ^
+../src/contrib/gtkrbtree.c:65:67: note: expanded from macro 'NODE_TO_POINTER'
+#define NODE_TO_POINTER(node) ((gpointer) ((node) ? (((guchar *) (node)) + sizeof (GtkRbNode)) : NULL))
+                                                                  ^~~~
+../src/contrib/gtkrbtree.c:574:49: warning: Casting a non-structure type to a structure type and accessing a field can lead to memory access errors or data corruption [alpha.core.CastToStruct]
+  return NODE_TO_POINTER (gtk_rb_node_get_next (NODE_FROM_POINTER (node)));
+         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~
+../src/contrib/gtkrbtree.c:64:33: note: expanded from macro 'NODE_FROM_POINTER'
+#define NODE_FROM_POINTER(ptr) ((GtkRbNode *) ((ptr) ? (((guchar *) (ptr)) - sizeof (GtkRbNode)) : NULL))
+                                ^
+../src/contrib/gtkrbtree.c:65:45: note: expanded from macro 'NODE_TO_POINTER'
+#define NODE_TO_POINTER(node) ((gpointer) ((node) ? (((guchar *) (node)) + sizeof (GtkRbNode)) : NULL))
+                                            ^~~~
+../src/contrib/gtkrbtree.c:574:49: warning: Casting a non-structure type to a structure type and accessing a field can lead to memory access errors or data corruption [alpha.core.CastToStruct]
+  return NODE_TO_POINTER (gtk_rb_node_get_next (NODE_FROM_POINTER (node)));
+         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~
+../src/contrib/gtkrbtree.c:64:33: note: expanded from macro 'NODE_FROM_POINTER'
+#define NODE_FROM_POINTER(ptr) ((GtkRbNode *) ((ptr) ? (((guchar *) (ptr)) - sizeof (GtkRbNode)) : NULL))
+                                ^
+../src/contrib/gtkrbtree.c:65:67: note: expanded from macro 'NODE_TO_POINTER'
+#define NODE_TO_POINTER(node) ((gpointer) ((node) ? (((guchar *) (node)) + sizeof (GtkRbNode)) : NULL))
+                                                                  ^~~~
+../src/contrib/gtkrbtree.c:586:35: warning: Casting a non-structure type to a structure type and accessing a field can lead to memory access errors or data corruption [alpha.core.CastToStruct]
+  return NODE_TO_POINTER (parent (NODE_FROM_POINTER (node)));
+         ~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~
+../src/contrib/gtkrbtree.c:64:33: note: expanded from macro 'NODE_FROM_POINTER'
+#define NODE_FROM_POINTER(ptr) ((GtkRbNode *) ((ptr) ? (((guchar *) (ptr)) - sizeof (GtkRbNode)) : NULL))
+                                ^
+../src/contrib/gtkrbtree.c:65:45: note: expanded from macro 'NODE_TO_POINTER'
+#define NODE_TO_POINTER(node) ((gpointer) ((node) ? (((guchar *) (node)) + sizeof (GtkRbNode)) : NULL))
+                                            ^~~~
+../src/contrib/gtkrbtree.c:586:35: warning: Casting a non-structure type to a structure type and accessing a field can lead to memory access errors or data corruption [alpha.core.CastToStruct]
+  return NODE_TO_POINTER (parent (NODE_FROM_POINTER (node)));
+         ~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~
+../src/contrib/gtkrbtree.c:64:33: note: expanded from macro 'NODE_FROM_POINTER'
+#define NODE_FROM_POINTER(ptr) ((GtkRbNode *) ((ptr) ? (((guchar *) (ptr)) - sizeof (GtkRbNode)) : NULL))
+                                ^
+../src/contrib/gtkrbtree.c:65:67: note: expanded from macro 'NODE_TO_POINTER'
+#define NODE_TO_POINTER(node) ((gpointer) ((node) ? (((guchar *) (node)) + sizeof (GtkRbNode)) : NULL))
+                                                                  ^~~~
+../src/contrib/gtkrbtree.c:592:10: warning: Access to field 'left' results in a dereference of a null pointer [core.NullDereference]
+  return NODE_TO_POINTER (NODE_FROM_POINTER (node)->left);
+         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+../src/contrib/gtkrbtree.c:65:44: note: expanded from macro 'NODE_TO_POINTER'
+#define NODE_TO_POINTER(node) ((gpointer) ((node) ? (((guchar *) (node)) + sizeof (GtkRbNode)) : NULL))
+                                           ^~~~~~
+../src/contrib/gtkrbtree.c:592:27: warning: Casting a non-structure type to a structure type and accessing a field can lead to memory access errors or data corruption [alpha.core.CastToStruct]
+  return NODE_TO_POINTER (NODE_FROM_POINTER (node)->left);
+         ~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+../src/contrib/gtkrbtree.c:64:33: note: expanded from macro 'NODE_FROM_POINTER'
+#define NODE_FROM_POINTER(ptr) ((GtkRbNode *) ((ptr) ? (((guchar *) (ptr)) - sizeof (GtkRbNode)) : NULL))
+                                ^
+../src/contrib/gtkrbtree.c:65:45: note: expanded from macro 'NODE_TO_POINTER'
+#define NODE_TO_POINTER(node) ((gpointer) ((node) ? (((guchar *) (node)) + sizeof (GtkRbNode)) : NULL))
+                                            ^~~~
+../src/contrib/gtkrbtree.c:592:27: warning: Casting a non-structure type to a structure type and accessing a field can lead to memory access errors or data corruption [alpha.core.CastToStruct]
+  return NODE_TO_POINTER (NODE_FROM_POINTER (node)->left);
+         ~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+../src/contrib/gtkrbtree.c:64:33: note: expanded from macro 'NODE_FROM_POINTER'
+#define NODE_FROM_POINTER(ptr) ((GtkRbNode *) ((ptr) ? (((guchar *) (ptr)) - sizeof (GtkRbNode)) : NULL))
+                                ^
+../src/contrib/gtkrbtree.c:65:67: note: expanded from macro 'NODE_TO_POINTER'
+#define NODE_TO_POINTER(node) ((gpointer) ((node) ? (((guchar *) (node)) + sizeof (GtkRbNode)) : NULL))
+                                                                  ^~~~
+../src/contrib/gtkrbtree.c:598:10: warning: Access to field 'right' results in a dereference of a null pointer [core.NullDereference]
+  return NODE_TO_POINTER (NODE_FROM_POINTER (node)->right);
+         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+../src/contrib/gtkrbtree.c:65:44: note: expanded from macro 'NODE_TO_POINTER'
+#define NODE_TO_POINTER(node) ((gpointer) ((node) ? (((guchar *) (node)) + sizeof (GtkRbNode)) : NULL))
+                                           ^~~~~~
+../src/contrib/gtkrbtree.c:598:27: warning: Casting a non-structure type to a structure type and accessing a field can lead to memory access errors or data corruption [alpha.core.CastToStruct]
+  return NODE_TO_POINTER (NODE_FROM_POINTER (node)->right);
+         ~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+../src/contrib/gtkrbtree.c:64:33: note: expanded from macro 'NODE_FROM_POINTER'
+#define NODE_FROM_POINTER(ptr) ((GtkRbNode *) ((ptr) ? (((guchar *) (ptr)) - sizeof (GtkRbNode)) : NULL))
+                                ^
+../src/contrib/gtkrbtree.c:65:45: note: expanded from macro 'NODE_TO_POINTER'
+#define NODE_TO_POINTER(node) ((gpointer) ((node) ? (((guchar *) (node)) + sizeof (GtkRbNode)) : NULL))
+                                            ^~~~
+../src/contrib/gtkrbtree.c:598:27: warning: Casting a non-structure type to a structure type and accessing a field can lead to memory access errors or data corruption [alpha.core.CastToStruct]
+  return NODE_TO_POINTER (NODE_FROM_POINTER (node)->right);
+         ~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+../src/contrib/gtkrbtree.c:64:33: note: expanded from macro 'NODE_FROM_POINTER'
+#define NODE_FROM_POINTER(ptr) ((GtkRbNode *) ((ptr) ? (((guchar *) (ptr)) - sizeof (GtkRbNode)) : NULL))
+                                ^
+../src/contrib/gtkrbtree.c:65:67: note: expanded from macro 'NODE_TO_POINTER'
+#define NODE_TO_POINTER(node) ((gpointer) ((node) ? (((guchar *) (node)) + sizeof (GtkRbNode)) : NULL))
+                                                                  ^~~~
+../src/contrib/gtkrbtree.c:605:23: warning: Casting a non-structure type to a structure type and accessing a field can lead to memory access errors or data corruption [alpha.core.CastToStruct]
+  GtkRbNode *rbnode = NODE_FROM_POINTER (node);
+                      ^~~~~~~~~~~~~~~~~~~~~~~~
+../src/contrib/gtkrbtree.c:64:33: note: expanded from macro 'NODE_FROM_POINTER'
+#define NODE_FROM_POINTER(ptr) ((GtkRbNode *) ((ptr) ? (((guchar *) (ptr)) - sizeof (GtkRbNode)) : NULL))
+                                ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+../src/contrib/gtkrbtree.c:615:16: warning: Casting a non-structure type to a structure type and accessing a field can lead to memory access errors or data corruption [alpha.core.CastToStruct]
+  return tree (NODE_FROM_POINTER (node));
+               ^~~~~~~~~~~~~~~~~~~~~~~~
+../src/contrib/gtkrbtree.c:64:33: note: expanded from macro 'NODE_FROM_POINTER'
+#define NODE_FROM_POINTER(ptr) ((GtkRbNode *) ((ptr) ? (((guchar *) (ptr)) - sizeof (GtkRbNode)) : NULL))
+                                ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+../src/contrib/gtkrbtree.c:621:27: warning: Casting a non-structure type to a structure type and accessing a field can lead to memory access errors or data corruption [alpha.core.CastToStruct]
+  gtk_rb_node_mark_dirty (NODE_FROM_POINTER (node), TRUE);
+                          ^~~~~~~~~~~~~~~~~~~~~~~~
+../src/contrib/gtkrbtree.c:64:33: note: expanded from macro 'NODE_FROM_POINTER'
+#define NODE_FROM_POINTER(ptr) ((GtkRbNode *) ((ptr) ? (((guchar *) (ptr)) - sizeof (GtkRbNode)) : NULL))
+                                ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+../src/contrib/gtkrbtree.c:648:28: warning: Casting a non-structure type to a structure type and accessing a field can lead to memory access errors or data corruption [alpha.core.CastToStruct]
+      GtkRbNode *current = NODE_FROM_POINTER (node);
+                           ^~~~~~~~~~~~~~~~~~~~~~~~
+../src/contrib/gtkrbtree.c:64:33: note: expanded from macro 'NODE_FROM_POINTER'
+#define NODE_FROM_POINTER(ptr) ((GtkRbNode *) ((ptr) ? (((guchar *) (ptr)) - sizeof (GtkRbNode)) : NULL))
+                                ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+../src/contrib/gtkrbtree.c:684:13: warning: Casting a non-structure type to a structure type and accessing a field can lead to memory access errors or data corruption [alpha.core.CastToStruct]
+  current = NODE_FROM_POINTER (node);
+            ^~~~~~~~~~~~~~~~~~~~~~~~
+../src/contrib/gtkrbtree.c:64:33: note: expanded from macro 'NODE_FROM_POINTER'
+#define NODE_FROM_POINTER(ptr) ((GtkRbNode *) ((ptr) ? (((guchar *) (ptr)) - sizeof (GtkRbNode)) : NULL))
+                                ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+../src/contrib/gtkrbtree.c:716:15: warning: Casting a non-structure type to a structure type and accessing a field can lead to memory access errors or data corruption [alpha.core.CastToStruct]
+  real_node = NODE_FROM_POINTER (node);
+              ^~~~~~~~~~~~~~~~~~~~~~~~
+../src/contrib/gtkrbtree.c:64:33: note: expanded from macro 'NODE_FROM_POINTER'
+#define NODE_FROM_POINTER(ptr) ((GtkRbNode *) ((ptr) ? (((guchar *) (ptr)) - sizeof (GtkRbNode)) : NULL))
+                                ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+24 warnings generated.
+[22/82] Compiling C object src/libchatty.so.p/matrix_chatty-ma-buddy.c.o
+[23/82] Compiling C object src/libchatty.so.p/matrix_matrix-db.c.o
+In file included from /usr/include/glib-2.0/glib/gtypes.h:32,
+                 from /usr/include/glib-2.0/glib/galloca.h:32,
+                 from /usr/include/glib-2.0/glib.h:30,
+                 from ../src/matrix/matrix-db.c:20:
+../src/matrix/matrix-db.c: In function 'matrix_db_save_account':
+/usr/lib/x86_64-linux-gnu/glib-2.0/include/glibconfig.h:98:37: warning: cast from function call of type 'gpointer' {aka 'void *'} to non-matching type 'long int' [-Wbad-function-cast]
+   98 | #define GPOINTER_TO_INT(p) ((gint)  (glong) (p))
+      |                                     ^
+../src/matrix/matrix-db.c:265:13: note: in expansion of macro 'GPOINTER_TO_INT'
+  265 |   enabled = GPOINTER_TO_INT (g_object_get_data (G_OBJECT (task), "enabled"));
+      |             ^~~~~~~~~~~~~~~
+../src/matrix/matrix-db.c: In function 'matrix_db_add_session':
+/usr/lib/x86_64-linux-gnu/glib-2.0/include/glibconfig.h:98:37: warning: cast from function call of type 'gpointer' {aka 'void *'} to non-matching type 'long int' [-Wbad-function-cast]
+   98 | #define GPOINTER_TO_INT(p) ((gint)  (glong) (p))
+      |                                     ^
+../src/matrix/matrix-db.c:562:10: note: in expansion of macro 'GPOINTER_TO_INT'
+  562 |   type = GPOINTER_TO_INT (g_object_get_data (G_OBJECT (task), "type"));
+      |          ^~~~~~~~~~~~~~~
+../src/matrix/matrix-db.c: In function 'matrix_db_save_file_url':
+/usr/lib/x86_64-linux-gnu/glib-2.0/include/glibconfig.h:98:37: warning: cast from function call of type 'gpointer' {aka 'void *'} to non-matching type 'long int' [-Wbad-function-cast]
+   98 | #define GPOINTER_TO_INT(p) ((gint)  (glong) (p))
+      |                                     ^
+../src/matrix/matrix-db.c:609:10: note: in expansion of macro 'GPOINTER_TO_INT'
+  609 |   type = GPOINTER_TO_INT (g_object_get_data (G_OBJECT (task), "type"));
+      |          ^~~~~~~~~~~~~~~
+/usr/lib/x86_64-linux-gnu/glib-2.0/include/glibconfig.h:98:37: warning: cast from function call of type 'gpointer' {aka 'void *'} to non-matching type 'long int' [-Wbad-function-cast]
+   98 | #define GPOINTER_TO_INT(p) ((gint)  (glong) (p))
+      |                                     ^
+../src/matrix/matrix-db.c:610:13: note: in expansion of macro 'GPOINTER_TO_INT'
+  610 |   version = GPOINTER_TO_INT (g_object_get_data (G_OBJECT (task), "version"));
+      |             ^~~~~~~~~~~~~~~
+/usr/lib/x86_64-linux-gnu/glib-2.0/include/glibconfig.h:98:37: warning: cast from function call of type 'gpointer' {aka 'void *'} to non-matching type 'long int' [-Wbad-function-cast]
+   98 | #define GPOINTER_TO_INT(p) ((gint)  (glong) (p))
+      |                                     ^
+../src/matrix/matrix-db.c:611:15: note: in expansion of macro 'GPOINTER_TO_INT'
+  611 |   algorithm = GPOINTER_TO_INT (g_object_get_data (G_OBJECT (task), "algorithm"));
+      |               ^~~~~~~~~~~~~~~
+/usr/lib/x86_64-linux-gnu/glib-2.0/include/glibconfig.h:98:37: warning: cast from function call of type 'gpointer' {aka 'void *'} to non-matching type 'long int' [-Wbad-function-cast]
+   98 | #define GPOINTER_TO_INT(p) ((gint)  (glong) (p))
+      |                                     ^
+../src/matrix/matrix-db.c:612:17: note: in expansion of macro 'GPOINTER_TO_INT'
+  612 |   extractable = GPOINTER_TO_INT (g_object_get_data (G_OBJECT (task), "extractable"));
+      |                 ^~~~~~~~~~~~~~~
+../src/matrix/matrix-db.c: In function 'db_lookup_session':
+/usr/lib/x86_64-linux-gnu/glib-2.0/include/glibconfig.h:98:37: warning: cast from function call of type 'gpointer' {aka 'void *'} to non-matching type 'long int' [-Wbad-function-cast]
+   98 | #define GPOINTER_TO_INT(p) ((gint)  (glong) (p))
+      |                                     ^
+../src/matrix/matrix-db.c:649:10: note: in expansion of macro 'GPOINTER_TO_INT'
+  649 |   type = GPOINTER_TO_INT (g_object_get_data (G_OBJECT (task), "type"));
+      |          ^~~~~~~~~~~~~~~
+../src/matrix/matrix-db.c:416:3: warning: Value stored to 'status' is never read [deadcode.DeadStores]
+  status = sqlite3_prepare_v2 (self->db,
+  ^        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+../src/matrix/matrix-db.c:534:3: warning: Value stored to 'status' is never read [deadcode.DeadStores]
+  status = sqlite3_prepare_v2 (self->db,
+  ^        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+../src/matrix/matrix-db.c:575:3: warning: Value stored to 'status' is never read [deadcode.DeadStores]
+  status = sqlite3_prepare_v2 (self->db,
+  ^        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+../src/matrix/matrix-db.c:614:3: warning: Value stored to 'status' is never read [deadcode.DeadStores]
+  status = sqlite3_prepare_v2 (self->db,
+  ^        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+../src/matrix/matrix-db.c:808:29: warning: Dereference of null pointer (loaded from variable 'dir') [core.NullDereference]
+  g_return_if_fail (dir || !*dir);
+                            ^~~~
+/usr/include/glib-2.0/glib/gmessages.h:624:19: note: expanded from macro 'g_return_if_fail'
+    if (G_LIKELY (expr)) \
+                  ^~~~
+/usr/include/glib-2.0/glib/gmacros.h:939:25: note: expanded from macro 'G_LIKELY'
+#define G_LIKELY(expr) (expr)
+                        ^~~~
+../src/matrix/matrix-db.c:809:35: warning: Dereference of null pointer (loaded from variable 'file_name') [core.NullDereference]
+  g_return_if_fail (file_name || !*file_name);
+                                  ^~~~~~~~~~
+/usr/include/glib-2.0/glib/gmessages.h:624:19: note: expanded from macro 'g_return_if_fail'
+    if (G_LIKELY (expr)) \
+                  ^~~~
+/usr/include/glib-2.0/glib/gmacros.h:939:25: note: expanded from macro 'G_LIKELY'
+#define G_LIKELY(expr) (expr)
+                        ^~~~
+6 warnings generated.
+[24/82] Compiling C object src/libchatty.so.p/users_chatty-item.c.o
+[25/82] Compiling C object src/libchatty.so.p/users_chatty-pp-buddy.c.o
+../src/users/chatty-pp-buddy.c:260:18: warning: Although the value stored to 'prpl_info' is used in the enclosing expression, the value is never actually read from 'prpl_info' [deadcode.DeadStores]
+    if (!gc || !(prpl_info = PURPLE_PLUGIN_PROTOCOL_INFO (gc->prpl)))
+                 ^           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+1 warning generated.
+[26/82] Compiling C object src/libchatty.so.p/matrix_chatty-ma-account.c.o
+In file included from /usr/include/glib-2.0/glib/gtypes.h:32,
+                 from /usr/include/glib-2.0/glib/galloca.h:32,
+                 from /usr/include/glib-2.0/glib.h:30,
+                 from /usr/include/glib-2.0/gobject/gbinding.h:28,
+                 from /usr/include/glib-2.0/glib-object.h:22,
+                 from /usr/include/json-glib-1.0/json-glib/json-types.h:31,
+                 from /usr/include/json-glib-1.0/json-glib/json-glib.h:29,
+                 from ../src/matrix/chatty-ma-account.c:14:
+../src/matrix/chatty-ma-account.c: In function 'ma_account_leave_chat_cb':
+/usr/lib/x86_64-linux-gnu/glib-2.0/include/glibconfig.h:98:37: warning: cast from function call of type 'gpointer' {aka 'void *'} to non-matching type 'long int' [-Wbad-function-cast]
+   98 | #define GPOINTER_TO_INT(p) ((gint)  (glong) (p))
+      |                                     ^
+../src/matrix/chatty-ma-account.c:743:17: note: in expansion of macro 'GPOINTER_TO_INT'
+  743 |     old_state = GPOINTER_TO_INT (g_object_get_data (G_OBJECT (task), "state"));
+      |                 ^~~~~~~~~~~~~~~
+../src/matrix/chatty-ma-account.c: In function 'chatty_ma_account_leave_chat_async':
+/usr/lib/x86_64-linux-gnu/glib-2.0/include/glibconfig.h:101:40: warning: cast from function call of type 'ChattyItemState' to non-matching type 'long int' [-Wbad-function-cast]
+  101 | #define GINT_TO_POINTER(i) ((gpointer) (glong) (i))
+      |                                        ^
+../src/matrix/chatty-ma-account.c:779:22: note: in expansion of macro 'GINT_TO_POINTER'
+  779 |                      GINT_TO_POINTER (chatty_item_get_state (CHATTY_ITEM (chat))));
+      |                      ^~~~~~~~~~~~~~~
+../src/matrix/chatty-ma-account.c: In function 'db_load_account_cb':
+/usr/lib/x86_64-linux-gnu/glib-2.0/include/glibconfig.h:98:37: warning: cast from function call of type 'gpointer' {aka 'void *'} to non-matching type 'long int' [-Wbad-function-cast]
+   98 | #define GPOINTER_TO_INT(p) ((gint)  (glong) (p))
+      |                                     ^
+../src/matrix/chatty-ma-account.c:1020:13: note: in expansion of macro 'GPOINTER_TO_INT'
+ 1020 |   enabled = GPOINTER_TO_INT (g_object_get_data (G_OBJECT (task), "enabled"));
+      |             ^~~~~~~~~~~~~~~
+../src/matrix/chatty-ma-account.c: At top level:
+../src/matrix/chatty-ma-account.c:37: warning: macro "SYNC_TIMEOUT" is not used [-Wunused-macros]
+   37 | #define SYNC_TIMEOUT 30000 /* milliseconds */
+      | 
+../src/matrix/chatty-ma-account.c:914:21: warning: Out of bound memory access (access exceeds upper limit of memory block) [alpha.security.ArrayBoundV2]
+    } while (end && *(end - 1) == '\\' && *(end - 2) != '\\');
+                    ^~~~~~~~~~
+1 warning generated.
+[27/82] Compiling C object src/libchatty.so.p/users_chatty-contact.c.o
+../src/users/chatty-contact.c:27: warning: macro "ICON_SIZE" is not used [-Wunused-macros]
+   27 | #define ICON_SIZE 96
+      | 
+[28/82] Compiling C object src/libchatty.so.p/users_chatty-pp-account.c.o
+../src/users/chatty-pp-account.c:158:22: warning: 2nd function call argument is an uninitialized value [core.CallAndMessage]
+  self->pp_account = purple_account_new (self->username, protocol_id);
+                     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+../src/users/chatty-pp-account.c:691:29: warning: Access to field 'message' results in a dereference of a null pointer (loaded from variable 'error') [core.NullDereference]
+      g_debug ("Error: %s", error->message);
+                            ^~~~~~~~~~~~~~
+2 warnings generated.
+[29/82] Compiling C object src/libchatty.so.p/users_chatty-account.c.o
+[30/82] Compiling C object src/libchatty.so.p/chatty-fp-row.c.o
+[31/82] Compiling C object src/libchatty.so.p/chatty-list-row.c.o
+../src/chatty-list-row.c:206:5: warning: Potential leak of memory pointed to by 'iso_timestamp' [unix.Malloc]
+    g_strdup_printf ("%s%d%s", prefix, number, unit);
+    ^~~~~~~~~~~~~~~
+1 warning generated.
+[32/82] Compiling C object src/libchatty.so.p/matrix_chatty-ma-chat.c.o
+In file included from /usr/include/glib-2.0/glib/gtypes.h:32,
+                 from /usr/include/glib-2.0/glib/galloca.h:32,
+                 from /usr/include/glib-2.0/glib.h:30,
+                 from /usr/include/glib-2.0/glib/gi18n.h:21,
+                 from ../src/matrix/chatty-ma-chat.c:18:
+../src/matrix/chatty-ma-chat.c: In function 'ma_chat_send_message_cb':
+/usr/lib/x86_64-linux-gnu/glib-2.0/include/glibconfig.h:98:37: warning: cast from function call of type 'gpointer' {aka 'void *'} to non-matching type 'long int' [-Wbad-function-cast]
+   98 | #define GPOINTER_TO_INT(p) ((gint)  (glong) (p))
+      |                                     ^
+../src/matrix/chatty-ma-chat.c:704:17: note: in expansion of macro 'GPOINTER_TO_INT'
+  704 |       timeout = GPOINTER_TO_INT (g_object_get_data (G_OBJECT (result), "retry-after"));
+      |                 ^~~~~~~~~~~~~~~
+../src/matrix/chatty-ma-chat.c: In function 'get_messages_cb':
+/usr/lib/x86_64-linux-gnu/glib-2.0/include/glibconfig.h:99:38: warning: cast from function call of type 'gpointer' {aka 'void *'} to non-matching type 'long unsigned int' [-Wbad-function-cast]
+   99 | #define GPOINTER_TO_UINT(p) ((guint) (gulong) (p))
+      |                                      ^
+../src/matrix/chatty-ma-chat.c:1160:21: note: in expansion of macro 'GPOINTER_TO_UINT'
+ 1160 |     message_count = GPOINTER_TO_UINT(g_object_get_data (G_OBJECT (task), "count"));
+      |                     ^~~~~~~~~~~~~~~~
+../src/matrix/chatty-ma-chat.c: At top level:
+../src/matrix/chatty-ma-chat.c:32: warning: macro "CHATTY_COLOR_BLUE" is not used [-Wunused-macros]
+   32 | #define CHATTY_COLOR_BLUE "4A8FD9"
+      | 
+../src/matrix/chatty-ma-chat.c:461:8: warning: Potential leak of memory pointed to by 'base64' [unix.Malloc]
+  *out = g_base64_decode (base64, out_len);
+  ~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+1 warning generated.
+[33/82] Compiling C object src/libchatty.so.p/chatty-pp-chat.c.o
+../src/chatty-pp-chat.c: In function 'chatty_pp_chat_init':
+../src/chatty-pp-chat.c:1055:35: warning: cast between incompatible function types from 'gint (*)(ChattyPpBuddy *, ChattyPpBuddy *)' {aka 'int (*)(struct _ChattyPpBuddy *, struct _ChattyPpBuddy *)'} to 'gint (*)(const void *, const void *, void *)' {aka 'int (*)(const void *, const void *, void *)'} [-Wcast-function-type]
+ 1055 |   sorter = gtk_custom_sorter_new ((GCompareDataFunc)sort_chat_buddy, NULL, NULL);
+      |                                   ^
+../src/chatty-pp-chat.c: At top level:
+../src/chatty-pp-chat.c:30: warning: macro "CHATTY_COLOR_BLUE" is not used [-Wunused-macros]
+   30 | #define CHATTY_COLOR_BLUE "4A8FD9"
+      | 
+../src/chatty-pp-chat.c:1868:12: warning: Although the value stored to 'chat_name' is used in the enclosing expression, the value is never actually read from 'chat_name' [deadcode.DeadStores]
+    name = chat_name = prpl_info->get_chat_name (components);
+           ^           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+1 warning generated.
+[34/82] Compiling C object src/libchatty.so.p/chatty-log.c.o
+[35/82] Compiling C object src/libchatty.so.p/chatty-message-row.c.o
+../src/chatty-message-row.c:22: warning: macro "MAX_GMT_ISO_SIZE" is not used [-Wunused-macros]
+   22 | #define MAX_GMT_ISO_SIZE 256
+      | 
+[36/82] Compiling C object src/libchatty.so.p/chatty-text-item.c.o
+../src/chatty-text-item.c:19: warning: macro "MAX_GMT_ISO_SIZE" is not used [-Wunused-macros]
+   19 | #define MAX_GMT_ISO_SIZE 256
+      | 
+../src/chatty-text-item.c:81:10: warning: Out of bound memory access (access exceeds upper limit of memory block) [alpha.security.ArrayBoundV2]
+         *(quote - 1) == '\n')) {
+         ^~~~~~~~~~~~
+1 warning generated.
+[37/82] Compiling C object src/libchatty.so.p/chatty-chat-view.c.o
+../src/chatty-chat-view.c:63: warning: macro "MSG_BUBBLE_MAX_RATIO" is not used [-Wunused-macros]
+   63 | #define MSG_BUBBLE_MAX_RATIO .3
+      | 
+[38/82] Compiling C object src/libchatty.so.p/chatty-image-item.c.o
+../src/chatty-image-item.c:22: warning: macro "MAX_GMT_ISO_SIZE" is not used [-Wunused-macros]
+   22 | #define MAX_GMT_ISO_SIZE 256
+      | 
+[39/82] Compiling C object src/libchatty.so.p/chatty-chat.c.o
+[40/82] Compiling C object src/libchatty.so.p/chatty-message.c.o
+[41/82] Compiling C object src/libchatty.so.p/chatty-avatar.c.o
+../src/chatty-avatar.c:33: warning: macro "DEFAULT_SIZE" is not used [-Wunused-macros]
+   33 | #define DEFAULT_SIZE 32
+      | 
+[42/82] Compiling C object src/libchatty.so.p/chatty-notification.c.o
+../src/chatty-notification.c:47:3: warning: missing initializer for field 'parameter_type' of 'GActionEntry' {aka 'const struct _GActionEntry'} [-Wmissing-field-initializers]
+   47 |   { "open-chat", notification_open_chat },
+      |   ^
+In file included from /usr/include/glib-2.0/gio/gio.h:31,
+                 from /usr/include/libfeedback-0.0/lfb-event.h:8,
+                 from /usr/include/libfeedback-0.0/libfeedback.h:19,
+                 from ../src/chatty-notification.c:15:
+/usr/include/glib-2.0/gio/gactionmap.h:63:16: note: 'parameter_type' declared here
+   63 |   const gchar *parameter_type;
+      |                ^~~~~~~~~~~~~~
+[43/82] Compiling C object src/libchatty.so.p/chatty-settings.c.o
+[44/82] Compiling C object src/libchatty.so.p/chatty-contact-provider.c.o
+../src/chatty-contact-provider.c:75:3: warning: Value stored to 'variant' is never read [deadcode.DeadStores]
+  variant = g_dbus_connection_call_finish (connection, result, &error);
+  ^         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+../src/chatty-contact-provider.c:696:3: warning: Value stored to 'variant' is never read [deadcode.DeadStores]
+  variant = g_dbus_connection_call_finish (connection, result, &error);
+  ^         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+../src/chatty-contact-provider.c:720:3: warning: Value stored to 'variant' is never read [deadcode.DeadStores]
+  variant = g_dbus_connection_call_finish (connection, result, &error);
+  ^         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+3 warnings generated.
+[45/82] Compiling C object src/libchatty.so.p/chatty-utils.c.o
+[46/82] Compiling C object src/libchatty.so.p/chatty-secret-store.c.o
+../src/chatty-secret-store.c: In function 'secret_store_get_schema':
+../src/chatty-secret-store.c:36:3: warning: missing initializer for field 'reserved' of 'SecretSchema' [-Wmissing-field-initializers]
+   36 |   };
+      |   ^
+In file included from /usr/include/libsecret-1/libsecret/secret-attributes.h:25,
+                 from /usr/include/libsecret-1/libsecret/secret.h:22,
+                 from ../src/chatty-secret-store.c:15:
+/usr/include/libsecret-1/libsecret/secret-schema.h:49:7: note: 'reserved' declared here
+   49 |  gint reserved;
+      |       ^~~~~~~~
+[47/82] Compiling C++ object src/libchatty.so.p/chatty-phone-utils.cpp.o
+[48/82] Compiling C object src/chatty.p/chatty-manager.c.o
+../src/chatty-manager.c:336:1: warning: missing initializer for field '_purple_reserved2' of 'PurpleEventLoopUiOps' {aka 'struct _PurpleEventLoopUiOps'} [-Wmissing-field-initializers]
+  336 | };
+      | ^
+In file included from /usr/include/libpurple/proxy.h:30,
+                 from /usr/include/libpurple/prpl.h:77,
+                 from /usr/include/libpurple/buddyicon.h:39,
+                 from /usr/include/libpurple/blist.h:112,
+                 from /usr/include/libpurple/status.h:133,
+                 from /usr/include/libpurple/connection.h:151,
+                 from /usr/include/libpurple/account.h:49,
+                 from /usr/include/libpurple/purple.h:48,
+                 from ../src/chatty-manager.c:21:
+/usr/include/libpurple/eventloop.h:153:9: note: '_purple_reserved2' declared here
+  153 |  void (*_purple_reserved2)(void);
+      |         ^~~~~~~~~~~~~~~~~
+../src/chatty-manager.c:403:1: warning: missing initializer for field '_purple_reserved1' of 'PurpleCoreUiOps' [-Wmissing-field-initializers]
+  403 | };
+      | ^
+In file included from /usr/include/libpurple/purple.h:58,
+                 from ../src/chatty-manager.c:21:
+/usr/include/libpurple/core.h:74:9: note: '_purple_reserved1' declared here
+   74 |  void (*_purple_reserved1)(void);
+      |         ^~~~~~~~~~~~~~~~~
+../src/chatty-manager.c:479:1: warning: missing initializer for field 'close_account_request' of 'PurpleAccountUiOps' {aka 'struct _PurpleAccountUiOps'} [-Wmissing-field-initializers]
+  479 | };
+      | ^
+In file included from /usr/include/libpurple/purple.h:48,
+                 from ../src/chatty-manager.c:21:
+/usr/include/libpurple/account.h:118:9: note: 'close_account_request' declared here
+  118 |  void (*close_account_request)(void *ui_handle);
+      |         ^~~~~~~~~~~~~~~~~~~~~
+../src/chatty-manager.c:554:1: warning: missing initializer for field 'request_add_chat' of 'PurpleBlistUiOps' {aka 'struct _PurpleBlistUiOps'} [-Wmissing-field-initializers]
+  554 | };
+      | ^
+In file included from /usr/include/libpurple/status.h:133,
+                 from /usr/include/libpurple/connection.h:151,
+                 from /usr/include/libpurple/account.h:49,
+                 from /usr/include/libpurple/purple.h:48,
+                 from ../src/chatty-manager.c:21:
+/usr/include/libpurple/blist.h:219:9: note: 'request_add_chat' declared here
+  219 |  void (*request_add_chat)(PurpleAccount *account, PurpleGroup *group,
+      |         ^~~~~~~~~~~~~~~~
+../src/chatty-manager.c:925:1: warning: missing initializer for field 'has_focus' of 'PurpleConversationUiOps' {aka 'struct _PurpleConversationUiOps'} [-Wmissing-field-initializers]
+  925 | };
+      | ^
+In file included from /usr/include/libpurple/prpl.h:72,
+                 from /usr/include/libpurple/buddyicon.h:39,
+                 from /usr/include/libpurple/blist.h:112,
+                 from /usr/include/libpurple/status.h:133,
+                 from /usr/include/libpurple/connection.h:151,
+                 from /usr/include/libpurple/account.h:49,
+                 from /usr/include/libpurple/purple.h:48,
+                 from ../src/chatty-manager.c:21:
+/usr/include/libpurple/conversation.h:234:13: note: 'has_focus' declared here
+  234 |  gboolean (*has_focus)(PurpleConversation *conv);
+      |             ^~~~~~~~~
+../src/chatty-manager.c:54: warning: macro "MAX_TIMESTAMP_SIZE" is not used [-Wunused-macros]
+   54 | #define MAX_TIMESTAMP_SIZE 256
+      | 
+[49/82] Compiling C object src/chatty.p/dialogs_chatty-info-dialog.c.o
+../src/dialogs/chatty-info-dialog.c: In function 'chatty_info_dialog_list_users':
+../src/dialogs/chatty-info-dialog.c:86:28: warning: cast between incompatible function types from 'GtkWidget * (*)(ChattyItem *)' {aka 'struct _GtkWidget * (*)(struct _ChattyItem *)'} to 'GtkWidget * (*)(void *, void *)' {aka 'struct _GtkWidget * (*)(void *, void *)'} [-Wcast-function-type]
+   86 |                            (GtkListBoxCreateWidgetFunc)chatty_list_row_new,
+      |                            ^
+../src/dialogs/chatty-info-dialog.c: In function 'info_dialog_list_fp_cb':
+../src/dialogs/chatty-info-dialog.c:146:30: warning: cast between incompatible function types from 'GtkWidget * (*)(HdyValueObject *)' {aka 'struct _GtkWidget * (*)(struct _HdyValueObject *)'} to 'GtkWidget * (*)(void *, void *)' {aka 'struct _GtkWidget * (*)(void *, void *)'} [-Wcast-function-type]
+  146 |                              (GtkListBoxCreateWidgetFunc) chatty_fp_row_new,
+      |                              ^
+../src/dialogs/chatty-info-dialog.c: In function 'chatty_info_dialog_set_chat':
+../src/dialogs/chatty-info-dialog.c:498:26: warning: cast between incompatible function types from 'void (*)(GtkWidget *)' {aka 'void (*)(struct _GtkWidget *)'} to 'void (*)(GtkWidget *, void *)' {aka 'void (*)(struct _GtkWidget *, void *)'} [-Wcast-function-type]
+  498 |                          (GtkCallback)gtk_widget_destroy, NULL);
+      |                          ^
+[50/82] Compiling C object src/libchatty.so.p/chatty-history.c.o
+In file included from /usr/include/glib-2.0/glib/gtypes.h:32,
+                 from /usr/include/glib-2.0/glib/galloca.h:32,
+                 from /usr/include/glib-2.0/glib.h:30,
+                 from /usr/include/glib-2.0/gobject/gbinding.h:28,
+                 from /usr/include/glib-2.0/glib-object.h:22,
+                 from ../src/matrix/chatty-ma-account.h:14,
+                 from ../src/chatty-history.c:20:
+../src/chatty-history.c: In function 'history_get_messages':
+/usr/lib/x86_64-linux-gnu/glib-2.0/include/glibconfig.h:98:37: warning: cast from function call of type 'gpointer' {aka 'void *'} to non-matching type 'long int' [-Wbad-function-cast]
+   98 | #define GPOINTER_TO_INT(p) ((gint)  (glong) (p))
+      |                                     ^
+../src/chatty-history.c:2005:11: note: in expansion of macro 'GPOINTER_TO_INT'
+ 2005 |   limit = GPOINTER_TO_INT (g_object_get_data (G_OBJECT (task), "limit"));
+      |           ^~~~~~~~~~~~~~~
+../src/chatty-history.c: At top level:
+../src/chatty-history.c:36: warning: macro "CHATTY_ID_EMAIL_VALUE" is not used [-Wunused-macros]
+   36 | #define CHATTY_ID_EMAIL_VALUE   2
+      | 
+../src/chatty-history.c:40: warning: macro "CHATTY_ID_ICCID_VALUE" is not used [-Wunused-macros]
+   40 | #define CHATTY_ID_ICCID_VALUE   6
+      | 
+../src/chatty-history.c:49: warning: macro "PROTOCOL_SIP" is not used [-Wunused-macros]
+   49 | #define PROTOCOL_SIP       6
+      | 
+../src/chatty-history.c:39: warning: macro "CHATTY_ID_SIP_VALUE" is not used [-Wunused-macros]
+   39 | #define CHATTY_ID_SIP_VALUE     5
+      | 
+../src/chatty-history.c:43: warning: macro "PROTOCOL_UNKNOWN" is not used [-Wunused-macros]
+   43 | #define PROTOCOL_UNKNOWN   0
+      | 
+../src/chatty-history.c:34: warning: macro "CHATTY_ID_UNKNOWN_VALUE" is not used [-Wunused-macros]
+   34 | #define CHATTY_ID_UNKNOWN_VALUE 0
+      | 
+../src/chatty-history.c:67: warning: macro "MESSAGE_TYPE_URL" is not used [-Wunused-macros]
+   67 | #define MESSAGE_TYPE_URL           6
+      | 
+../src/chatty-history.c:74: warning: macro "MESSAGE_TYPE_LINK" is not used [-Wunused-macros]
+   74 | #define MESSAGE_TYPE_LINK          20
+      | 
+../src/chatty-history.c:1400:7: warning: Value stored to 'status' is never read [deadcode.DeadStores]
+      status = sqlite3_step (insert_stmt);
+      ^        ~~~~~~~~~~~~~~~~~~~~~~~~~~
+../src/chatty-history.c:1427:7: warning: Value stored to 'status' is never read [deadcode.DeadStores]
+      status = sqlite3_step (insert_stmt);
+      ^        ~~~~~~~~~~~~~~~~~~~~~~~~~~
+../src/chatty-history.c:1861:3: warning: Value stored to 'status' is never read [deadcode.DeadStores]
+  status = sqlite3_prepare_v2 (self->db,
+  ^        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+../src/chatty-history.c:2379:3: warning: Value stored to 'status' is never read [deadcode.DeadStores]
+  status = sqlite3_prepare_v2 (self->db,
+  ^        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+../src/chatty-history.c:2488:3: warning: Value stored to 'status' is never read [deadcode.DeadStores]
+  status = sqlite3_prepare_v2 (self->db,
+  ^        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+5 warnings generated.
+[51/82] Linking static target src/libchatty.a
+[52/82] Linking target src/libchatty.so
+[53/82] Compiling C object src/chatty.p/main.c.o
+[54/82] Compiling C object src/chatty.p/chatty-application.c.o
+../src/chatty-application.c: In function 'chatty_application_startup':
+../src/chatty-application.c:324:5: warning: missing initializer for field 'parameter_type' of 'GActionEntry' {aka 'const struct _GActionEntry'} [-Wmissing-field-initializers]
+  324 |     { "show-window", chatty_application_show_window },
+      |     ^
+In file included from /usr/include/glib-2.0/gio/gio.h:31,
+                 from /usr/include/gtk-3.0/gdk/gdkapplaunchcontext.h:28,
+                 from /usr/include/gtk-3.0/gdk/gdk.h:32,
+                 from /usr/include/gtk-3.0/gtk/gtk.h:30,
+                 from /usr/include/libhandy-1/handy.h:9,
+                 from ../src/chatty-application.c:31:
+/usr/include/glib-2.0/gio/gactionmap.h:63:16: note: 'parameter_type' declared here
+   63 |   const gchar *parameter_type;
+      |                ^~~~~~~~~~~~~~
+[55/82] Compiling C object src/chatty.p/meson-generated_.._chatty-resources.c.o
+[56/82] Compiling C object src/chatty.p/dialogs_chatty-settings-dialog.c.o
+../src/dialogs/chatty-settings-dialog.c: In function 'get_fingerprints_cb':
+../src/dialogs/chatty-settings-dialog.c:490:28: warning: cast between incompatible function types from 'GtkWidget * (*)(HdyValueObject *)' {aka 'struct _GtkWidget * (*)(struct _HdyValueObject *)'} to 'GtkWidget * (*)(void *, void *)' {aka 'struct _GtkWidget * (*)(void *, void *)'} [-Wcast-function-type]
+  490 |                            (GtkListBoxCreateWidgetFunc) chatty_fp_row_new,
+      |                            ^
+[57/82] Compiling C object src/chatty.p/dialogs_chatty-new-chat-dialog.c.o
+../src/dialogs/chatty-new-chat-dialog.c: In function 'chatty_new_chat_dialog_init':
+../src/dialogs/chatty-new-chat-dialog.c:597:35: warning: cast between incompatible function types from 'int (*)(ChattyItem *, ChattyItem *)' {aka 'int (*)(struct _ChattyItem *, struct _ChattyItem *)'} to 'gint (*)(const void *, const void *, void *)' {aka 'int (*)(const void *, const void *, void *)'} [-Wcast-function-type]
+  597 |   sorter = gtk_custom_sorter_new ((GCompareDataFunc)chatty_item_compare, NULL, NULL);
+      |                                   ^
+../src/dialogs/chatty-new-chat-dialog.c:603:28: warning: cast between incompatible function types from 'GtkWidget * (*)(ChattyItem *)' {aka 'struct _GtkWidget * (*)(struct _ChattyItem *)'} to 'GtkWidget * (*)(void *, void *)' {aka 'struct _GtkWidget * (*)(void *, void *)'} [-Wcast-function-type]
+  603 |                            (GtkListBoxCreateWidgetFunc)chatty_list_contact_row_new,
+      |                            ^
+[58/82] Compiling C object src/chatty.p/chatty-purple-request.c.o
+[59/82] Compiling C object src/chatty.p/chatty-purple-notify.c.o
+[60/82] Compiling C object src/chatty.p/chatty-window.c.o
+../src/chatty-window.c: In function 'chatty_window_constructed':
+../src/chatty-window.c:696:28: warning: cast between incompatible function types from 'GtkWidget * (*)(ChattyItem *)' {aka 'struct _GtkWidget * (*)(struct _ChattyItem *)'} to 'GtkWidget * (*)(void *, void *)' {aka 'struct _GtkWidget * (*)(void *, void *)'} [-Wcast-function-type]
+  696 |                            (GtkListBoxCreateWidgetFunc)chatty_list_row_new,
+      |                            ^
+[61/82] Compiling C object src/chatty.p/xeps_xeps.c.o
+[62/82] Compiling C object src/chatty.p/xeps_chatty-xep-0352.c.o
+[63/82] Compiling C object src/chatty.p/xeps_chatty-xep-0184.c.o
+../src/xeps/chatty-xep-0184.c:274:17: warning: Value stored to 'jabber' during its initialization is never read [deadcode.DeadStores]
+  PurplePlugin *jabber = chatty_xeps_get_jabber ();
+                ^~~~~~   ~~~~~~~~~~~~~~~~~~~~~~~~~
+1 warning generated.
+[64/82] Compiling C object src/chatty.p/dialogs_chatty-new-muc-dialog.c.o
+[65/82] Compiling C object src/chatty.p/xeps_chatty-xep-0313.c.o
+../src/xeps/chatty-xep-0313.c:787:66: warning: This statement is never executed [alpha.deadcode.UnreachableCode]
+                                                    pcm->alias ? pcm->alias : pcm->who,
+                                                                 ^~~
+../src/xeps/chatty-xep-0313.c:801:19: warning: This statement is never executed [alpha.deadcode.UnreachableCode]
+      stanza_id = g_uuid_string_random ();
+                  ^~~~~~~~~~~~~~~~~~~~
+../src/xeps/chatty-xep-0313.c:819:25: warning: This statement is never executed [alpha.deadcode.UnreachableCode]
+                  who ? who: pcm->who, pcm->what);
+                        ^~~
+3 warnings generated.
+[66/82] Linking target src/chatty
+[67/82] Compiling C object tests/settings.p/settings.c.o
+[68/82] Compiling C object tests/account.p/account.c.o
+In file included from ../tests/account.c:20:
+../tests/purple-init.h:39:1: warning: missing initializer for field '_purple_reserved2' of 'PurpleEventLoopUiOps' {aka 'struct _PurpleEventLoopUiOps'} [-Wmissing-field-initializers]
+   39 | };
+      | ^
+In file included from /usr/include/libpurple/proxy.h:30,
+                 from /usr/include/libpurple/prpl.h:77,
+                 from /usr/include/libpurple/buddyicon.h:39,
+                 from /usr/include/libpurple/blist.h:112,
+                 from /usr/include/libpurple/status.h:133,
+                 from /usr/include/libpurple/connection.h:151,
+                 from /usr/include/libpurple/account.h:49,
+                 from /usr/include/libpurple/purple.h:48,
+                 from ../tests/purple-init.h:15,
+                 from ../tests/account.c:20:
+/usr/include/libpurple/eventloop.h:153:9: note: '_purple_reserved2' declared here
+  153 |  void (*_purple_reserved2)(void);
+      |         ^~~~~~~~~~~~~~~~~
+[69/82] Compiling C object tests/matrix-db.p/matrix-db.c.o
+In file included from /usr/include/glib-2.0/glib.h:85,
+                 from /usr/include/glib-2.0/glib/gprintf.h:21,
+                 from /usr/include/glib-2.0/glib/gstdio.h:22,
+                 from ../tests/matrix-db.c:18:
+../tests/matrix-db.c: In function 'add_matrix_account':
+/usr/lib/x86_64-linux-gnu/glib-2.0/include/glibconfig.h:98:37: warning: cast from function call of type 'gpointer' {aka 'void *'} to non-matching type 'long int' [-Wbad-function-cast]
+   98 | #define GPOINTER_TO_INT(p) ((gint)  (glong) (p))
+      |                                     ^
+/usr/include/glib-2.0/glib/gtestutils.h:50:61: note: in definition of macro 'g_assert_cmpint'
+   50 |                                              gint64 __n1 = (n1), __n2 = (n2); \
+      |                                                             ^~
+../tests/matrix-db.c:118:20: note: in expansion of macro 'GPOINTER_TO_INT'
+  118 |   g_assert_cmpint (GPOINTER_TO_INT (g_object_get_data (G_OBJECT (task), "enabled")),
+      |                    ^~~~~~~~~~~~~~~
+/usr/lib/x86_64-linux-gnu/glib-2.0/include/glibconfig.h:98:37: warning: cast from function call of type 'gpointer' {aka 'void *'} to non-matching type 'long int' [-Wbad-function-cast]
+   98 | #define GPOINTER_TO_INT(p) ((gint)  (glong) (p))
+      |                                     ^
+/usr/include/glib-2.0/glib/gtestutils.h:50:74: note: in definition of macro 'g_assert_cmpint'
+   50 |                                              gint64 __n1 = (n1), __n2 = (n2); \
+      |                                                                          ^~
+../tests/matrix-db.c:119:24: note: in expansion of macro 'GPOINTER_TO_INT'
+  119 |                    ==, GPOINTER_TO_INT (g_object_get_data (object, "enabled")));
+      |                        ^~~~~~~~~~~~~~~
+[70/82] Linking target tests/settings
+[71/82] Linking target tests/account
+[72/82] Compiling C object tests/utils.p/utils.c.o
+../tests/utils.c: In function 'test_utils_username_valid':
+../tests/utils.c:111:5: warning: missing initializer for field 'account_protocol' of 'data' [-Wmissing-field-initializers]
+  111 |     { "0123456789", CHATTY_PROTOCOL_SMS},
+      |     ^
+../tests/utils.c:108:20: note: 'account_protocol' declared here
+  108 |     ChattyProtocol account_protocol;
+      |                    ^~~~~~~~~~~~~~~~
+../tests/utils.c:112:5: warning: missing initializer for field 'account_protocol' of 'data' [-Wmissing-field-initializers]
+  112 |     { "+1 (1234) 5678", CHATTY_PROTOCOL_SMS},
+      |     ^
+../tests/utils.c:108:20: note: 'account_protocol' declared here
+  108 |     ChattyProtocol account_protocol;
+      |                    ^~~~~~~~~~~~~~~~
+../tests/utils.c:113:5: warning: missing initializer for field 'account_protocol' of 'data' [-Wmissing-field-initializers]
+  113 |     { "+91123456789", CHATTY_PROTOCOL_SMS},
+      |     ^
+../tests/utils.c:108:20: note: 'account_protocol' declared here
+  108 |     ChattyProtocol account_protocol;
+      |                    ^~~~~~~~~~~~~~~~
+../tests/utils.c:114:5: warning: missing initializer for field 'account_protocol' of 'data' [-Wmissing-field-initializers]
+  114 |     { "+91-1234-56789", CHATTY_PROTOCOL_SMS},
+      |     ^
+../tests/utils.c:108:20: note: 'account_protocol' declared here
+  108 |     ChattyProtocol account_protocol;
+      |                    ^~~~~~~~~~~~~~~~
+../tests/utils.c:115:5: warning: missing initializer for field 'account_protocol' of 'data' [-Wmissing-field-initializers]
+  115 |     { "+1 213 321 4567", CHATTY_PROTOCOL_SMS | CHATTY_PROTOCOL_TELEGRAM},
+      |     ^
+../tests/utils.c:108:20: note: 'account_protocol' declared here
+  108 |     ChattyProtocol account_protocol;
+      |                    ^~~~~~~~~~~~~~~~
+../tests/utils.c:116:5: warning: missing initializer for field 'account_protocol' of 'data' [-Wmissing-field-initializers]
+  116 |     { "+12133214567", CHATTY_PROTOCOL_SMS | CHATTY_PROTOCOL_TELEGRAM},
+      |     ^
+../tests/utils.c:108:20: note: 'account_protocol' declared here
+  108 |     ChattyProtocol account_protocol;
+      |                    ^~~~~~~~~~~~~~~~
+../tests/utils.c:117:5: warning: missing initializer for field 'account_protocol' of 'data' [-Wmissing-field-initializers]
+  117 |     { "+919995123456", CHATTY_PROTOCOL_SMS | CHATTY_PROTOCOL_TELEGRAM},
+      |     ^
+../tests/utils.c:108:20: note: 'account_protocol' declared here
+  108 |     ChattyProtocol account_protocol;
+      |                    ^~~~~~~~~~~~~~~~
+../tests/utils.c:118:5: warning: missing initializer for field 'account_protocol' of 'data' [-Wmissing-field-initializers]
+  118 |     { "5555", CHATTY_PROTOCOL_SMS},
+      |     ^
+../tests/utils.c:108:20: note: 'account_protocol' declared here
+  108 |     ChattyProtocol account_protocol;
+      |                    ^~~~~~~~~~~~~~~~
+../tests/utils.c:119:5: warning: missing initializer for field 'account_protocol' of 'data' [-Wmissing-field-initializers]
+  119 |     { "valid@xmpp.example.com", CHATTY_PROTOCOL_XMPP},
+      |     ^
+../tests/utils.c:108:20: note: 'account_protocol' declared here
+  108 |     ChattyProtocol account_protocol;
+      |                    ^~~~~~~~~~~~~~~~
+../tests/utils.c:120:5: warning: missing initializer for field 'account_protocol' of 'data' [-Wmissing-field-initializers]
+  120 |     { "@valid:example.com", CHATTY_PROTOCOL_MATRIX},
+      |     ^
+../tests/utils.c:108:20: note: 'account_protocol' declared here
+  108 |     ChattyProtocol account_protocol;
+      |                    ^~~~~~~~~~~~~~~~
+../tests/utils.c:121:5: warning: missing initializer for field 'account_protocol' of 'data' [-Wmissing-field-initializers]
+  121 |     { "@നല്ല:matrix.example.com", 0},
+      |     ^
+../tests/utils.c:108:20: note: 'account_protocol' declared here
+  108 |     ChattyProtocol account_protocol;
+      |                    ^~~~~~~~~~~~~~~~
+../tests/utils.c:122:5: warning: missing initializer for field 'account_protocol' of 'data' [-Wmissing-field-initializers]
+  122 |     { "invalid", 0},
+      |     ^
+../tests/utils.c:108:20: note: 'account_protocol' declared here
+  108 |     ChattyProtocol account_protocol;
+      |                    ^~~~~~~~~~~~~~~~
+../tests/utils.c:123:5: warning: missing initializer for field 'account_protocol' of 'data' [-Wmissing-field-initializers]
+  123 |     { "domain/resource", 0},
+      |     ^
+../tests/utils.c:108:20: note: 'account_protocol' declared here
+  108 |     ChattyProtocol account_protocol;
+      |                    ^~~~~~~~~~~~~~~~
+../tests/utils.c:124:5: warning: missing initializer for field 'account_protocol' of 'data' [-Wmissing-field-initializers]
+  124 |     { "/invalid", 0},
+      |     ^
+../tests/utils.c:108:20: note: 'account_protocol' declared here
+  108 |     ChattyProtocol account_protocol;
+      |                    ^~~~~~~~~~~~~~~~
+../tests/utils.c:125:5: warning: missing initializer for field 'account_protocol' of 'data' [-Wmissing-field-initializers]
+  125 |     { "invalid/", 0},
+      |     ^
+../tests/utils.c:108:20: note: 'account_protocol' declared here
+  108 |     ChattyProtocol account_protocol;
+      |                    ^~~~~~~~~~~~~~~~
+../tests/utils.c:126:5: warning: missing initializer for field 'account_protocol' of 'data' [-Wmissing-field-initializers]
+  126 |     { "@invalid", 0},
+      |     ^
+../tests/utils.c:108:20: note: 'account_protocol' declared here
+  108 |     ChattyProtocol account_protocol;
+      |                    ^~~~~~~~~~~~~~~~
+../tests/utils.c:127:5: warning: missing initializer for field 'account_protocol' of 'data' [-Wmissing-field-initializers]
+  127 |     { "invalid:", 0},
+      |     ^
+../tests/utils.c:108:20: note: 'account_protocol' declared here
+  108 |     ChattyProtocol account_protocol;
+      |                    ^~~~~~~~~~~~~~~~
+../tests/utils.c:128:5: warning: missing initializer for field 'account_protocol' of 'data' [-Wmissing-field-initializers]
+  128 |     { "@invalid:", 0},
+      |     ^
+../tests/utils.c:108:20: note: 'account_protocol' declared here
+  108 |     ChattyProtocol account_protocol;
+      |                    ^~~~~~~~~~~~~~~~
+../tests/utils.c:129:5: warning: missing initializer for field 'account_protocol' of 'data' [-Wmissing-field-initializers]
+  129 |     { "invalid@", 0},
+      |     ^
+../tests/utils.c:108:20: note: 'account_protocol' declared here
+  108 |     ChattyProtocol account_protocol;
+      |                    ^~~~~~~~~~~~~~~~
+../tests/utils.c:130:5: warning: missing initializer for field 'account_protocol' of 'data' [-Wmissing-field-initializers]
+  130 |     { "in:valid@", 0},
+      |     ^
+../tests/utils.c:108:20: note: 'account_protocol' declared here
+  108 |     ChattyProtocol account_protocol;
+      |                    ^~~~~~~~~~~~~~~~
+../tests/utils.c:131:5: warning: missing initializer for field 'account_protocol' of 'data' [-Wmissing-field-initializers]
+  131 |     { "#invalid:matrix.example.com", 0},
+      |     ^
+../tests/utils.c:108:20: note: 'account_protocol' declared here
+  108 |     ChattyProtocol account_protocol;
+      |                    ^~~~~~~~~~~~~~~~
+../tests/utils.c:132:5: warning: missing initializer for field 'account_protocol' of 'data' [-Wmissing-field-initializers]
+  132 |     { "+9876543210A", 0},
+      |     ^
+../tests/utils.c:108:20: note: 'account_protocol' declared here
+  108 |     ChattyProtocol account_protocol;
+      |                    ^~~~~~~~~~~~~~~~
+../tests/utils.c:133:5: warning: missing initializer for field 'account_protocol' of 'data' [-Wmissing-field-initializers]
+  133 |     { "", 0},
+      |     ^
+../tests/utils.c:108:20: note: 'account_protocol' declared here
+  108 |     ChattyProtocol account_protocol;
+      |                    ^~~~~~~~~~~~~~~~
+../tests/utils.c:134:5: warning: missing initializer for field 'account_protocol' of 'data' [-Wmissing-field-initializers]
+  134 |     { NULL, 0}
+      |     ^
+../tests/utils.c:108:20: note: 'account_protocol' declared here
+  108 |     ChattyProtocol account_protocol;
+      |                    ^~~~~~~~~~~~~~~~
+[73/82] Compiling C object tests/matrix-api.p/matrix-api.c.o
+[74/82] Compiling C object tests/history.p/history.c.o
+In file included from ../tests/history.c:26:
+../tests/purple-init.h:39:1: warning: missing initializer for field '_purple_reserved2' of 'PurpleEventLoopUiOps' {aka 'struct _PurpleEventLoopUiOps'} [-Wmissing-field-initializers]
+   39 | };
+      | ^
+In file included from /usr/include/libpurple/proxy.h:30,
+                 from /usr/include/libpurple/prpl.h:77,
+                 from /usr/include/libpurple/buddyicon.h:39,
+                 from /usr/include/libpurple/blist.h:112,
+                 from /usr/include/libpurple/status.h:133,
+                 from /usr/include/libpurple/connection.h:151,
+                 from /usr/include/libpurple/account.h:49,
+                 from /usr/include/libpurple/purple.h:48,
+                 from ../src/chatty-utils.h:14,
+                 from ../src/users/chatty-item.h:15,
+                 from ../src/chatty-chat.h:16,
+                 from ../src/matrix/chatty-ma-account.h:16,
+                 from ../tests/history.c:23:
+/usr/include/libpurple/eventloop.h:153:9: note: '_purple_reserved2' declared here
+  153 |  void (*_purple_reserved2)(void);
+      |         ^~~~~~~~~~~~~~~~~
+../tests/history.c:18: warning: macro "MESSAGE_LIMIT" is not used [-Wunused-macros]
+   18 | #define MESSAGE_LIMIT 20
+      | 
+[75/82] Compiling C object tests/matrix-enc.p/matrix-enc.c.o
+[76/82] Linking target tests/history
+[77/82] Compiling C object tests/matrix-utils.p/matrix-utils.c.o
+[78/82] Linking target tests/utils
+[79/82] Linking target tests/matrix-api
+[80/82] Linking target tests/matrix-utils
+[81/82] Linking target tests/matrix-db
+[82/82] Linking target tests/matrix-enc
+scan-build: Analysis run complete.
+scan-build: 56 bugs found.
+scan-build: Run 'scan-view /rootdir/html-report/2021-06-26-232452-31308-1' to examine bug reports.

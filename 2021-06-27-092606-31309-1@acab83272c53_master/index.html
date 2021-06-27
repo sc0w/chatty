@@ -1,0 +1,271 @@
+<html>
+<head>
+<title>chatty (clang-tools 1:11.0-51+nmu5) - scan-build results</title>
+<link type="text/css" rel="stylesheet" href="scanview.css"/>
+<script src="sorttable.js"></script>
+<script language='javascript' type="text/javascript">
+function SetDisplay(RowClass, DisplayVal)
+{
+  var Rows = document.getElementsByTagName("tr");
+  for ( var i = 0 ; i < Rows.length; ++i ) {
+    if (Rows[i].className == RowClass) {
+      Rows[i].style.display = DisplayVal;
+    }
+  }
+}
+
+function CopyCheckedStateToCheckButtons(SummaryCheckButton) {
+  var Inputs = document.getElementsByTagName("input");
+  for ( var i = 0 ; i < Inputs.length; ++i ) {
+    if (Inputs[i].type == "checkbox") {
+      if(Inputs[i] != SummaryCheckButton) {
+        Inputs[i].checked = SummaryCheckButton.checked;
+        Inputs[i].onclick();
+      }
+    }
+  }
+}
+
+function returnObjById( id ) {
+    if (document.getElementById)
+        var returnVar = document.getElementById(id);
+    else if (document.all)
+        var returnVar = document.all[id];
+    else if (document.layers)
+        var returnVar = document.layers[id];
+    return returnVar;
+}
+
+var NumUnchecked = 0;
+
+function ToggleDisplay(CheckButton, ClassName) {
+  if (CheckButton.checked) {
+    SetDisplay(ClassName, "");
+    if (--NumUnchecked == 0) {
+      returnObjById("AllBugsCheck").checked = true;
+    }
+  }
+  else {
+    SetDisplay(ClassName, "none");
+    NumUnchecked++;
+    returnObjById("AllBugsCheck").checked = false;
+  }
+}
+</script>
+<!-- SUMMARYENDHEAD -->
+</head>
+<body>
+<h1>chatty (clang-tools 1:11.0-51+nmu5) - scan-build results</h1>
+
+<table>
+<tr><th>User:</th><td>root@9beb3ecc87fa</td></tr>
+<tr><th>Working Directory:</th><td>/rootdir</td></tr>
+<tr><th>Command Line:</th><td>ninja -C _build</td></tr>
+<tr><th>Clang Version:</th><td>Debian clang version 11.0.1-2
+</td></tr>
+<tr><th>Date:</th><td>Sun Jun 27 09:26:06 2021</td></tr>
+</table>
+<h2>Bug Summary</h2><table>
+<thead><tr><td>Bug Type</td><td>Quantity</td><td class="sorttable_nosort">Display?</td></tr></thead>
+<tr style="font-weight:bold"><td class="SUMM_DESC">All Bugs</td><td class="Q">56</td><td><center><input type="checkbox" id="AllBugsCheck" onClick="CopyCheckedStateToCheckButtons(this);" checked/></center></td></tr>
+<tr><th>Dead code</th><th colspan=2></th></tr>
+<tr><td class="SUMM_DESC">Unreachable code</td><td class="Q">4</td><td><center><input type="checkbox" onClick="ToggleDisplay(this,'bt_dead_code_unreachable_code');" checked/></center></td></tr>
+<tr><th>Dead store</th><th colspan=2></th></tr>
+<tr><td class="SUMM_DESC">Dead assignment</td><td class="Q">17</td><td><center><input type="checkbox" onClick="ToggleDisplay(this,'bt_dead_store_dead_assignment');" checked/></center></td></tr>
+<tr><td class="SUMM_DESC">Dead initialization</td><td class="Q">1</td><td><center><input type="checkbox" onClick="ToggleDisplay(this,'bt_dead_store_dead_initialization');" checked/></center></td></tr>
+<tr><td class="SUMM_DESC">Dead nested assignment</td><td class="Q">2</td><td><center><input type="checkbox" onClick="ToggleDisplay(this,'bt_dead_store_dead_nested_assignment');" checked/></center></td></tr>
+<tr><th>Logic error</th><th colspan=2></th></tr>
+<tr><td class="SUMM_DESC">Cast from non-struct type to struct type</td><td class="Q">11</td><td><center><input type="checkbox" onClick="ToggleDisplay(this,'bt_logic_error_cast_from_non-struct_type_to_struct_type');" checked/></center></td></tr>
+<tr><td class="SUMM_DESC">Dereference of null pointer</td><td class="Q">10</td><td><center><input type="checkbox" onClick="ToggleDisplay(this,'bt_logic_error_dereference_of_null_pointer');" checked/></center></td></tr>
+<tr><td class="SUMM_DESC">Out-of-bound access</td><td class="Q">2</td><td><center><input type="checkbox" onClick="ToggleDisplay(this,'bt_logic_error_out-of-bound_access');" checked/></center></td></tr>
+<tr><td class="SUMM_DESC">Return of pointer value outside of expected range</td><td class="Q">1</td><td><center><input type="checkbox" onClick="ToggleDisplay(this,'bt_logic_error_return_of_pointer_value_outside_of_expected_range');" checked/></center></td></tr>
+<tr><td class="SUMM_DESC">Uninitialized argument value</td><td class="Q">1</td><td><center><input type="checkbox" onClick="ToggleDisplay(this,'bt_logic_error_uninitialized_argument_value');" checked/></center></td></tr>
+<tr><th>Memory error</th><th colspan=2></th></tr>
+<tr><td class="SUMM_DESC">Memory leak</td><td class="Q">7</td><td><center><input type="checkbox" onClick="ToggleDisplay(this,'bt_memory_error_memory_leak');" checked/></center></td></tr>
+</table>
+<h2>Reports</h2>
+
+<table class="sortable" style="table-layout:automatic">
+<thead><tr>
+  <td>Bug Group</td>
+  <td class="sorttable_sorted">Bug Type<span id="sorttable_sortfwdind">&nbsp;&#x25BE;</span></td>
+  <td>File</td>
+  <td>Function/Method</td>
+  <td class="Q">Line</td>
+  <td class="Q">Path Length</td>
+  <td class="sorttable_nosort"></td>
+  <!-- REPORTBUGCOL -->
+</tr></thead>
+<tbody>
+<tr class="bt_logic_error_cast_from_non-struct_type_to_struct_type"><td class="DESC">Logic error</td><td class="DESC">Cast from non-struct type to struct type</td><td>contrib/gtkrbtree.c</td><td class="DESC">gtk_rb_tree_insert_after</td><td class="Q">684</td><td class="Q">1</td><td><a href="report-07e0cd.html#EndPath">View Report</a></td>
+<!-- REPORTBUG id="report-07e0cd.html" -->
+</tr>
+<tr class="bt_logic_error_cast_from_non-struct_type_to_struct_type"><td class="DESC">Logic error</td><td class="DESC">Cast from non-struct type to struct type</td><td>contrib/gtkrbtree.c</td><td class="DESC">gtk_rb_tree_insert_before</td><td class="Q">648</td><td class="Q">1</td><td><a href="report-0ae557.html#EndPath">View Report</a></td>
+<!-- REPORTBUG id="report-0ae557.html" -->
+</tr>
+<tr class="bt_logic_error_cast_from_non-struct_type_to_struct_type"><td class="DESC">Logic error</td><td class="DESC">Cast from non-struct type to struct type</td><td>contrib/gtkrbtree.c</td><td class="DESC">gtk_rb_tree_node_get_left</td><td class="Q">592</td><td class="Q">1</td><td><a href="report-0b445d.html#EndPath">View Report</a></td>
+<!-- REPORTBUG id="report-0b445d.html" -->
+</tr>
+<tr class="bt_logic_error_cast_from_non-struct_type_to_struct_type"><td class="DESC">Logic error</td><td class="DESC">Cast from non-struct type to struct type</td><td>contrib/gtkrbtree.c</td><td class="DESC">gtk_rb_tree_node_mark_dirty</td><td class="Q">621</td><td class="Q">1</td><td><a href="report-11fc52.html#EndPath">View Report</a></td>
+<!-- REPORTBUG id="report-11fc52.html" -->
+</tr>
+<tr class="bt_logic_error_cast_from_non-struct_type_to_struct_type"><td class="DESC">Logic error</td><td class="DESC">Cast from non-struct type to struct type</td><td>contrib/gtkrbtree.c</td><td class="DESC">gtk_rb_tree_node_get_right</td><td class="Q">598</td><td class="Q">1</td><td><a href="report-27f4f6.html#EndPath">View Report</a></td>
+<!-- REPORTBUG id="report-27f4f6.html" -->
+</tr>
+<tr class="bt_logic_error_cast_from_non-struct_type_to_struct_type"><td class="DESC">Logic error</td><td class="DESC">Cast from non-struct type to struct type</td><td>contrib/gtkrbtree.c</td><td class="DESC">gtk_rb_tree_node_get_next</td><td class="Q">574</td><td class="Q">1</td><td><a href="report-41498f.html#EndPath">View Report</a></td>
+<!-- REPORTBUG id="report-41498f.html" -->
+</tr>
+<tr class="bt_logic_error_cast_from_non-struct_type_to_struct_type"><td class="DESC">Logic error</td><td class="DESC">Cast from non-struct type to struct type</td><td>contrib/gtkrbtree.c</td><td class="DESC">gtk_rb_tree_remove</td><td class="Q">716</td><td class="Q">1</td><td><a href="report-64d801.html#EndPath">View Report</a></td>
+<!-- REPORTBUG id="report-64d801.html" -->
+</tr>
+<tr class="bt_logic_error_cast_from_non-struct_type_to_struct_type"><td class="DESC">Logic error</td><td class="DESC">Cast from non-struct type to struct type</td><td>contrib/gtkrbtree.c</td><td class="DESC">gtk_rb_tree_node_get_parent</td><td class="Q">586</td><td class="Q">1</td><td><a href="report-7f3190.html#EndPath">View Report</a></td>
+<!-- REPORTBUG id="report-7f3190.html" -->
+</tr>
+<tr class="bt_logic_error_cast_from_non-struct_type_to_struct_type"><td class="DESC">Logic error</td><td class="DESC">Cast from non-struct type to struct type</td><td>contrib/gtkrbtree.c</td><td class="DESC">gtk_rb_tree_node_get_previous</td><td class="Q">568</td><td class="Q">1</td><td><a href="report-854510.html#EndPath">View Report</a></td>
+<!-- REPORTBUG id="report-854510.html" -->
+</tr>
+<tr class="bt_logic_error_cast_from_non-struct_type_to_struct_type"><td class="DESC">Logic error</td><td class="DESC">Cast from non-struct type to struct type</td><td>contrib/gtkrbtree.c</td><td class="DESC">gtk_rb_tree_get_augment</td><td class="Q">605</td><td class="Q">1</td><td><a href="report-8f2c47.html#EndPath">View Report</a></td>
+<!-- REPORTBUG id="report-8f2c47.html" -->
+</tr>
+<tr class="bt_logic_error_cast_from_non-struct_type_to_struct_type"><td class="DESC">Logic error</td><td class="DESC">Cast from non-struct type to struct type</td><td>contrib/gtkrbtree.c</td><td class="DESC">gtk_rb_tree_node_get_tree</td><td class="Q">615</td><td class="Q">1</td><td><a href="report-9745fe.html#EndPath">View Report</a></td>
+<!-- REPORTBUG id="report-9745fe.html" -->
+</tr>
+<tr class="bt_dead_store_dead_assignment"><td class="DESC">Dead store</td><td class="DESC">Dead assignment</td><td>matrix/matrix-enc.c</td><td class="DESC">matrix_enc_set_details</td><td class="Q">400</td><td class="Q">1</td><td><a href="report-011147.html#EndPath">View Report</a></td>
+<!-- REPORTBUG id="report-011147.html" -->
+</tr>
+<tr class="bt_dead_store_dead_assignment"><td class="DESC">Dead store</td><td class="DESC">Dead assignment</td><td>matrix/matrix-db.c</td><td class="DESC">matrix_db_save_file_url</td><td class="Q">614</td><td class="Q">1</td><td><a href="report-1c71f1.html#EndPath">View Report</a></td>
+<!-- REPORTBUG id="report-1c71f1.html" -->
+</tr>
+<tr class="bt_dead_store_dead_assignment"><td class="DESC">Dead store</td><td class="DESC">Dead assignment</td><td>chatty-history.c</td><td class="DESC">get_messages_before_time</td><td class="Q">1861</td><td class="Q">1</td><td><a href="report-1d39ea.html#EndPath">View Report</a></td>
+<!-- REPORTBUG id="report-1d39ea.html" -->
+</tr>
+<tr class="bt_dead_store_dead_assignment"><td class="DESC">Dead store</td><td class="DESC">Dead assignment</td><td>chatty-contact-provider.c</td><td class="DESC">chatty_check_save_contact_cb</td><td class="Q">720</td><td class="Q">1</td><td><a href="report-29000a.html#EndPath">View Report</a></td>
+<!-- REPORTBUG id="report-29000a.html" -->
+</tr>
+<tr class="bt_dead_store_dead_assignment"><td class="DESC">Dead store</td><td class="DESC">Dead assignment</td><td>matrix/matrix-api.c</td><td class="DESC">api_upload_group_keys_cb</td><td class="Q">435</td><td class="Q">1</td><td><a href="report-2d2c9c.html#EndPath">View Report</a></td>
+<!-- REPORTBUG id="report-2d2c9c.html" -->
+</tr>
+<tr class="bt_dead_store_dead_assignment"><td class="DESC">Dead store</td><td class="DESC">Dead assignment</td><td>chatty-contact-provider.c</td><td class="DESC">chatty_app_run_cb</td><td class="Q">75</td><td class="Q">1</td><td><a href="report-4d9f89.html#EndPath">View Report</a></td>
+<!-- REPORTBUG id="report-4d9f89.html" -->
+</tr>
+<tr class="bt_dead_store_dead_assignment"><td class="DESC">Dead store</td><td class="DESC">Dead assignment</td><td>chatty-history.c</td><td class="DESC">history_get_last_message_time</td><td class="Q">2488</td><td class="Q">1</td><td><a href="report-4e6345.html#EndPath">View Report</a></td>
+<!-- REPORTBUG id="report-4e6345.html" -->
+</tr>
+<tr class="bt_dead_store_dead_assignment"><td class="DESC">Dead store</td><td class="DESC">Dead assignment</td><td>matrix/matrix-api.c</td><td class="DESC">api_set_read_marker_cb</td><td class="Q">412</td><td class="Q">1</td><td><a href="report-648810.html#EndPath">View Report</a></td>
+<!-- REPORTBUG id="report-648810.html" -->
+</tr>
+<tr class="bt_dead_store_dead_assignment"><td class="DESC">Dead store</td><td class="DESC">Dead assignment</td><td>matrix/matrix-db.c</td><td class="DESC">matrix_db_delete_account</td><td class="Q">534</td><td class="Q">1</td><td><a href="report-7617f7.html#EndPath">View Report</a></td>
+<!-- REPORTBUG id="report-7617f7.html" -->
+</tr>
+<tr class="bt_dead_store_dead_assignment"><td class="DESC">Dead store</td><td class="DESC">Dead assignment</td><td>chatty-contact-provider.c</td><td class="DESC">chatty_save_contact_cb</td><td class="Q">696</td><td class="Q">1</td><td><a href="report-77c8ea.html#EndPath">View Report</a></td>
+<!-- REPORTBUG id="report-77c8ea.html" -->
+</tr>
+<tr class="bt_dead_store_dead_assignment"><td class="DESC">Dead store</td><td class="DESC">Dead assignment</td><td>chatty-history.c</td><td class="DESC">history_delete_chat</td><td class="Q">2379</td><td class="Q">1</td><td><a href="report-7a9bee.html#EndPath">View Report</a></td>
+<!-- REPORTBUG id="report-7a9bee.html" -->
+</tr>
+<tr class="bt_dead_store_dead_assignment"><td class="DESC">Dead store</td><td class="DESC">Dead assignment</td><td>matrix/matrix-api.c</td><td class="DESC">matrix_send_typing_cb</td><td class="Q">397</td><td class="Q">1</td><td><a href="report-82076e.html#EndPath">View Report</a></td>
+<!-- REPORTBUG id="report-82076e.html" -->
+</tr>
+<tr class="bt_dead_store_dead_assignment"><td class="DESC">Dead store</td><td class="DESC">Dead assignment</td><td>matrix/matrix-api.c</td><td class="DESC">api_leave_room_cb</td><td class="Q">2001</td><td class="Q">1</td><td><a href="report-a5eabc.html#EndPath">View Report</a></td>
+<!-- REPORTBUG id="report-a5eabc.html" -->
+</tr>
+<tr class="bt_dead_store_dead_assignment"><td class="DESC">Dead store</td><td class="DESC">Dead assignment</td><td>matrix/matrix-db.c</td><td class="DESC">matrix_db_load_account</td><td class="Q">416</td><td class="Q">1</td><td><a href="report-a642b4.html#EndPath">View Report</a></td>
+<!-- REPORTBUG id="report-a642b4.html" -->
+</tr>
+<tr class="bt_dead_store_dead_assignment"><td class="DESC">Dead store</td><td class="DESC">Dead assignment</td><td>chatty-history.c</td><td class="DESC">chatty_history_migrate_db_to_v1_to_v3</td><td class="Q">1400</td><td class="Q">1</td><td><a href="report-c8a6eb.html#EndPath">View Report</a></td>
+<!-- REPORTBUG id="report-c8a6eb.html" -->
+</tr>
+<tr class="bt_dead_store_dead_assignment"><td class="DESC">Dead store</td><td class="DESC">Dead assignment</td><td>matrix/matrix-db.c</td><td class="DESC">matrix_db_add_session</td><td class="Q">575</td><td class="Q">1</td><td><a href="report-e4283e.html#EndPath">View Report</a></td>
+<!-- REPORTBUG id="report-e4283e.html" -->
+</tr>
+<tr class="bt_dead_store_dead_assignment"><td class="DESC">Dead store</td><td class="DESC">Dead assignment</td><td>chatty-history.c</td><td class="DESC">chatty_history_migrate_db_to_v1_to_v3</td><td class="Q">1427</td><td class="Q">1</td><td><a href="report-eea5c5.html#EndPath">View Report</a></td>
+<!-- REPORTBUG id="report-eea5c5.html" -->
+</tr>
+<tr class="bt_dead_store_dead_initialization"><td class="DESC">Dead store</td><td class="DESC">Dead initialization</td><td>xeps/chatty-xep-0184.c</td><td class="DESC">chatty_0184_init</td><td class="Q">274</td><td class="Q">1</td><td><a href="report-f38866.html#EndPath">View Report</a></td>
+<!-- REPORTBUG id="report-f38866.html" -->
+</tr>
+<tr class="bt_dead_store_dead_nested_assignment"><td class="DESC">Dead store</td><td class="DESC">Dead nested assignment</td><td>chatty-pp-chat.c</td><td class="DESC">chatty_pp_chat_join</td><td class="Q">1868</td><td class="Q">1</td><td><a href="report-3c61c5.html#EndPath">View Report</a></td>
+<!-- REPORTBUG id="report-3c61c5.html" -->
+</tr>
+<tr class="bt_dead_store_dead_nested_assignment"><td class="DESC">Dead store</td><td class="DESC">Dead nested assignment</td><td>users/chatty-pp-buddy.c</td><td class="DESC">load_icon</td><td class="Q">260</td><td class="Q">1</td><td><a href="report-7300a2.html#EndPath">View Report</a></td>
+<!-- REPORTBUG id="report-7300a2.html" -->
+</tr>
+<tr class="bt_logic_error_dereference_of_null_pointer"><td class="DESC">Logic error</td><td class="DESC">Dereference of null pointer</td><td>contrib/gtkrbtree.c</td><td class="DESC">gtk_rb_node_get_previous</td><td class="Q">207</td><td class="Q">5</td><td><a href="report-0b57bf.html#EndPath">View Report</a></td>
+<!-- REPORTBUG id="report-0b57bf.html" -->
+</tr>
+<tr class="bt_logic_error_dereference_of_null_pointer"><td class="DESC">Logic error</td><td class="DESC">Dereference of null pointer</td><td>contrib/gtkrbtree.c</td><td class="DESC">gtk_rb_tree_node_get_right</td><td class="Q">598</td><td class="Q">3</td><td><a href="report-11b424.html#EndPath">View Report</a></td>
+<!-- REPORTBUG id="report-11b424.html" -->
+</tr>
+<tr class="bt_logic_error_dereference_of_null_pointer"><td class="DESC">Logic error</td><td class="DESC">Dereference of null pointer</td><td>contrib/gtkrbtree.c</td><td class="DESC">is_root</td><td class="Q">71</td><td class="Q">7</td><td><a href="report-40b4de.html#EndPath">View Report</a></td>
+<!-- REPORTBUG id="report-40b4de.html" -->
+</tr>
+<tr class="bt_logic_error_dereference_of_null_pointer"><td class="DESC">Logic error</td><td class="DESC">Dereference of null pointer</td><td>users/chatty-pp-account.c</td><td class="DESC">chatty_pp_account_set_avatar_async</td><td class="Q">691</td><td class="Q">22</td><td><a href="report-5b5267.html#EndPath">View Report</a></td>
+<!-- REPORTBUG id="report-5b5267.html" -->
+</tr>
+<tr class="bt_logic_error_dereference_of_null_pointer"><td class="DESC">Logic error</td><td class="DESC">Dereference of null pointer</td><td>contrib/gtkrbtree.c</td><td class="DESC">gtk_rb_node_get_next</td><td class="Q">226</td><td class="Q">5</td><td><a href="report-65425a.html#EndPath">View Report</a></td>
+<!-- REPORTBUG id="report-65425a.html" -->
+</tr>
+<tr class="bt_logic_error_dereference_of_null_pointer"><td class="DESC">Logic error</td><td class="DESC">Dereference of null pointer</td><td>matrix/matrix-db.c</td><td class="DESC">matrix_db_open_async</td><td class="Q">808</td><td class="Q">11</td><td><a href="report-77dfee.html#EndPath">View Report</a></td>
+<!-- REPORTBUG id="report-77dfee.html" -->
+</tr>
+<tr class="bt_logic_error_dereference_of_null_pointer"><td class="DESC">Logic error</td><td class="DESC">Dereference of null pointer</td><td>matrix/matrix-db.c</td><td class="DESC">matrix_db_open_async</td><td class="Q">809</td><td class="Q">13</td><td><a href="report-a94ebf.html#EndPath">View Report</a></td>
+<!-- REPORTBUG id="report-a94ebf.html" -->
+</tr>
+<tr class="bt_logic_error_dereference_of_null_pointer"><td class="DESC">Logic error</td><td class="DESC">Dereference of null pointer</td><td>contrib/gtkrbtree.c</td><td class="DESC">gtk_rb_node_mark_dirty</td><td class="Q">159</td><td class="Q">5</td><td><a href="report-aa55e1.html#EndPath">View Report</a></td>
+<!-- REPORTBUG id="report-aa55e1.html" -->
+</tr>
+<tr class="bt_logic_error_dereference_of_null_pointer"><td class="DESC">Logic error</td><td class="DESC">Dereference of null pointer</td><td>contrib/gtkrbtree.c</td><td class="DESC">gtk_rb_tree_node_get_left</td><td class="Q">592</td><td class="Q">3</td><td><a href="report-d42873.html#EndPath">View Report</a></td>
+<!-- REPORTBUG id="report-d42873.html" -->
+</tr>
+<tr class="bt_logic_error_dereference_of_null_pointer"><td class="DESC">Logic error</td><td class="DESC">Dereference of null pointer</td><td>contrib/gtkrbtree.c</td><td class="DESC">gtk_rb_tree_remove_node_fixup</td><td class="Q">446</td><td class="Q">46</td><td><a href="report-e9aad8.html#EndPath">View Report</a></td>
+<!-- REPORTBUG id="report-e9aad8.html" -->
+</tr>
+<tr class="bt_memory_error_memory_leak"><td class="DESC">Memory error</td><td class="DESC">Memory leak</td><td>chatty-list-row.c</td><td class="DESC">chatty_time_ago_in_words</td><td class="Q">206</td><td class="Q">39</td><td><a href="report-028a11.html#EndPath">View Report</a></td>
+<!-- REPORTBUG id="report-028a11.html" -->
+</tr>
+<tr class="bt_memory_error_memory_leak"><td class="DESC">Memory error</td><td class="DESC">Memory leak</td><td>matrix/matrix-enc.c</td><td class="DESC">matrix_enc_handle_join_room_encrypted</td><td class="Q">1073</td><td class="Q">23</td><td><a href="report-03d52f.html#EndPath">View Report</a></td>
+<!-- REPORTBUG id="report-03d52f.html" -->
+</tr>
+<tr class="bt_memory_error_memory_leak"><td class="DESC">Memory error</td><td class="DESC">Memory leak</td><td>matrix/chatty-ma-chat.c</td><td class="DESC">ma_chat_parse_base64_value</td><td class="Q">461</td><td class="Q">12</td><td><a href="report-08ed51.html#EndPath">View Report</a></td>
+<!-- REPORTBUG id="report-08ed51.html" -->
+</tr>
+<tr class="bt_memory_error_memory_leak"><td class="DESC">Memory error</td><td class="DESC">Memory leak</td><td>matrix/matrix-enc.c</td><td class="DESC">matrix_enc_create_out_group_keys</td><td class="Q">1167</td><td class="Q">11</td><td><a href="report-8f9afb.html#EndPath">View Report</a></td>
+<!-- REPORTBUG id="report-8f9afb.html" -->
+</tr>
+<tr class="bt_memory_error_memory_leak"><td class="DESC">Memory error</td><td class="DESC">Memory leak</td><td>matrix/matrix-enc.c</td><td class="DESC">matrix_enc_encrypt_for_chat</td><td class="Q">1122</td><td class="Q">14</td><td><a href="report-a22359.html#EndPath">View Report</a></td>
+<!-- REPORTBUG id="report-a22359.html" -->
+</tr>
+<tr class="bt_memory_error_memory_leak"><td class="DESC">Memory error</td><td class="DESC">Memory leak</td><td>matrix/matrix-enc.c</td><td class="DESC">matrix_enc_encrypt_for_chat</td><td class="Q">1106</td><td class="Q">14</td><td><a href="report-b799f3.html#EndPath">View Report</a></td>
+<!-- REPORTBUG id="report-b799f3.html" -->
+</tr>
+<tr class="bt_memory_error_memory_leak"><td class="DESC">Memory error</td><td class="DESC">Memory leak</td><td>matrix/matrix-enc.c</td><td class="DESC">matrix_enc_create_out_group_keys</td><td class="Q">1178</td><td class="Q">13</td><td><a href="report-ffc100.html#EndPath">View Report</a></td>
+<!-- REPORTBUG id="report-ffc100.html" -->
+</tr>
+<tr class="bt_logic_error_out-of-bound_access"><td class="DESC">Logic error</td><td class="DESC">Out-of-bound access</td><td>matrix/chatty-ma-account.c</td><td class="DESC">ma_account_get_value</td><td class="Q">914</td><td class="Q">22</td><td><a href="report-9c276d.html#EndPath">View Report</a></td>
+<!-- REPORTBUG id="report-9c276d.html" -->
+</tr>
+<tr class="bt_logic_error_out-of-bound_access"><td class="DESC">Logic error</td><td class="DESC">Out-of-bound access</td><td>chatty-text-item.c</td><td class="DESC">text_item_update_quotes</td><td class="Q">81</td><td class="Q">21</td><td><a href="report-e27050.html#EndPath">View Report</a></td>
+<!-- REPORTBUG id="report-e27050.html" -->
+</tr>
+<tr class="bt_logic_error_return_of_pointer_value_outside_of_expected_range"><td class="DESC">Logic error</td><td class="DESC">Return of pointer value outside of expected range</td><td>contrib/gtkrbtree.c</td><td class="DESC">parent</td><td class="Q">80</td><td class="Q">12</td><td><a href="report-8cdbc8.html#EndPath">View Report</a></td>
+<!-- REPORTBUG id="report-8cdbc8.html" -->
+</tr>
+<tr class="bt_logic_error_uninitialized_argument_value"><td class="DESC">Logic error</td><td class="DESC">Uninitialized argument value</td><td>users/chatty-pp-account.c</td><td class="DESC">chatty_pp_account_create</td><td class="Q">158</td><td class="Q">16</td><td><a href="report-d68c1b.html#EndPath">View Report</a></td>
+<!-- REPORTBUG id="report-d68c1b.html" -->
+</tr>
+<tr class="bt_dead_code_unreachable_code"><td class="DESC">Dead code</td><td class="DESC">Unreachable code</td><td>matrix/matrix-api.c</td><td class="DESC">get_joined_rooms_cb</td><td class="Q">1031</td><td class="Q">1</td><td><a href="report-18cf71.html#EndPath">View Report</a></td>
+<!-- REPORTBUG id="report-18cf71.html" -->
+</tr>
+<tr class="bt_dead_code_unreachable_code"><td class="DESC">Dead code</td><td class="DESC">Unreachable code</td><td>xeps/chatty-xep-0313.c</td><td class="DESC">cb_chatty_mam_msg_received</td><td class="Q">819</td><td class="Q">1</td><td><a href="report-25de4a.html#EndPath">View Report</a></td>
+<!-- REPORTBUG id="report-25de4a.html" -->
+</tr>
+<tr class="bt_dead_code_unreachable_code"><td class="DESC">Dead code</td><td class="DESC">Unreachable code</td><td>xeps/chatty-xep-0313.c</td><td class="DESC">cb_chatty_mam_msg_received</td><td class="Q">801</td><td class="Q">1</td><td><a href="report-dedeb6.html#EndPath">View Report</a></td>
+<!-- REPORTBUG id="report-dedeb6.html" -->
+</tr>
+<tr class="bt_dead_code_unreachable_code"><td class="DESC">Dead code</td><td class="DESC">Unreachable code</td><td>xeps/chatty-xep-0313.c</td><td class="DESC">cb_chatty_mam_msg_received</td><td class="Q">787</td><td class="Q">1</td><td><a href="report-f0ea1c.html#EndPath">View Report</a></td>
+<!-- REPORTBUG id="report-f0ea1c.html" -->
+</tr>
+</tbody>
+</table>
+
+</body></html>

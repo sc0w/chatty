@@ -1,0 +1,208 @@
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Cppcheck - HTML report - chatty (cppcheck 2.3-1)</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+
+    </style>
+    <script>
+      function getStyle(el, styleProp) {
+        var y;
+
+        if (el.currentStyle) {
+          y = el.currentStyle[styleProp];
+        } else if (window.getComputedStyle) {
+          y = document.defaultView.getComputedStyle(el, null).getPropertyValue(styleProp);
+        }
+
+        return y;
+      }
+
+      function toggle() {
+        var el = this.expandable_content;
+        var mark = this.expandable_marker;
+
+        if (el.style.display === "block") {
+          el.style.display = "none";
+          mark.textContent = "[+]";
+        } else {
+          el.style.display = "block";
+          mark.textContent = "[-]";
+        }
+      }
+
+      function initExpandables() {
+        var elements = document.querySelectorAll(".expandable");
+
+        for (var i = 0, len = elements.length; i < len; i++) {
+          var el = elements[i];
+          var clickable = el.querySelector("span");
+          var marker = clickable.querySelector(".marker");
+          var content = el.querySelector(".content");
+          var width = clickable.clientWidth - parseInt(getStyle(content, "padding-left")) - parseInt(getStyle(content, "padding-right"));
+          content.style.width = width + "px";
+          clickable.expandable_content = content;
+          clickable.expandable_marker = marker;
+          clickable.addEventListener("click", toggle);
+        }
+      }
+
+      function toggleDisplay(id) {
+        var elements = document.querySelectorAll("." + id);
+
+        for (var i = 0, len = elements.length; i < len; i++) {
+          elements[i].classList.toggle("d-none");
+        }
+      }
+
+      function toggleAll() {
+        var elements = document.querySelectorAll("input");
+
+        // starting from 1 since 0 is the "toggle all" input
+        for (var i = 1, len = elements.length; i < len; i++) {
+          var el = elements[i];
+
+          if (el.checked) {
+            el.checked = false;
+          } else {
+            el.checked = true;
+          }
+
+          toggleDisplay(el.id);
+        }
+      }
+      window.addEventListener("load", initExpandables);
+    </script>
+  </head>
+  <body>
+    <div id="header" class="header">
+      <h1>Cppcheck report - chatty (cppcheck 2.3-1): </h1>
+    </div>
+    <div class="wrapper">
+      <div id="menu_index">
+       <p id="filename"><a href="index.html">Defect summary;</a> </p>
+
+       <label><input type="checkbox" onclick="toggleAll()" checked> Toggle all</label>
+       <table>
+           <tr><th>Show</th><th>#</th><th>Defect ID</th></tr>
+            <tr><td><input type="checkbox" onclick="toggleDisplay(this.id)" id="unknownMacro" name="unknownMacro" checked></td><td>24</td><td>unknownMacro</td></tr>
+            <tr><td><input type="checkbox" onclick="toggleDisplay(this.id)" id="nullPointer" name="nullPointer" checked></td><td>10</td><td>nullPointer</td></tr>
+            <tr><td><input type="checkbox" onclick="toggleDisplay(this.id)" id="syntaxError" name="syntaxError" checked></td><td>8</td><td>syntaxError</td></tr>
+            <tr><td><input type="checkbox" onclick="toggleDisplay(this.id)" id="unusedStructMember" name="unusedStructMember" checked></td><td>7</td><td>unusedStructMember</td></tr>
+            <tr><td><input type="checkbox" onclick="toggleDisplay(this.id)" id="ctunullpointer" name="ctunullpointer" checked></td><td>5</td><td>ctunullpointer</td></tr>
+            <tr><td><input type="checkbox" onclick="toggleDisplay(this.id)" id="redundantAssignment" name="redundantAssignment" checked></td><td>4</td><td>redundantAssignment</td></tr>
+            <tr><td><input type="checkbox" onclick="toggleDisplay(this.id)" id="variableScope" name="variableScope" checked></td><td>4</td><td>variableScope</td></tr>
+            <tr><td><input type="checkbox" onclick="toggleDisplay(this.id)" id="duplicateCondition" name="duplicateCondition" checked></td><td>1</td><td>duplicateCondition</td></tr>
+            <tr><td><input type="checkbox" onclick="toggleDisplay(this.id)" id="knownConditionTrueFalse" name="knownConditionTrueFalse" checked></td><td>1</td><td>knownConditionTrueFalse</td></tr>
+            <tr><td><input type="checkbox" onclick="toggleDisplay(this.id)" id="missingInclude" name="missingInclude" checked></td><td>1</td><td>missingInclude</td></tr>
+            <tr><td><input type="checkbox" onclick="toggleDisplay(this.id)" id="shadowFunction" name="shadowFunction" checked></td><td>1</td><td>shadowFunction</td></tr>
+           <tr><td></td><td>66</td><td>total</td></tr>
+       </table>
+       <p><a href="stats.html">Statistics</a></p>
+    </div>
+    <div id="content_index">
+
+       <table>
+       <tr><th>Line</th><th>Id</th><th>CWE</th><th>Severity</th><th>Message</th></tr>
+       <tr><td colspan="5"><a href="19.html"></a></td></tr>
+         <tr class="missingInclude"><td></td><td>missingInclude</td><td></td><td>information</td><td>Cppcheck cannot find all the include files (use --check-config for details)</td></tr>
+       <tr><td colspan="5"><a href="2.html">src/chatty-chat-view.h</a></td></tr>
+       <tr class="unknownMacro"><td><a href="2.html#line-28">28</a></td><td>unknownMacro</td><td></td><td>error</td><td class="error">There is an unknown macro here somewhere. Configuration is required. If G_DECLARE_FINAL_TYPE is a macro then please configure it.</td></tr>
+       <tr class="unknownMacro"><td><a href="2.html#line-28">28</a></td><td>unknownMacro</td><td></td><td>error</td><td class="error">There is an unknown macro here somewhere. Configuration is required. If G_DECLARE_FINAL_TYPE is a macro then please configure it.</td></tr>
+       <tr class="unknownMacro"><td><a href="2.html#line-28">28</a></td><td>unknownMacro</td><td></td><td>error</td><td class="error">There is an unknown macro here somewhere. Configuration is required. If G_DECLARE_FINAL_TYPE is a macro then please configure it.</td></tr>
+       <tr><td colspan="5"><a href="3.html">src/chatty-contact-provider.c</a></td></tr>
+       <tr class="variableScope"><td><a href="3.html#line-150">150</a></td><td>variableScope</td><td><a href="https://cwe.mitre.org/data/definitions/398.html">398</a></td><td>style</td><td >The scope of the variable &apos;old_uid&apos; can be reduced.</td></tr>
+       <tr><td colspan="5"><a href="4.html">src/chatty-history.c</a></td></tr>
+       <tr class="knownConditionTrueFalse"><td><a href="4.html#line-246">246</a></td><td>knownConditionTrueFalse</td><td><a href="https://cwe.mitre.org/data/definitions/570.html">570</a></td><td>style</td><td >Condition &apos;value==CHATTY_MESSAGE_HTML&apos; is always false</td></tr>
+       <tr class="redundantAssignment"><td><a href="4.html#line-1427">1427</a></td><td>redundantAssignment</td><td><a href="https://cwe.mitre.org/data/definitions/563.html">563</a></td><td>style</td><td >Variable &apos;status&apos; is reassigned a value before the old one has been used.</td></tr>
+       <tr class="redundantAssignment"><td><a href="4.html#line-1450">1450</a></td><td>redundantAssignment</td><td><a href="https://cwe.mitre.org/data/definitions/563.html">563</a></td><td>style</td><td >Variable &apos;status&apos; is reassigned a value before the old one has been used.</td></tr>
+       <tr class="variableScope"><td><a href="4.html#line-2255">2255</a></td><td>variableScope</td><td><a href="https://cwe.mitre.org/data/definitions/398.html">398</a></td><td>style</td><td >The scope of the variable &apos;encrypted&apos; can be reduced.</td></tr>
+       <tr class="redundantAssignment"><td><a href="4.html#line-2394">2394</a></td><td>redundantAssignment</td><td><a href="https://cwe.mitre.org/data/definitions/563.html">563</a></td><td>style</td><td >Variable &apos;status&apos; is reassigned a value before the old one has been used.</td></tr>
+       <tr class="redundantAssignment"><td><a href="4.html#line-2504">2504</a></td><td>redundantAssignment</td><td><a href="https://cwe.mitre.org/data/definitions/563.html">563</a></td><td>style</td><td >Variable &apos;status&apos; is reassigned a value before the old one has been used.</td></tr>
+       <tr><td colspan="5"><a href="6.html">src/contrib/gtkfilterlistmodel.c</a></td></tr>
+       <tr class="variableScope"><td><a href="6.html#line-293">293</a></td><td>variableScope</td><td><a href="https://cwe.mitre.org/data/definitions/398.html">398</a></td><td>style</td><td >The scope of the variable &apos;node&apos; can be reduced.</td></tr>
+       <tr><td colspan="5"><a href="7.html">src/contrib/gtkflattenlistmodel.c</a></td></tr>
+       <tr class="variableScope"><td><a href="7.html#line-294">294</a></td><td>variableScope</td><td><a href="https://cwe.mitre.org/data/definitions/398.html">398</a></td><td>style</td><td >The scope of the variable &apos;node&apos; can be reduced.</td></tr>
+       <tr><td colspan="5"><a href="8.html">src/contrib/gtkrbtree.c</a></td></tr>
+       <tr class="nullPointer"><td><a href="8.html#line-71">71</a></td><td>nullPointer</td><td><a href="https://cwe.mitre.org/data/definitions/476.html">476</a></td><td>warning</td><td >Possible null pointer dereference: node</td></tr>
+       <tr class="ctunullpointer"><td><a href="8.html#line-71">71</a></td><td>ctunullpointer</td><td><a href="https://cwe.mitre.org/data/definitions/476.html">476</a></td><td>error</td><td class="error">Null pointer dereference: node</td></tr>
+       <tr class="nullPointer"><td><a href="8.html#line-159">159</a></td><td>nullPointer</td><td><a href="https://cwe.mitre.org/data/definitions/476.html">476</a></td><td>warning</td><td >Possible null pointer dereference: node</td></tr>
+       <tr class="ctunullpointer"><td><a href="8.html#line-159">159</a></td><td>ctunullpointer</td><td><a href="https://cwe.mitre.org/data/definitions/476.html">476</a></td><td>error</td><td class="error">Null pointer dereference: node</td></tr>
+       <tr class="nullPointer"><td><a href="8.html#line-172">172</a></td><td>nullPointer</td><td><a href="https://cwe.mitre.org/data/definitions/476.html">476</a></td><td>warning</td><td >Possible null pointer dereference: node</td></tr>
+       <tr class="ctunullpointer"><td><a href="8.html#line-172">172</a></td><td>ctunullpointer</td><td><a href="https://cwe.mitre.org/data/definitions/476.html">476</a></td><td>error</td><td class="error">Null pointer dereference: node</td></tr>
+       <tr class="nullPointer"><td><a href="8.html#line-207">207</a></td><td>nullPointer</td><td><a href="https://cwe.mitre.org/data/definitions/476.html">476</a></td><td>warning</td><td >Possible null pointer dereference: node</td></tr>
+       <tr class="ctunullpointer"><td><a href="8.html#line-207">207</a></td><td>ctunullpointer</td><td><a href="https://cwe.mitre.org/data/definitions/476.html">476</a></td><td>error</td><td class="error">Null pointer dereference: node</td></tr>
+       <tr class="nullPointer"><td><a href="8.html#line-226">226</a></td><td>nullPointer</td><td><a href="https://cwe.mitre.org/data/definitions/476.html">476</a></td><td>warning</td><td >Possible null pointer dereference: node</td></tr>
+       <tr class="ctunullpointer"><td><a href="8.html#line-226">226</a></td><td>ctunullpointer</td><td><a href="https://cwe.mitre.org/data/definitions/476.html">476</a></td><td>error</td><td class="error">Null pointer dereference: node</td></tr>
+       <tr class="shadowFunction"><td><a href="8.html#line-512">512</a></td><td>shadowFunction</td><td><a href="https://cwe.mitre.org/data/definitions/398.html">398</a></td><td>style</td><td >Local variable &apos;tree&apos; shadows outer function</td></tr>
+       <tr class="nullPointer"><td><a href="8.html#line-592">592</a></td><td>nullPointer</td><td><a href="https://cwe.mitre.org/data/definitions/476.html">476</a></td><td>warning</td><td >Possible null pointer dereference: (GtkRbNode*)((node)?(((guchar*)(node))-sizeof(GtkRbNode)):NULL)</td></tr>
+       <tr class="nullPointer"><td><a href="8.html#line-598">598</a></td><td>nullPointer</td><td><a href="https://cwe.mitre.org/data/definitions/476.html">476</a></td><td>warning</td><td >Possible null pointer dereference: (GtkRbNode*)((node)?(((guchar*)(node))-sizeof(GtkRbNode)):NULL)</td></tr>
+       <tr class="nullPointer"><td><a href="8.html#line-657">657</a></td><td>nullPointer</td><td><a href="https://cwe.mitre.org/data/definitions/476.html">476</a></td><td>warning</td><td >Possible null pointer dereference: current</td></tr>
+       <tr class="nullPointer"><td><a href="8.html#line-693">693</a></td><td>nullPointer</td><td><a href="https://cwe.mitre.org/data/definitions/476.html">476</a></td><td>warning</td><td >Possible null pointer dereference: current</td></tr>
+       <tr class="nullPointer"><td><a href="8.html#line-723">723</a></td><td>nullPointer</td><td><a href="https://cwe.mitre.org/data/definitions/476.html">476</a></td><td>warning</td><td >Possible null pointer dereference: y</td></tr>
+       <tr><td colspan="5"><a href="9.html">src/dialogs/chatty-new-chat-dialog.c</a></td></tr>
+       <tr class="unusedStructMember"><td><a href="9.html#line-51">51</a></td><td>unusedStructMember</td><td><a href="https://cwe.mitre.org/data/definitions/563.html">563</a></td><td>style</td><td >struct member &apos;_ChattyNewChatDialog::back_button&apos; is never used.</td></tr>
+       <tr class="unusedStructMember"><td><a href="9.html#line-53">53</a></td><td>unusedStructMember</td><td><a href="https://cwe.mitre.org/data/definitions/563.html">563</a></td><td>style</td><td >struct member &apos;_ChattyNewChatDialog::edit_contact_button&apos; is never used.</td></tr>
+       <tr><td colspan="5"><a href="10.html">src/dialogs/chatty-settings-dialog.c</a></td></tr>
+       <tr class="unusedStructMember"><td><a href="10.html#line-65">65</a></td><td>unusedStructMember</td><td><a href="https://cwe.mitre.org/data/definitions/563.html">563</a></td><td>style</td><td >struct member &apos;_ChattySettingsDialog::avatar_button&apos; is never used.</td></tr>
+       <tr class="unusedStructMember"><td><a href="10.html#line-74">74</a></td><td>unusedStructMember</td><td><a href="https://cwe.mitre.org/data/definitions/563.html">563</a></td><td>style</td><td >struct member &apos;_ChattySettingsDialog::xmpp_radio_button&apos; is never used.</td></tr>
+       <tr class="unusedStructMember"><td><a href="10.html#line-79">79</a></td><td>unusedStructMember</td><td><a href="https://cwe.mitre.org/data/definitions/563.html">563</a></td><td>style</td><td >struct member &apos;_ChattySettingsDialog::new_account_settings_list&apos; is never used.</td></tr>
+       <tr class="unusedStructMember"><td><a href="10.html#line-83">83</a></td><td>unusedStructMember</td><td><a href="https://cwe.mitre.org/data/definitions/563.html">563</a></td><td>style</td><td >struct member &apos;_ChattySettingsDialog::fingerprint_list&apos; is never used.</td></tr>
+       <tr class="unusedStructMember"><td><a href="10.html#line-102">102</a></td><td>unusedStructMember</td><td><a href="https://cwe.mitre.org/data/definitions/563.html">563</a></td><td>style</td><td >struct member &apos;_ChattySettingsDialog::matrix_cancel_button&apos; is never used.</td></tr>
+       <tr class="duplicateCondition"><td><a href="10.html#line-309">309</a></td><td>duplicateCondition</td><td><a href="https://cwe.mitre.org/data/definitions/398.html">398</a></td><td>style</td><td >The if condition is the same as the previous if condition</td></tr>
+       <tr><td colspan="5"><a href="1.html">src/matrix/matrix-enc.h</a></td></tr>
+       <tr class="unknownMacro"><td><a href="1.html#line-44">44</a></td><td>unknownMacro</td><td></td><td>error</td><td class="error">There is an unknown macro here somewhere. Configuration is required. If G_DECLARE_FINAL_TYPE is a macro then please configure it.</td></tr>
+       <tr class="unknownMacro"><td><a href="1.html#line-44">44</a></td><td>unknownMacro</td><td></td><td>error</td><td class="error">There is an unknown macro here somewhere. Configuration is required. If G_DECLARE_FINAL_TYPE is a macro then please configure it.</td></tr>
+       <tr class="unknownMacro"><td><a href="1.html#line-44">44</a></td><td>unknownMacro</td><td></td><td>error</td><td class="error">There is an unknown macro here somewhere. Configuration is required. If G_DECLARE_FINAL_TYPE is a macro then please configure it.</td></tr>
+       <tr class="unknownMacro"><td><a href="1.html#line-44">44</a></td><td>unknownMacro</td><td></td><td>error</td><td class="error">There is an unknown macro here somewhere. Configuration is required. If G_DECLARE_FINAL_TYPE is a macro then please configure it.</td></tr>
+       <tr class="unknownMacro"><td><a href="1.html#line-44">44</a></td><td>unknownMacro</td><td></td><td>error</td><td class="error">There is an unknown macro here somewhere. Configuration is required. If G_DECLARE_FINAL_TYPE is a macro then please configure it.</td></tr>
+       <tr class="unknownMacro"><td><a href="1.html#line-44">44</a></td><td>unknownMacro</td><td></td><td>error</td><td class="error">There is an unknown macro here somewhere. Configuration is required. If G_DECLARE_FINAL_TYPE is a macro then please configure it.</td></tr>
+       <tr class="unknownMacro"><td><a href="1.html#line-44">44</a></td><td>unknownMacro</td><td></td><td>error</td><td class="error">There is an unknown macro here somewhere. Configuration is required. If G_DECLARE_FINAL_TYPE is a macro then please configure it.</td></tr>
+       <tr class="unknownMacro"><td><a href="1.html#line-44">44</a></td><td>unknownMacro</td><td></td><td>error</td><td class="error">There is an unknown macro here somewhere. Configuration is required. If G_DECLARE_FINAL_TYPE is a macro then please configure it.</td></tr>
+       <tr><td colspan="5"><a href="11.html">src/matrix/matrix-utils.c</a></td></tr>
+       <tr class="unknownMacro"><td><a href="11.html#line-69">69</a></td><td>unknownMacro</td><td></td><td>error</td><td class="error">There is an unknown macro here somewhere. Configuration is required. If G_DEFINE_QUARK is a macro then please configure it.</td></tr>
+       <tr><td colspan="5"><a href="0.html">src/users/chatty-pp-account.h</a></td></tr>
+       <tr class="unknownMacro"><td><a href="0.html#line-31">31</a></td><td>unknownMacro</td><td></td><td>error</td><td class="error">There is an unknown macro here somewhere. Configuration is required. If G_DECLARE_FINAL_TYPE is a macro then please configure it.</td></tr>
+       <tr class="unknownMacro"><td><a href="0.html#line-31">31</a></td><td>unknownMacro</td><td></td><td>error</td><td class="error">There is an unknown macro here somewhere. Configuration is required. If G_DECLARE_FINAL_TYPE is a macro then please configure it.</td></tr>
+       <tr class="unknownMacro"><td><a href="0.html#line-31">31</a></td><td>unknownMacro</td><td></td><td>error</td><td class="error">There is an unknown macro here somewhere. Configuration is required. If G_DECLARE_FINAL_TYPE is a macro then please configure it.</td></tr>
+       <tr class="unknownMacro"><td><a href="0.html#line-31">31</a></td><td>unknownMacro</td><td></td><td>error</td><td class="error">There is an unknown macro here somewhere. Configuration is required. If G_DECLARE_FINAL_TYPE is a macro then please configure it.</td></tr>
+       <tr class="unknownMacro"><td><a href="0.html#line-31">31</a></td><td>unknownMacro</td><td></td><td>error</td><td class="error">There is an unknown macro here somewhere. Configuration is required. If G_DECLARE_FINAL_TYPE is a macro then please configure it.</td></tr>
+       <tr class="unknownMacro"><td><a href="0.html#line-31">31</a></td><td>unknownMacro</td><td></td><td>error</td><td class="error">There is an unknown macro here somewhere. Configuration is required. If G_DECLARE_FINAL_TYPE is a macro then please configure it.</td></tr>
+       <tr class="unknownMacro"><td><a href="0.html#line-31">31</a></td><td>unknownMacro</td><td></td><td>error</td><td class="error">There is an unknown macro here somewhere. Configuration is required. If G_DECLARE_FINAL_TYPE is a macro then please configure it.</td></tr>
+       <tr class="unknownMacro"><td><a href="0.html#line-31">31</a></td><td>unknownMacro</td><td></td><td>error</td><td class="error">There is an unknown macro here somewhere. Configuration is required. If G_DECLARE_FINAL_TYPE is a macro then please configure it.</td></tr>
+       <tr><td colspan="5"><a href="5.html">src/xeps/xeps.h</a></td></tr>
+       <tr class="unknownMacro"><td><a href="5.html#line-19">19</a></td><td>unknownMacro</td><td></td><td>error</td><td class="error">There is an unknown macro here somewhere. Configuration is required. If G_DEFINE_AUTOPTR_CLEANUP_FUNC is a macro then please configure it.</td></tr>
+       <tr class="unknownMacro"><td><a href="5.html#line-19">19</a></td><td>unknownMacro</td><td></td><td>error</td><td class="error">There is an unknown macro here somewhere. Configuration is required. If G_DEFINE_AUTOPTR_CLEANUP_FUNC is a macro then please configure it.</td></tr>
+       <tr class="unknownMacro"><td><a href="5.html#line-19">19</a></td><td>unknownMacro</td><td></td><td>error</td><td class="error">There is an unknown macro here somewhere. Configuration is required. If G_DEFINE_AUTOPTR_CLEANUP_FUNC is a macro then please configure it.</td></tr>
+       <tr class="unknownMacro"><td><a href="5.html#line-19">19</a></td><td>unknownMacro</td><td></td><td>error</td><td class="error">There is an unknown macro here somewhere. Configuration is required. If G_DEFINE_AUTOPTR_CLEANUP_FUNC is a macro then please configure it.</td></tr>
+       <tr><td colspan="5"><a href="12.html">tests/account.c</a></td></tr>
+       <tr class="syntaxError"><td><a href="12.html#line-44">44</a></td><td>syntaxError</td><td></td><td>error</td><td class="error">syntax error</td></tr>
+       <tr><td colspan="5"><a href="13.html">tests/history.c</a></td></tr>
+       <tr class="syntaxError"><td><a href="13.html#line-116">116</a></td><td>syntaxError</td><td></td><td>error</td><td class="error">syntax error</td></tr>
+       <tr><td colspan="5"><a href="14.html">tests/matrix-api.c</a></td></tr>
+       <tr class="syntaxError"><td><a href="14.html#line-23">23</a></td><td>syntaxError</td><td></td><td>error</td><td class="error">syntax error</td></tr>
+       <tr><td colspan="5"><a href="15.html">tests/matrix-db.c</a></td></tr>
+       <tr class="syntaxError"><td><a href="15.html#line-116">116</a></td><td>syntaxError</td><td></td><td>error</td><td class="error">syntax error</td></tr>
+       <tr><td colspan="5"><a href="16.html">tests/matrix-enc.c</a></td></tr>
+       <tr class="syntaxError"><td><a href="16.html#line-141">141</a></td><td>syntaxError</td><td></td><td>error</td><td class="error">syntax error</td></tr>
+       <tr class="syntaxError"><td><a href="16.html#line-150">150</a></td><td>syntaxError</td><td></td><td>error</td><td class="error">syntax error</td></tr>
+       <tr><td colspan="5"><a href="17.html">tests/matrix-utils.c</a></td></tr>
+       <tr class="syntaxError"><td><a href="17.html#line-67">67</a></td><td>syntaxError</td><td></td><td>error</td><td class="error">syntax error</td></tr>
+       <tr><td colspan="5"><a href="18.html">tests/utils.c</a></td></tr>
+       <tr class="syntaxError"><td><a href="18.html#line-97">97</a></td><td>syntaxError</td><td></td><td>error</td><td class="error">syntax error</td></tr>
+       </table>
+      </div> <!-- /.wrapper -->
+    </div>
+    <div id="footer" class="footer">
+      <p>
+        Cppcheck 2.3 - a tool for static C/C++ code analysis<br>
+        <br>
+        Internet: <a href="http://cppcheck.net">http://cppcheck.net</a><br>
+        IRC: <a href="irc://irc.freenode.net/cppcheck">irc://irc.freenode.net/cppcheck</a><br>
+      </p>
+    </div>
+  </body>
+</html>
